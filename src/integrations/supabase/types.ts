@@ -205,7 +205,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_session_duration: {
+        Args: { ws_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
