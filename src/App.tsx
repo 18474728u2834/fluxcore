@@ -12,6 +12,8 @@ import Verify from "./pages/Verify.tsx";
 import Members from "./pages/Members.tsx";
 import Ranks from "./pages/Ranks.tsx";
 import Activity from "./pages/Activity.tsx";
+import Sessions from "./pages/Sessions.tsx";
+import Wall from "./pages/Wall.tsx";
 import SetupTracking from "./pages/SetupTracking.tsx";
 import SettingsPage from "./pages/Settings.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -34,6 +36,8 @@ const App = () => (
             <Route path="/members" element={<Members />} />
             <Route path="/ranks" element={<Ranks />} />
             <Route path="/activity" element={<Activity />} />
+            <Route path="/sessions" element={<Sessions />} />
+            <Route path="/wall" element={<Wall />} />
             <Route path="/setup-tracking" element={<SetupTracking />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<NotFound />} />

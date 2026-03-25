@@ -96,6 +96,112 @@ export type Database = {
           },
         ]
       }
+      announcements: {
+        Row: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          pinned: boolean
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          pinned?: boolean
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcements_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_sessions: {
+        Row: {
+          category: string
+          co_host_name: string | null
+          created_at: string
+          description: string | null
+          duration_minutes: number
+          host_id: string | null
+          host_name: string
+          id: string
+          recurring: string | null
+          scheduled_at: string
+          status: string
+          title: string
+          trainer_name: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          category?: string
+          co_host_name?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          host_id?: string | null
+          host_name: string
+          id?: string
+          recurring?: string | null
+          scheduled_at: string
+          status?: string
+          title: string
+          trainer_name?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          category?: string
+          co_host_name?: string | null
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number
+          host_id?: string | null
+          host_name?: string
+          id?: string
+          recurring?: string | null
+          scheduled_at?: string
+          status?: string
+          title?: string
+          trainer_name?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_sessions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       verified_users: {
         Row: {
           has_gamepass: boolean
@@ -160,6 +266,45 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_permissions: {
+        Row: {
+          granted_at: string
+          id: string
+          member_id: string
+          permission: string
+          workspace_id: string
+        }
+        Insert: {
+          granted_at?: string
+          id?: string
+          member_id: string
+          permission: string
+          workspace_id: string
+        }
+        Update: {
+          granted_at?: string
+          id?: string
+          member_id?: string
+          permission?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_permissions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_permissions_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"

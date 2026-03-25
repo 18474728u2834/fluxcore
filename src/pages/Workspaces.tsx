@@ -1,68 +1,69 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Users, ArrowRight, Shield, Lock, Loader2, LogOut } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Plus, Users, ArrowRight, Lock, Loader2, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface Workspace {
   id: string;
   name: string;
   role: string;
-  memberCount: number;
 }
 
 export default function Workspaces() {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [groupId, setGroupId] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+    if (authLoading) return;
+    if (!user) { navigate("/login"); return; }
     fetchWorkspaces();
-  }, [user]);
+  }, [user, authLoading]);
 
   const fetchWorkspaces = async () => {
     if (!user) return;
     setLoading(true);
 
-    // Fetch workspaces the user owns
     const { data: owned } = await supabase
       .from("workspaces")
       .select("id, name");
 
-    // Fetch workspaces the user is a member of
     const { data: memberships } = await supabase
       .from("workspace_members")
-      .select("workspace_id, role")
-      .eq("user_id", user.id);
+      .select("workspace_id, role");
 
     const ws: Workspace[] = [];
+    const seenIds = new Set<string>();
 
-    // Add owned workspaces
     if (owned) {
       for (const o of owned) {
-        ws.push({ id: o.id, name: o.name, role: "Owner", memberCount: 0 });
+        ws.push({ id: o.id, name: o.name, role: "Owner" });
+        seenIds.add(o.id);
       }
     }
 
-    // Add member workspaces (not already owned)
     if (memberships) {
-      const ownedIds = new Set(ws.map((w) => w.id));
       for (const m of memberships) {
-        if (!ownedIds.has(m.workspace_id)) {
-          // Fetch workspace name - we can see it via the member RLS
+        if (!seenIds.has(m.workspace_id)) {
           const { data: wsData } = await supabase
             .from("workspaces")
             .select("id, name")
             .eq("id", m.workspace_id)
             .single();
           if (wsData) {
-            ws.push({ id: wsData.id, name: wsData.name, role: m.role, memberCount: 0 });
+            ws.push({ id: wsData.id, name: wsData.name, role: m.role });
+            seenIds.add(wsData.id);
           }
         }
       }
@@ -70,6 +71,28 @@ export default function Workspaces() {
 
     setWorkspaces(ws);
     setLoading(false);
+  };
+
+  const handleCreate = async () => {
+    if (!newName.trim() || !user) return;
+    setCreating(true);
+
+    const { data, error } = await supabase
+      .from("workspaces")
+      .insert({ name: newName.trim(), owner_id: user.id, roblox_group_id: groupId.trim() || null })
+      .select("id")
+      .single();
+
+    if (error) {
+      toast.error("Failed to create workspace: " + error.message);
+    } else {
+      toast.success("Workspace created!");
+      setDialogOpen(false);
+      setNewName("");
+      setGroupId("");
+      fetchWorkspaces();
+    }
+    setCreating(false);
   };
 
   const handleLogout = async () => {
@@ -80,11 +103,10 @@ export default function Workspaces() {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute inset-0 bg-radial-glow" />
-      <div className="absolute inset-0 bg-grid opacity-15" />
 
-      <nav className="relative border-b border-border/50 bg-background/80 backdrop-blur-xl">
-        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="text-xl font-extrabold text-gradient">Fluxcore</span>
+      <nav className="relative border-b border-border/40 bg-background/90 backdrop-blur-xl">
+        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="text-lg font-extrabold text-gradient tracking-tight">Fluxcore</span>
           <div className="flex items-center gap-3">
             <span className="text-sm text-muted-foreground hidden sm:block">{user?.email}</span>
             <button onClick={handleLogout} className="text-muted-foreground hover:text-foreground transition-colors">
@@ -96,81 +118,83 @@ export default function Workspaces() {
 
       <div className="relative max-w-4xl mx-auto px-6 py-12">
         <div className="mb-10">
-          <h1 className="text-3xl font-extrabold text-foreground mb-2">Your Workspaces</h1>
-          <p className="text-muted-foreground">Select a workspace to manage or create your own</p>
+          <h1 className="text-3xl font-bold text-foreground mb-1">Workspaces</h1>
+          <p className="text-muted-foreground text-sm">Select a workspace or create a new one</p>
         </div>
 
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 text-primary animate-spin" />
+            <Loader2 className="w-7 h-7 text-primary animate-spin" />
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
-              {workspaces.map((ws) => (
-                <button
-                  key={ws.id}
-                  onClick={() => navigate("/dashboard")}
-                  className="glass-hover rounded-xl p-6 text-left group transition-all"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl font-bold text-primary">
-                      {ws.name.charAt(0)}
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all" />
-                  </div>
-                  <h3 className="font-bold text-foreground mb-1">{ws.name}</h3>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Shield className="w-3 h-3" /> {ws.role}
-                    </span>
-                  </div>
-                </button>
-              ))}
-
-              {/* Create Workspace */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            {workspaces.map((ws) => (
               <button
-                onClick={() => navigate("/verify")}
-                className="glass-hover rounded-xl p-6 text-left group transition-all border-dashed border-2 border-border/60 hover:border-primary/40 flex flex-col items-center justify-center gap-3 min-h-[160px]"
+                key={ws.id}
+                onClick={() => navigate("/dashboard")}
+                className="glass-hover rounded-xl p-5 text-left group"
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                  <Plus className="w-6 h-6 text-primary" />
+                <div className="flex items-start justify-between mb-3">
+                  <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center text-lg font-bold text-primary">
+                    {ws.name.charAt(0).toUpperCase()}
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:text-primary transition-all" />
                 </div>
-                <div className="text-center">
-                  <p className="font-bold text-foreground">Create Workspace</p>
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 justify-center mt-1">
-                    <Lock className="w-3 h-3" /> Requires Gamepass
-                  </p>
-                </div>
+                <h3 className="font-semibold text-foreground text-sm mb-0.5">{ws.name}</h3>
+                <span className="text-xs text-muted-foreground">{ws.role}</span>
               </button>
-            </div>
+            ))}
 
-            {workspaces.length === 0 && (
-              <div className="glass rounded-xl p-8 text-center mb-8">
-                <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-foreground mb-2">No workspaces yet</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  You're not a member of any workspaces. Create your own or ask a workspace owner to invite you.
-                </p>
-              </div>
-            )}
-          </>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <button className="glass-hover rounded-xl p-5 text-left group border-dashed border-2 border-border/50 hover:border-primary/30 flex flex-col items-center justify-center gap-2 min-h-[140px]">
+                  <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+                    <Plus className="w-5 h-5 text-primary" />
+                  </div>
+                  <p className="font-semibold text-foreground text-sm">Create Workspace</p>
+                  <p className="text-xs text-muted-foreground">Free</p>
+                </button>
+              </DialogTrigger>
+              <DialogContent className="glass border-border/40">
+                <DialogHeader>
+                  <DialogTitle className="text-foreground">Create Workspace</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm">Workspace Name</Label>
+                    <Input
+                      placeholder="e.g. Pastriez Bakery"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="bg-muted border-border"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm">Roblox Group ID <span className="text-muted-foreground">(optional)</span></Label>
+                    <Input
+                      placeholder="e.g. 12345678"
+                      value={groupId}
+                      onChange={(e) => setGroupId(e.target.value)}
+                      className="bg-muted border-border"
+                    />
+                  </div>
+                  <Button onClick={handleCreate} disabled={creating || !newName.trim()} variant="hero" className="w-full">
+                    {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Create
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         )}
 
-        <div className="glass rounded-xl p-5 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Lock className="w-5 h-5 text-primary" />
+        {!loading && workspaces.length === 0 && (
+          <div className="glass rounded-xl p-8 text-center">
+            <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <h3 className="font-semibold text-foreground mb-1">No workspaces yet</h3>
+            <p className="text-sm text-muted-foreground">Create your first workspace to get started, or ask a workspace owner to invite you.</p>
           </div>
-          <div>
-            <h4 className="text-sm font-semibold text-foreground mb-1">Want to create your own workspace?</h4>
-            <p className="text-sm text-muted-foreground">
-              You need to own the Fluxcore gamepass on Roblox to create workspaces. Joining existing workspaces is always free.
-            </p>
-            <Button variant="link" className="px-0 mt-2 h-auto text-sm" onClick={() => navigate("/verify")}>
-              Verify gamepass ownership →
-            </Button>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

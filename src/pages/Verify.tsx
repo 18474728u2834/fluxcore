@@ -3,12 +3,12 @@ import { VerificationFlow } from "@/components/VerificationFlow";
 
 export default function Verify() {
   return (
-    <DashboardLayout title="Account Verification">
-      <div className="max-w-2xl mx-auto py-8">
-        <div className="text-center mb-8">
+    <DashboardLayout title="Verification">
+      <div className="max-w-2xl mx-auto py-6">
+        <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-foreground">Account Verification</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Verify your Roblox account and gamepass ownership to create workspaces
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Link your Roblox account to access workspace features
           </p>
         </div>
         <VerificationFlow />

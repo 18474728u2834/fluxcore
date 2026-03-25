@@ -1,43 +1,46 @@
-import { Zap, Shield, MessageSquare, AlertTriangle } from "lucide-react";
+import { Shield, AlertTriangle, Ban, UserMinus, Gavel } from "lucide-react";
 
 const events = [
-  { type: "Admin Logs", username: "xDarkSlayer", data: ":kick TrollUser", time: "2 min ago", icon: Shield },
-  { type: "Chat Message", username: "RobloxPro2024", data: "Welcome to the team!", time: "5 min ago", icon: MessageSquare },
-  { type: "Warning", username: "GamerKid99", data: "Verbal warning issued", time: "15 min ago", icon: AlertTriangle },
-  { type: "Admin Logs", username: "CoolBuilder", data: ":ban Exploiter123", time: "30 min ago", icon: Shield },
-  { type: "Custom", username: "NinjaX", data: "Completed training module", time: "1 hr ago", icon: Zap },
-  { type: "Admin Logs", username: "xDarkSlayer", data: ":promote RobloxPro2024", time: "2 hrs ago", icon: Shield },
+  { type: "Kick", username: "xDarkSlayer", target: "TrollUser", reason: "Exploiting", time: "2 min ago", icon: UserMinus },
+  { type: "Ban", username: "Admin_Pro", target: "Exploiter123", reason: "Speed hacking", time: "15 min ago", icon: Ban },
+  { type: "Warn", username: "GamerKid99", target: "NewPlayer42", reason: "Spamming chat", time: "30 min ago", icon: AlertTriangle },
+  { type: "Kick", username: "xDarkSlayer", target: "AFK_User", reason: "AFK too long", time: "1 hr ago", icon: UserMinus },
+  { type: "Ban", username: "CoolBuilder", target: "GrieferXYZ", reason: "Griefing", time: "2 hrs ago", icon: Ban },
+  { type: "Warn", username: "xDarkSlayer", target: "RobloxPro2024", reason: "Breaking protocol", time: "3 hrs ago", icon: AlertTriangle },
 ];
 
 const typeColors: Record<string, string> = {
-  "Admin Logs": "text-primary bg-primary/10",
-  "Chat Message": "text-success bg-success/10",
-  "Warning": "text-warning bg-warning/10",
-  "Custom": "text-accent bg-accent/10",
+  Kick: "text-warning bg-warning/10",
+  Ban: "text-destructive bg-destructive/10",
+  Warn: "text-accent bg-accent/10",
 };
 
 export function ActivityEvents() {
   return (
     <div className="glass rounded-xl overflow-hidden">
-      <div className="px-5 py-4 border-b border-border/50">
-        <h3 className="font-semibold text-foreground flex items-center gap-2">
-          <Zap className="w-4 h-4 text-primary" /> Custom Events
+      <div className="px-5 py-3.5 border-b border-border/40">
+        <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+          <Gavel className="w-4 h-4 text-primary" /> Adonis Admin Logs
         </h3>
       </div>
-      <div className="divide-y divide-border/40">
+      <div className="divide-y divide-border/30">
         {events.map((event, i) => (
-          <div key={i} className="px-5 py-3 flex items-center gap-4 hover:bg-secondary/30 transition-colors">
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${typeColors[event.type] || "text-muted-foreground bg-secondary"}`}>
+          <div key={i} className="px-5 py-3 flex items-center gap-3 hover:bg-secondary/20 transition-colors">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${typeColors[event.type] || "text-muted-foreground bg-secondary"}`}>
               <event.icon className="w-4 h-4" />
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${typeColors[event.type] || ""}`}>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${typeColors[event.type]}`}>
                   {event.type}
                 </span>
-                <p className="text-sm font-medium text-foreground truncate">{event.username}</p>
+                <p className="text-sm text-foreground truncate">
+                  <span className="font-medium">{event.username}</span>
+                  <span className="text-muted-foreground"> → </span>
+                  <span className="font-medium">{event.target}</span>
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground font-mono">{event.data}</p>
+              <p className="text-xs text-muted-foreground font-mono">{event.reason}</p>
             </div>
             <span className="text-xs text-muted-foreground whitespace-nowrap">{event.time}</span>
           </div>

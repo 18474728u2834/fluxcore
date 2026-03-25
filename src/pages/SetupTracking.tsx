@@ -1,130 +1,111 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Copy, Download, ExternalLink } from "lucide-react";
+import { Copy } from "lucide-react";
 import { useState } from "react";
 
 export default function SetupTracking() {
   const [copied, setCopied] = useState<string | null>(null);
 
-  // In production, this would come from the workspace's actual API key
   const API_KEY = "YOUR_WORKSPACE_API_KEY";
-  const FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL || "https://your-project.supabase.co"}/functions/v1/activity-tracker`;
+  const FUNCTION_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || "your-project"}.supabase.co/functions/v1/activity-tracker`;
 
-  const luaScript = `-- Fluxcore Activity Tracker Module
--- Place this script in ServerScriptService
+  const luaScript = `-- Fluxcore Activity Tracker + Adonis Logging
+-- Place in ServerScriptService
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 
-local FluxcoreTracker = {}
-FluxcoreTracker.API_URL = "${FUNCTION_URL}"
-FluxcoreTracker.API_KEY = "${API_KEY}" -- Replace with your workspace API key
-FluxcoreTracker.Sessions = {}
+local Fluxcore = {}
+Fluxcore.API_URL = "${FUNCTION_URL}"
+Fluxcore.API_KEY = "${API_KEY}"
+Fluxcore.Sessions = {}
 
--- Track player join
-function FluxcoreTracker:OnPlayerAdded(player)
-    local success, response = pcall(function()
-        return HttpService:PostAsync(
-            self.API_URL,
-            HttpService:JSONEncode({
-                action = "join",
-                roblox_user_id = tostring(player.UserId),
-                roblox_username = player.Name,
-                server_id = tostring(game.JobId)
-            }),
-            Enum.HttpContentType.ApplicationJson,
-            false,
-            {
-                ["x-api-key"] = self.API_KEY
-            }
-        )
-    end)
-    
-    if success then
-        local data = HttpService:JSONDecode(response)
-        self.Sessions[player.UserId] = data.session_id
-        print("[Fluxcore] Tracking started for " .. player.Name)
-    else
-        warn("[Fluxcore] Failed to track join: " .. tostring(response))
-    end
+function Fluxcore:Send(payload)
+  local ok, res = pcall(function()
+    return HttpService:PostAsync(
+      self.API_URL,
+      HttpService:JSONEncode(payload),
+      Enum.HttpContentType.ApplicationJson,
+      false,
+      { ["x-api-key"] = self.API_KEY }
+    )
+  end)
+  if ok then return HttpService:JSONDecode(res) end
+  warn("[Fluxcore] Request failed:", res)
+  return nil
 end
 
--- Track player leave
-function FluxcoreTracker:OnPlayerRemoving(player)
-    local success, response = pcall(function()
-        return HttpService:PostAsync(
-            self.API_URL,
-            HttpService:JSONEncode({
-                action = "leave",
-                roblox_user_id = tostring(player.UserId),
-                session_id = self.Sessions[player.UserId]
-            }),
-            Enum.HttpContentType.ApplicationJson,
-            false,
-            {
-                ["x-api-key"] = self.API_KEY
-            }
-        )
-    end)
-    
-    if success then
-        print("[Fluxcore] Tracking ended for " .. player.Name)
-    else
-        warn("[Fluxcore] Failed to track leave: " .. tostring(response))
-    end
-    
-    self.Sessions[player.UserId] = nil
+function Fluxcore:OnPlayerAdded(player)
+  local data = self:Send({
+    action = "join",
+    roblox_user_id = tostring(player.UserId),
+    roblox_username = player.Name,
+    server_id = tostring(game.JobId),
+  })
+  if data and data.session_id then
+    self.Sessions[player.UserId] = data.session_id
+    print("[Fluxcore] Tracking", player.Name)
+  end
 end
 
--- Track custom event
-function FluxcoreTracker:TrackEvent(player, eventType, eventData)
-    local success, response = pcall(function()
-        return HttpService:PostAsync(
-            self.API_URL,
-            HttpService:JSONEncode({
-                action = "event",
-                roblox_user_id = tostring(player.UserId),
-                roblox_username = player.Name,
-                event_type = eventType,
-                event_data = eventData or {}
-            }),
-            Enum.HttpContentType.ApplicationJson,
-            false,
-            {
-                ["x-api-key"] = self.API_KEY
-            }
-        )
-    end)
-    
-    if success then
-        print("[Fluxcore] Event tracked: " .. eventType)
-    else
-        warn("[Fluxcore] Failed to track event: " .. tostring(response))
-    end
+function Fluxcore:OnPlayerRemoving(player)
+  self:Send({
+    action = "leave",
+    roblox_user_id = tostring(player.UserId),
+    session_id = self.Sessions[player.UserId],
+  })
+  self.Sessions[player.UserId] = nil
 end
 
--- Initialize
-function FluxcoreTracker:Init()
-    Players.PlayerAdded:Connect(function(player)
-        self:OnPlayerAdded(player)
-    end)
-    
-    Players.PlayerRemoving:Connect(function(player)
-        self:OnPlayerRemoving(player)
-    end)
-    
-    -- Track players already in the game
-    for _, player in ipairs(Players:GetPlayers()) do
-        self:OnPlayerAdded(player)
-    end
-    
-    print("[Fluxcore] Activity Tracker initialized!")
+-- Adonis admin command logging
+function Fluxcore:LogAdminAction(admin, actionType, target, reason)
+  self:Send({
+    action = "event",
+    roblox_user_id = tostring(admin.UserId),
+    roblox_username = admin.Name,
+    event_type = actionType,
+    event_data = {
+      target = target,
+      reason = reason or "No reason",
+    },
+  })
 end
 
--- Start tracking
-FluxcoreTracker:Init()
+function Fluxcore:Init()
+  Players.PlayerAdded:Connect(function(p) self:OnPlayerAdded(p) end)
+  Players.PlayerRemoving:Connect(function(p) self:OnPlayerRemoving(p) end)
+  for _, p in ipairs(Players:GetPlayers()) do self:OnPlayerAdded(p) end
+  print("[Fluxcore] Tracker initialized")
+end
 
-return FluxcoreTracker`;
+Fluxcore:Init()
+return Fluxcore`;
+
+  const adonisHook = `-- Adonis Hook for Fluxcore (place in Adonis Plugins folder)
+-- Logs kicks, bans, and warns automatically
+
+return function(Vargs)
+  local server = Vargs.Server
+  local Fluxcore = require(game.ServerScriptService.FluxcoreTracker)
+
+  server.Commands.Kick.OnRun = function(caller, args)
+    local target = args[1]
+    local reason = args[2] or "No reason"
+    Fluxcore:LogAdminAction(caller, "Kick", target, reason)
+  end
+
+  server.Commands.Ban.OnRun = function(caller, args)
+    local target = args[1]
+    local reason = args[2] or "No reason"
+    Fluxcore:LogAdminAction(caller, "Ban", target, reason)
+  end
+
+  server.Commands.Warn.OnRun = function(caller, args)
+    local target = args[1]
+    local reason = args[2] or "No reason"
+    Fluxcore:LogAdminAction(caller, "Warn", target, reason)
+  end
+end`;
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -134,120 +115,70 @@ return FluxcoreTracker`;
 
   return (
     <DashboardLayout title="Setup Tracking">
-      <div className="max-w-4xl space-y-8">
+      <div className="max-w-3xl space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Setup Activity Tracking</h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            Install the Fluxcore module in your Roblox game to start tracking activity
+          <h1 className="text-2xl font-bold text-foreground">Setup Tracking</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Install the tracker module in your Roblox game</p>
+        </div>
+
+        {/* Step 1 */}
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">1</span>
+            <h2 className="font-semibold text-foreground text-sm">Enable HTTP Requests</h2>
+          </div>
+          <p className="text-xs text-muted-foreground pl-8">
+            In Roblox Studio → Game Settings → Security → <strong className="text-foreground">Allow HTTP Requests</strong>
           </p>
         </div>
 
-        {/* Steps */}
-        <div className="space-y-6">
-          {/* Step 1 */}
-          <div className="glass rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">1</div>
-              <h2 className="text-lg font-semibold text-foreground">Enable HTTP Requests</h2>
-            </div>
-            <p className="text-sm text-muted-foreground pl-11">
-              In Roblox Studio, go to <strong className="text-foreground">Game Settings → Security → Enable HTTP Requests</strong>. 
-              This allows the module to communicate with Fluxcore's API.
-            </p>
+        {/* Step 2 */}
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
+            <h2 className="font-semibold text-foreground text-sm">Main Tracker Script</h2>
           </div>
-
-          {/* Step 2 */}
-          <div className="glass rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">2</div>
-              <h2 className="text-lg font-semibold text-foreground">Copy Your API Key</h2>
-            </div>
-            <div className="pl-11 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Your workspace API key is used to authenticate requests from your game.
-              </p>
-              <div className="flex items-center gap-2">
-                <code className="flex-1 bg-muted rounded-lg px-4 py-3 text-sm font-mono text-foreground break-all">
-                  {API_KEY}
-                </code>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => copyToClipboard(API_KEY, "api-key")}
-                >
-                  <Copy className="w-3 h-3 mr-1" />
-                  {copied === "api-key" ? "Copied!" : "Copy"}
-                </Button>
-              </div>
-            </div>
+          <p className="text-xs text-muted-foreground pl-8">
+            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>. Replace the API key with yours from Settings.
+          </p>
+          <div className="relative pl-8">
+            <pre className="bg-muted rounded-lg p-3 text-[11px] font-mono text-secondary-foreground overflow-x-auto max-h-80 overflow-y-auto leading-relaxed">
+              {luaScript}
+            </pre>
+            <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={() => copyToClipboard(luaScript, "lua")}>
+              <Copy className="w-3 h-3 mr-1" /> {copied === "lua" ? "Copied" : "Copy"}
+            </Button>
           </div>
+        </div>
 
-          {/* Step 3 */}
-          <div className="glass rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">3</div>
-              <h2 className="text-lg font-semibold text-foreground">Install the Lua Module</h2>
-            </div>
-            <div className="pl-11 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                Create a new <strong className="text-foreground">Script</strong> in <strong className="text-foreground">ServerScriptService</strong> and paste the code below.
-                Replace <code className="text-primary">YOUR_WORKSPACE_API_KEY</code> with your actual API key.
-              </p>
-              <div className="relative">
-                <pre className="bg-muted rounded-xl p-4 text-xs font-mono text-secondary-foreground overflow-x-auto max-h-96 overflow-y-auto leading-relaxed">
-                  {luaScript}
-                </pre>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="absolute top-3 right-3"
-                  onClick={() => copyToClipboard(luaScript, "lua")}
-                >
-                  <Copy className="w-3 h-3 mr-1" />
-                  {copied === "lua" ? "Copied!" : "Copy Script"}
-                </Button>
-              </div>
-            </div>
+        {/* Step 3 - Adonis */}
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+            <h2 className="font-semibold text-foreground text-sm">Adonis Admin Hook <span className="text-muted-foreground font-normal">(optional)</span></h2>
           </div>
-
-          {/* Step 4 */}
-          <div className="glass rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">4</div>
-              <h2 className="text-lg font-semibold text-foreground">Publish & Test</h2>
-            </div>
-            <p className="text-sm text-muted-foreground pl-11">
-              Publish your game and join it. You should see <code className="text-primary">[Fluxcore] Activity Tracker initialized!</code> in the output.
-              Player activity will start appearing in the dashboard within seconds.
-            </p>
+          <p className="text-xs text-muted-foreground pl-8">
+            If you use Adonis admin, add this plugin to automatically log kicks, bans, and warns.
+          </p>
+          <div className="relative pl-8">
+            <pre className="bg-muted rounded-lg p-3 text-[11px] font-mono text-secondary-foreground overflow-x-auto max-h-60 overflow-y-auto leading-relaxed">
+              {adonisHook}
+            </pre>
+            <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={() => copyToClipboard(adonisHook, "adonis")}>
+              <Copy className="w-3 h-3 mr-1" /> {copied === "adonis" ? "Copied" : "Copy"}
+            </Button>
           </div>
+        </div>
 
-          {/* Custom Events */}
-          <div className="glass rounded-xl p-6 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-sm font-bold text-accent">+</div>
-              <h2 className="text-lg font-semibold text-foreground">Track Custom Events (Optional)</h2>
-            </div>
-            <div className="pl-11 space-y-3">
-              <p className="text-sm text-muted-foreground">
-                You can track custom events like admin commands, help requests, or any game-specific activity:
-              </p>
-              <pre className="bg-muted rounded-xl p-4 text-xs font-mono text-secondary-foreground overflow-x-auto leading-relaxed">{`-- Require the Fluxcore module
-local Fluxcore = require(script.Parent.FluxcoreTracker)
-
--- Track an admin command
-Fluxcore:TrackEvent(player, "Admin Logs", {
-    command = ":kick TrollUser",
-    reason = "Exploiting"
-})
-
--- Track a custom event
-Fluxcore:TrackEvent(player, "Training", {
-    module = "Welcome Training",
-    completed = true
-})`}</pre>
-            </div>
+        {/* Step 4 */}
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+            <h2 className="font-semibold text-foreground text-sm">Test It</h2>
           </div>
+          <p className="text-xs text-muted-foreground pl-8">
+            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker initialized</code>. Activity will appear in the dashboard immediately.
+          </p>
         </div>
       </div>
     </DashboardLayout>
