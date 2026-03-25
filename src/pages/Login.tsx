@@ -1,14 +1,42 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Gamepad2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/hooks/useAuth";
+import { Loader2, Mail, Lock } from "lucide-react";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
 
-  const handleRobloxLogin = () => {
-    // In production, this would redirect to Roblox OAuth 2.0
-    // For now, simulate login and go to workspaces
-    navigate("/workspaces");
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setMessage(null);
+
+    if (isSignUp) {
+      const { error } = await signUp(email, password);
+      if (error) {
+        setError(error.message);
+      } else {
+        setMessage("Check your email to confirm your account, then sign in.");
+      }
+    } else {
+      const { error } = await signIn(email, password);
+      if (error) {
+        setError(error.message);
+      } else {
+        navigate("/workspaces");
+      }
+    }
+    setLoading(false);
   };
 
   return (
@@ -18,42 +46,63 @@ export default function Login() {
 
       <div className="relative w-full max-w-md mx-4">
         <div className="glass rounded-2xl p-8 space-y-8 gradient-border">
-          {/* Logo */}
           <div className="text-center space-y-2">
             <h1 className="text-2xl font-extrabold text-gradient">Fluxcore</h1>
             <p className="text-sm text-muted-foreground">
-              Sign in to manage your Roblox community
+              {isSignUp ? "Create your account" : "Sign in to manage your community"}
             </p>
           </div>
 
-          {/* Roblox Login */}
-          <div className="space-y-4">
-            <Button
-              onClick={handleRobloxLogin}
-              className="w-full h-12 bg-secondary hover:bg-secondary/80 text-foreground font-semibold gap-3 border border-border hover:border-primary/30 transition-all"
-              size="lg"
-            >
-              <Gamepad2 className="w-5 h-5" />
-              Continue with Roblox
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 bg-muted border-border focus:border-primary"
+                  required
+                />
               </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-card px-3 text-muted-foreground">Powered by Roblox OAuth 2.0</span>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10 bg-muted border-border focus:border-primary"
+                  required
+                  minLength={6}
+                />
               </div>
             </div>
+
+            {error && <p className="text-destructive text-sm">{error}</p>}
+            {message && <p className="text-primary text-sm">{message}</p>}
+
+            <Button type="submit" variant="hero" className="w-full h-12" disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              {isSignUp ? "Create Account" : "Sign In"}
+            </Button>
+          </form>
+
+          <div className="text-center">
+            <button
+              onClick={() => { setIsSignUp(!isSignUp); setError(null); setMessage(null); }}
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {isSignUp ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
+            </button>
           </div>
 
-          {/* Info */}
           <p className="text-xs text-center text-muted-foreground leading-relaxed">
-            By continuing, you agree to Fluxcore's Terms of Service and Privacy Policy. We'll only access your public Roblox profile.
+            By continuing, you agree to Fluxcore's Terms of Service and Privacy Policy.
           </p>
         </div>
 
-        {/* Back link */}
         <div className="text-center mt-6">
           <button onClick={() => navigate("/")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
             ← Back to home
