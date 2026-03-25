@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const EMOJI_POOL = [
   "🎮", "🕹️", "🎯", "🏆", "⭐", "🔥", "💎", "🎲", "🎪", "🎭",
@@ -10,10 +11,9 @@ const EMOJI_POOL = [
 
 function generateEmojiCode(length = 20): string {
   const emojis: string[] = [];
-  const pool = [...EMOJI_POOL];
   for (let i = 0; i < length; i++) {
-    const idx = Math.floor(Math.random() * pool.length);
-    emojis.push(pool[idx]);
+    const idx = Math.floor(Math.random() * EMOJI_POOL.length);
+    emojis.push(EMOJI_POOL[idx]);
   }
   return emojis.join("");
 }
@@ -63,33 +63,44 @@ export function useVerification(requiredGamepassId: string) {
   const verify = useCallback(async () => {
     setState((s) => ({ ...s, step: "checking", error: null }));
 
-    // Simulate API verification (in production, this would call Roblox API via edge function)
-    await new Promise((r) => setTimeout(r, 2500));
+    try {
+      const { data, error } = await supabase.functions.invoke("roblox-verify", {
+        body: {
+          username: state.robloxUsername.trim(),
+          emojiCode: state.emojiCode,
+          gamepassId: requiredGamepassId,
+        },
+      });
 
-    // Simulated result - in production this checks real Roblox API
-    const bioMatch = Math.random() > 0.3;
-    const hasGamepass = Math.random() > 0.3;
+      if (error) throw error;
 
-    if (bioMatch && hasGamepass) {
-      setState((s) => ({
-        ...s,
-        step: "success",
-        bioMatch: true,
-        hasGamepass: true,
-        robloxId: "123456789",
-      }));
-    } else {
+      if (data.success) {
+        setState((s) => ({
+          ...s,
+          step: "success",
+          bioMatch: true,
+          hasGamepass: true,
+          robloxId: data.robloxUserId,
+        }));
+      } else {
+        setState((s) => ({
+          ...s,
+          step: "failed",
+          bioMatch: data.bioMatch ?? false,
+          hasGamepass: data.hasGamepass ?? false,
+          error: data.error || "Verification failed.",
+        }));
+      }
+    } catch (err: any) {
       setState((s) => ({
         ...s,
         step: "failed",
-        bioMatch,
-        hasGamepass,
-        error: !bioMatch
-          ? "Bio emoji verification failed. Make sure the emojis are at the start of your bio."
-          : "Gamepass not found. Please purchase the required gamepass.",
+        bioMatch: false,
+        hasGamepass: false,
+        error: err.message || "Something went wrong. Please try again.",
       }));
     }
-  }, [requiredGamepassId]);
+  }, [state.robloxUsername, state.emojiCode, requiredGamepassId]);
 
   const reset = useCallback(() => {
     setState({
