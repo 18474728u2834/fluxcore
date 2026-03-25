@@ -1,3 +1,6 @@
-# Welcome to your Lovable project
+404 Error
 
-TODO: Document your project here
+This Fluxcore Website has been set up incorrectly
+
+Contact Novavoff is issue persists. 
+Made and designed by Novavoff on discord.
