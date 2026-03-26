@@ -1,0 +1,1 @@
+ALTER TABLE public.workspace_members ADD COLUMN IF NOT EXISTS access_key text NOT NULL DEFAULT encode(extensions.gen_random_bytes(24), 'hex');

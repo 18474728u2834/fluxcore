@@ -231,6 +231,7 @@ export type Database = {
       }
       workspace_members: {
         Row: {
+          access_key: string
           id: string
           joined_at: string
           roblox_user_id: string
@@ -242,6 +243,7 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          access_key?: string
           id?: string
           joined_at?: string
           roblox_user_id: string
@@ -253,6 +255,7 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          access_key?: string
           id?: string
           joined_at?: string
           roblox_user_id?: string
