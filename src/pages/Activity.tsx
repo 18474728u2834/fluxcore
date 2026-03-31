@@ -10,14 +10,14 @@ export default function Activity() {
       <div className="space-y-5 max-w-6xl">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Activity</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">In-game time tracking and admin logs</p>
+          <p className="text-sm text-muted-foreground mt-0.5">In-game time tracking and event logs</p>
         </div>
 
         <Tabs defaultValue="leaderboard" className="space-y-4">
           <TabsList className="bg-secondary/60 border border-border/40">
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
             <TabsTrigger value="sessions">Sessions</TabsTrigger>
-            <TabsTrigger value="admin-logs">Admin Logs</TabsTrigger>
+            <TabsTrigger value="events">Event Logs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="leaderboard">
@@ -28,7 +28,7 @@ export default function Activity() {
             <RecentSessions />
           </TabsContent>
 
-          <TabsContent value="admin-logs">
+          <TabsContent value="events">
             <ActivityEvents />
           </TabsContent>
         </Tabs>

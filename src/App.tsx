@@ -16,6 +16,7 @@ import Sessions from "./pages/Sessions";
 import Wall from "./pages/Wall";
 import SetupTracking from "./pages/SetupTracking";
 import SettingsPage from "./pages/Settings";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/workspaces" element={<Workspaces />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
