@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Users, ArrowRight, Loader2, LogOut } from "lucide-react";
+import { Plus, Users, ArrowRight, Loader2, LogOut, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,27 +24,12 @@ export default function Workspaces() {
   const [newName, setNewName] = useState("");
   const [groupId, setGroupId] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [hasGamepass, setHasGamepass] = useState(false);
-  const [checkingGamepass, setCheckingGamepass] = useState(true);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/login"); return; }
     fetchWorkspaces();
-    checkGamepassStatus();
   }, [user, authLoading]);
-
-  const checkGamepassStatus = async () => {
-    if (!user) return;
-    setCheckingGamepass(true);
-    const { data } = await supabase
-      .from("verified_users")
-      .select("has_gamepass")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    setHasGamepass(data?.has_gamepass ?? false);
-    setCheckingGamepass(false);
-  };
 
   const fetchWorkspaces = async () => {
     if (!user) return;
@@ -90,10 +75,6 @@ export default function Workspaces() {
 
   const handleCreate = async () => {
     if (!newName.trim() || !user) return;
-    if (!hasGamepass) {
-      toast.error("You need the Fluxcore gamepass to create a workspace.");
-      return;
-    }
     setCreating(true);
 
     const { error } = await supabase
@@ -137,6 +118,16 @@ export default function Workspaces() {
         </div>
       </nav>
 
+      {/* Premium Banner */}
+      <div className="relative border-b border-warning/20 bg-warning/5">
+        <div className="max-w-4xl mx-auto px-6 py-3 flex items-center gap-3">
+          <Info className="w-4 h-4 text-warning shrink-0" />
+          <p className="text-xs text-warning">
+            <strong>From 19.07.2026</strong>, a Gamepass (400 Robux) will be needed for premium features to help us host Fluxcore.
+          </p>
+        </div>
+      </div>
+
       <div className="relative max-w-4xl mx-auto px-6 py-12">
         <div className="mb-10">
           <h1 className="text-3xl font-bold text-foreground mb-1">Workspaces</h1>
@@ -173,44 +164,37 @@ export default function Workspaces() {
                     <Plus className="w-5 h-5 text-primary" />
                   </div>
                   <p className="font-semibold text-foreground text-sm">Create Workspace</p>
-                  <p className="text-xs text-muted-foreground">{hasGamepass ? "Gamepass ✓" : "Requires Gamepass"}</p>
+                  <p className="text-xs text-muted-foreground">Free during beta</p>
                 </button>
               </DialogTrigger>
               <DialogContent className="glass border-border/40">
                 <DialogHeader>
                   <DialogTitle className="text-foreground">Create Workspace</DialogTitle>
                 </DialogHeader>
-                {!hasGamepass ? (
-                  <div className="text-center py-4 space-y-2">
-                    <p className="text-sm text-muted-foreground">You need the Fluxcore gamepass to create workspaces.</p>
-                    <p className="text-xs text-muted-foreground">Purchase the gamepass and re-verify your account.</p>
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm">Workspace Name</Label>
+                    <Input
+                      placeholder="e.g. Pastriez Bakery"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      className="bg-muted border-border"
+                    />
                   </div>
-                ) : (
-                  <div className="space-y-4 pt-2">
-                    <div className="space-y-2">
-                      <Label className="text-foreground text-sm">Workspace Name</Label>
-                      <Input
-                        placeholder="e.g. Pastriez Bakery"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        className="bg-muted border-border"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-foreground text-sm">Roblox Group ID <span className="text-muted-foreground">(optional)</span></Label>
-                      <Input
-                        placeholder="e.g. 12345678"
-                        value={groupId}
-                        onChange={(e) => setGroupId(e.target.value)}
-                        className="bg-muted border-border"
-                      />
-                    </div>
-                    <Button onClick={handleCreate} disabled={creating || !newName.trim()} variant="hero" className="w-full">
-                      {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                      Create
-                    </Button>
+                  <div className="space-y-2">
+                    <Label className="text-foreground text-sm">Roblox Group ID <span className="text-muted-foreground">(optional)</span></Label>
+                    <Input
+                      placeholder="e.g. 12345678"
+                      value={groupId}
+                      onChange={(e) => setGroupId(e.target.value)}
+                      className="bg-muted border-border"
+                    />
                   </div>
-                )}
+                  <Button onClick={handleCreate} disabled={creating || !newName.trim()} variant="hero" className="w-full">
+                    {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                    Create
+                  </Button>
+                </div>
               </DialogContent>
             </Dialog>
           </div>

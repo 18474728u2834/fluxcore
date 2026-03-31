@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Zap, Shield, BarChart3, Users, Clock, FileText, ChevronRight } from "lucide-react";
+import { ArrowRight, Zap, Shield, BarChart3, Users, Clock, FileText, ChevronRight, Info } from "lucide-react";
 
 const features = [
   {
@@ -18,8 +18,8 @@ const features = [
   {
     icon: Shield,
     label: "Security",
-    title: "Adonis Integration",
-    description: "Automatic logging of kicks, bans, warns from Adonis admin commands.",
+    title: "Roblox Verification",
+    description: "Emoji-based bio verification to confirm player identity securely.",
   },
   {
     icon: BarChart3,
@@ -41,13 +41,6 @@ const features = [
   },
 ];
 
-const stats = [
-  { value: "500+", label: "Active Groups" },
-  { value: "25K+", label: "Members Managed" },
-  { value: "99.9%", label: "Uptime" },
-  { value: "24/7", label: "Support" },
-];
-
 export default function Index() {
   const navigate = useNavigate();
 
@@ -59,6 +52,7 @@ export default function Index() {
           <div className="hidden md:flex items-center gap-6">
             <a href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
+            <button onClick={() => navigate("/terms")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</button>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => navigate("/login")} className="text-muted-foreground">
@@ -71,8 +65,18 @@ export default function Index() {
         </div>
       </nav>
 
+      {/* Premium Banner */}
+      <div className="fixed top-14 w-full z-40 border-b border-warning/20 bg-warning/5 backdrop-blur-xl">
+        <div className="max-w-6xl mx-auto px-6 py-2 flex items-center gap-3">
+          <Info className="w-3.5 h-3.5 text-warning shrink-0" />
+          <p className="text-[11px] text-warning">
+            <strong>From 19.07.2026</strong> — A Gamepass (400 Robux) will be needed for premium features to help us host Fluxcore.
+          </p>
+        </div>
+      </div>
+
       {/* Hero */}
-      <section className="relative pt-28 pb-16 overflow-hidden">
+      <section className="relative pt-36 pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-radial-glow" />
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40 bg-secondary/40 text-xs text-muted-foreground mb-6 opacity-0 animate-fade-up" style={{ animationDelay: "0.1s" }}>
@@ -86,27 +90,13 @@ export default function Index() {
           </h1>
 
           <p className="text-base text-muted-foreground max-w-xl mx-auto mb-8 opacity-0 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-            Activity tracking, sessions, admin logs, and team management. Built for serious Roblox communities.
+            Activity tracking, sessions, event logs, and team management. Built for serious Roblox communities.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center opacity-0 animate-fade-up" style={{ animationDelay: "0.4s" }}>
             <Button variant="hero" size="lg" onClick={() => navigate("/login")} className="px-8">
               Start for free <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-12 border-y border-border/30">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="text-2xl font-extrabold text-gradient">{stat.value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -143,17 +133,17 @@ export default function Index() {
         <div className="max-w-3xl mx-auto px-6">
           <div className="text-center mb-12">
             <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Pricing</p>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground">Simple & Free</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground">Free During Beta</h2>
           </div>
 
           <div className="glass rounded-xl p-8 text-center gradient-border max-w-md mx-auto">
             <h3 className="text-xl font-bold text-foreground">Free</h3>
             <p className="text-3xl font-extrabold text-foreground mt-2">$0</p>
-            <p className="text-xs text-muted-foreground mt-1">Gamepass required to create workspaces</p>
+            <p className="text-xs text-muted-foreground mt-1">Free during beta — premium coming 19.07.2026</p>
             <ul className="space-y-2 text-sm text-muted-foreground mt-6 text-left max-w-xs mx-auto">
               <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary" /> Unlimited workspaces</li>
               <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary" /> Activity tracking & leaderboards</li>
-              <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary" /> Adonis admin logging</li>
+              <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary" /> Real-time event logging</li>
               <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary" /> Session scheduling</li>
               <li className="flex items-center gap-2"><ChevronRight className="w-3 h-3 text-primary" /> Announcement wall</li>
             </ul>
@@ -168,7 +158,7 @@ export default function Index() {
           <span className="text-lg font-extrabold text-gradient tracking-tight">Fluxcore</span>
           <p className="text-xs text-muted-foreground">© 2026 Fluxcore. All rights reserved.</p>
           <div className="flex gap-5 text-xs text-muted-foreground">
-            <a href="#" className="hover:text-foreground transition-colors">Terms</a>
+            <button onClick={() => navigate("/terms")} className="hover:text-foreground transition-colors">Terms</button>
             <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
           </div>
         </div>
