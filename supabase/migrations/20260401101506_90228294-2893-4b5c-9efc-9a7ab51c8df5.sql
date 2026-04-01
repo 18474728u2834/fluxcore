@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Workspace owners can manage their workspaces" ON public.workspaces;
+CREATE POLICY "Workspace owners can manage their workspaces" ON public.workspaces FOR ALL TO authenticated USING (auth.uid() = owner_id) WITH CHECK (auth.uid() = owner_id);
