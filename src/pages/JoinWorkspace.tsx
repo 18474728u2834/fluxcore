@@ -27,10 +27,10 @@ export default function JoinWorkspace() {
 
     const join = async () => {
       // Look up workspace by invite code
-      const { data: ws } = await supabase
+      const { data: ws } = await (supabase
         .from("workspaces")
-        .select("id, name, owner_id")
-        .eq("invite_code" as any, inviteCode)
+        .select("id, name, owner_id") as any)
+        .eq("invite_code", inviteCode)
         .single();
 
       if (!ws) {
