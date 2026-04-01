@@ -51,6 +51,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/workspaces" element={<Workspaces />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
             <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
