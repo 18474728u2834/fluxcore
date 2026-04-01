@@ -321,6 +321,7 @@ export type Database = {
           created_at: string
           gamepass_id: string | null
           id: string
+          invite_code: string
           name: string
           owner_id: string
           roblox_group_id: string | null
@@ -331,6 +332,7 @@ export type Database = {
           created_at?: string
           gamepass_id?: string | null
           id?: string
+          invite_code?: string
           name: string
           owner_id: string
           roblox_group_id?: string | null
@@ -341,6 +343,7 @@ export type Database = {
           created_at?: string
           gamepass_id?: string | null
           id?: string
+          invite_code?: string
           name?: string
           owner_id?: string
           roblox_group_id?: string | null
@@ -356,6 +359,10 @@ export type Database = {
       calculate_session_duration: {
         Args: { ws_id: string }
         Returns: undefined
+      }
+      has_workspace_permission: {
+        Args: { _permission: string; _workspace_id: string }
+        Returns: boolean
       }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }

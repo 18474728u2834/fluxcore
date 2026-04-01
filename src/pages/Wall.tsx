@@ -10,21 +10,20 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 
 interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  author_name: string;
-  pinned: boolean;
-  created_at: string;
-  author_id: string;
+  id: string; title: string; content: string; author_name: string;
+  pinned: boolean; created_at: string; author_id: string;
 }
 
 export default function Wall() {
-  const { workspaceId, isOwner } = useWorkspace();
+  const { workspaceId } = useWorkspace();
   const { user, robloxUsername } = useAuth();
+  const { hasPermission, isOwner } = usePermissions();
+  const canPost = hasPermission("post_wall");
+  const canDelete = hasPermission("delete_wall");
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -35,22 +34,16 @@ export default function Wall() {
 
   const fetchAnnouncements = async () => {
     const { data } = await supabase
-      .from("announcements")
-      .select("*")
-      .eq("workspace_id", workspaceId)
-      .order("pinned", { ascending: false })
-      .order("created_at", { ascending: false });
+      .from("announcements").select("*").eq("workspace_id", workspaceId)
+      .order("pinned", { ascending: false }).order("created_at", { ascending: false });
     setAnnouncements(data || []);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchAnnouncements();
-    const channel = supabase
-      .channel(`announcements-${workspaceId}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "announcements", filter: `workspace_id=eq.${workspaceId}` }, () => {
-        fetchAnnouncements();
-      })
+    const channel = supabase.channel(`announcements-${workspaceId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "announcements", filter: `workspace_id=eq.${workspaceId}` }, () => fetchAnnouncements())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [workspaceId]);
@@ -59,22 +52,11 @@ export default function Wall() {
     if (!title.trim() || !content.trim() || !user) return;
     setPosting(true);
     const { error } = await supabase.from("announcements").insert({
-      workspace_id: workspaceId,
-      title: title.trim(),
-      content: content.trim(),
-      pinned,
-      author_id: user.id,
-      author_name: robloxUsername || "Unknown",
+      workspace_id: workspaceId, title: title.trim(), content: content.trim(),
+      pinned, author_id: user.id, author_name: robloxUsername || "Unknown",
     });
-    if (error) {
-      toast.error("Failed to post: " + error.message);
-    } else {
-      toast.success("Posted!");
-      setDialogOpen(false);
-      setTitle("");
-      setContent("");
-      setPinned(false);
-    }
+    if (error) toast.error("Failed to post: " + error.message);
+    else { toast.success("Posted!"); setDialogOpen(false); setTitle(""); setContent(""); setPinned(false); }
     setPosting(false);
   };
 
@@ -101,15 +83,13 @@ export default function Wall() {
             <h1 className="text-2xl font-bold text-foreground">Wall</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Announcements & updates for your team</p>
           </div>
-          {isOwner && (
+          {canPost && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-1" /> Post</Button>
               </DialogTrigger>
               <DialogContent className="glass border-border/40">
-                <DialogHeader>
-                  <DialogTitle className="text-foreground">New Announcement</DialogTitle>
-                </DialogHeader>
+                <DialogHeader><DialogTitle className="text-foreground">New Announcement</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
                   <Input placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-muted border-border" />
                   <Textarea placeholder="Write your announcement..." value={content} onChange={(e) => setContent(e.target.value)} className="bg-muted border-border min-h-[120px]" />
@@ -145,7 +125,7 @@ export default function Wall() {
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {timeAgo(post.created_at)}
                     </span>
-                    {isOwner && (
+                    {canDelete && (
                       <button onClick={() => handleDelete(post.id)} className="text-muted-foreground hover:text-destructive transition-colors">
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

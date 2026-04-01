@@ -7,6 +7,8 @@ import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { InviteSection } from "@/components/InviteSection";
+import { MemberPermissions } from "@/components/MemberPermissions";
 
 export default function SettingsPage() {
   const { workspace, isOwner, workspaceId } = useWorkspace();
@@ -33,32 +35,18 @@ export default function SettingsPage() {
 
   const resetKey = async () => {
     setResetting(true);
-    // Generate a new random key
     const newKey = "flx_" + Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, "0")).join("");
-    const { error } = await supabase
-      .from("workspaces")
-      .update({ api_key: newKey })
-      .eq("id", workspaceId);
-    if (error) {
-      toast.error("Failed to reset API key");
-    } else {
-      setApiKey(newKey);
-      toast.success("API key reset! Update it in your Roblox script.");
-    }
+    const { error } = await supabase.from("workspaces").update({ api_key: newKey }).eq("id", workspaceId);
+    if (error) toast.error("Failed to reset API key");
+    else { setApiKey(newKey); toast.success("API key reset! Update it in your Roblox script."); }
     setResetting(false);
   };
 
   const saveSettings = async () => {
     setSaving(true);
-    const { error } = await supabase
-      .from("workspaces")
-      .update({ name: name.trim(), roblox_group_id: groupId.trim() || null })
-      .eq("id", workspaceId);
-    if (error) {
-      toast.error("Failed to save: " + error.message);
-    } else {
-      toast.success("Settings saved!");
-    }
+    const { error } = await supabase.from("workspaces").update({ name: name.trim(), roblox_group_id: groupId.trim() || null }).eq("id", workspaceId);
+    if (error) toast.error("Failed to save: " + error.message);
+    else toast.success("Settings saved!");
     setSaving(false);
   };
 
@@ -70,6 +58,8 @@ export default function SettingsPage() {
           <p className="text-sm text-muted-foreground mt-0.5">Workspace configuration — owner only</p>
         </div>
 
+        <InviteSection />
+
         <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Key className="w-4 h-4 text-primary" />
@@ -77,9 +67,7 @@ export default function SettingsPage() {
           </div>
           <p className="text-xs text-muted-foreground">Used by the Lua tracker module to authenticate with Fluxcore.</p>
           <div className="flex items-center gap-2">
-            <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all">
-              {apiKey}
-            </code>
+            <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all">{apiKey}</code>
             <Button variant="secondary" size="sm" onClick={copyKey}>
               <Copy className="w-3 h-3 mr-1" /> {copied ? "Copied" : "Copy"}
             </Button>
@@ -106,6 +94,8 @@ export default function SettingsPage() {
             Save Changes
           </Button>
         </div>
+
+        <MemberPermissions />
       </div>
     </DashboardLayout>
   );
