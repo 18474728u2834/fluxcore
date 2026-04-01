@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarDays, Plus, Clock, User, Users, Loader2, Trash2 } from "lucide-react";
+import { CalendarDays, Plus, Clock, User, Users, Loader2, Trash2, UserPlus, UserMinus, GraduationCap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +16,7 @@ interface ScheduledSession {
   id: string; title: string; category: string; scheduled_at: string;
   duration_minutes: number; host_name: string; co_host_name: string | null;
   trainer_name: string | null; status: string; recurring: string | null;
+  description: string | null;
 }
 
 const statusColors: Record<string, string> = {
@@ -29,26 +30,86 @@ const categoryColors: Record<string, string> = {
 
 const CATEGORIES = ["Shift", "Training", "Event"] as const;
 
+function RoleSlot({
+  label, icon: Icon, name, canAssignSelf, canAssignOthers, onAssignSelf, onUnassign, onAssignOther,
+}: {
+  label: string; icon: any; name: string | null;
+  canAssignSelf: boolean; canAssignOthers: boolean;
+  onAssignSelf: () => void; onUnassign: () => void; onAssignOther: (name: string) => void;
+}) {
+  const [assigning, setAssigning] = useState(false);
+  const [otherName, setOtherName] = useState("");
+
+  return (
+    <div className="glass rounded-lg p-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <Icon className="w-4 h-4 text-primary" />
+        <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</span>
+      </div>
+      {name ? (
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground">{name}</span>
+          {(canAssignSelf || canAssignOthers) && (
+            <Button variant="ghost" size="sm" className="h-7 text-xs text-muted-foreground hover:text-destructive" onClick={onUnassign}>
+              <UserMinus className="w-3 h-3 mr-1" /> Remove
+            </Button>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <p className="text-sm text-muted-foreground italic">Unassigned</p>
+          <div className="flex gap-2 flex-wrap">
+            {canAssignSelf && (
+              <Button variant="secondary" size="sm" className="h-7 text-xs" onClick={onAssignSelf}>
+                <UserPlus className="w-3 h-3 mr-1" /> Assign Myself
+              </Button>
+            )}
+            {canAssignOthers && !assigning && (
+              <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setAssigning(true)}>
+                <Users className="w-3 h-3 mr-1" /> Assign Other
+              </Button>
+            )}
+          </div>
+          {assigning && canAssignOthers && (
+            <div className="flex gap-2">
+              <Input
+                placeholder="Roblox username"
+                value={otherName}
+                onChange={(e) => setOtherName(e.target.value)}
+                className="bg-muted border-border h-8 text-xs"
+                onKeyDown={(e) => { if (e.key === "Enter" && otherName.trim()) { onAssignOther(otherName.trim()); setOtherName(""); setAssigning(false); } }}
+              />
+              <Button variant="hero" size="sm" className="h-8 text-xs" disabled={!otherName.trim()}
+                onClick={() => { onAssignOther(otherName.trim()); setOtherName(""); setAssigning(false); }}>
+                Assign
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function Sessions() {
   const { workspaceId } = useWorkspace();
-  const { user } = useAuth();
-  const { hasPermission, canCreateSession, isOwner } = usePermissions();
+  const { user, robloxUsername } = useAuth();
+  const { hasPermission, canCreateSession, canHostSession, isOwner } = usePermissions();
   const canCreateAny = CATEGORIES.some(c => canCreateSession(c));
-  const canDeleteSessions = isOwner;
+  const canManageMembers = hasPermission("manage_members");
 
   const [sessions, setSessions] = useState<ScheduledSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [detailSession, setDetailSession] = useState<ScheduledSession | null>(null);
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>("Shift");
   const [recurring, setRecurring] = useState("none");
   const [scheduledAt, setScheduledAt] = useState("");
   const [duration, setDuration] = useState("60");
-  const [hostName, setHostName] = useState("");
-  const [coHostName, setCoHostName] = useState("");
-  const [trainerName, setTrainerName] = useState("");
+  const [description, setDescription] = useState("");
 
   const fetchSessions = async () => {
     const { data } = await supabase.from("scheduled_sessions").select("*")
@@ -66,30 +127,45 @@ export default function Sessions() {
   }, [workspaceId]);
 
   const handleCreate = async () => {
-    if (!title.trim() || !hostName.trim() || !scheduledAt || !user) return;
-    if (!canCreateSession(category)) { toast.error(`You don't have permission to create ${category}s`); return; }
+    if (!title.trim() || !scheduledAt || !user) return;
+    if (!canCreateSession(category)) { toast.error(`No permission to create ${category}s`); return; }
     setCreating(true);
     const { error } = await supabase.from("scheduled_sessions").insert({
       workspace_id: workspaceId, title: title.trim(), category,
       scheduled_at: new Date(scheduledAt).toISOString(),
       duration_minutes: parseInt(duration) || 60,
-      host_name: hostName.trim(), host_id: user.id,
-      co_host_name: coHostName.trim() || null,
-      trainer_name: trainerName.trim() || null,
+      host_name: "Unassigned", host_id: user.id,
+      description: description.trim() || null,
       recurring: recurring === "none" ? null : recurring,
     });
     if (error) toast.error("Failed: " + error.message);
     else {
       toast.success("Session scheduled!");
       setDialogOpen(false);
-      setTitle(""); setHostName(""); setCoHostName(""); setTrainerName(""); setScheduledAt("");
+      setTitle(""); setDescription(""); setScheduledAt("");
     }
     setCreating(false);
   };
 
   const handleDelete = async (id: string) => {
     await supabase.from("scheduled_sessions").delete().eq("id", id);
+    if (detailSession?.id === id) setDetailSession(null);
     fetchSessions();
+  };
+
+  const assignRole = async (sessionId: string, role: "host_name" | "co_host_name" | "trainer_name", name: string | null) => {
+    const { error } = await supabase.from("scheduled_sessions")
+      .update({ [role]: name })
+      .eq("id", sessionId);
+    if (error) toast.error("Failed to update: " + error.message);
+    else {
+      toast.success(name ? `${name} assigned!` : "Unassigned");
+      fetchSessions();
+      // Update detail view
+      if (detailSession?.id === sessionId) {
+        setDetailSession(prev => prev ? { ...prev, [role]: name } : null);
+      }
+    }
   };
 
   const formatDate = (d: string) => {
@@ -103,8 +179,9 @@ export default function Sessions() {
     return `${date.toLocaleDateString()} ${time}`;
   };
 
-  // Filter categories user can create
   const allowedCategories = CATEGORIES.filter(c => canCreateSession(c));
+
+  const canSelfAssign = (session: ScheduledSession) => canHostSession(session.category);
 
   return (
     <DashboardLayout title="Sessions">
@@ -124,7 +201,11 @@ export default function Sessions() {
                 <div className="space-y-4 pt-2">
                   <div className="space-y-2">
                     <Label className="text-sm">Title</Label>
-                    <Input placeholder="e.g. Shift Training" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-muted border-border" />
+                    <Input placeholder="e.g. Morning Shift" value={title} onChange={(e) => setTitle(e.target.value)} className="bg-muted border-border" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">Description <span className="text-muted-foreground">(optional)</span></Label>
+                    <Input placeholder="Brief description..." value={description} onChange={(e) => setDescription(e.target.value)} className="bg-muted border-border" />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
@@ -158,21 +239,8 @@ export default function Sessions() {
                       <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="bg-muted border-border" />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Host</Label>
-                    <Input placeholder="Username" value={hostName} onChange={(e) => setHostName(e.target.value)} className="bg-muted border-border" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label className="text-sm">Co-Host <span className="text-muted-foreground">(opt)</span></Label>
-                      <Input placeholder="Username" value={coHostName} onChange={(e) => setCoHostName(e.target.value)} className="bg-muted border-border" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">Trainer <span className="text-muted-foreground">(opt)</span></Label>
-                      <Input placeholder="Username" value={trainerName} onChange={(e) => setTrainerName(e.target.value)} className="bg-muted border-border" />
-                    </div>
-                  </div>
-                  <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || !hostName.trim() || !scheduledAt}>
+                  <p className="text-xs text-muted-foreground">Roles (Host, Co-Host, Trainer) can be assigned after creation.</p>
+                  <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || !scheduledAt}>
                     {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Schedule
                   </Button>
                 </div>
@@ -191,7 +259,11 @@ export default function Sessions() {
         ) : (
           <div className="space-y-3">
             {sessions.map((session) => (
-              <div key={session.id} className="glass rounded-xl p-5 flex items-start gap-4">
+              <div
+                key={session.id}
+                className="glass rounded-xl p-5 flex items-start gap-4 cursor-pointer hover:bg-secondary/30 transition-colors"
+                onClick={() => setDetailSession(session)}
+              >
                 <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>
                   <CalendarDays className="w-5 h-5" />
                 </div>
@@ -207,13 +279,25 @@ export default function Sessions() {
                     <span>{session.duration_minutes}min</span>
                   </div>
                   <div className="flex items-center gap-3 text-xs flex-wrap">
-                    <span className="flex items-center gap-1 text-foreground"><User className="w-3 h-3 text-primary" /> {session.host_name}</span>
-                    {session.co_host_name && <span className="flex items-center gap-1 text-muted-foreground"><Users className="w-3 h-3" /> {session.co_host_name}</span>}
-                    {session.trainer_name && <span className="text-muted-foreground">Trainer: {session.trainer_name}</span>}
+                    <span className={`flex items-center gap-1 ${session.host_name === "Unassigned" ? "text-muted-foreground italic" : "text-foreground"}`}>
+                      <User className="w-3 h-3 text-primary" /> {session.host_name}
+                    </span>
+                    {session.co_host_name && (
+                      <span className="flex items-center gap-1 text-muted-foreground"><Users className="w-3 h-3" /> {session.co_host_name}</span>
+                    )}
+                    {session.trainer_name && (
+                      <span className="flex items-center gap-1 text-muted-foreground"><GraduationCap className="w-3 h-3" /> {session.trainer_name}</span>
+                    )}
+                    {(!session.co_host_name || !session.trainer_name || session.host_name === "Unassigned") && (
+                      <span className="text-[10px] text-primary font-medium">Click to assign roles</span>
+                    )}
                   </div>
                 </div>
-                {canDeleteSessions && (
-                  <button onClick={() => handleDelete(session.id)} className="text-muted-foreground hover:text-destructive transition-colors shrink-0">
+                {isOwner && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}
+                    className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
@@ -222,6 +306,80 @@ export default function Sessions() {
           </div>
         )}
       </div>
+
+      {/* Session Detail Dialog */}
+      <Dialog open={!!detailSession} onOpenChange={(open) => { if (!open) setDetailSession(null); }}>
+        <DialogContent className="glass border-border/40 max-w-md">
+          {detailSession && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-foreground flex items-center gap-2">
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${categoryColors[detailSession.category] || "bg-secondary text-muted-foreground"}`}>
+                    {detailSession.category}
+                  </span>
+                  {detailSession.title}
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {formatDate(detailSession.scheduled_at)}</span>
+                  <span>{detailSession.duration_minutes} min</span>
+                </div>
+                {detailSession.description && (
+                  <p className="text-sm text-muted-foreground bg-muted rounded-lg p-3">{detailSession.description}</p>
+                )}
+                <div className="flex items-center gap-2">
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[detailSession.status]}`}>
+                    {detailSession.status}
+                  </span>
+                  {detailSession.recurring && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
+                      Repeats {detailSession.recurring}
+                    </span>
+                  )}
+                </div>
+
+                <div className="border-t border-border/40 pt-4 space-y-3">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assigned Roles</p>
+
+                  <RoleSlot
+                    label="Host"
+                    icon={User}
+                    name={detailSession.host_name === "Unassigned" ? null : detailSession.host_name}
+                    canAssignSelf={canSelfAssign(detailSession)}
+                    canAssignOthers={isOwner || canManageMembers}
+                    onAssignSelf={() => assignRole(detailSession.id, "host_name", robloxUsername || "Unknown")}
+                    onUnassign={() => assignRole(detailSession.id, "host_name", "Unassigned")}
+                    onAssignOther={(name) => assignRole(detailSession.id, "host_name", name)}
+                  />
+
+                  <RoleSlot
+                    label="Co-Host"
+                    icon={Users}
+                    name={detailSession.co_host_name}
+                    canAssignSelf={canSelfAssign(detailSession)}
+                    canAssignOthers={isOwner || canManageMembers}
+                    onAssignSelf={() => assignRole(detailSession.id, "co_host_name", robloxUsername || "Unknown")}
+                    onUnassign={() => assignRole(detailSession.id, "co_host_name", null)}
+                    onAssignOther={(name) => assignRole(detailSession.id, "co_host_name", name)}
+                  />
+
+                  <RoleSlot
+                    label="Trainer"
+                    icon={GraduationCap}
+                    name={detailSession.trainer_name}
+                    canAssignSelf={canSelfAssign(detailSession)}
+                    canAssignOthers={isOwner || canManageMembers}
+                    onAssignSelf={() => assignRole(detailSession.id, "trainer_name", robloxUsername || "Unknown")}
+                    onUnassign={() => assignRole(detailSession.id, "trainer_name", null)}
+                    onAssignOther={(name) => assignRole(detailSession.id, "trainer_name", name)}
+                  />
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }
