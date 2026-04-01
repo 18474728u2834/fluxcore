@@ -53,7 +53,7 @@ const App = () => (
             <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </BrowserRouter>
+        </HashRouter>
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>
