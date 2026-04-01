@@ -321,6 +321,7 @@ export type Database = {
           created_at: string
           gamepass_id: string | null
           id: string
+          invite_code: string
           name: string
           owner_id: string
           roblox_group_id: string | null
@@ -331,6 +332,7 @@ export type Database = {
           created_at?: string
           gamepass_id?: string | null
           id?: string
+          invite_code?: string
           name: string
           owner_id: string
           roblox_group_id?: string | null
@@ -341,6 +343,7 @@ export type Database = {
           created_at?: string
           gamepass_id?: string | null
           id?: string
+          invite_code?: string
           name?: string
           owner_id?: string
           roblox_group_id?: string | null
