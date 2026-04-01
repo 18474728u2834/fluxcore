@@ -18,6 +18,7 @@ import SetupTracking from "./pages/SetupTracking";
 import SettingsPage from "./pages/Settings";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import JoinWorkspace from "./pages/JoinWorkspace";
 
 const queryClient = new QueryClient();
 
