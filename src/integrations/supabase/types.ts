@@ -360,6 +360,10 @@ export type Database = {
         Args: { ws_id: string }
         Returns: undefined
       }
+      has_workspace_permission: {
+        Args: { _permission: string; _workspace_id: string }
+        Returns: boolean
+      }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
     }
