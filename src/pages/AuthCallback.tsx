@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
 export default function AuthCallback() {
@@ -12,42 +11,27 @@ export default function AuthCallback() {
 
   useEffect(() => {
     const handleCallback = async () => {
-      const code = searchParams.get("code");
-      const state = searchParams.get("state");
+      const tokenHash = searchParams.get("token_hash");
+      const email = searchParams.get("email");
+      const errorParam = searchParams.get("error");
 
-      // Validate state
-      const storedState = localStorage.getItem("roblox_oauth_state");
-      if (state !== storedState) {
-        setError("Invalid state parameter. Please try again.");
+      if (errorParam) {
+        setError(`Authentication failed: ${errorParam.replace(/_/g, " ")}`);
         return;
       }
-      localStorage.removeItem("roblox_oauth_state");
 
-      if (!code) {
-        setError("No authorization code received.");
+      if (!tokenHash || !email) {
+        setError("Missing authentication data. Please try again.");
         return;
       }
 
       try {
-        // Exchange code via edge function
-        const redirectUri = localStorage.getItem("roblox_oauth_redirect_uri") || "";
-        localStorage.removeItem("roblox_oauth_redirect_uri");
-
-        const { data, error: fnError } = await supabase.functions.invoke("roblox-oauth-callback", {
-          body: { code, redirect_uri: redirectUri },
-        });
-
-        if (fnError) throw fnError;
-        if (!data?.success) throw new Error(data?.error || "OAuth failed");
-
-        // Set session
-        const { error: sessionErr } = await setSessionFromToken(data.tokenHash, data.email);
+        const { error: sessionErr } = await setSessionFromToken(tokenHash, email);
         if (sessionErr) throw sessionErr;
-
         navigate("/workspaces");
       } catch (err: any) {
-        console.error("OAuth callback error:", err);
-        setError(err.message || "Authentication failed. Please try again.");
+        console.error("Session error:", err);
+        setError(err.message || "Failed to complete sign in.");
       }
     };
 

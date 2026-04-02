@@ -41,12 +41,15 @@ export default function Login() {
   };
 
   const handleRobloxOAuth = () => {
-    const stateParam = crypto.randomUUID();
-    localStorage.setItem("roblox_oauth_state", stateParam);
+    // Encode origin in state so the edge function can redirect back
+    const statePayload = btoa(JSON.stringify({
+      nonce: crypto.randomUUID(),
+      origin: window.location.origin + window.location.pathname.replace(/\/$/, ""),
+    }));
 
-    // Construct redirect URI - the auth callback page
-    const redirectUri = `${window.location.origin}${window.location.pathname}#/auth/callback`;
-    localStorage.setItem("roblox_oauth_redirect_uri", redirectUri);
+    // Redirect URI is the edge function - it handles the code exchange server-side
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
 
     const params = new URLSearchParams({
       client_id: ROBLOX_CLIENT_ID,

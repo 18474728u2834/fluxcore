@@ -1,39 +1,45 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-serve(async (req) => {
-  const url = new URL(req.url);
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
-  // Handle CORS preflight
+serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-      },
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
-  // POST: Frontend sends code + origin for exchange
-  if (req.method === "POST") {
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-      "Content-Type": "application/json",
-    };
+  const url = new URL(req.url);
+
+  // GET: Roblox OAuth redirects here with ?code=xxx&state=xxx
+  if (req.method === "GET") {
+    const code = url.searchParams.get("code");
+    const state = url.searchParams.get("state");
+
+    if (!code || !state) {
+      return new Response("Missing code or state", { status: 400 });
+    }
 
     try {
-      const { code, redirect_uri } = await req.json();
-
-      if (!code || !redirect_uri) {
-        return new Response(JSON.stringify({ error: "Missing code or redirect_uri" }), {
-          status: 400,
-          headers: corsHeaders,
-        });
+      // Parse state to get origin
+      let origin: string;
+      let nonce: string;
+      try {
+        const parsed = JSON.parse(atob(state));
+        origin = parsed.origin;
+        nonce = parsed.nonce;
+      } catch {
+        return new Response("Invalid state", { status: 400 });
       }
 
       const clientId = Deno.env.get("ROBLOX_CLIENT_ID")!;
       const clientSecret = Deno.env.get("ROBLOX_CLIENT_SECRET")!;
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+
+      // The redirect URI must match exactly what was sent in the auth request
+      const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
 
       // Exchange code for tokens
       const tokenRes = await fetch("https://apis.roblox.com/oauth/v1/token", {
@@ -45,7 +51,7 @@ serve(async (req) => {
         body: new URLSearchParams({
           grant_type: "authorization_code",
           code,
-          redirect_uri,
+          redirect_uri: redirectUri,
         }),
       });
 
@@ -53,10 +59,7 @@ serve(async (req) => {
 
       if (!tokenRes.ok || !tokenData.access_token) {
         console.error("Token exchange failed:", tokenData);
-        return new Response(JSON.stringify({ error: "Failed to exchange code", details: tokenData }), {
-          status: 400,
-          headers: corsHeaders,
-        });
+        return Response.redirect(`${origin}/#/login?error=token_exchange_failed`, 302);
       }
 
       // Get user info
@@ -68,23 +71,18 @@ serve(async (req) => {
 
       if (!userInfoRes.ok || !userInfo.sub) {
         console.error("User info failed:", userInfo);
-        return new Response(JSON.stringify({ error: "Failed to get user info" }), {
-          status: 400,
-          headers: corsHeaders,
-        });
+        return Response.redirect(`${origin}/#/login?error=userinfo_failed`, 302);
       }
 
       const robloxUserId = userInfo.sub;
       const robloxUsername = userInfo.preferred_username || userInfo.name || `User${robloxUserId}`;
 
       // Create or find Supabase user
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
 
       const email = `${robloxUserId}@roblox.fluxcore.app`;
 
-      // Check if user exists
       const { data: existingVerified } = await adminSupabase
         .from("verified_users")
         .select("user_id")
@@ -95,13 +93,11 @@ serve(async (req) => {
 
       if (existingVerified?.user_id) {
         userId = existingVerified.user_id;
-        // Update username if changed
         await adminSupabase
           .from("verified_users")
           .update({ roblox_username: robloxUsername })
           .eq("user_id", userId);
       } else {
-        // Create new user
         const { data: newUser, error: createError } = await adminSupabase.auth.admin.createUser({
           email,
           email_confirm: true,
@@ -145,22 +141,13 @@ serve(async (req) => {
 
       const tokenHash = linkData.properties?.hashed_token;
 
-      return new Response(JSON.stringify({
-        success: true,
-        tokenHash,
-        email,
-        robloxUserId,
-        robloxUsername,
-      }), {
-        status: 200,
-        headers: corsHeaders,
-      });
+      // Redirect back to frontend with token info
+      const callbackUrl = `${origin}/#/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&email=${encodeURIComponent(email)}`;
+      return Response.redirect(callbackUrl, 302);
+
     } catch (err) {
       console.error("OAuth callback error:", err);
-      return new Response(JSON.stringify({ error: "Internal server error" }), {
-        status: 500,
-        headers: corsHeaders,
-      });
+      return Response.redirect(`${url.searchParams.get("state") ? JSON.parse(atob(url.searchParams.get("state")!)).origin : ""}/#/login?error=server_error`, 302);
     }
   }
 
