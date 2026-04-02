@@ -1,9 +1,10 @@
-import { LayoutDashboard, Users, Shield, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useTheme } from "@/hooks/useTheme";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -17,6 +18,7 @@ export function AppSidebar() {
   const { signOut } = useAuth();
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
+  const { theme, toggleTheme } = useTheme();
 
   const base = `/w/${workspaceId}`;
 
@@ -46,11 +48,15 @@ export function AppSidebar() {
           <div className="px-4 py-5 mb-1">
             {!collapsed ? (
               <div>
-                <span className="text-lg font-extrabold text-gradient tracking-tight">Fluxcore</span>
+                <button onClick={() => navigate("/")} className="text-lg font-extrabold text-gradient tracking-tight hover:opacity-80 transition-opacity">
+                  Fluxcore
+                </button>
                 {workspace && <p className="text-[10px] text-muted-foreground truncate mt-0.5">{workspace.name}</p>}
               </div>
             ) : (
-              <span className="text-lg font-extrabold text-primary">F</span>
+              <button onClick={() => navigate("/")} className="text-lg font-extrabold text-primary hover:opacity-80 transition-opacity">
+                F
+              </button>
             )}
           </div>
           <SidebarGroupContent>
@@ -94,6 +100,12 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={toggleTheme} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
+              {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+              {!collapsed && <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={() => navigate("/workspaces")} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
               <Menu className="mr-2 h-4 w-4" />

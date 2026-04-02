@@ -4,9 +4,11 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
+import { ThemeProvider } from "@/hooks/useTheme";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
+import AuthCallback from "./pages/AuthCallback";
 import Workspaces from "./pages/Workspaces";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
@@ -17,6 +19,7 @@ import Wall from "./pages/Wall";
 import SetupTracking from "./pages/SetupTracking";
 import SettingsPage from "./pages/Settings";
 import Terms from "./pages/Terms";
+import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
 import JoinWorkspace from "./pages/JoinWorkspace";
 
@@ -41,23 +44,27 @@ function WorkspaceRoutes() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <HashRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/workspaces" element={<Workspaces />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
-            <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </HashRouter>
-      </TooltipProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <HashRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/workspaces" element={<Workspaces />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/feedback" element={<Feedback />} />
+              <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
+              <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </HashRouter>
+        </TooltipProvider>
+      </AuthProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

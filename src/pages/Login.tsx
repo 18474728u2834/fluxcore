@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
-import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Gamepad2 } from "lucide-react";
+
+const ROBLOX_CLIENT_ID = "4787810466204050897";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export default function Login() {
   const { state, setUsername, proceedToEmoji, regenerateEmojis, verify, reset } = useVerification();
   const [copied, setCopied] = useState(false);
   const [settingSession, setSettingSession] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<"choose" | "emoji">("choose");
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -24,11 +27,8 @@ export default function Login() {
     if (state.step === "success" && state.tokenHash && state.email && !settingSession) {
       setSettingSession(true);
       setSessionFromToken(state.tokenHash, state.email).then(({ error }) => {
-        if (error) {
-          console.error("Session error:", error);
-        } else {
-          navigate("/workspaces");
-        }
+        if (error) console.error("Session error:", error);
+        else navigate("/workspaces");
         setSettingSession(false);
       });
     }
@@ -38,6 +38,25 @@ export default function Login() {
     navigator.clipboard.writeText(state.emojiCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleRobloxOAuth = () => {
+    const stateParam = crypto.randomUUID();
+    localStorage.setItem("roblox_oauth_state", stateParam);
+
+    // Construct redirect URI - the auth callback page
+    const redirectUri = `${window.location.origin}${window.location.pathname}#/auth/callback`;
+    localStorage.setItem("roblox_oauth_redirect_uri", redirectUri);
+
+    const params = new URLSearchParams({
+      client_id: ROBLOX_CLIENT_ID,
+      response_type: "code",
+      redirect_uri: redirectUri,
+      scope: "openid profile",
+      state: stateParam,
+    });
+
+    window.location.href = `https://apis.roblox.com/oauth/v1/authorize?${params}`;
   };
 
   if (authLoading) {
@@ -51,16 +70,57 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center relative overflow-hidden">
       <div className="absolute inset-0 bg-radial-glow" />
-      <div className="absolute inset-0 bg-grid opacity-20" />
+      <div className="absolute inset-0 bg-grid opacity-10" />
 
       <div className="relative w-full max-w-md mx-4">
-        {/* Step 1: Username */}
-        {state.step === "input" && (
+        {/* Choose Method */}
+        {loginMethod === "choose" && state.step === "input" && (
+          <div className="glass rounded-2xl p-8 space-y-6 gradient-border animate-fade-in">
+            <div className="text-center space-y-2">
+              <h1 className="text-2xl font-extrabold text-gradient">Welcome to Fluxcore</h1>
+              <p className="text-sm text-muted-foreground">
+                Sign in to manage your Roblox group
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={handleRobloxOAuth}
+                variant="hero"
+                className="w-full h-12 text-base"
+              >
+                <Gamepad2 className="w-5 h-5 mr-2" />
+                Sign in with Roblox
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-background px-3 text-muted-foreground">Or</span>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => setLoginMethod("emoji")}
+                variant="outline"
+                className="w-full h-12"
+              >
+                <User className="w-4 h-4 mr-2" />
+                Emoji Verification Login
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Emoji Login - Step 1: Username */}
+        {loginMethod === "emoji" && state.step === "input" && (
           <div className="glass rounded-2xl p-8 space-y-6 gradient-border animate-fade-in">
             <div className="text-center space-y-2">
               <h1 className="text-2xl font-extrabold text-gradient">Fluxcore</h1>
               <p className="text-sm text-muted-foreground">
-                Verify your Roblox account to sign in
+                Verify your Roblox account via emoji bio
               </p>
             </div>
             <div className="space-y-4">
@@ -78,6 +138,12 @@ export default function Login() {
               <Button onClick={proceedToEmoji} variant="hero" className="w-full h-12">
                 Continue <ArrowRight className="w-4 h-4 ml-1" />
               </Button>
+              <button
+                onClick={() => setLoginMethod("choose")}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-center"
+              >
+                ← Back to sign in options
+              </button>
             </div>
           </div>
         )}
@@ -153,7 +219,7 @@ export default function Login() {
               <h2 className="text-xl font-bold text-foreground">Verification Failed</h2>
               <p className="text-destructive text-sm">{state.error}</p>
             </div>
-            <Button onClick={reset} className="w-full" variant="outline">Try Again</Button>
+            <Button onClick={() => { reset(); setLoginMethod("choose"); }} className="w-full" variant="outline">Try Again</Button>
           </div>
         )}
 
