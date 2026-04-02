@@ -56,7 +56,7 @@ export default function Login() {
       response_type: "code",
       redirect_uri: redirectUri,
       scope: "openid profile",
-      state: stateParam,
+      state: statePayload,
     });
 
     window.location.href = `https://apis.roblox.com/oauth/v1/authorize?${params}`;
