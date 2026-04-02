@@ -38,11 +38,8 @@ export default function JoinWorkspace() {
 
       setWorkspaceName(ws.name);
 
-      // Check if already owner
-      if (ws.owner_id === user.id) {
-        setStatus("already");
-        return;
-      }
+      // Check if already a member (the lookup doesn't return owner_id)
+      // We'll check membership which covers both owner and member cases
 
       // Check if already a member
       const { data: existing } = await supabase
