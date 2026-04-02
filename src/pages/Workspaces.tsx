@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, Users, ArrowRight, Loader2, LogOut, Info } from "lucide-react";
+import { Plus, Users, ArrowRight, Loader2, LogOut, Info, Sun, Moon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
@@ -18,12 +19,16 @@ interface Workspace {
 export default function Workspaces() {
   const navigate = useNavigate();
   const { user, signOut, loading: authLoading, robloxUsername } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [groupId, setGroupId] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(0);
+  const [createdWorkspaceId, setCreatedWorkspaceId] = useState<string | null>(null);
+  const [createdInviteCode, setCreatedInviteCode] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -35,37 +40,28 @@ export default function Workspaces() {
     if (!user) return;
     setLoading(true);
 
-    const { data: owned } = await supabase
+    // With proper RLS, this only returns workspaces user owns or is member of
+    const { data: allWorkspaces } = await supabase
       .from("workspaces")
-      .select("id, name");
+      .select("id, name, owner_id");
 
     const { data: memberships } = await supabase
       .from("workspace_members")
       .select("workspace_id, role");
 
     const ws: Workspace[] = [];
-    const seenIds = new Set<string>();
-
-    if (owned) {
-      for (const o of owned) {
-        ws.push({ id: o.id, name: o.name, role: "Owner" });
-        seenIds.add(o.id);
+    const memberMap = new Map<string, string>();
+    if (memberships) {
+      for (const m of memberships) {
+        memberMap.set(m.workspace_id, m.role);
       }
     }
 
-    if (memberships) {
-      for (const m of memberships) {
-        if (!seenIds.has(m.workspace_id)) {
-          const { data: wsData } = await supabase
-            .from("workspaces")
-            .select("id, name")
-            .eq("id", m.workspace_id)
-            .single();
-          if (wsData) {
-            ws.push({ id: wsData.id, name: wsData.name, role: m.role });
-            seenIds.add(wsData.id);
-          }
-        }
+    if (allWorkspaces) {
+      for (const w of allWorkspaces as any[]) {
+        const isOwner = w.owner_id === user.id;
+        const role = isOwner ? "Owner" : (memberMap.get(w.id) || "Member");
+        ws.push({ id: w.id, name: w.name, role });
       }
     }
 
@@ -77,21 +73,22 @@ export default function Workspaces() {
     if (!newName.trim() || !user) return;
     setCreating(true);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("workspaces")
       .insert({ name: newName.trim(), owner_id: user.id, roblox_group_id: groupId.trim() || null })
-      .select("id")
+      .select("id, invite_code")
       .single();
 
     if (error) {
       toast.error("Failed to create workspace: " + error.message);
-    } else {
-      toast.success("Workspace created!");
-      setDialogOpen(false);
-      setNewName("");
-      setGroupId("");
-      fetchWorkspaces();
+      setCreating(false);
+      return;
     }
+
+    toast.success("Workspace created!");
+    setCreatedWorkspaceId(data.id);
+    setCreatedInviteCode(data.invite_code);
+    setOnboardingStep(1);
     setCreating(false);
   };
 
@@ -100,14 +97,27 @@ export default function Workspaces() {
     navigate("/login");
   };
 
+  const finishOnboarding = () => {
+    setDialogOpen(false);
+    setOnboardingStep(0);
+    setNewName("");
+    setGroupId("");
+    if (createdWorkspaceId) {
+      navigate(`/w/${createdWorkspaceId}/dashboard`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute inset-0 bg-radial-glow" />
 
       <nav className="relative border-b border-border/40 bg-background/90 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
-          <span className="text-lg font-extrabold text-gradient tracking-tight">Fluxcore</span>
+          <button onClick={() => navigate("/")} className="text-lg font-extrabold text-gradient tracking-tight">Fluxcore</button>
           <div className="flex items-center gap-3">
+            <button onClick={toggleTheme} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             {robloxUsername && (
               <span className="text-sm text-muted-foreground hidden sm:block">{robloxUsername}</span>
             )}
@@ -157,7 +167,10 @@ export default function Workspaces() {
               </button>
             ))}
 
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) { setOnboardingStep(0); setNewName(""); setGroupId(""); }
+            }}>
               <DialogTrigger asChild>
                 <button className="glass-hover rounded-xl p-5 text-left group border-dashed border-2 border-border/50 hover:border-primary/30 flex flex-col items-center justify-center gap-2 min-h-[140px]">
                   <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
@@ -169,32 +182,76 @@ export default function Workspaces() {
               </DialogTrigger>
               <DialogContent className="glass border-border/40">
                 <DialogHeader>
-                  <DialogTitle className="text-foreground">Create Workspace</DialogTitle>
+                  <DialogTitle className="text-foreground">
+                    {onboardingStep === 0 ? "Create Workspace" : onboardingStep === 1 ? "Setup Tracking" : "Invite Your Team"}
+                  </DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 pt-2">
-                  <div className="space-y-2">
-                    <Label className="text-foreground text-sm">Workspace Name</Label>
-                    <Input
-                      placeholder="e.g. Pastriez Bakery"
-                      value={newName}
-                      onChange={(e) => setNewName(e.target.value)}
-                      className="bg-muted border-border"
-                    />
+
+                {/* Step 0: Create */}
+                {onboardingStep === 0 && (
+                  <div className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label className="text-foreground text-sm">Workspace Name</Label>
+                      <Input
+                        placeholder="e.g. Pastriez Bakery"
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        className="bg-muted border-border"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-foreground text-sm">Roblox Group ID <span className="text-muted-foreground">(optional)</span></Label>
+                      <Input
+                        placeholder="e.g. 12345678"
+                        value={groupId}
+                        onChange={(e) => setGroupId(e.target.value)}
+                        className="bg-muted border-border"
+                      />
+                    </div>
+                    <Button onClick={handleCreate} disabled={creating || !newName.trim()} variant="hero" className="w-full">
+                      {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                      Create
+                    </Button>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-foreground text-sm">Roblox Group ID <span className="text-muted-foreground">(optional)</span></Label>
-                    <Input
-                      placeholder="e.g. 12345678"
-                      value={groupId}
-                      onChange={(e) => setGroupId(e.target.value)}
-                      className="bg-muted border-border"
-                    />
+                )}
+
+                {/* Step 1: Setup Tracking Script */}
+                {onboardingStep === 1 && (
+                  <div className="space-y-4 pt-2">
+                    <p className="text-sm text-muted-foreground">
+                      To track activity in your Roblox game, add the Fluxcore tracker script to your game's ServerScriptService.
+                    </p>
+                    <div className="bg-muted rounded-lg p-3">
+                      <p className="text-xs text-muted-foreground mb-1 font-mono">Go to Setup Tracking in your workspace for the full script.</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" className="flex-1" onClick={() => setOnboardingStep(2)}>
+                        Skip for now
+                      </Button>
+                      <Button variant="hero" className="flex-1" onClick={() => setOnboardingStep(2)}>
+                        Next <ArrowRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </div>
                   </div>
-                  <Button onClick={handleCreate} disabled={creating || !newName.trim()} variant="hero" className="w-full">
-                    {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                    Create
-                  </Button>
-                </div>
+                )}
+
+                {/* Step 2: Invite Link */}
+                {onboardingStep === 2 && (
+                  <div className="space-y-4 pt-2">
+                    <p className="text-sm text-muted-foreground">
+                      Share this invite link with your staff to let them join your workspace:
+                    </p>
+                    <div className="bg-muted rounded-lg p-3">
+                      <code className="text-xs font-mono text-foreground break-all select-all">
+                        {`${window.location.origin}${window.location.pathname}#/join/${createdInviteCode}`}
+                      </code>
+                    </div>
+                    <p className="text-xs text-muted-foreground">You can always find this link in Settings.</p>
+                    <Button variant="hero" className="w-full" onClick={finishOnboarding}>
+                      Go to Dashboard <ArrowRight className="w-4 h-4 ml-1" />
+                    </Button>
+                  </div>
+                )}
               </DialogContent>
             </Dialog>
           </div>

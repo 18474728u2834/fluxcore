@@ -50,6 +50,50 @@
     --warning: 32 95% 55%;
     --warning-foreground: 240 8% 6%;
   }
+
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 258 85% 58%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 93%;
+    --secondary-foreground: 240 5% 35%;
+
+    --muted: 240 5% 94%;
+    --muted-foreground: 240 4% 46%;
+
+    --accent: 270 55% 50%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 6% 88%;
+    --input: 240 6% 88%;
+    --ring: 258 85% 58%;
+
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 240 4% 46%;
+    --sidebar-primary: 258 85% 58%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 93%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 240 6% 90%;
+    --sidebar-ring: 258 85% 58%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+    --warning: 32 95% 55%;
+    --warning-foreground: 0 0% 10%;
+  }
 }
 
 @layer base {
@@ -75,16 +119,13 @@
     background-image: linear-gradient(135deg, hsl(258 90% 72%), hsl(280 70% 60%), hsl(310 60% 55%));
   }
   .glass {
-    background: hsl(240 6% 9% / 0.6);
-    backdrop-filter: blur(20px);
-    border: 1px solid hsl(240 6% 14% / 0.6);
+    @apply bg-card/60 backdrop-blur-xl border border-border/60;
   }
   .glass-hover {
-    @apply glass;
-    transition: all 0.2s ease;
+    @apply glass transition-all duration-200;
   }
   .glass-hover:hover {
-    background: hsl(240 6% 9% / 0.85);
+    @apply bg-card/85;
     border-color: hsl(258 90% 66% / 0.2);
   }
   .glow-primary {
@@ -110,8 +151,8 @@
   }
   .bg-grid {
     background-image:
-      linear-gradient(hsl(240 6% 14% / 0.3) 1px, transparent 1px),
-      linear-gradient(90deg, hsl(240 6% 14% / 0.3) 1px, transparent 1px);
+      linear-gradient(hsl(var(--border) / 0.3) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--border) / 0.3) 1px, transparent 1px);
     background-size: 48px 48px;
   }
   .bg-radial-glow {
