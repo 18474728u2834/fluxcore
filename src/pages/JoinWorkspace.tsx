@@ -26,12 +26,9 @@ export default function JoinWorkspace() {
     }
 
     const join = async () => {
-      // Look up workspace by invite code
-      const { data: ws } = await (supabase
-        .from("workspaces")
-        .select("id, name, owner_id") as any)
-        .eq("invite_code", inviteCode)
-        .single();
+      // Look up workspace by invite code (uses security definer function)
+      const { data: lookupResult } = await supabase.rpc("lookup_workspace_by_invite", { code: inviteCode }) as any;
+      const ws = Array.isArray(lookupResult) ? lookupResult[0] : lookupResult;
 
       if (!ws) {
         setStatus("error");
