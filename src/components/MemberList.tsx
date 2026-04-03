@@ -59,7 +59,7 @@ export function MemberList({ compact }: { compact?: boolean }) {
             roblox_user_id: ownerData.roblox_user_id,
             role: "Owner",
             verified: true,
-            joined_at: workspace.created_at || new Date().toISOString(),
+            joined_at: new Date().toISOString(),
             user_id: workspace.owner_id,
           } as any);
         }
