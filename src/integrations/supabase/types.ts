@@ -140,6 +140,48 @@ export type Database = {
           },
         ]
       }
+      document_signatures: {
+        Row: {
+          document_id: string
+          id: string
+          member_id: string
+          signature_data: string | null
+          signed_at: string
+          user_id: string
+        }
+        Insert: {
+          document_id: string
+          id?: string
+          member_id: string
+          signature_data?: string | null
+          signed_at?: string
+          user_id: string
+        }
+        Update: {
+          document_id?: string
+          id?: string
+          member_id?: string
+          signature_data?: string | null
+          signed_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_signatures_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "document_signatures_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feedback_messages: {
         Row: {
           content: string
@@ -210,6 +252,111 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      loa_requests: {
+        Row: {
+          created_at: string
+          end_date: string
+          id: string
+          member_id: string
+          reason: string
+          reviewed_by: string | null
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          end_date: string
+          id?: string
+          member_id: string
+          reason: string
+          reviewed_by?: string | null
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string
+          id?: string
+          member_id?: string
+          reason?: string
+          reviewed_by?: string | null
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loa_requests_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loa_requests_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      member_logs: {
+        Row: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          log_type: string
+          member_id: string
+          workspace_id: string
+        }
+        Insert: {
+          author_id: string
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          log_type?: string
+          member_id: string
+          workspace_id: string
+        }
+        Update: {
+          author_id?: string
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          log_type?: string
+          member_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_logs_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_logs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scheduled_sessions: {
         Row: {
@@ -299,6 +446,100 @@ export type Database = {
           verified_at?: string
         }
         Relationships: []
+      }
+      workspace_blacklist: {
+        Row: {
+          blacklisted_at: string
+          blacklisted_by: string
+          id: string
+          reason: string | null
+          roblox_user_id: string
+          roblox_username: string
+          workspace_id: string
+        }
+        Insert: {
+          blacklisted_at?: string
+          blacklisted_by: string
+          id?: string
+          reason?: string | null
+          roblox_user_id: string
+          roblox_username: string
+          workspace_id: string
+        }
+        Update: {
+          blacklisted_at?: string
+          blacklisted_by?: string
+          id?: string
+          reason?: string | null
+          roblox_user_id?: string
+          roblox_username?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_blacklist_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_documents: {
+        Row: {
+          assign_to: string
+          auto_assign: boolean
+          content: string
+          created_at: string
+          created_by: string
+          deadline: string | null
+          doc_type: string
+          id: string
+          signature_type: string
+          signature_word: string | null
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          assign_to?: string
+          auto_assign?: boolean
+          content: string
+          created_at?: string
+          created_by: string
+          deadline?: string | null
+          doc_type?: string
+          id?: string
+          signature_type?: string
+          signature_word?: string | null
+          title: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          assign_to?: string
+          auto_assign?: boolean
+          content?: string
+          created_at?: string
+          created_by?: string
+          deadline?: string | null
+          doc_type?: string
+          id?: string
+          signature_type?: string
+          signature_word?: string | null
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_documents_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       workspace_members: {
         Row: {
