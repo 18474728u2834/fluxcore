@@ -38,8 +38,19 @@ export default function JoinWorkspace() {
 
       setWorkspaceName(ws.name);
 
-      // Check if already a member (the lookup doesn't return owner_id)
-      // We'll check membership which covers both owner and member cases
+      // Check blacklist
+      if (robloxUserId) {
+        const { data: blacklisted } = await supabase
+          .from("workspace_blacklist")
+          .select("id")
+          .eq("workspace_id", ws.id)
+          .eq("roblox_user_id", robloxUserId)
+          .maybeSingle();
+        if (blacklisted) {
+          setStatus("blacklisted");
+          return;
+        }
+      }
 
       // Check if already a member
       const { data: existing } = await supabase
