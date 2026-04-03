@@ -1,6 +1,6 @@
-import { Shield, MoreHorizontal, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Shield, Loader2, Crown } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -12,26 +12,25 @@ interface Member {
   role: string;
   verified: boolean;
   joined_at: string;
+  user_id: string | null;
 }
 
 const rankColors: Record<string, string> = {
-  Owner: "bg-destructive/10 text-destructive",
-  Admin: "bg-warning/10 text-warning",
+  Owner: "bg-warning/10 text-warning",
+  Admin: "bg-destructive/10 text-destructive",
   Moderator: "bg-primary/10 text-primary",
   Staff: "bg-success/10 text-success",
   Member: "bg-secondary text-muted-foreground",
   "Trial Mod": "bg-warning/10 text-warning",
 };
 
-function getRobloxAvatar(userId: string) {
-  return `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userId}&size=48x48&format=Png&isCircular=true`;
-}
-
 export function MemberList({ compact }: { compact?: boolean }) {
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, workspace } = useWorkspace();
+  const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [ownerUsername, setOwnerUsername] = useState<string | null>(null);
 
   const fetchMembers = async () => {
     const { data } = await supabase
@@ -39,12 +38,40 @@ export function MemberList({ compact }: { compact?: boolean }) {
       .select("*")
       .eq("workspace_id", workspaceId)
       .order("joined_at", { ascending: true });
-    setMembers(data || []);
+
+    const membersList = data || [];
+
+    // Check if owner is in the members list
+    if (workspace) {
+      const ownerInList = membersList.some(m => m.user_id === workspace.owner_id);
+      if (!ownerInList) {
+        // Fetch owner info from verified_users
+        const { data: ownerData } = await supabase
+          .from("verified_users")
+          .select("roblox_username, roblox_user_id")
+          .eq("user_id", workspace.owner_id)
+          .maybeSingle();
+        if (ownerData) {
+          setOwnerUsername(ownerData.roblox_username);
+          membersList.unshift({
+            id: "owner-virtual",
+            roblox_username: ownerData.roblox_username,
+            roblox_user_id: ownerData.roblox_user_id,
+            role: "Owner",
+            verified: true,
+            joined_at: workspace.created_at || new Date().toISOString(),
+            user_id: workspace.owner_id,
+          } as any);
+        }
+      }
+    }
+
+    setMembers(membersList);
     setLoading(false);
 
     // Fetch avatars
-    if (data && data.length > 0) {
-      const userIds = data.map((m) => m.roblox_user_id).join(",");
+    if (membersList.length > 0) {
+      const userIds = membersList.map((m) => m.roblox_user_id).join(",");
       try {
         const res = await fetch(
           `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${userIds}&size=48x48&format=Png&isCircular=true`
@@ -57,9 +84,7 @@ export function MemberList({ compact }: { compact?: boolean }) {
           }
         }
         setAvatars(map);
-      } catch {
-        // avatars are optional
-      }
+      } catch {}
     }
   };
 
@@ -97,7 +122,13 @@ export function MemberList({ compact }: { compact?: boolean }) {
       ) : (
         <div className="divide-y divide-border/40">
           {displayMembers.map((member) => (
-            <div key={member.id} className="px-5 py-3 flex items-center gap-4 hover:bg-secondary/30 transition-colors">
+            <div
+              key={member.id}
+              onClick={() => {
+                if (member.id !== "owner-virtual") navigate(`/w/${workspaceId}/members/${member.id}`);
+              }}
+              className="px-5 py-3 flex items-center gap-4 hover:bg-secondary/30 transition-colors cursor-pointer"
+            >
               <Avatar className="w-9 h-9">
                 {avatars[member.roblox_user_id] ? (
                   <AvatarImage src={avatars[member.roblox_user_id]} alt={member.roblox_username} />
@@ -109,6 +140,7 @@ export function MemberList({ compact }: { compact?: boolean }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-foreground truncate">{member.roblox_username}</p>
+                  {member.role === "Owner" && <Crown className="w-3 h-3 text-warning" />}
                   {member.verified && (
                     <span className="w-2 h-2 rounded-full bg-success" title="Verified" />
                   )}

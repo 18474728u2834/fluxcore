@@ -40,28 +40,42 @@ export default function Workspaces() {
     if (!user) return;
     setLoading(true);
 
-    // With proper RLS, this only returns workspaces user owns or is member of
-    const { data: allWorkspaces } = await supabase
+    // Only fetch workspaces user owns
+    const { data: ownedWorkspaces } = await supabase
       .from("workspaces")
-      .select("id, name, owner_id");
+      .select("id, name, owner_id")
+      .eq("owner_id", user.id);
 
+    // Fetch workspaces user is a member of
     const { data: memberships } = await supabase
       .from("workspace_members")
-      .select("workspace_id, role");
+      .select("workspace_id, role")
+      .eq("user_id", user.id);
 
     const ws: Workspace[] = [];
-    const memberMap = new Map<string, string>();
-    if (memberships) {
-      for (const m of memberships) {
-        memberMap.set(m.workspace_id, m.role);
+
+    // Add owned workspaces
+    if (ownedWorkspaces) {
+      for (const w of ownedWorkspaces) {
+        ws.push({ id: w.id, name: w.name, role: "Owner" });
       }
     }
 
-    if (allWorkspaces) {
-      for (const w of allWorkspaces as any[]) {
-        const isOwner = w.owner_id === user.id;
-        const role = isOwner ? "Owner" : (memberMap.get(w.id) || "Member");
-        ws.push({ id: w.id, name: w.name, role });
+    // Add member workspaces (that aren't already owned)
+    if (memberships) {
+      const ownedIds = new Set(ws.map(w => w.id));
+      for (const m of memberships) {
+        if (!ownedIds.has(m.workspace_id)) {
+          // Fetch workspace name
+          const { data: wsData } = await supabase
+            .from("workspaces")
+            .select("id, name")
+            .eq("id", m.workspace_id)
+            .single();
+          if (wsData) {
+            ws.push({ id: wsData.id, name: wsData.name, role: m.role });
+          }
+        }
       }
     }
 
@@ -110,6 +124,7 @@ export default function Workspaces() {
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
       <div className="absolute inset-0 bg-radial-glow" />
+      <div className="absolute inset-0 bg-grid opacity-[0.04]" />
 
       <nav className="relative border-b border-border/40 bg-background/90 backdrop-blur-xl">
         <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
@@ -187,47 +202,30 @@ export default function Workspaces() {
                   </DialogTitle>
                 </DialogHeader>
 
-                {/* Step 0: Create */}
                 {onboardingStep === 0 && (
                   <div className="space-y-4 pt-2">
                     <div className="space-y-2">
                       <Label className="text-foreground text-sm">Workspace Name</Label>
-                      <Input
-                        placeholder="e.g. Pastriez Bakery"
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        className="bg-muted border-border"
-                      />
+                      <Input placeholder="e.g. Pastriez Bakery" value={newName} onChange={(e) => setNewName(e.target.value)} className="bg-muted border-border" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-foreground text-sm">Roblox Group ID <span className="text-muted-foreground">(optional)</span></Label>
-                      <Input
-                        placeholder="e.g. 12345678"
-                        value={groupId}
-                        onChange={(e) => setGroupId(e.target.value)}
-                        className="bg-muted border-border"
-                      />
+                      <Input placeholder="e.g. 12345678" value={groupId} onChange={(e) => setGroupId(e.target.value)} className="bg-muted border-border" />
                     </div>
                     <Button onClick={handleCreate} disabled={creating || !newName.trim()} variant="hero" className="w-full">
-                      {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                      Create
+                      {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create
                     </Button>
                   </div>
                 )}
 
-                {/* Step 1: Setup Tracking Script */}
                 {onboardingStep === 1 && (
                   <div className="space-y-4 pt-2">
-                    <p className="text-sm text-muted-foreground">
-                      To track activity in your Roblox game, add the Fluxcore tracker script to your game's ServerScriptService.
-                    </p>
+                    <p className="text-sm text-muted-foreground">To track activity in your Roblox game, add the Fluxcore tracker script to your game's ServerScriptService.</p>
                     <div className="bg-muted rounded-lg p-3">
                       <p className="text-xs text-muted-foreground mb-1 font-mono">Go to Setup Tracking in your workspace for the full script.</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1" onClick={() => setOnboardingStep(2)}>
-                        Skip for now
-                      </Button>
+                      <Button variant="outline" className="flex-1" onClick={() => setOnboardingStep(2)}>Skip for now</Button>
                       <Button variant="hero" className="flex-1" onClick={() => setOnboardingStep(2)}>
                         Next <ArrowRight className="w-4 h-4 ml-1" />
                       </Button>
@@ -235,12 +233,9 @@ export default function Workspaces() {
                   </div>
                 )}
 
-                {/* Step 2: Invite Link */}
                 {onboardingStep === 2 && (
                   <div className="space-y-4 pt-2">
-                    <p className="text-sm text-muted-foreground">
-                      Share this invite link with your staff to let them join your workspace:
-                    </p>
+                    <p className="text-sm text-muted-foreground">Share this invite link with your staff to let them join your workspace:</p>
                     <div className="bg-muted rounded-lg p-3">
                       <code className="text-xs font-mono text-foreground break-all select-all">
                         {`${window.location.origin}${window.location.pathname}#/join/${createdInviteCode}`}

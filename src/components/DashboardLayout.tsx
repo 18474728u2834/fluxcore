@@ -18,12 +18,15 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center border-b border-border/50 px-4 gap-4 bg-background/80 backdrop-blur-xl">
             <SidebarTrigger />
             <span className="text-sm text-muted-foreground">{title || workspace?.name || "Fluxcore"}</span>
           </header>
-          <main className="flex-1 p-6 overflow-auto">{children}</main>
+          <main className="flex-1 p-6 overflow-auto relative">
+            <div className="absolute inset-0 bg-grid opacity-[0.03] pointer-events-none" />
+            <div className="relative">{children}</div>
+          </main>
         </div>
       </div>
     </SidebarProvider>
