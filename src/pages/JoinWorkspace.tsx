@@ -9,7 +9,7 @@ export default function JoinWorkspace() {
   const { inviteCode } = useParams<{ inviteCode: string }>();
   const { user, loading: authLoading, robloxUsername, robloxUserId } = useAuth();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"loading" | "success" | "error" | "already">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "already" | "blacklisted">("loading");
   const [workspaceName, setWorkspaceName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
