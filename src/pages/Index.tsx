@@ -92,7 +92,7 @@ export default function Index() {
         <div className="max-w-6xl mx-auto px-6 py-2 flex items-center gap-3">
           <Info className="w-3.5 h-3.5 text-warning shrink-0" />
           <p className="text-[11px] text-warning">
-            <strong>From 19.07.2026</strong> — A Gamepass (400 Robux) will be needed for premium features to help us host Fluxcore.
+            <strong>From 19.07.2026</strong> — Fluxcore is currently experiencing an issue with Roblox OAuth. Use emoji-based verification for logins while we investigate the problem. Our team is working to resolve this as quickly as possible. Thank you for your patience and understanding.
           </p>
         </div>
       </div>
