@@ -9,7 +9,7 @@ export default function JoinWorkspace() {
   const { inviteCode } = useParams<{ inviteCode: string }>();
   const { user, loading: authLoading, robloxUsername, robloxUserId } = useAuth();
   const navigate = useNavigate();
-  const [status, setStatus] = useState<"loading" | "success" | "error" | "already">("loading");
+  const [status, setStatus] = useState<"loading" | "success" | "error" | "already" | "blacklisted">("loading");
   const [workspaceName, setWorkspaceName] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -38,8 +38,19 @@ export default function JoinWorkspace() {
 
       setWorkspaceName(ws.name);
 
-      // Check if already a member (the lookup doesn't return owner_id)
-      // We'll check membership which covers both owner and member cases
+      // Check blacklist
+      if (robloxUserId) {
+        const { data: blacklisted } = await supabase
+          .from("workspace_blacklist")
+          .select("id")
+          .eq("workspace_id", ws.id)
+          .eq("roblox_user_id", robloxUserId)
+          .maybeSingle();
+        if (blacklisted) {
+          setStatus("blacklisted");
+          return;
+        }
+      }
 
       // Check if already a member
       const { data: existing } = await supabase
@@ -103,6 +114,18 @@ export default function JoinWorkspace() {
               <h2 className="text-lg font-bold text-foreground">Already in {workspaceName}</h2>
               <Button variant="hero" onClick={() => navigate("/workspaces")} className="mt-2">
                 Go to Workspaces
+              </Button>
+            </>
+          )}
+          {status === "blacklisted" && (
+            <>
+              <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+                <XCircle className="w-7 h-7 text-destructive" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Blacklisted</h2>
+              <p className="text-sm text-destructive">You are blacklisted from this workspace.</p>
+              <Button variant="outline" onClick={() => navigate("/workspaces")} className="mt-2">
+                Back to Workspaces
               </Button>
             </>
           )}
