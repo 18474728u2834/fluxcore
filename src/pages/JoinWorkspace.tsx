@@ -117,6 +117,18 @@ export default function JoinWorkspace() {
               </Button>
             </>
           )}
+          {status === "blacklisted" && (
+            <>
+              <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
+                <XCircle className="w-7 h-7 text-destructive" />
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Blacklisted</h2>
+              <p className="text-sm text-destructive">You are blacklisted from this workspace.</p>
+              <Button variant="outline" onClick={() => navigate("/workspaces")} className="mt-2">
+                Back to Workspaces
+              </Button>
+            </>
+          )}
           {status === "error" && (
             <>
               <div className="w-14 h-14 rounded-full bg-destructive/10 flex items-center justify-center mx-auto">
