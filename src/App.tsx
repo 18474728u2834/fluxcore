@@ -26,6 +26,8 @@ import JoinWorkspace from "./pages/JoinWorkspace";
 import Documents from "./pages/Documents";
 import LOA from "./pages/LOA";
 import Staff from "./pages/Staff";
+import Roles from "./pages/Roles";
+import Quotas from "./pages/Quotas";
 import BloxyBargains from "./pages/BloxyBargains";
 import BloxyBargainsDowntown from "./pages/BloxyBargainsDowntown";
 
@@ -47,13 +49,14 @@ function WorkspaceRoutes() {
         <Route path="documents" element={<Documents />} />
         <Route path="loa" element={<LOA />} />
         <Route path="staff" element={<Staff />} />
+        <Route path="roles" element={<Roles />} />
+        <Route path="quotas" element={<Quotas />} />
       </Routes>
     </WorkspaceProvider>
   );
 }
 
 function AppRoutes() {
-  // Check hostname for partner sites
   const hostname = window.location.hostname;
 
   if (hostname.includes("bloxy-bargains") || hostname.includes("bargains.")) {

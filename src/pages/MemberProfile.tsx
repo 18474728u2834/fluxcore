@@ -245,10 +245,10 @@ export default function MemberProfile() {
                     <Select value={logType} onValueChange={setLogType}>
                       <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="note">📝 Note</SelectItem>
-                        <SelectItem value="promotion">⬆️ Promotion Hint</SelectItem>
-                        <SelectItem value="warning">⚠️ Warning</SelectItem>
-                        <SelectItem value="demotion">⬇️ Demotion</SelectItem>
+                        <SelectItem value="note">Note</SelectItem>
+                        <SelectItem value="promotion">Promotion Hint</SelectItem>
+                        <SelectItem value="warning">Warning</SelectItem>
+                        <SelectItem value="demotion">Demotion</SelectItem>
                       </SelectContent>
                     </Select>
                     <Textarea placeholder="Write details..." value={logContent} onChange={(e) => setLogContent(e.target.value)} className="bg-muted border-border min-h-[80px]" />
