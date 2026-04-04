@@ -148,7 +148,7 @@ export default function Workspaces() {
         <div className="max-w-4xl mx-auto px-6 py-3 flex items-center gap-3">
           <Info className="w-4 h-4 text-warning shrink-0" />
           <p className="text-xs text-warning">
-            <strong></strong>, Fluxcore is currently experiencing an issue with Roblox OAuth. Use emoji-based verification for logins while we investigate the problem. Our team is working to resolve this as quickly as possible. Thank you for your patience and understanding.
+            <strong></strong> Fluxcore has identified the issue regarding Roblox OAuth and is actively working to resolve it.
           </p>
         </div>
       </div>
