@@ -92,7 +92,7 @@ export default function Index() {
         <div className="max-w-6xl mx-auto px-6 py-2 flex items-center gap-3">
           <Info className="w-3.5 h-3.5 text-warning shrink-0" />
           <p className="text-[11px] text-warning">
-            <strong></strong> Fluxcore has identified the issue regarding Roblox OAuth and is actively working to resolve it.
+            <strong></strong> Yes, Archie — we’re on it. The Fluxcore engineering gremlins have officially isolated the issue, poked it with a digital stick, and confirmed that Roblox OAuth is the culprit. We’re now deep in the debugging trenches, running traces, chasing rogue tokens, and tightening up the authentication flow. Hang tight — the fix is in progress and the system will be back to full power soon.
           </p>
         </div>
       </div>
