@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Shield, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
