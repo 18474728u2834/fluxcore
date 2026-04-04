@@ -92,7 +92,7 @@ export default function Index() {
         <div className="max-w-6xl mx-auto px-6 py-2 flex items-center gap-3">
           <Info className="w-3.5 h-3.5 text-warning shrink-0" />
           <p className="text-[11px] text-warning">
-            <strong></strong> Fluxcore is currently experiencing an issue with Roblox OAuth. Use emoji-based verification for logins while we investigate the problem. Our team is working to resolve this as quickly as possible. Thank you for your patience and understanding.
+            <strong></strong> Fluxcore has identified the issue regarding Roblox OAuth and is actively working to resolve it.
           </p>
         </div>
       </div>
