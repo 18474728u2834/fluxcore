@@ -36,6 +36,7 @@ export function AppSidebar() {
 
   const showConfig = isOwner || hasPermission("view_config");
   const configItems = [
+    { title: "Roles", url: `${base}/roles`, icon: ShieldCheck },
     { title: "Setup Tracking", url: `${base}/setup-tracking`, icon: Code },
     { title: "Settings", url: `${base}/settings`, icon: Settings },
   ];
