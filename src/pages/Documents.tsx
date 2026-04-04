@@ -292,6 +292,11 @@ export default function Documents() {
                     <CheckCircle2 className="w-4 h-4" />
                     <span className="text-sm font-medium">You have signed this document</span>
                   </div>
+                ) : viewDoc.doc_type === "handbook" ? (
+                  <div className="flex items-center gap-2 text-muted-foreground bg-muted rounded-lg p-3">
+                    <FileText className="w-4 h-4" />
+                    <span className="text-sm">This handbook is for reference only — no signature required.</span>
+                  </div>
                 ) : myMemberId ? (
                   <div className="border-t border-border/40 pt-4 space-y-3">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Sign this document</p>
