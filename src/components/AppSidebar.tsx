@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Shield, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX } from "lucide-react";
+import { LayoutDashboard, Users, Shield, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -31,10 +31,12 @@ export function AppSidebar() {
     { title: "Documents", url: `${base}/documents`, icon: FileText, show: true },
     { title: "LOA", url: `${base}/loa`, icon: CalendarOff, show: true },
     { title: "Staff", url: `${base}/staff`, icon: UserX, show: isOwner || hasPermission("manage_members") },
+    { title: "Quotas", url: `${base}/quotas`, icon: Target, show: true },
   ];
 
   const showConfig = isOwner || hasPermission("view_config");
   const configItems = [
+    { title: "Roles", url: `${base}/roles`, icon: ShieldCheck },
     { title: "Setup Tracking", url: `${base}/setup-tracking`, icon: Code },
     { title: "Settings", url: `${base}/settings`, icon: Settings },
   ];

@@ -25,7 +25,7 @@ const statusColors: Record<string, string> = {
 };
 
 export default function LOA() {
-  const { workspaceId, isOwner } = useWorkspace();
+  const { workspaceId, isOwner, workspace } = useWorkspace();
   const { user, robloxUsername } = useAuth();
   const { hasPermission } = usePermissions();
   const canManage = isOwner || hasPermission("manage_members");
@@ -45,17 +45,45 @@ export default function LOA() {
       supabase.from("workspace_members").select("id").eq("workspace_id", workspaceId).eq("user_id", user?.id).maybeSingle(),
     ]);
     setRequests(reqs || []);
-    setMyMemberId(member?.id || "");
+    // Owner might not be in workspace_members, but should still be able to request LOA
+    setMyMemberId(member?.id || (isOwner ? "owner" : ""));
     setLoading(false);
   };
 
   useEffect(() => { fetchData(); }, [workspaceId]);
 
   const handleCreate = async () => {
-    if (!reason.trim() || !startDate || !endDate || !user || !myMemberId) return;
+    if (!reason.trim() || !startDate || !endDate || !user) return;
     setCreating(true);
+
+    // If owner doesn't have a member entry, we need a member_id
+    let memberId = myMemberId;
+    if (memberId === "owner") {
+      // Check if owner has a member entry, if not create a virtual one
+      const { data: existing } = await supabase.from("workspace_members")
+        .select("id").eq("workspace_id", workspaceId).eq("user_id", user.id).maybeSingle();
+      if (existing) {
+        memberId = existing.id;
+      } else {
+        // Create member entry for owner
+        const { data: ownerVerified } = await supabase.from("verified_users")
+          .select("roblox_username, roblox_user_id").eq("user_id", user.id).maybeSingle();
+        if (ownerVerified) {
+          const { data: newMember } = await supabase.from("workspace_members").insert({
+            workspace_id: workspaceId, user_id: user.id,
+            roblox_username: ownerVerified.roblox_username,
+            roblox_user_id: ownerVerified.roblox_user_id,
+            role: "Owner", verified: true,
+          }).select("id").single();
+          memberId = newMember?.id || "";
+        }
+      }
+    }
+
+    if (!memberId || memberId === "owner") { toast.error("Could not resolve member"); setCreating(false); return; }
+
     const { error } = await supabase.from("loa_requests").insert({
-      workspace_id: workspaceId, member_id: myMemberId, user_id: user.id,
+      workspace_id: workspaceId, member_id: memberId, user_id: user.id,
       reason: reason.trim(), start_date: startDate, end_date: endDate,
     });
     if (error) toast.error("Failed: " + error.message);
@@ -69,6 +97,8 @@ export default function LOA() {
     else { toast.success(`Request ${status}`); fetchData(); }
   };
 
+  const canRequest = myMemberId || isOwner;
+
   return (
     <DashboardLayout title="Leave of Absence">
       <div className="space-y-5 max-w-3xl">
@@ -77,7 +107,7 @@ export default function LOA() {
             <h1 className="text-2xl font-bold text-foreground">Leave of Absence</h1>
             <p className="text-sm text-muted-foreground mt-0.5">Request or manage time off</p>
           </div>
-          {myMemberId && (
+          {canRequest && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-1" /> Request LOA</Button>
@@ -139,7 +169,7 @@ export default function LOA() {
                 <p className="text-sm text-foreground">{req.reason}</p>
                 <div className="text-xs text-muted-foreground">
                   {new Date(req.start_date).toLocaleDateString()} — {new Date(req.end_date).toLocaleDateString()}
-                  {req.reviewed_by && <span className="ml-2">• Reviewed by {req.reviewed_by}</span>}
+                  {req.reviewed_by && <span className="ml-2">Reviewed by {req.reviewed_by}</span>}
                 </div>
               </div>
             ))}

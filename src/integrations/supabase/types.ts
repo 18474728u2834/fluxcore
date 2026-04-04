@@ -549,6 +549,7 @@ export type Database = {
           roblox_user_id: string
           roblox_username: string
           role: string
+          role_id: string | null
           updated_at: string
           user_id: string | null
           verified: boolean
@@ -561,6 +562,7 @@ export type Database = {
           roblox_user_id: string
           roblox_username: string
           role?: string
+          role_id?: string | null
           updated_at?: string
           user_id?: string | null
           verified?: boolean
@@ -573,12 +575,20 @@ export type Database = {
           roblox_user_id?: string
           roblox_username?: string
           role?: string
+          role_id?: string | null
           updated_at?: string
           user_id?: string | null
           verified?: boolean
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "workspace_members_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_roles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "workspace_members_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -627,6 +637,92 @@ export type Database = {
           },
         ]
       }
+      workspace_quotas: {
+        Row: {
+          created_at: string
+          id: string
+          period: string
+          quota_type: string
+          role_id: string | null
+          target_value: number
+          title: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          period?: string
+          quota_type?: string
+          role_id?: string | null
+          target_value?: number
+          title: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          period?: string
+          quota_type?: string
+          role_id?: string | null
+          target_value?: number
+          title?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_quotas_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workspace_quotas_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workspace_roles: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          permissions: Json
+          position: number
+          workspace_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          permissions?: Json
+          position?: number
+          workspace_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          permissions?: Json
+          position?: number
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_roles_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspaces: {
         Row: {
           api_key: string
@@ -636,7 +732,10 @@ export type Database = {
           invite_code: string
           name: string
           owner_id: string
+          primary_color: string | null
+          roblox_api_key: string | null
           roblox_group_id: string | null
+          text_color: string | null
           updated_at: string
         }
         Insert: {
@@ -647,7 +746,10 @@ export type Database = {
           invite_code?: string
           name: string
           owner_id: string
+          primary_color?: string | null
+          roblox_api_key?: string | null
           roblox_group_id?: string | null
+          text_color?: string | null
           updated_at?: string
         }
         Update: {
@@ -658,7 +760,10 @@ export type Database = {
           invite_code?: string
           name?: string
           owner_id?: string
+          primary_color?: string | null
+          roblox_api_key?: string | null
           roblox_group_id?: string | null
+          text_color?: string | null
           updated_at?: string
         }
         Relationships: []
