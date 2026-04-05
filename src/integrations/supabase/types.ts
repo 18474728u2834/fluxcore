@@ -777,6 +777,29 @@ export type Database = {
         Args: { ws_id: string }
         Returns: undefined
       }
+      get_accessible_workspaces: {
+        Args: never
+        Returns: {
+          id: string
+          name: string
+          owner_id: string
+          primary_color: string
+          role: string
+          text_color: string
+        }[]
+      }
+      get_workspace_context: {
+        Args: { _workspace_id: string }
+        Returns: {
+          gamepass_id: string
+          id: string
+          name: string
+          owner_id: string
+          primary_color: string
+          roblox_group_id: string
+          text_color: string
+        }[]
+      }
       has_workspace_permission: {
         Args: { _permission: string; _workspace_id: string }
         Returns: boolean
