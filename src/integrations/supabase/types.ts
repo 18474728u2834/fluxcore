@@ -798,11 +798,13 @@ export type Database = {
       get_accessible_workspaces: {
         Args: never
         Returns: {
+          background_color: string
           id: string
           name: string
           owner_id: string
           primary_color: string
           role: string
+          show_grid: boolean
           text_color: string
         }[]
       }
