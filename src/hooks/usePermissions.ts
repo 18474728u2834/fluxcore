@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "./useWorkspace";
 
-// All available permissions
 export const ALL_PERMISSIONS = [
   { key: "view_activity", label: "View Activity", description: "See activity logs and leaderboards" },
   { key: "post_wall", label: "Post on Wall", description: "Create announcements" },
@@ -13,8 +12,10 @@ export const ALL_PERMISSIONS = [
   { key: "create_shift", label: "Create Shifts", description: "Schedule new shifts" },
   { key: "create_training", label: "Create Trainings", description: "Schedule new trainings" },
   { key: "create_event", label: "Create Events", description: "Schedule new events/other" },
-  { key: "manage_members", label: "Manage Members", description: "Edit roles, remove members" },
+  { key: "manage_members", label: "Manage Members", description: "Edit roles, warnings, remove members" },
   { key: "view_config", label: "View Config", description: "Access settings & setup tracking" },
+  { key: "manage_loa", label: "Manage LOA", description: "Approve/decline leave requests" },
+  { key: "manage_documents", label: "Manage Documents", description: "Create and manage policies/handbooks" },
 ] as const;
 
 export type PermissionKey = typeof ALL_PERMISSIONS[number]["key"];
@@ -26,7 +27,6 @@ export function usePermissions() {
 
   useEffect(() => {
     if (isOwner) {
-      // Owners have all permissions
       setPermissions(new Set(ALL_PERMISSIONS.map(p => p.key)));
       setLoading(false);
       return;
@@ -36,23 +36,39 @@ export function usePermissions() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) { setLoading(false); return; }
 
-      // Get member id first
+      // Get member with role_id
       const { data: member } = await supabase
         .from("workspace_members")
-        .select("id")
+        .select("id, role_id")
         .eq("workspace_id", workspaceId)
         .eq("user_id", user.id)
         .maybeSingle();
 
       if (!member) { setLoading(false); return; }
 
+      const allPerms = new Set<string>();
+
+      // Get role-based permissions
+      if (member.role_id) {
+        const { data: role } = await supabase
+          .from("workspace_roles")
+          .select("permissions")
+          .eq("id", member.role_id)
+          .single();
+        if (role && Array.isArray(role.permissions)) {
+          (role.permissions as string[]).forEach(p => allPerms.add(p));
+        }
+      }
+
+      // Also get legacy per-member permissions (for backwards compat)
       const { data: perms } = await supabase
         .from("workspace_permissions")
         .select("permission")
         .eq("workspace_id", workspaceId)
         .eq("member_id", member.id);
+      (perms || []).forEach(p => allPerms.add(p.permission));
 
-      setPermissions(new Set((perms || []).map(p => p.permission)));
+      setPermissions(allPerms);
       setLoading(false);
     };
 

@@ -1,6 +1,7 @@
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { ReleaseModal } from "@/components/ReleaseModal";
 import { Loader2 } from "lucide-react";
 
 export function DashboardLayout({ children, title }: { children: React.ReactNode; title?: string }) {
@@ -29,6 +30,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
           </main>
         </div>
       </div>
+      <ReleaseModal />
     </SidebarProvider>
   );
 }

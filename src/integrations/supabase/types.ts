@@ -57,8 +57,10 @@ export type Database = {
           created_at: string
           duration_seconds: number | null
           id: string
+          idle_seconds: number | null
           joined_at: string
           left_at: string | null
+          message_count: number | null
           roblox_user_id: string
           roblox_username: string
           server_id: string | null
@@ -68,8 +70,10 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          idle_seconds?: number | null
           joined_at?: string
           left_at?: string | null
+          message_count?: number | null
           roblox_user_id: string
           roblox_username: string
           server_id?: string | null
@@ -79,8 +83,10 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           id?: string
+          idle_seconds?: number | null
           joined_at?: string
           left_at?: string | null
+          message_count?: number | null
           roblox_user_id?: string
           roblox_username?: string
           server_id?: string | null
@@ -546,6 +552,7 @@ export type Database = {
           access_key: string
           id: string
           joined_at: string
+          roblox_group_rank: number | null
           roblox_user_id: string
           roblox_username: string
           role: string
@@ -559,6 +566,7 @@ export type Database = {
           access_key?: string
           id?: string
           joined_at?: string
+          roblox_group_rank?: number | null
           roblox_user_id: string
           roblox_username: string
           role?: string
@@ -572,6 +580,7 @@ export type Database = {
           access_key?: string
           id?: string
           joined_at?: string
+          roblox_group_rank?: number | null
           roblox_user_id?: string
           roblox_username?: string
           role?: string
@@ -726,6 +735,7 @@ export type Database = {
       workspaces: {
         Row: {
           api_key: string
+          background_color: string | null
           created_at: string
           gamepass_id: string | null
           id: string
@@ -733,13 +743,16 @@ export type Database = {
           name: string
           owner_id: string
           primary_color: string | null
+          release_version: string | null
           roblox_api_key: string | null
           roblox_group_id: string | null
+          show_grid: boolean | null
           text_color: string | null
           updated_at: string
         }
         Insert: {
           api_key?: string
+          background_color?: string | null
           created_at?: string
           gamepass_id?: string | null
           id?: string
@@ -747,13 +760,16 @@ export type Database = {
           name: string
           owner_id: string
           primary_color?: string | null
+          release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
+          show_grid?: boolean | null
           text_color?: string | null
           updated_at?: string
         }
         Update: {
           api_key?: string
+          background_color?: string | null
           created_at?: string
           gamepass_id?: string | null
           id?: string
@@ -761,8 +777,10 @@ export type Database = {
           name?: string
           owner_id?: string
           primary_color?: string | null
+          release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
+          show_grid?: boolean | null
           text_color?: string | null
           updated_at?: string
         }
@@ -780,11 +798,13 @@ export type Database = {
       get_accessible_workspaces: {
         Args: never
         Returns: {
+          background_color: string
           id: string
           name: string
           owner_id: string
           primary_color: string
           role: string
+          show_grid: boolean
           text_color: string
         }[]
       }
