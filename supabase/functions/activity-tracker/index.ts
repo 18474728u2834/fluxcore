@@ -24,7 +24,6 @@ serve(async (req) => {
       );
     }
 
-    // Validate API key and get workspace
     const { data: workspace, error: wsError } = await supabase
       .from('workspaces')
       .select('id')
@@ -38,18 +37,33 @@ serve(async (req) => {
       );
     }
 
-    const url = new URL(req.url);
-    const path = url.pathname.split('/').pop();
     const body = await req.json();
+    const action = body.action;
 
-    // POST /activity-tracker/join - Player joined game
-    if (path === 'join' || body.action === 'join') {
+    // JOIN - Player joined game
+    if (action === 'join') {
       const { roblox_user_id, roblox_username, server_id } = body;
       if (!roblox_user_id || !roblox_username) {
         return new Response(
           JSON.stringify({ error: 'Missing roblox_user_id or roblox_username' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
+      }
+
+      // Auto-create workspace member if not exists
+      const { data: existingMember } = await supabase
+        .from('workspace_members')
+        .select('id')
+        .eq('workspace_id', workspace.id)
+        .eq('roblox_user_id', String(roblox_user_id))
+        .maybeSingle();
+
+      if (!existingMember) {
+        await supabase.from('workspace_members').insert({
+          workspace_id: workspace.id,
+          roblox_user_id: String(roblox_user_id),
+          roblox_username,
+        });
       }
 
       const { data, error } = await supabase
@@ -59,6 +73,8 @@ serve(async (req) => {
           roblox_user_id: String(roblox_user_id),
           roblox_username,
           server_id: server_id || null,
+          message_count: 0,
+          idle_seconds: 0,
         })
         .select('id')
         .single();
@@ -77,9 +93,9 @@ serve(async (req) => {
       );
     }
 
-    // POST /activity-tracker/leave - Player left game
-    if (path === 'leave' || body.action === 'leave') {
-      const { roblox_user_id, session_id } = body;
+    // LEAVE - Player left game
+    if (action === 'leave') {
+      const { roblox_user_id, session_id, message_count, idle_seconds } = body;
       if (!roblox_user_id) {
         return new Response(
           JSON.stringify({ error: 'Missing roblox_user_id' }),
@@ -87,22 +103,20 @@ serve(async (req) => {
         );
       }
 
-      // Find the most recent open session for this user
       let query = supabase
         .from('activity_sessions')
         .update({
           left_at: new Date().toISOString(),
+          message_count: message_count || 0,
+          idle_seconds: idle_seconds || 0,
         })
         .eq('workspace_id', workspace.id)
         .eq('roblox_user_id', String(roblox_user_id))
         .is('left_at', null);
 
-      if (session_id) {
-        query = query.eq('id', session_id);
-      }
+      if (session_id) query = query.eq('id', session_id);
 
       const { error } = await query;
-
       if (error) {
         console.error('Error closing session:', error);
         return new Response(
@@ -111,7 +125,6 @@ serve(async (req) => {
         );
       }
 
-      // Calculate duration for closed sessions
       await supabase.rpc('calculate_session_duration', { ws_id: workspace.id });
 
       return new Response(
@@ -120,8 +133,36 @@ serve(async (req) => {
       );
     }
 
-    // POST /activity-tracker/event - Custom event
-    if (path === 'event' || body.action === 'event') {
+    // HEARTBEAT - Keep alive with idle/message data
+    if (action === 'heartbeat') {
+      const { roblox_user_id, session_id, is_idle, message_count } = body;
+
+      if (session_id) {
+        // Update session counts
+        const updates: any = {};
+        if (is_idle) {
+          // Add 30 seconds of idle time (heartbeat interval)
+          await supabase.rpc('calculate_session_duration', { ws_id: workspace.id });
+        }
+
+        // Log heartbeat
+        await supabase.from('activity_heartbeats').insert({
+          session_id,
+          workspace_id: workspace.id,
+          roblox_user_id: String(roblox_user_id),
+          is_idle: is_idle || false,
+          message_count: message_count || 0,
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // EVENT - Custom event
+    if (action === 'event') {
       const { roblox_user_id, roblox_username, event_type, event_data } = body;
       if (!roblox_user_id || !event_type) {
         return new Response(
@@ -141,23 +182,12 @@ serve(async (req) => {
         });
 
       if (error) {
-        console.error('Error creating event:', error);
         return new Response(
           JSON.stringify({ error: 'Failed to create event' }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
-      return new Response(
-        JSON.stringify({ success: true }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // POST /activity-tracker/heartbeat - Keep session alive
-    if (path === 'heartbeat' || body.action === 'heartbeat') {
-      const { roblox_user_id } = body;
-      // Just confirm session is still open
       return new Response(
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
