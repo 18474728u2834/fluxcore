@@ -1,18 +1,21 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Shield, Target, FileText, Users, Zap } from "lucide-react";
+import { Sparkles, Shield, Target, FileText, Users, Zap, Bot, MessageSquare, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const CURRENT_VERSION = "1.0.0";
+const CURRENT_VERSION = "2.0.0";
 
 const features = [
-  { icon: Shield, title: "Role-Based Permissions", desc: "Create custom roles with granular permissions. Import roles directly from your Roblox group." },
-  { icon: Target, title: "Activity Quotas", desc: "Set weekly/monthly targets for sessions and in-game time per role." },
-  { icon: FileText, title: "Documents & Policies", desc: "Create policies requiring digital signatures and handbooks for reference." },
-  { icon: Users, title: "Advanced Member Management", desc: "Detailed profiles, warnings, promotion hints, and leave-of-absence system." },
-  { icon: Zap, title: "Enhanced Activity Tracker", desc: "Idle detection, message counting, and heartbeat monitoring for accurate tracking." },
+  { icon: Shield, title: "Roblox OAuth Fixed", desc: "Sign in with Roblox now works with PKCE for secure authentication." },
+  { icon: Bot, title: "Discord Shift Reminders", desc: "Get automatic Discord notifications 5 minutes before sessions start." },
+  { icon: BarChart3, title: "Quota Admin View", desc: "See exactly who completed their quotas with progress bars and completion tracking." },
+  { icon: MessageSquare, title: "Message Logger", desc: "Enable logging of in-game staff messages for moderation and accountability." },
+  { icon: Users, title: "Auto-Rank from Group", desc: "Automatically assign workspace roles based on Roblox group rank hierarchy." },
+  { icon: Target, title: "Support Center", desc: "Built-in support ticket system for your staff to get help directly." },
+  { icon: FileText, title: "Privacy & GDPR", desc: "Full GDPR-compliant privacy policy and data handling transparency." },
+  { icon: Zap, title: "Activity Tracker v2", desc: "Enhanced Lua tracker with idle detection, message counting, heartbeats, and staff-only tracking." },
 ];
 
 export function ReleaseModal() {
@@ -52,7 +55,7 @@ export function ReleaseModal() {
           </div>
           <p className="text-sm text-muted-foreground">Version {CURRENT_VERSION} — Here's what we've shipped</p>
         </DialogHeader>
-        <div className="space-y-4 pt-2">
+        <div className="space-y-3 pt-2">
           {features.map((f, i) => (
             <div key={i} className="flex items-start gap-3 p-3 rounded-lg bg-secondary/30">
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">

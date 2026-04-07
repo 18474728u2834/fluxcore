@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, Sparkles } from "lucide-react";
+import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,50 +12,65 @@ import { InviteSection } from "@/components/InviteSection";
 
 export default function SettingsPage() {
   const { workspace, isOwner, workspaceId } = useWorkspace();
-  const [apiKey, setApiKey] = useState(workspace?.api_key || "");
+  const [apiKey, setApiKey] = useState("");
   const [copied, setCopied] = useState(false);
   const [resetting, setResetting] = useState(false);
-  const [name, setName] = useState(workspace?.name || "");
-  const [groupId, setGroupId] = useState(workspace?.roblox_group_id || "");
+  const [name, setName] = useState("");
+  const [groupId, setGroupId] = useState("");
   const [robloxApiKey, setRobloxApiKey] = useState("");
   const [primaryColor, setPrimaryColor] = useState("#7c3aed");
   const [textColor, setTextColor] = useState("#ffffff");
   const [backgroundColor, setBackgroundColor] = useState("#0f0f11");
   const [showGrid, setShowGrid] = useState(true);
+  const [discordWebhook, setDiscordWebhook] = useState("");
+  const [messageLogger, setMessageLogger] = useState(false);
+  const [autoRank, setAutoRank] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [testingDiscord, setTestingDiscord] = useState(false);
 
   useEffect(() => {
     if (workspace) {
-      setApiKey(workspace.api_key);
       setName(workspace.name);
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
-        const { data } = await supabase.from("workspaces").select("primary_color, text_color, roblox_api_key, background_color, show_grid").eq("id", workspaceId).single();
+        const { data } = await supabase.from("workspaces")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled")
+          .eq("id", workspaceId).single();
         if (data) {
+          setApiKey((data as any).api_key || "");
           setPrimaryColor((data as any).primary_color || "#7c3aed");
           setTextColor((data as any).text_color || "#ffffff");
           setBackgroundColor((data as any).background_color || "#0f0f11");
           setShowGrid((data as any).show_grid ?? true);
           setRobloxApiKey((data as any).roblox_api_key || "");
+          setDiscordWebhook((data as any).discord_webhook_url || "");
+          setMessageLogger((data as any).message_logger_enabled || false);
+          setAutoRank((data as any).auto_rank_enabled || false);
         }
       };
       fetchExtras();
     }
   }, [workspace]);
 
-  const copyKey = () => {
-    navigator.clipboard.writeText(apiKey);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  const copyKey = () => { navigator.clipboard.writeText(apiKey); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
   const resetKey = async () => {
     setResetting(true);
     const newKey = "flx_" + Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, "0")).join("");
     const { error } = await supabase.from("workspaces").update({ api_key: newKey }).eq("id", workspaceId);
     if (error) toast.error("Failed to reset API key");
-    else { setApiKey(newKey); toast.success("API key reset! Update it in your Roblox script."); }
+    else { setApiKey(newKey); toast.success("API key reset!"); }
     setResetting(false);
+  };
+
+  const testDiscord = async () => {
+    setTestingDiscord(true);
+    const res = await supabase.functions.invoke("discord-notify", {
+      body: { action: "test", workspace_id: workspaceId },
+    });
+    if (res.data?.success) toast.success("Test message sent to Discord!");
+    else toast.error(res.data?.error || "Failed to send test message");
+    setTestingDiscord(false);
   };
 
   const saveSettings = async () => {
@@ -68,6 +83,9 @@ export default function SettingsPage() {
       text_color: textColor,
       background_color: backgroundColor,
       show_grid: showGrid,
+      discord_webhook_url: discordWebhook.trim() || null,
+      message_logger_enabled: messageLogger,
+      auto_rank_enabled: autoRank,
     } as any).eq("id", workspaceId);
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
@@ -105,12 +123,10 @@ export default function SettingsPage() {
             <Key className="w-4 h-4 text-primary" />
             <h2 className="font-semibold text-foreground text-sm">Fluxcore API Key</h2>
           </div>
-          <p className="text-xs text-muted-foreground">Used by the Lua tracker module. Never share this publicly.</p>
+          <p className="text-xs text-muted-foreground">Used by the Lua tracker module.</p>
           <div className="flex items-center gap-2">
             <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all">{apiKey}</code>
-            <Button variant="secondary" size="sm" onClick={copyKey}>
-              <Copy className="w-3 h-3 mr-1" /> {copied ? "Copied" : "Copy"}
-            </Button>
+            <Button variant="secondary" size="sm" onClick={copyKey}><Copy className="w-3 h-3 mr-1" /> {copied ? "Copied" : "Copy"}</Button>
             <Button variant="secondary" size="sm" onClick={resetKey} disabled={resetting}>
               {resetting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />} Reset
             </Button>
@@ -129,16 +145,60 @@ export default function SettingsPage() {
               Roblox Creator Hub
             </a>. Ensure the key has <strong>group:read</strong> and <strong>group:write</strong> scopes.
           </p>
-          <Input
-            type="password"
-            placeholder="Enter your Roblox Open Cloud API key"
-            value={robloxApiKey}
-            onChange={(e) => setRobloxApiKey(e.target.value)}
-            className="bg-muted border-border font-mono text-xs"
-          />
+          <Input type="password" placeholder="Enter your Roblox Open Cloud API key" value={robloxApiKey}
+            onChange={(e) => setRobloxApiKey(e.target.value)} className="bg-muted border-border font-mono text-xs" />
         </div>
 
-        {/* Branding / Customization */}
+        {/* Discord Integration */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Bot className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Discord Integration</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Add a Discord webhook URL to receive automatic session reminders 5 minutes before shifts start.
+            Create a webhook in your Discord server: Server Settings → Integrations → Webhooks → New Webhook.
+          </p>
+          <Input placeholder="https://discord.com/api/webhooks/..." value={discordWebhook}
+            onChange={(e) => setDiscordWebhook(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+          {discordWebhook && (
+            <Button variant="secondary" size="sm" onClick={testDiscord} disabled={testingDiscord}>
+              {testingDiscord && <Loader2 className="w-3 h-3 mr-1 animate-spin" />} Test Webhook
+            </Button>
+          )}
+        </div>
+
+        {/* Feature Toggles */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Feature Toggles</h2>
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Message Logger</p>
+                <p className="text-xs text-muted-foreground">Log what messages staff send in-game</p>
+              </div>
+            </div>
+            <Switch checked={messageLogger} onCheckedChange={setMessageLogger} />
+          </div>
+
+          <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+              <div>
+                <p className="text-sm font-medium text-foreground">Auto-Rank from Group</p>
+                <p className="text-xs text-muted-foreground">Automatically assign workspace roles based on Roblox group rank. Members don't need invite if enabled.</p>
+              </div>
+            </div>
+            <Switch checked={autoRank} onCheckedChange={setAutoRank} />
+          </div>
+        </div>
+
+        {/* Branding */}
         <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
             <Palette className="w-4 h-4 text-primary" />
