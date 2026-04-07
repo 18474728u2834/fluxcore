@@ -64,6 +64,7 @@ export default function Index() {
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
             <button onClick={() => navigate("/feedback")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Feedback</button>
             <button onClick={() => navigate("/terms")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</button>
+            <button onClick={() => navigate("/privacy")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</button>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
