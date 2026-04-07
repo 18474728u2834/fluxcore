@@ -35,6 +35,7 @@ const PAGE_SIZE = 15;
 export default function Members() {
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
+  const { robloxUsername } = useAuth();
   const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
