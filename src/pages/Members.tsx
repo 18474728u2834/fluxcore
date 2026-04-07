@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Search, Crown, ChevronLeft, ChevronRight, Copy, Users as UsersIcon, ArrowUpDown, ChevronUp, ChevronDown } from "lucide-react";
+import { Loader2, Search, Crown, ChevronLeft, ChevronRight, Copy, Users as UsersIcon, ArrowUpDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface Member {
@@ -34,6 +35,7 @@ const PAGE_SIZE = 15;
 export default function Members() {
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
+  const { robloxUsername } = useAuth();
   const navigate = useNavigate();
   const [members, setMembers] = useState<Member[]>([]);
   const [avatars, setAvatars] = useState<Record<string, string>>({});
@@ -156,7 +158,19 @@ export default function Members() {
         body: { action: "set_rank", workspace_id: workspaceId, roblox_user_id: rankTarget.roblox_user_id, role_id: selectedRobloxRole },
       });
       if (res.data?.success) {
-        toast.success(`Successfully ranked ${rankTarget.roblox_username}!`);
+        const roleName = robloxGroupRoles.find(r => r.id === selectedRobloxRole)?.displayName || selectedRobloxRole;
+        toast.success(`Successfully ranked ${rankTarget.roblox_username} to ${roleName}!`);
+        // Log the rank change
+        if (rankTarget.id !== "owner-virtual") {
+          await supabase.from("member_logs").insert({
+            workspace_id: workspaceId,
+            member_id: rankTarget.id,
+            author_id: (await supabase.auth.getUser()).data.user?.id || "",
+            author_name: robloxUsername || "Unknown",
+            log_type: "rank_change",
+            content: `Ranked to ${roleName} in Roblox group`,
+          });
+        }
         setRankDialogOpen(false);
       } else {
         toast.error(res.data?.error || "Failed to change rank");

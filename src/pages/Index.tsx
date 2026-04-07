@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight, Zap, Shield, BarChart3, Users, Clock, FileText,
-  ChevronRight, Info, Sun, Moon, MessageSquare,
+  ChevronRight, Sun, Moon, MessageSquare,
 } from "lucide-react";
 
 const features = [
@@ -64,6 +64,7 @@ export default function Index() {
             <a href="#pricing" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</a>
             <button onClick={() => navigate("/feedback")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Feedback</button>
             <button onClick={() => navigate("/terms")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms</button>
+            <button onClick={() => navigate("/privacy")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy</button>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={toggleTheme} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
@@ -87,18 +88,8 @@ export default function Index() {
         </div>
       </nav>
 
-      {/* Premium Banner */}
-      <div className="fixed top-14 w-full z-40 border-b border-warning/20 bg-warning/5 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 py-2 flex items-center gap-3">
-          <Info className="w-3.5 h-3.5 text-warning shrink-0" />
-          <p className="text-[11px] text-warning">
-            <strong></strong> Yes, Archie — we’re on it. The Fluxcore engineering gremlins have officially isolated the issue, poked it with a digital stick, and confirmed that Roblox OAuth is the culprit. We’re now deep in the debugging trenches, running traces, chasing rogue tokens, and tightening up the authentication flow. Hang tight — the fix is in progress and the system will be back to full power soon.
-          </p>
-        </div>
-      </div>
-
       {/* Hero */}
-      <section className="relative pt-36 pb-16 overflow-hidden">
+      <section className="relative pt-28 pb-16 overflow-hidden">
         <div className="absolute inset-0 bg-radial-glow" />
         <div className="absolute inset-0 bg-grid opacity-20" />
         <div className="relative max-w-4xl mx-auto px-6 text-center">
@@ -207,6 +198,7 @@ export default function Index() {
               <MessageSquare className="w-3 h-3" /> Feedback
             </button>
             <button onClick={() => navigate("/terms")} className="hover:text-foreground transition-colors">Terms</button>
+            <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>
           </div>
         </div>
       </footer>

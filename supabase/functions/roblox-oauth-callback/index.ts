@@ -13,7 +13,6 @@ serve(async (req) => {
 
   const url = new URL(req.url);
 
-  // GET: Roblox OAuth redirects here with ?code=xxx&state=xxx
   if (req.method === "GET") {
     const code = url.searchParams.get("code");
     const state = url.searchParams.get("state");
@@ -23,13 +22,12 @@ serve(async (req) => {
     }
 
     try {
-      // Parse state to get origin
       let origin: string;
-      let nonce: string;
+      let codeVerifier: string;
       try {
         const parsed = JSON.parse(atob(state));
         origin = parsed.origin;
-        nonce = parsed.nonce;
+        codeVerifier = parsed.code_verifier;
       } catch {
         return new Response("Invalid state", { status: 400 });
       }
@@ -37,22 +35,25 @@ serve(async (req) => {
       const clientId = Deno.env.get("ROBLOX_CLIENT_ID")!;
       const clientSecret = Deno.env.get("ROBLOX_CLIENT_SECRET")!;
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-
-      // The redirect URI must match exactly what was sent in the auth request
       const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
 
-      // Exchange code for tokens
+      // Exchange code for tokens with PKCE code_verifier
+      const tokenBody: Record<string, string> = {
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+      };
+      if (codeVerifier) {
+        tokenBody.code_verifier = codeVerifier;
+      }
+
       const tokenRes = await fetch("https://apis.roblox.com/oauth/v1/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
           "Authorization": "Basic " + btoa(`${clientId}:${clientSecret}`),
         },
-        body: new URLSearchParams({
-          grant_type: "authorization_code",
-          code,
-          redirect_uri: redirectUri,
-        }),
+        body: new URLSearchParams(tokenBody),
       });
 
       const tokenData = await tokenRes.json();
@@ -77,7 +78,6 @@ serve(async (req) => {
       const robloxUserId = userInfo.sub;
       const robloxUsername = userInfo.preferred_username || userInfo.name || `User${robloxUserId}`;
 
-      // Create or find Supabase user
       const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
       const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
 
@@ -124,7 +124,6 @@ serve(async (req) => {
         }, { onConflict: "user_id" });
       }
 
-      // Update user metadata
       await adminSupabase.auth.admin.updateUserById(userId, {
         user_metadata: { roblox_user_id: robloxUserId, roblox_username: robloxUsername },
       });
@@ -141,13 +140,15 @@ serve(async (req) => {
 
       const tokenHash = linkData.properties?.hashed_token;
 
-      // Redirect back to frontend with token info
       const callbackUrl = `${origin}/#/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&email=${encodeURIComponent(email)}`;
       return Response.redirect(callbackUrl, 302);
 
     } catch (err) {
       console.error("OAuth callback error:", err);
-      return Response.redirect(`${url.searchParams.get("state") ? JSON.parse(atob(url.searchParams.get("state")!)).origin : ""}/#/login?error=server_error`, 302);
+      const fallbackOrigin = (() => {
+        try { return JSON.parse(atob(url.searchParams.get("state")!)).origin; } catch { return ""; }
+      })();
+      return Response.redirect(`${fallbackOrigin}/#/login?error=server_error`, 302);
     }
   }
 

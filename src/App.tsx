@@ -22,6 +22,7 @@ import SettingsPage from "./pages/Settings";
 import Terms from "./pages/Terms";
 import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
+import Privacy from "./pages/Privacy";
 import JoinWorkspace from "./pages/JoinWorkspace";
 import Documents from "./pages/Documents";
 import LOA from "./pages/LOA";
@@ -92,6 +93,7 @@ function AppRoutes() {
       <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/workspaces" element={<Workspaces />} />
       <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
       <Route path="/feedback" element={<Feedback />} />
       <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
       <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
