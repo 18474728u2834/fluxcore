@@ -208,6 +208,7 @@ export default function Index() {
               <MessageSquare className="w-3 h-3" /> Feedback
             </button>
             <button onClick={() => navigate("/terms")} className="hover:text-foreground transition-colors">Terms</button>
+            <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>
           </div>
         </div>
       </footer>
