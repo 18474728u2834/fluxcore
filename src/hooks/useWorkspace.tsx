@@ -30,19 +30,25 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const fetchWorkspace = async () => {
       setLoading(true);
 
-      // Try fetching as owner
-      const { data: wsData } = await supabase
-        .from("workspaces")
-        .select("*")
-        .eq("id", workspaceId)
-        .single();
+      // Use security-definer function so both owners and members can access
+      const { data: wsRows, error } = await supabase
+        .rpc("get_workspace_context", { _workspace_id: workspaceId });
 
-      if (!wsData) {
+      const wsData = wsRows?.[0];
+
+      if (!wsData || error) {
         navigate("/workspaces");
         return;
       }
 
-      setWorkspace(wsData);
+      setWorkspace({
+        id: wsData.id,
+        name: wsData.name,
+        owner_id: wsData.owner_id,
+        api_key: "", // hidden from non-owners
+        roblox_group_id: wsData.roblox_group_id,
+        gamepass_id: wsData.gamepass_id,
+      });
       const ownerCheck = wsData.owner_id === user.id;
       setIsOwner(ownerCheck);
 

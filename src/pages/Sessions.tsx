@@ -154,8 +154,10 @@ export default function Sessions() {
   };
 
   const assignRole = async (sessionId: string, role: "host_name" | "co_host_name" | "trainer_name", name: string | null) => {
+    const updateData: Record<string, string | null> = {};
+    updateData[role] = name;
     const { error } = await supabase.from("scheduled_sessions")
-      .update({ [role]: name })
+      .update(updateData as any)
       .eq("id", sessionId);
     if (error) toast.error("Failed to update: " + error.message);
     else {
