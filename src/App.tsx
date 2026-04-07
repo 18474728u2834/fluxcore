@@ -22,6 +22,7 @@ import SettingsPage from "./pages/Settings";
 import Terms from "./pages/Terms";
 import Feedback from "./pages/Feedback";
 import NotFound from "./pages/NotFound";
+import Privacy from "./pages/Privacy";
 import JoinWorkspace from "./pages/JoinWorkspace";
 import Documents from "./pages/Documents";
 import LOA from "./pages/LOA";
