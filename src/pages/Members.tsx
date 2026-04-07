@@ -158,7 +158,19 @@ export default function Members() {
         body: { action: "set_rank", workspace_id: workspaceId, roblox_user_id: rankTarget.roblox_user_id, role_id: selectedRobloxRole },
       });
       if (res.data?.success) {
-        toast.success(`Successfully ranked ${rankTarget.roblox_username}!`);
+        const roleName = robloxGroupRoles.find(r => r.id === selectedRobloxRole)?.displayName || selectedRobloxRole;
+        toast.success(`Successfully ranked ${rankTarget.roblox_username} to ${roleName}!`);
+        // Log the rank change
+        if (rankTarget.id !== "owner-virtual") {
+          await supabase.from("member_logs").insert({
+            workspace_id: workspaceId,
+            member_id: rankTarget.id,
+            author_id: (await supabase.auth.getUser()).data.user?.id || "",
+            author_name: robloxUsername || "Unknown",
+            log_type: "rank_change",
+            content: `Ranked to ${roleName} in Roblox group`,
+          });
+        }
         setRankDialogOpen(false);
       } else {
         toast.error(res.data?.error || "Failed to change rank");
