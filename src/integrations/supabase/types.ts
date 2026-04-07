@@ -426,6 +426,77 @@ export type Database = {
           },
         ]
       }
+      support_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          roblox_username: string
+          ticket_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          roblox_username: string
+          ticket_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          roblox_username?: string
+          ticket_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assigned_to: string | null
+          created_at: string
+          id: string
+          message: string
+          roblox_username: string
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          message: string
+          roblox_username: string
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string
+          id?: string
+          message?: string
+          roblox_username?: string
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       verified_users: {
         Row: {
           has_gamepass: boolean
@@ -702,6 +773,7 @@ export type Database = {
           name: string
           permissions: Json
           position: number
+          roblox_role_id: string | null
           workspace_id: string
         }
         Insert: {
@@ -711,6 +783,7 @@ export type Database = {
           name: string
           permissions?: Json
           position?: number
+          roblox_role_id?: string | null
           workspace_id: string
         }
         Update: {
@@ -720,6 +793,7 @@ export type Database = {
           name?: string
           permissions?: Json
           position?: number
+          roblox_role_id?: string | null
           workspace_id?: string
         }
         Relationships: [
@@ -735,11 +809,14 @@ export type Database = {
       workspaces: {
         Row: {
           api_key: string
+          auto_rank_enabled: boolean | null
           background_color: string | null
           created_at: string
+          discord_webhook_url: string | null
           gamepass_id: string | null
           id: string
           invite_code: string
+          message_logger_enabled: boolean | null
           name: string
           owner_id: string
           primary_color: string | null
@@ -752,11 +829,14 @@ export type Database = {
         }
         Insert: {
           api_key?: string
+          auto_rank_enabled?: boolean | null
           background_color?: string | null
           created_at?: string
+          discord_webhook_url?: string | null
           gamepass_id?: string | null
           id?: string
           invite_code?: string
+          message_logger_enabled?: boolean | null
           name: string
           owner_id: string
           primary_color?: string | null
@@ -769,11 +849,14 @@ export type Database = {
         }
         Update: {
           api_key?: string
+          auto_rank_enabled?: boolean | null
           background_color?: string | null
           created_at?: string
+          discord_webhook_url?: string | null
           gamepass_id?: string | null
           id?: string
           invite_code?: string
+          message_logger_enabled?: boolean | null
           name?: string
           owner_id?: string
           primary_color?: string | null
