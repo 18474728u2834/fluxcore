@@ -40,14 +40,21 @@ export default function Login() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRobloxOAuth = () => {
-    // Encode origin in state so the edge function can redirect back
+  const handleRobloxOAuth = async () => {
+    // Generate PKCE code verifier & challenge (required by Roblox)
+    const codeVerifier = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+      .map(b => b.toString(16).padStart(2, "0")).join("");
+    const encoder = new TextEncoder();
+    const digest = await crypto.subtle.digest("SHA-256", encoder.encode(codeVerifier));
+    const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
+      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+
     const statePayload = btoa(JSON.stringify({
       nonce: crypto.randomUUID(),
-      origin: window.location.origin + window.location.pathname.replace(/\/$/, ""),
+      origin: window.location.origin,
+      code_verifier: codeVerifier,
     }));
 
-    // Redirect URI is the edge function - it handles the code exchange server-side
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
 
@@ -57,6 +64,8 @@ export default function Login() {
       redirect_uri: redirectUri,
       scope: "openid profile",
       state: statePayload,
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
     });
 
     window.location.href = `https://apis.roblox.com/oauth/v1/authorize?${params}`;
