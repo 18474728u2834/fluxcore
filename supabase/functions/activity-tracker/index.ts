@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const { data: workspace, error: wsError } = await supabase
       .from('workspaces')
-      .select('id')
+      .select('id, message_logger_enabled')
       .eq('api_key', apiKey)
       .single();
 
@@ -40,7 +40,7 @@ serve(async (req) => {
     const body = await req.json();
     const action = body.action;
 
-    // JOIN - Player joined game
+    // JOIN
     if (action === 'join') {
       const { roblox_user_id, roblox_username, server_id } = body;
       if (!roblox_user_id || !roblox_username) {
@@ -50,7 +50,7 @@ serve(async (req) => {
         );
       }
 
-      // Auto-create workspace member if not exists
+      // Check if staff (workspace member)
       const { data: existingMember } = await supabase
         .from('workspace_members')
         .select('id')
@@ -59,11 +59,11 @@ serve(async (req) => {
         .maybeSingle();
 
       if (!existingMember) {
-        await supabase.from('workspace_members').insert({
-          workspace_id: workspace.id,
-          roblox_user_id: String(roblox_user_id),
-          roblox_username,
-        });
+        // Not staff - don't track, just return
+        return new Response(
+          JSON.stringify({ success: true, tracked: false, reason: 'not_staff' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
 
       const { data, error } = await supabase
@@ -87,15 +87,24 @@ serve(async (req) => {
         );
       }
 
+      // Log join event
+      await supabase.from('activity_events').insert({
+        workspace_id: workspace.id,
+        roblox_user_id: String(roblox_user_id),
+        roblox_username,
+        event_type: 'join',
+        event_data: { server_id: server_id || null },
+      });
+
       return new Response(
-        JSON.stringify({ success: true, session_id: data.id }),
+        JSON.stringify({ success: true, session_id: data.id, tracked: true }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // LEAVE - Player left game
+    // LEAVE
     if (action === 'leave') {
-      const { roblox_user_id, session_id, message_count, idle_seconds } = body;
+      const { roblox_user_id, roblox_username, session_id, message_count, idle_seconds } = body;
       if (!roblox_user_id) {
         return new Response(
           JSON.stringify({ error: 'Missing roblox_user_id' }),
@@ -127,32 +136,37 @@ serve(async (req) => {
 
       await supabase.rpc('calculate_session_duration', { ws_id: workspace.id });
 
+      // Log leave event
+      await supabase.from('activity_events').insert({
+        workspace_id: workspace.id,
+        roblox_user_id: String(roblox_user_id),
+        roblox_username: roblox_username || null,
+        event_type: 'leave',
+        event_data: { message_count: message_count || 0, idle_seconds: idle_seconds || 0 },
+      });
+
       return new Response(
         JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // HEARTBEAT - Keep alive with idle/message data
+    // HEARTBEAT
     if (action === 'heartbeat') {
-      const { roblox_user_id, session_id, is_idle, message_count } = body;
+      const { roblox_user_id, session_id, is_idle, message_count, idle_seconds } = body;
 
       if (session_id) {
-        // Update session counts
-        const updates: any = {};
-        if (is_idle) {
-          // Add 30 seconds of idle time (heartbeat interval)
-          await supabase.rpc('calculate_session_duration', { ws_id: workspace.id });
-        }
+        // Update session with latest counts
+        const updates: Record<string, any> = {};
+        if (typeof message_count === 'number') updates.message_count = message_count;
+        if (typeof idle_seconds === 'number') updates.idle_seconds = idle_seconds;
 
-        // Log heartbeat
-        await supabase.from('activity_heartbeats').insert({
-          session_id,
-          workspace_id: workspace.id,
-          roblox_user_id: String(roblox_user_id),
-          is_idle: is_idle || false,
-          message_count: message_count || 0,
-        });
+        if (Object.keys(updates).length > 0) {
+          await supabase.from('activity_sessions')
+            .update(updates)
+            .eq('id', session_id)
+            .eq('workspace_id', workspace.id);
+        }
       }
 
       return new Response(
@@ -161,7 +175,32 @@ serve(async (req) => {
       );
     }
 
-    // EVENT - Custom event
+    // MESSAGE - Log staff chat message
+    if (action === 'message') {
+      if (!workspace.message_logger_enabled) {
+        return new Response(
+          JSON.stringify({ success: true, logged: false, reason: 'logger_disabled' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const { roblox_user_id, roblox_username, message_content } = body;
+
+      await supabase.from('activity_events').insert({
+        workspace_id: workspace.id,
+        roblox_user_id: String(roblox_user_id),
+        roblox_username: roblox_username || null,
+        event_type: 'chat_message',
+        event_data: { content: message_content },
+      });
+
+      return new Response(
+        JSON.stringify({ success: true, logged: true }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // EVENT
     if (action === 'event') {
       const { roblox_user_id, roblox_username, event_type, event_data } = body;
       if (!roblox_user_id || !event_type) {
@@ -171,15 +210,13 @@ serve(async (req) => {
         );
       }
 
-      const { error } = await supabase
-        .from('activity_events')
-        .insert({
-          workspace_id: workspace.id,
-          roblox_user_id: String(roblox_user_id),
-          roblox_username: roblox_username || null,
-          event_type,
-          event_data: event_data || {},
-        });
+      const { error } = await supabase.from('activity_events').insert({
+        workspace_id: workspace.id,
+        roblox_user_id: String(roblox_user_id),
+        roblox_username: roblox_username || null,
+        event_type,
+        event_data: event_data || {},
+      });
 
       if (error) {
         return new Response(
@@ -195,7 +232,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ error: 'Unknown action. Use: join, leave, event, heartbeat' }),
+      JSON.stringify({ error: 'Unknown action. Use: join, leave, event, heartbeat, message' }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
