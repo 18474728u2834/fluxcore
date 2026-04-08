@@ -894,12 +894,14 @@ export type Database = {
       get_workspace_context: {
         Args: { _workspace_id: string }
         Returns: {
+          background_color: string
           gamepass_id: string
           id: string
           name: string
           owner_id: string
           primary_color: string
           roblox_group_id: string
+          show_grid: boolean
           text_color: string
         }[]
       }
