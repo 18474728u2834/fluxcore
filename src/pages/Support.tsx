@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, MessageSquare, CheckCircle2, Clock, Send } from "lucide-react";
+import { Loader2, Plus, MessageSquare, CheckCircle2, Clock, Send, Bot, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
@@ -23,6 +23,7 @@ interface Message {
   roblox_username: string;
   content: string;
   created_at: string;
+  is_ai?: boolean;
 }
 
 export default function Support() {
@@ -33,11 +34,11 @@ export default function Support() {
   const [creating, setCreating] = useState(false);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [reply, setReply] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  const [aiThinking, setAiThinking] = useState(false);
 
   const fetchTickets = async () => {
     const { data } = await supabase
@@ -58,7 +59,6 @@ export default function Support() {
   };
 
   useEffect(() => { fetchTickets(); }, []);
-
   useEffect(() => {
     if (selectedTicket) fetchMessages(selectedTicket.id);
   }, [selectedTicket?.id]);
@@ -66,15 +66,53 @@ export default function Support() {
   const handleCreate = async () => {
     if (!subject.trim() || !message.trim() || !user) return;
     setCreating(true);
-    const { error } = await supabase.from("support_tickets").insert({
+    const { data, error } = await supabase.from("support_tickets").insert({
       user_id: user.id,
       roblox_username: robloxUsername || "Unknown",
       subject: subject.trim(),
       message: message.trim(),
-    } as any);
-    if (error) toast.error("Failed: " + error.message);
-    else { toast.success("Ticket created!"); setDialogOpen(false); setSubject(""); setMessage(""); fetchTickets(); }
+    } as any).select().single();
+
+    if (error) {
+      toast.error("Failed: " + error.message);
+    } else {
+      toast.success("Ticket created!");
+      setDialogOpen(false);
+      setSubject("");
+      setMessage("");
+      fetchTickets();
+
+      // Trigger AI auto-response
+      if (data) {
+        triggerAI(data.id, message.trim());
+      }
+    }
     setCreating(false);
+  };
+
+  const triggerAI = async (ticketId: string, userMessage: string) => {
+    try {
+      const res = await supabase.functions.invoke("support-ai", {
+        body: { ticket_id: ticketId, message: userMessage, user_id: user?.id },
+      });
+
+      if (res.data?.ai_response) {
+        // Save AI response as a message
+        await supabase.from("support_messages").insert({
+          ticket_id: ticketId,
+          user_id: user!.id,
+          roblox_username: "Fluxcore AI",
+          content: res.data.ai_response,
+        } as any);
+
+        // Refresh messages if viewing this ticket
+        if (selectedTicket?.id === ticketId) {
+          fetchMessages(ticketId);
+        }
+      }
+    } catch (e) {
+      console.error("AI support error:", e);
+    }
   };
 
   const handleReply = async () => {
@@ -86,12 +124,28 @@ export default function Support() {
       roblox_username: robloxUsername || "Unknown",
       content: reply.trim(),
     } as any);
-    if (error) toast.error("Failed: " + error.message);
-    else { setReply(""); fetchMessages(selectedTicket.id); }
+
+    if (error) {
+      toast.error("Failed: " + error.message);
+    } else {
+      const userMsg = reply.trim();
+      setReply("");
+      fetchMessages(selectedTicket.id);
+
+      // Trigger AI response
+      setAiThinking(true);
+      await triggerAI(selectedTicket.id, userMsg);
+      setAiThinking(false);
+      fetchMessages(selectedTicket.id);
+    }
     setSendingReply(false);
   };
 
-  const statusIcon = (s: string) => s === "open" ? <Clock className="w-3 h-3 text-warning" /> : <CheckCircle2 className="w-3 h-3 text-success" />;
+  const statusIcon = (s: string) => s === "open"
+    ? <Clock className="w-3 h-3 text-warning" />
+    : <CheckCircle2 className="w-3 h-3 text-success" />;
+
+  const isAI = (username: string) => username === "Fluxcore AI";
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,7 +153,9 @@ export default function Support() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-extrabold text-foreground">Support Center</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Need help? Create a support ticket and our team will assist you.</p>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Get instant AI help or escalate to our team by typing "staff".
+            </p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
@@ -133,20 +189,37 @@ export default function Support() {
               <p className="text-xs text-muted-foreground mt-2">{new Date(selectedTicket.created_at).toLocaleString()}</p>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
               {messages.map(m => (
-                <div key={m.id} className="glass rounded-lg p-4">
+                <div key={m.id} className={`glass rounded-lg p-4 ${isAI(m.roblox_username) ? "border-l-2 border-primary/50" : ""}`}>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs font-semibold text-primary">{m.roblox_username}</span>
+                    {isAI(m.roblox_username) ? (
+                      <Bot className="w-3.5 h-3.5 text-primary" />
+                    ) : (
+                      <User className="w-3.5 h-3.5 text-muted-foreground" />
+                    )}
+                    <span className={`text-xs font-semibold ${isAI(m.roblox_username) ? "text-primary" : "text-foreground"}`}>
+                      {m.roblox_username}
+                    </span>
                     <span className="text-xs text-muted-foreground">{new Date(m.created_at).toLocaleString()}</span>
                   </div>
-                  <p className="text-sm text-foreground">{m.content}</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap">{m.content}</p>
                 </div>
               ))}
+              {aiThinking && (
+                <div className="glass rounded-lg p-4 border-l-2 border-primary/50">
+                  <div className="flex items-center gap-2">
+                    <Bot className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-xs font-semibold text-primary">Fluxcore AI</span>
+                    <Loader2 className="w-3 h-3 animate-spin text-primary" />
+                    <span className="text-xs text-muted-foreground">thinking...</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-2">
-              <Input placeholder="Type a reply..." value={reply} onChange={(e) => setReply(e.target.value)} className="bg-muted border-border"
+              <Input placeholder="Type a message... (type 'staff' for human help)" value={reply} onChange={(e) => setReply(e.target.value)} className="bg-muted border-border"
                 onKeyDown={(e) => e.key === "Enter" && handleReply()} />
               <Button variant="hero" size="sm" onClick={handleReply} disabled={sendingReply || !reply.trim()}>
                 {sendingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
