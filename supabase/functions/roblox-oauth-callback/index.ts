@@ -1,14 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+      },
+    });
   }
 
   const url = new URL(req.url);
@@ -18,6 +18,7 @@ serve(async (req) => {
     const state = url.searchParams.get("state");
 
     if (!code || !state) {
+      console.error("Missing code or state", { code: !!code, state: !!state });
       return new Response("Missing code or state", { status: 400 });
     }
 
@@ -28,35 +29,60 @@ serve(async (req) => {
         const parsed = JSON.parse(atob(state));
         origin = parsed.origin;
         codeVerifier = parsed.code_verifier;
-      } catch {
+      } catch (e) {
+        console.error("Failed to parse state:", e);
         return new Response("Invalid state", { status: 400 });
       }
 
-      const clientId = Deno.env.get("ROBLOX_CLIENT_ID")!;
-      const clientSecret = Deno.env.get("ROBLOX_CLIENT_SECRET")!;
-      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-      const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
+      const clientId = Deno.env.get("ROBLOX_CLIENT_ID");
+      const clientSecret = Deno.env.get("ROBLOX_CLIENT_SECRET");
+      const supabaseUrl = Deno.env.get("SUPABASE_URL");
 
-      // Exchange code for tokens with PKCE code_verifier
-      const tokenBody: Record<string, string> = {
+      if (!clientId || !clientSecret || !supabaseUrl) {
+        console.error("Missing env vars:", {
+          hasClientId: !!clientId,
+          hasClientSecret: !!clientSecret,
+          hasSupabaseUrl: !!supabaseUrl,
+        });
+        return Response.redirect(`${origin}/#/login?error=server_config_error`, 302);
+      }
+
+      const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
+      console.log("Token exchange with redirect_uri:", redirectUri);
+
+      // Build token request body
+      const tokenBody = new URLSearchParams({
         grant_type: "authorization_code",
         code,
         redirect_uri: redirectUri,
-      };
+        client_id: clientId,
+        client_secret: clientSecret,
+      });
       if (codeVerifier) {
-        tokenBody.code_verifier = codeVerifier;
+        tokenBody.set("code_verifier", codeVerifier);
       }
+
+      console.log("Sending token request to Roblox...");
 
       const tokenRes = await fetch("https://apis.roblox.com/oauth/v1/token", {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
-          "Authorization": "Basic " + btoa(`${clientId}:${clientSecret}`),
         },
-        body: new URLSearchParams(tokenBody),
+        body: tokenBody,
       });
 
-      const tokenData = await tokenRes.json();
+      const tokenText = await tokenRes.text();
+      console.log("Token response status:", tokenRes.status);
+      console.log("Token response body:", tokenText);
+
+      let tokenData: any;
+      try {
+        tokenData = JSON.parse(tokenText);
+      } catch {
+        console.error("Failed to parse token response as JSON:", tokenText);
+        return Response.redirect(`${origin}/#/login?error=token_parse_failed`, 302);
+      }
 
       if (!tokenRes.ok || !tokenData.access_token) {
         console.error("Token exchange failed:", tokenData);
@@ -69,6 +95,7 @@ serve(async (req) => {
       });
 
       const userInfo = await userInfoRes.json();
+      console.log("User info response:", JSON.stringify(userInfo));
 
       if (!userInfoRes.ok || !userInfo.sub) {
         console.error("User info failed:", userInfo);
@@ -83,6 +110,7 @@ serve(async (req) => {
 
       const email = `${robloxUserId}@roblox.fluxcore.app`;
 
+      // Check if user already exists in verified_users
       const { data: existingVerified } = await adminSupabase
         .from("verified_users")
         .select("user_id")
@@ -98,6 +126,7 @@ serve(async (req) => {
           .update({ roblox_username: robloxUsername })
           .eq("user_id", userId);
       } else {
+        // Try to create a new user
         const { data: newUser, error: createError } = await adminSupabase.auth.admin.createUser({
           email,
           email_confirm: true,
@@ -105,11 +134,13 @@ serve(async (req) => {
         });
 
         if (createError) {
+          // User might already exist
           const { data: listData } = await adminSupabase.auth.admin.listUsers();
           const found = listData?.users?.find((u: any) => u.email === email);
           if (found) {
             userId = found.id;
           } else {
+            console.error("Failed to create user:", createError);
             throw createError;
           }
         } else {
@@ -124,21 +155,24 @@ serve(async (req) => {
         }, { onConflict: "user_id" });
       }
 
+      // Update user metadata
       await adminSupabase.auth.admin.updateUserById(userId, {
         user_metadata: { roblox_user_id: robloxUserId, roblox_username: robloxUsername },
       });
 
-      // Generate magic link
+      // Generate magic link token
       const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
         type: "magiclink",
         email,
       });
 
       if (linkError || !linkData) {
+        console.error("Magic link error:", linkError);
         throw linkError || new Error("Failed to generate session link");
       }
 
       const tokenHash = linkData.properties?.hashed_token;
+      console.log("Successfully generated magic link, redirecting user");
 
       const callbackUrl = `${origin}/#/auth/callback?token_hash=${encodeURIComponent(tokenHash)}&email=${encodeURIComponent(email)}`;
       return Response.redirect(callbackUrl, 302);
