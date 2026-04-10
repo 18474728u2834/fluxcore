@@ -103,11 +103,11 @@ export default function Index() {
           <div className="flex items-center justify-center gap-8 flex-wrap">
             <span className="text-xs text-muted-foreground uppercase tracking-widest font-semibold">Trusted by</span>
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-[10px] font-bold text-white">BB</div>
+              <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center text-[10px] font-bold text-primary-foreground">BB</div>
               <span className="text-sm font-semibold text-foreground">Bloxy Bargains</span>
             </div>
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-md bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white">BD</div>
+              <div className="w-7 h-7 rounded-md bg-accent flex items-center justify-center text-[10px] font-bold text-accent-foreground">BD</div>
               <span className="text-sm font-semibold text-foreground">Bargains Downtown</span>
             </div>
           </div>
