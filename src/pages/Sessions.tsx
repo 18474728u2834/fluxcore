@@ -118,12 +118,47 @@ export default function Sessions() {
     setLoading(false);
   };
 
+  // Check for sessions starting within 5 minutes and send Discord reminders
+  const checkAndSendReminders = async (sessionList: ScheduledSession[]) => {
+    const now = Date.now();
+    const fiveMinFromNow = now + 5 * 60 * 1000;
+    const upcoming = sessionList.filter(s => {
+      const t = new Date(s.scheduled_at).getTime();
+      return s.status === "scheduled" && t > now && t <= fiveMinFromNow;
+    });
+
+    for (const s of upcoming) {
+      const reminderKey = `discord_reminded_${s.id}`;
+      if (sessionStorage.getItem(reminderKey)) continue;
+      sessionStorage.setItem(reminderKey, "1");
+
+      supabase.functions.invoke("discord-notify", {
+        body: {
+          action: "send_reminder",
+          workspace_id: workspaceId,
+          session_title: s.title,
+          session_time: s.scheduled_at,
+          host_name: s.host_name,
+          category: s.category,
+        },
+      }).then(res => {
+        if (res.data?.success) console.log("Discord reminder sent for:", s.title);
+      }).catch(() => {});
+    }
+  };
+
   useEffect(() => {
     fetchSessions();
     const channel = supabase.channel(`sessions-${workspaceId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "scheduled_sessions", filter: `workspace_id=eq.${workspaceId}` }, () => fetchSessions())
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    // Check for reminders every 60 seconds
+    const reminderInterval = setInterval(() => {
+      if (sessions.length > 0) checkAndSendReminders(sessions);
+    }, 60_000);
+
+    return () => { supabase.removeChannel(channel); clearInterval(reminderInterval); };
   }, [workspaceId]);
 
   const handleCreate = async () => {

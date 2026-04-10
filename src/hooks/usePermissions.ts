@@ -12,6 +12,8 @@ export const ALL_PERMISSIONS = [
   { key: "create_shift", label: "Create Shifts", description: "Schedule new shifts" },
   { key: "create_training", label: "Create Trainings", description: "Schedule new trainings" },
   { key: "create_event", label: "Create Events", description: "Schedule new events/other" },
+  { key: "promote_members", label: "Promote Members", description: "Rank members up in the Roblox group" },
+  { key: "demote_members", label: "Demote Members", description: "Rank members down in the Roblox group" },
   { key: "manage_members", label: "Manage Members", description: "Edit roles, warnings, remove members" },
   { key: "view_config", label: "View Config", description: "Access settings & setup tracking" },
   { key: "manage_loa", label: "Manage LOA", description: "Approve/decline leave requests" },

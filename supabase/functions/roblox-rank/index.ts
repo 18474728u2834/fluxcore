@@ -21,12 +21,18 @@ serve(async (req) => {
       });
     }
 
+    // Get the requesting user
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user: reqUser } } = await createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    }).auth.getUser();
+
     const body = await req.json();
     const { action, workspace_id, roblox_user_id, role_id } = body;
 
     const { data: ws } = await supabase
       .from("workspaces")
-      .select("roblox_api_key, roblox_group_id")
+      .select("roblox_api_key, roblox_group_id, owner_id")
       .eq("id", workspace_id)
       .single();
 
@@ -40,29 +46,29 @@ serve(async (req) => {
     async function fetchAllRoles(): Promise<any[]> {
       let allRoles: any[] = [];
       let pageToken: string | null = null;
-      
-      for (let i = 0; i < 20; i++) { // max 20 pages safety
+
+      for (let i = 0; i < 20; i++) {
         let url = `https://apis.roblox.com/cloud/v2/groups/${ws!.roblox_group_id}/roles?maxPageSize=50`;
         if (pageToken) url += `&pageToken=${pageToken}`;
-        
+
         const res = await fetch(url, {
           headers: { "x-api-key": ws!.roblox_api_key! },
         });
-        
+
         if (!res.ok) {
           const errText = await res.text();
           console.error("Roblox API error:", errText);
           throw new Error(`Failed to fetch roles: ${errText}`);
         }
-        
+
         const data = await res.json();
         const roles = data.groupRoles || [];
         allRoles = allRoles.concat(roles);
-        
+
         if (!data.nextPageToken) break;
         pageToken = data.nextPageToken;
       }
-      
+
       return allRoles;
     }
 
@@ -80,12 +86,54 @@ serve(async (req) => {
       }
     }
 
-    // Action: set_rank
+    // Action: set_rank - with rank protection
     if (action === "set_rank") {
       if (!roblox_user_id || !role_id) {
         return new Response(JSON.stringify({ error: "Missing roblox_user_id or role_id" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
+      }
+
+      // Rank protection: prevent ranking above yourself (unless owner)
+      if (reqUser && reqUser.id !== ws.owner_id) {
+        // Get the requesting user's Roblox ID
+        const { data: reqVerified } = await supabase
+          .from("verified_users")
+          .select("roblox_user_id")
+          .eq("user_id", reqUser.id)
+          .maybeSingle();
+
+        if (reqVerified?.roblox_user_id) {
+          try {
+            const allRoles = await fetchAllRoles();
+            const targetRole = allRoles.find((r: any) => {
+              const rid = r.id?.split("/").pop();
+              return rid === role_id;
+            });
+
+            // Get requester's current rank in the group
+            const reqMemberRes = await fetch(
+              `https://apis.roblox.com/cloud/v2/groups/${ws.roblox_group_id}/memberships?filter=user=='users/${reqVerified.roblox_user_id}'&maxPageSize=1`,
+              { headers: { "x-api-key": ws.roblox_api_key! } }
+            );
+            if (reqMemberRes.ok) {
+              const reqMemberData = await reqMemberRes.json();
+              const reqMembership = reqMemberData.groupMemberships?.[0];
+              if (reqMembership) {
+                const reqRoleId = reqMembership.role?.split("/").pop();
+                const reqRole = allRoles.find((r: any) => r.id?.split("/").pop() === reqRoleId);
+
+                if (targetRole && reqRole && targetRole.rank >= reqRole.rank) {
+                  return new Response(JSON.stringify({ error: "You cannot assign a rank equal to or above your own" }), {
+                    status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+                  });
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Rank protection check failed:", e);
+          }
+        }
       }
 
       const listRes = await fetch(
