@@ -38,33 +38,38 @@ export default function Login() {
   };
 
   const handleRobloxOAuth = async () => {
-    const codeVerifier = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map(b => b.toString(16).padStart(2, "0")).join("");
-    const encoder = new TextEncoder();
-    const digest = await crypto.subtle.digest("SHA-256", encoder.encode(codeVerifier));
-    const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    try {
+      // Generate PKCE code verifier and challenge
+      const codeVerifier = Array.from(crypto.getRandomValues(new Uint8Array(32)))
+        .map(b => b.toString(16).padStart(2, "0")).join("");
+      const encoder = new TextEncoder();
+      const digest = await crypto.subtle.digest("SHA-256", encoder.encode(codeVerifier));
+      const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
+        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
-    const statePayload = btoa(JSON.stringify({
-      nonce: crypto.randomUUID(),
-      origin: window.location.origin,
-      code_verifier: codeVerifier,
-    }));
+      const statePayload = btoa(JSON.stringify({
+        nonce: crypto.randomUUID(),
+        origin: window.location.origin,
+        code_verifier: codeVerifier,
+      }));
 
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
 
-    const params = new URLSearchParams({
-      client_id: ROBLOX_CLIENT_ID,
-      response_type: "code",
-      redirect_uri: redirectUri,
-      scope: "openid profile",
-      state: statePayload,
-      code_challenge: codeChallenge,
-      code_challenge_method: "S256",
-    });
+      const params = new URLSearchParams({
+        client_id: ROBLOX_CLIENT_ID,
+        response_type: "code",
+        redirect_uri: redirectUri,
+        scope: "openid profile",
+        state: statePayload,
+        code_challenge: codeChallenge,
+        code_challenge_method: "S256",
+      });
 
-    window.location.href = `https://apis.roblox.com/oauth/v1/authorize?${params}`;
+      window.location.href = `https://apis.roblox.com/oauth/v1/authorize?${params}`;
+    } catch (err) {
+      console.error("OAuth init error:", err);
+    }
   };
 
   if (authLoading) {
