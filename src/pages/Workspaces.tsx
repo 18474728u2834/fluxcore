@@ -79,20 +79,32 @@ export default function Workspaces() {
     setWorkspaces(ws);
     setLoading(false);
 
-    // Fetch group icons
-    const icons: Record<string, string> = {};
-    for (const w of ws) {
-      if (w.roblox_group_id) {
-        try {
-          const res = await fetch(`https://groups.roblox.com/v1/groups/${w.roblox_group_id}`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.emblemUrl) icons[w.id] = data.emblemUrl;
+    // Fetch group icons via edge function proxy (avoids CORS)
+    const groupIds = ws.filter(w => w.roblox_group_id).map(w => w.roblox_group_id);
+    if (groupIds.length > 0) {
+      try {
+        const uniqueIds = [...new Set(groupIds)].join(",");
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+        const res = await fetch(`${supabaseUrl}/functions/v1/roblox-group-icon?groupIds=${uniqueIds}`, {
+          headers: { "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const icons: Record<string, string> = {};
+          if (data.data) {
+            for (const item of data.data) {
+              if (item.imageUrl) {
+                const matchingWs = ws.find(w => w.roblox_group_id === String(item.targetId));
+                if (matchingWs) icons[matchingWs.id] = item.imageUrl;
+              }
+            }
           }
-        } catch {}
+          setGroupIcons(icons);
+        }
+      } catch (e) {
+        console.error("Failed to fetch group icons:", e);
       }
     }
-    setGroupIcons(icons);
   };
 
   const handleCreate = async () => {
@@ -141,7 +153,6 @@ export default function Workspaces() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Nav */}
       <nav className="border-b border-border/20 bg-background/80 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
           <button onClick={() => navigate("/")} className="text-xl font-black tracking-tight">
@@ -184,7 +195,7 @@ export default function Workspaces() {
               >
                 <div className="flex items-start justify-between mb-4">
                   {groupIcons[ws.id] ? (
-                    <img src={groupIcons[ws.id]} alt={ws.name} className="w-12 h-12 rounded-xl object-cover" />
+                    <img src={groupIcons[ws.id]} alt={ws.name} className="w-12 h-12 rounded-xl object-cover" crossOrigin="anonymous" />
                   ) : (
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-lg font-black text-primary">
                       {ws.name.charAt(0).toUpperCase()}
