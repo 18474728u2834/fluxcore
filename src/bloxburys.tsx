@@ -23,8 +23,8 @@ export default function BloxyBargainsDowntown() {
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center relative overflow-hidden">
       <div className="absolute inset-0 bg-grid opacity-[0.06]" />
       <div className="text-center space-y-6">
-        <img src={downtownLogo} alt="Bargains Downtown" className="w-24 h-24 mx-auto rounded-2xl" />
-        <h1 className="text-2xl font-bold text-white">Bargains Downtown</h1>
+        <img src={downtownLogo} alt="Bloxburys" className="w-24 h-24 mx-auto rounded-2xl" />
+        <h1 className="text-2xl font-bold text-white">Bloxburys</h1>
         <Loader2 className="w-6 h-6 text-white/50 animate-spin mx-auto" />
         <p className="text-sm text-white/40">Redirecting...</p>
       </div>
