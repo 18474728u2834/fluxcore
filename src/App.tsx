@@ -77,7 +77,7 @@ function WorkspaceRoutes() {
 function AppRoutes() {
   const hostname = window.location.hostname;
 
-  if (hostname.includes("bargains") || hostname.includes("bargains.")) {
+  if (hostname.includes("bloxy-bargains") || hostname.includes("bargains.")) {
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
