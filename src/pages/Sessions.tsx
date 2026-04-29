@@ -586,9 +586,17 @@ export default function Sessions() {
               const sessionTags = (session.tag_ids || []).map(id => tagsById[id]).filter(Boolean);
               return (
                 <button key={`${session.id}-${occursAt.getTime()}`} onClick={() => setDetailSession(session)}
-                  className="glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 transition-colors border border-border/30 hover:border-primary/40 group">
+                  className="glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 transition-colors border border-border/30 hover:border-primary/40 group relative">
+                  {firstAssignee && (
+                    <img
+                      src={`https://www.roblox.com/headshot-thumbnail/image?username=${encodeURIComponent(firstAssignee)}&width=150&height=150&format=png`}
+                      alt={firstAssignee}
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      className="absolute -top-2 -right-2 w-9 h-9 rounded-full border-2 border-background bg-secondary object-cover shadow-md"
+                    />
+                  )}
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-semibold text-foreground text-sm truncate flex-1">{session.title}</h3>
+                    <h3 className="font-semibold text-foreground text-sm truncate flex-1 pr-8">{session.title}</h3>
                     {isOwner && (
                       <button onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}
                         className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100">
