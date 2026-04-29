@@ -5,19 +5,19 @@ import { Sparkles, Shield, Target, FileText, Users, Zap, Bot, MessageSquare, Bar
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const CURRENT_VERSION = "3.0.0";
+const CURRENT_VERSION = "3.1.0";
 
 const features = [
-  { icon: Globe, title: "Full Roblox Group Integration", desc: "Import ALL group roles (with pagination), promote/demote directly, and auto-rank from group hierarchy." },
-  { icon: Sparkles, title: "AI-Powered Support", desc: "Built-in AI assistant answers common questions instantly. Type 'staff' to escalate to the team." },
-  { icon: Palette, title: "Workspace Branding", desc: "Customize background color, grid pattern, primary color, and text color. Your dashboard, your style." },
-  { icon: Shield, title: "Modern Login Page", desc: "Full-screen split login with Roblox OAuth 2.0 (PKCE) and emoji verification." },
-  { icon: Bot, title: "Discord Shift Reminders", desc: "Automatic Discord notifications 5 minutes before sessions start via webhooks." },
+  { icon: MessageSquare, title: "Message Logger Viewer", desc: "New page to search staff in-game chat with timestamps. Gated by the new View Message Logs permission." },
+  { icon: Shield, title: "Roblox OAuth Fixed", desc: "Token exchange now works reliably — sign in with Roblox lands you straight in your dashboard." },
+  { icon: Users, title: "No Duplicate Members", desc: "Database constraint prevents the same Roblox user appearing twice in a workspace." },
+  { icon: Sparkles, title: "Staff Support Replies", desc: "Fluxcore staff can now view and reply to every support ticket and update its status." },
+  { icon: Palette, title: "Purple Scrollbars", desc: "No more ugly white bars — every scrollbar matches the workspace accent." },
+  { icon: Globe, title: "Full Roblox Group Integration", desc: "Import all group roles with pagination, two-way rank sync, and auto-join by mapped rank." },
+  { icon: Bot, title: "AI-Powered Support", desc: "Built-in AI answers common questions instantly. Type 'staff' to escalate to Novavoff." },
   { icon: BarChart3, title: "Quota Admin View", desc: "Track who completed their quotas with progress bars and admin overview." },
-  { icon: MessageSquare, title: "Message Logger", desc: "Log in-game staff messages for moderation (only tracks staff, not customers)." },
-  { icon: Zap, title: "Activity Tracker v2", desc: "Staff-only tracking with idle detection, heartbeats, join/leave events, and message logging." },
   { icon: FileText, title: "Documents & Policies", desc: "Digital signature policies with deadlines, auto-assignment, and multiple signature types." },
-  { icon: Award, title: "Updated Feature Showcase", desc: "Landing page now shows all 9 major features with a grid background." },
+  { icon: Award, title: "Verified Workspaces", desc: "Official partners now display a verified mark next to their workspace name." },
 ];
 
 export function ReleaseModal() {
@@ -45,6 +45,8 @@ export function ReleaseModal() {
       .from("workspaces")
       .update({ release_version: CURRENT_VERSION } as any)
       .eq("id", workspaceId);
+    // Force refresh so new pages, permissions and styles load without manual reload
+    window.location.reload();
   };
 
   return (

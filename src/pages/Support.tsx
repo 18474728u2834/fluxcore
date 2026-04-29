@@ -28,6 +28,7 @@ interface Message {
 
 export default function Support() {
   const { user, robloxUsername } = useAuth();
+  const isStaff = (robloxUsername || "").toLowerCase() === "novavoff";
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,6 +40,7 @@ export default function Support() {
   const [reply, setReply] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchTickets = async () => {
     const { data } = await supabase
@@ -132,12 +134,18 @@ export default function Support() {
       setReply("");
       fetchMessages(selectedTicket.id);
 
-      // Trigger AI response
-      setAiThinking(true);
-      await triggerAI(selectedTicket.id, userMsg);
-      setAiThinking(false);
-      fetchMessages(selectedTicket.id);
-      // Refresh ticket list + selected so escalation status shows
+      // Staff replies don't trigger AI; mark ticket in_progress instead
+      if (isStaff) {
+        await supabase
+          .from("support_tickets")
+          .update({ status: "in_progress", assigned_to: robloxUsername || "Novavoff", updated_at: new Date().toISOString() })
+          .eq("id", selectedTicket.id);
+      } else {
+        setAiThinking(true);
+        await triggerAI(selectedTicket.id, userMsg);
+        setAiThinking(false);
+        fetchMessages(selectedTicket.id);
+      }
       const { data: refreshed } = await supabase.from("support_tickets").select("*").eq("id", selectedTicket.id).maybeSingle();
       if (refreshed) setSelectedTicket(refreshed as any);
       fetchTickets();
@@ -145,22 +153,41 @@ export default function Support() {
     setSendingReply(false);
   };
 
+  const setTicketStatus = async (status: string) => {
+    if (!selectedTicket) return;
+    setUpdatingStatus(true);
+    const { error } = await supabase
+      .from("support_tickets")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", selectedTicket.id);
+    if (error) toast.error("Failed: " + error.message);
+    else {
+      toast.success(`Marked as ${status}`);
+      setSelectedTicket({ ...selectedTicket, status });
+      fetchTickets();
+    }
+    setUpdatingStatus(false);
+  };
+
   const statusIcon = (s: string) => s === "open"
     ? <Clock className="w-3 h-3 text-warning" />
     : s === "escalated"
       ? <Bot className="w-3 h-3 text-primary" />
-      : <CheckCircle2 className="w-3 h-3 text-success" />;
+      : s === "in_progress"
+        ? <Loader2 className="w-3 h-3 text-primary" />
+        : <CheckCircle2 className="w-3 h-3 text-success" />;
 
   const isAI = (username: string) => username === "Fluxcore AI";
+  const isStaffMsg = (username: string) => (username || "").toLowerCase() === "novavoff";
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Support Center</h1>
+            <h1 className="text-2xl font-extrabold text-foreground">Support Center {isStaff && <span className="text-xs ml-2 px-2 py-0.5 rounded-full bg-primary/15 text-primary align-middle">Staff</span>}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Get instant AI help or escalate to our team by typing "staff".
+              {isStaff ? "You can view and respond to every ticket." : "Get instant AI help or escalate to our team by typing \"staff\"."}
             </p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -186,32 +213,42 @@ export default function Support() {
               ← Back to tickets
             </button>
             <div className="glass rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 {statusIcon(selectedTicket.status)}
                 <h2 className="font-semibold text-foreground">{selectedTicket.subject}</h2>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize">{selectedTicket.status}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize">{selectedTicket.status.replace("_", " ")}</span>
+                {selectedTicket.assigned_to && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">Assigned: {selectedTicket.assigned_to}</span>
+                )}
+                <span className="text-xs text-muted-foreground ml-auto">From: {(selectedTicket as any).roblox_username || "Unknown"}</span>
               </div>
               <p className="text-sm text-muted-foreground">{selectedTicket.message}</p>
               <p className="text-xs text-muted-foreground mt-2">{new Date(selectedTicket.created_at).toLocaleString()}</p>
+              {isStaff && (
+                <div className="flex gap-2 mt-3 pt-3 border-t border-border/40">
+                  <Button size="sm" variant="outline" disabled={updatingStatus || selectedTicket.status === "in_progress"} onClick={() => setTicketStatus("in_progress")}>Mark In Progress</Button>
+                  <Button size="sm" variant="outline" disabled={updatingStatus || selectedTicket.status === "resolved"} onClick={() => setTicketStatus("resolved")}>Mark Resolved</Button>
+                  <Button size="sm" variant="ghost" disabled={updatingStatus || selectedTicket.status === "open"} onClick={() => setTicketStatus("open")}>Reopen</Button>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-3 max-h-[400px] overflow-y-auto">
-              {messages.map(m => (
-                <div key={m.id} className={`glass rounded-lg p-4 ${isAI(m.roblox_username) ? "border-l-2 border-primary/50" : ""}`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    {isAI(m.roblox_username) ? (
-                      <Bot className="w-3.5 h-3.5 text-primary" />
-                    ) : (
-                      <User className="w-3.5 h-3.5 text-muted-foreground" />
-                    )}
-                    <span className={`text-xs font-semibold ${isAI(m.roblox_username) ? "text-primary" : "text-foreground"}`}>
-                      {m.roblox_username}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{new Date(m.created_at).toLocaleString()}</span>
+            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+              {messages.map(m => {
+                const ai = isAI(m.roblox_username);
+                const staff = isStaffMsg(m.roblox_username);
+                return (
+                  <div key={m.id} className={`glass rounded-lg p-4 ${ai ? "border-l-2 border-primary/50" : staff ? "border-l-2 border-success/60" : ""}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {ai ? <Bot className="w-3.5 h-3.5 text-primary" /> : <User className={`w-3.5 h-3.5 ${staff ? "text-success" : "text-muted-foreground"}`} />}
+                      <span className={`text-xs font-semibold ${ai ? "text-primary" : staff ? "text-success" : "text-foreground"}`}>{m.roblox_username}</span>
+                      {staff && <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success font-semibold uppercase tracking-wide">Staff</span>}
+                      <span className="text-xs text-muted-foreground">{new Date(m.created_at).toLocaleString()}</span>
+                    </div>
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{m.content}</p>
                   </div>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{m.content}</p>
-                </div>
-              ))}
+                );
+              })}
               {aiThinking && (
                 <div className="glass rounded-lg p-4 border-l-2 border-primary/50">
                   <div className="flex items-center gap-2">
@@ -225,7 +262,7 @@ export default function Support() {
             </div>
 
             <div className="flex gap-2">
-              <Input placeholder="Type a message... (type 'staff' for human help)" value={reply} onChange={(e) => setReply(e.target.value)} className="bg-muted border-border"
+              <Input placeholder={isStaff ? "Reply to user..." : "Type a message... (type 'staff' for human help)"} value={reply} onChange={(e) => setReply(e.target.value)} className="bg-muted border-border"
                 onKeyDown={(e) => e.key === "Enter" && handleReply()} />
               <Button variant="hero" size="sm" onClick={handleReply} disabled={sendingReply || !reply.trim()}>
                 {sendingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
@@ -246,10 +283,13 @@ export default function Support() {
                 <div className="flex items-center gap-2 mb-1">
                   {statusIcon(t.status)}
                   <h3 className="font-semibold text-foreground text-sm">{t.subject}</h3>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize ml-auto">{t.status}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize ml-auto">{t.status.replace("_"," ")}</span>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">{t.message}</p>
-                <p className="text-xs text-muted-foreground mt-1">{new Date(t.created_at).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {isStaff && <span className="text-foreground font-medium">{(t as any).roblox_username || "Unknown"} · </span>}
+                  {new Date(t.created_at).toLocaleString()}
+                </p>
               </button>
             ))}
           </div>
