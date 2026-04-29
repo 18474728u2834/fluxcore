@@ -242,8 +242,11 @@ export default function Pricing() {
         </div>
       </section>
 
-      <footer className="border-t border-border/10 py-8 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} Fluxcore. Not affiliated with Roblox Corporation.
+      <footer className="border-t border-border/10 py-8">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
+          <span>© {new Date().getFullYear()} Fluxcore. Not affiliated with Roblox Corporation.</span>
+          <LanguageSelector />
+        </div>
       </footer>
     </div>
   );
