@@ -182,7 +182,9 @@ export function useI18n() {
 export function ForceEnglish({ children }: { children: ReactNode }) {
   useEffect(() => {
     window.dispatchEvent(new CustomEvent("fluxcore:force-lang", { detail: { lang: "en" } }));
-    return () => window.dispatchEvent(new CustomEvent("fluxcore:force-lang", { detail: { lang: null } }));
+    return () => {
+      window.dispatchEvent(new CustomEvent("fluxcore:force-lang", { detail: { lang: null } }));
+    };
   }, []);
   return <>{children}</>;
 }
