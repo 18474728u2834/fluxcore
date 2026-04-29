@@ -165,7 +165,7 @@ export default function Documents() {
 
   const isHandbook = (doc: Doc) => doc.doc_type?.toLowerCase() === "handbook";
   const filtered = docs.filter(d => tab === "handbook" ? isHandbook(d) : !isHandbook(d));
-  const unsignedCount = docs.filter(d => !isHandbook(d) && d.auto_assign && !hasSigned(d.id)).length;
+  const unsignedCount = docs.filter(d => !isHandbook(d) && d.auto_assign && !hasSigned(d.id) && !isRead(d.id)).length;
 
   return (
     <DashboardLayout title="Documents">
@@ -270,7 +270,7 @@ export default function Documents() {
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-primary" />
                       <h3 className="font-semibold text-foreground text-sm">{doc.title}</h3>
-                      {doc.auto_assign && !signed && (
+                      {doc.auto_assign && !signed && !isRead(doc.id) && (
                         <span className="w-2 h-2 rounded-full bg-destructive" />
                       )}
                     </div>
