@@ -114,9 +114,9 @@ export default function Login() {
                   </div>
                 </div>
 
-                <Button onClick={() => setLoginMethod("emoji")} variant="outline" className="w-full h-12">
+                <Button onClick={() => setLoginMethod("emoji")} variant="outline" className="w-full h-12 press-shrink">
                   <User className="w-4 h-4 mr-2" />
-                  Emoji Verification
+                  Bio Code Verification
                 </Button>
               </div>
 
