@@ -18,6 +18,7 @@ export const ALL_PERMISSIONS = [
   { key: "view_config", label: "View Config", description: "Access settings & setup tracking" },
   { key: "manage_loa", label: "Manage LOA", description: "Approve/decline leave requests" },
   { key: "manage_documents", label: "Manage Documents", description: "Create and manage policies/handbooks" },
+  { key: "view_message_logs", label: "View Message Logs", description: "Read in-game chat messages logged by the workspace" },
 ] as const;
 
 export type PermissionKey = typeof ALL_PERMISSIONS[number]["key"];
