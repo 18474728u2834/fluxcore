@@ -7,6 +7,14 @@
     {
       "source": "/api/v1/sessions/:path*",
       "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions/:path*"
+    },
+    {
+      "source": "/api/v1/track",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker"
+    },
+    {
+      "source": "/api/v1/track/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker/:path*"
     }
   ]
 }
