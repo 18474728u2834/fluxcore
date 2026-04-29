@@ -143,7 +143,9 @@ export default function Support() {
 
   const statusIcon = (s: string) => s === "open"
     ? <Clock className="w-3 h-3 text-warning" />
-    : <CheckCircle2 className="w-3 h-3 text-success" />;
+    : s === "escalated"
+      ? <Bot className="w-3 h-3 text-primary" />
+      : <CheckCircle2 className="w-3 h-3 text-success" />;
 
   const isAI = (username: string) => username === "Fluxcore AI";
 
