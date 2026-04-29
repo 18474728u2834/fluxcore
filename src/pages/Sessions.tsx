@@ -61,6 +61,11 @@ export default function Sessions() {
   const canManageTags = isOwner || hasPermission("manage_members");
 
   const [sessions, setSessions] = useState<ScheduledSession[]>([]);
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
   const [tags, setTags] = useState<SessionTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
