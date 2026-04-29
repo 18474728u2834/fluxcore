@@ -124,7 +124,7 @@ export default function Sessions() {
   const fetchSessions = async () => {
     const { data } = await supabase.from("scheduled_sessions").select("*")
       .eq("workspace_id", workspaceId).order("scheduled_at", { ascending: false });
-    setSessions(data || []);
+    setSessions((data as any) || []);
     setLoading(false);
   };
 
