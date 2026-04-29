@@ -41,7 +41,8 @@ interface MemberProgress {
 }
 
 export default function Quotas() {
-  const { workspaceId, isOwner } = useWorkspace();
+  const { workspaceId, isOwner, workspace } = useWorkspace();
+  const isPremium = !!workspace?.premium;
   const { hasPermission } = usePermissions();
   const { robloxUsername, robloxUserId } = useAuth();
   const canManage = isOwner || hasPermission("manage_members");
@@ -232,14 +233,22 @@ export default function Quotas() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Applies To</Label>
-                      <Select value={roleId} onValueChange={setRoleId}>
+                      <Label className="text-xs flex items-center gap-1.5">
+                        Applies To
+                        {!isPremium && <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-semibold uppercase">Premium</span>}
+                      </Label>
+                      <Select value={isPremium ? roleId : "all"} onValueChange={(v) => isPremium && setRoleId(v)} disabled={!isPremium}>
                         <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
                         <SelectContent>
                           <SelectItem value="all">All Members</SelectItem>
                           {roles.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
                         </SelectContent>
                       </Select>
+                      {!isPremium && (
+                        <p className="text-[10px] text-muted-foreground">
+                          Per-role quotas require Premium. <a href="/#/pricing" className="text-primary hover:underline">Upgrade</a>
+                        </p>
+                      )}
                     </div>
                   </div>
                   <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim()}>
