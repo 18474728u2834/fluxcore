@@ -8,7 +8,7 @@ export default function SetupTracking() {
   const [copied, setCopied] = useState(false);
   const { workspace } = useWorkspace();
 
-  const FUNCTION_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID || "your-project"}.supabase.co/functions/v1/activity-tracker`;
+  const FUNCTION_URL = "https://fluxcore.works/api/v1/track";
 
   const luaScript = `-- Fluxcore Activity Tracker v2
 -- Place in ServerScriptService as a Script named "FluxcoreTracker"
