@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Search, Crown, ChevronLeft, ChevronRight, Copy, Users as UsersIcon, ArrowUpDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
