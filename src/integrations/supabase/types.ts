@@ -826,6 +826,7 @@ export type Database = {
           show_grid: boolean | null
           text_color: string | null
           updated_at: string
+          verified_official: boolean
         }
         Insert: {
           api_key?: string
@@ -846,6 +847,7 @@ export type Database = {
           show_grid?: boolean | null
           text_color?: string | null
           updated_at?: string
+          verified_official?: boolean
         }
         Update: {
           api_key?: string
@@ -866,6 +868,7 @@ export type Database = {
           show_grid?: boolean | null
           text_color?: string | null
           updated_at?: string
+          verified_official?: boolean
         }
         Relationships: []
       }
@@ -886,9 +889,11 @@ export type Database = {
           name: string
           owner_id: string
           primary_color: string
+          roblox_group_id: string
           role: string
           show_grid: boolean
           text_color: string
+          verified_official: boolean
         }[]
       }
       get_workspace_context: {
@@ -903,6 +908,7 @@ export type Database = {
           roblox_group_id: string
           show_grid: boolean
           text_color: string
+          verified_official: boolean
         }[]
       }
       has_workspace_permission: {
