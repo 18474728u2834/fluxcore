@@ -107,30 +107,42 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const flush = useCallback(async () => {
     if (inflightRef.current) return;
     if (activeLang === "en") { pendingRef.current.clear(); return; }
-    const batch = Array.from(pendingRef.current).slice(0, 50);
-    if (batch.length === 0) return;
-    pendingRef.current = new Set(Array.from(pendingRef.current).slice(50));
+    const all = Array.from(pendingRef.current);
+    if (all.length === 0) return;
+    pendingRef.current = new Set();
     inflightRef.current = true;
+
+    // Split into chunks of 80 and fire in parallel for much faster loads
+    const CHUNK = 80;
+    const chunks: string[][] = [];
+    for (let i = 0; i < all.length; i += CHUNK) chunks.push(all.slice(i, i + CHUNK));
+
     try {
-      const { data, error } = await supabase.functions.invoke("translate-batch", {
-        body: { strings: batch, lang: activeLang },
-      });
-      if (!error && data?.translations) {
-        const next = { ...dictRef.current, ...data.translations };
-        // Mark anything that didn't come back so we don't retry forever this session
-        for (const s of batch) {
-          if (!next[s]) next[s] = s; // fallback to source
+      const results = await Promise.all(
+        chunks.map((batch) =>
+          supabase.functions
+            .invoke("translate-batch", { body: { strings: batch, lang: activeLang } })
+            .then((r) => ({ batch, data: r.data, error: r.error }))
+            .catch((e) => ({ batch, data: null, error: e }))
+        )
+      );
+      const next = { ...dictRef.current };
+      for (const { batch, data, error } of results) {
+        if (!error && data?.translations) {
+          Object.assign(next, data.translations);
         }
-        dictRef.current = next;
-        saveCache(activeLang, next);
-        setVersion((v) => v + 1);
+        // Mark misses so we don't refetch this session
+        for (const s of batch) if (!next[s]) next[s] = s;
       }
+      dictRef.current = next;
+      saveCache(activeLang, next);
+      setVersion((v) => v + 1);
     } catch (e) {
       console.warn("translate-batch failed:", e);
     } finally {
       inflightRef.current = false;
       if (pendingRef.current.size > 0) {
-        flushTimerRef.current = window.setTimeout(flush, 100);
+        flushTimerRef.current = window.setTimeout(flush, 50);
       }
     }
   }, [activeLang]);
@@ -140,7 +152,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (dictRef.current[text]) return;
     pendingRef.current.add(text);
     if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
-    flushTimerRef.current = window.setTimeout(flush, 80);
+    flushTimerRef.current = window.setTimeout(flush, 30);
   }, [activeLang, flush]);
 
   const t = useCallback((text: string) => {
