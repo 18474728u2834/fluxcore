@@ -54,7 +54,7 @@ serve(async (req) => {
       .in("status", ["scheduled", "started"])
       .order("scheduled_at", { ascending: true });
 
-    if (category !== "all") query = query.eq("category", category);
+    if (category !== "all") query = query.ilike("category", category);
 
     const { data: rawSessions, error: sErr } = await query;
     if (sErr) throw sErr;
