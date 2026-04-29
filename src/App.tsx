@@ -178,6 +178,7 @@ const App = () => {
               <Sonner />
               <HashRouter>
                 <DOMTranslator />
+                <LoadWatchdog />
                 <ChunkErrorBoundary fallback={<PageLoader />}>
                   <AppRoutes />
                 </ChunkErrorBoundary>
