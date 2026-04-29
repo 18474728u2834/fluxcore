@@ -49,10 +49,17 @@ serve(async (req) => {
 
     let query = supabase
       .from("scheduled_sessions")
-      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels")
+      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels, slots, tag_ids")
       .eq("workspace_id", workspace.id)
       .in("status", ["scheduled", "started"])
       .order("scheduled_at", { ascending: true });
+
+    // Fetch all tags for this workspace once
+    const { data: allTags } = await supabase
+      .from("session_tags")
+      .select("id, name, color, category")
+      .eq("workspace_id", workspace.id);
+    const tagsById = new Map((allTags || []).map((t: any) => [t.id, t]));
 
     if (category !== "all") query = query.ilike("category", category);
 
