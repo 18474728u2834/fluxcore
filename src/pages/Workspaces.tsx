@@ -252,6 +252,18 @@ export default function Workspaces() {
           <p className="text-muted-foreground text-sm">Select a workspace or create a new one</p>
         </div>
 
+        {pendingGrant && (
+          <div className="mb-6 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-violet-500/10 p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+              <Gift className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-foreground text-sm">You have {pendingGrant.days} days of free Premium</p>
+              <p className="text-xs text-muted-foreground">Pick a workspace below to apply it, or create a new one.</p>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-7 h-7 text-primary animate-spin" />
