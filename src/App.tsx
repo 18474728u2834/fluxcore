@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
+import { I18nProvider } from "@/hooks/useI18n";
+import { DOMTranslator } from "@/components/DOMTranslator";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -142,13 +144,16 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
       <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <HashRouter>
-            <AppRoutes />
-          </HashRouter>
-        </TooltipProvider>
+        <I18nProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <HashRouter>
+              <DOMTranslator />
+              <AppRoutes />
+            </HashRouter>
+          </TooltipProvider>
+        </I18nProvider>
       </AuthProvider>
     </ThemeProvider>
   </QueryClientProvider>
