@@ -72,7 +72,7 @@ export default function Sessions() {
   const [creating, setCreating] = useState(false);
   const [detailSession, setDetailSession] = useState<ScheduledSession | null>(null);
   const [tagsManagerOpen, setTagsManagerOpen] = useState(false);
-  const [members, setMembers] = useState<{ roblox_username: string }[]>([]);
+  const [members, setMembers] = useState<{ roblox_username: string; roblox_user_id: string }[]>([]);
   const canAssignOthers = isOwner || hasPermission("manage_members");
 
   // ---- Create session form state ----
