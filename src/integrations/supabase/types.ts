@@ -467,7 +467,9 @@ export type Database = {
           recurring_time: string | null
           role_labels: Json | null
           scheduled_at: string
+          slots: Json | null
           status: string
+          tag_ids: string[] | null
           title: string
           trainer_name: string | null
           updated_at: string
@@ -488,7 +490,9 @@ export type Database = {
           recurring_time?: string | null
           role_labels?: Json | null
           scheduled_at: string
+          slots?: Json | null
           status?: string
+          tag_ids?: string[] | null
           title: string
           trainer_name?: string | null
           updated_at?: string
@@ -509,7 +513,9 @@ export type Database = {
           recurring_time?: string | null
           role_labels?: Json | null
           scheduled_at?: string
+          slots?: Json | null
           status?: string
+          tag_ids?: string[] | null
           title?: string
           trainer_name?: string | null
           updated_at?: string
@@ -524,6 +530,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      session_tags: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          id: string
+          name: string
+          workspace_id: string
+        }
+        Insert: {
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          workspace_id: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          workspace_id?: string
+        }
+        Relationships: []
       }
       support_messages: {
         Row: {
