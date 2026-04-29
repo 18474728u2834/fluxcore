@@ -4,9 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, Plus, MessageSquare, CheckCircle2, Clock, Send, Bot, User } from "lucide-react";
+import { Loader2, Plus, MessageSquare, CheckCircle2, Clock, Send, Bot, User, Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { ForceEnglish } from "@/hooks/useI18n";
 import { toast } from "sonner";
 
 interface Ticket {
