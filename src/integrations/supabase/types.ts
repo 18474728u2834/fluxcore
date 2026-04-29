@@ -150,7 +150,7 @@ export type Database = {
         Row: {
           document_id: string
           id: string
-          member_id: string
+          member_id: string | null
           signature_data: string | null
           signed_at: string
           user_id: string
@@ -158,7 +158,7 @@ export type Database = {
         Insert: {
           document_id: string
           id?: string
-          member_id: string
+          member_id?: string | null
           signature_data?: string | null
           signed_at?: string
           user_id: string
@@ -166,7 +166,7 @@ export type Database = {
         Update: {
           document_id?: string
           id?: string
-          member_id?: string
+          member_id?: string | null
           signature_data?: string | null
           signed_at?: string
           user_id?: string

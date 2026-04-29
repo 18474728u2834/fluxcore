@@ -13,7 +13,7 @@ export default function Privacy() {
         </Button>
 
         <h1 className="text-3xl font-extrabold text-foreground mb-2">Privacy Policy</h1>
-        <p className="text-sm text-muted-foreground mb-8">Last updated: April 29, 2026</p>
+        <p className="text-sm text-muted-foreground mb-8">Last updated: April 29, 2026 (multi-language support, owner document signing, and reliability improvements)</p>
 
         <div className="prose prose-sm prose-invert max-w-none space-y-6 text-muted-foreground">
           <section>
@@ -61,8 +61,9 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-foreground">6. Cookies</h2>
+            <h2 className="text-lg font-bold text-foreground">6. Cookies & Local Storage</h2>
             <p>Fluxcore uses essential cookies only (authentication session tokens). We do <strong>not</strong> use tracking cookies, analytics cookies, or advertising cookies.</p>
+            <p>We use your browser's local storage to remember your language preference, cache UI translations, and record which workspace documents you have opened — so unread alerts clear once you have viewed them. This data stays on your device and is not transmitted to us.</p>
           </section>
 
           <section>

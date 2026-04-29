@@ -17,7 +17,7 @@ interface Doc {
 }
 
 export default function DocumentView() {
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, isOwner } = useWorkspace();
   const { docId } = useParams<{ docId: string }>();
   const { user, robloxUsername } = useAuth();
   const navigate = useNavigate();
@@ -36,6 +36,22 @@ export default function DocumentView() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
 
+  // Mark this document as "read" locally so the alert dot disappears
+  useEffect(() => {
+    if (!docId || !user) return;
+    try {
+      const key = `fluxcore_doc_read_${user.id}`;
+      const raw = localStorage.getItem(key);
+      const set: string[] = raw ? JSON.parse(raw) : [];
+      if (!set.includes(docId)) {
+        set.push(docId);
+        localStorage.setItem(key, JSON.stringify(set));
+        // Notify other tabs / Documents page
+        window.dispatchEvent(new CustomEvent("fluxcore:doc-read", { detail: { docId } }));
+      }
+    } catch {}
+  }, [docId, user]);
+
   useEffect(() => {
     const load = async () => {
       if (!docId || !user) return;
@@ -47,22 +63,31 @@ export default function DocumentView() {
       setMyMemberId(m?.id || "");
 
       const { data: sigs } = await supabase.from("document_signatures")
-        .select("id, member_id, signed_at").eq("document_id", docId);
+        .select("id, member_id, user_id, signed_at").eq("document_id", docId);
       setSignCount(sigs?.length || 0);
-      setSigned(!!sigs?.find(s => s.member_id === m?.id));
+      // Signed if either my member_id matches OR my user_id matches (covers owner)
+      setSigned(!!sigs?.find(s => (m?.id && s.member_id === m.id) || s.user_id === user.id));
 
-      // Resolve signer names
+      // Resolve signer names — members via workspace_members, owner-only sigs use current name fallback
       if (sigs && sigs.length) {
-        const memberIds = sigs.map(s => s.member_id);
-        const { data: mems } = await supabase.from("workspace_members")
-          .select("id, roblox_username").in("id", memberIds);
-        const nameMap = new Map((mems || []).map(x => [x.id, x.roblox_username]));
-        setSigners(sigs.map(s => ({ name: nameMap.get(s.member_id) || "Unknown", signed_at: s.signed_at })));
+        const memberIds = sigs.map(s => s.member_id).filter(Boolean) as string[];
+        let nameMap = new Map<string, string>();
+        if (memberIds.length) {
+          const { data: mems } = await supabase.from("workspace_members")
+            .select("id, roblox_username").in("id", memberIds);
+          nameMap = new Map((mems || []).map(x => [x.id, x.roblox_username]));
+        }
+        setSigners(sigs.map(s => ({
+          name: s.member_id
+            ? (nameMap.get(s.member_id) || "Unknown")
+            : (s.user_id === user.id ? `${robloxUsername || "You"} (Owner)` : "Owner"),
+          signed_at: s.signed_at,
+        })));
       }
       setLoading(false);
     };
     load();
-  }, [docId, user, workspaceId]);
+  }, [docId, user, workspaceId, robloxUsername]);
 
   const startDraw = (e: React.MouseEvent) => {
     setDrawing(true);
@@ -83,7 +108,8 @@ export default function DocumentView() {
   const clearCanvas = () => canvasRef.current?.getContext("2d")?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
   const sign = async () => {
-    if (!doc || !user || !myMemberId) { toast.error("You must be a workspace member to sign"); return; }
+    if (!doc || !user) { toast.error("You must be signed in"); return; }
+    if (!myMemberId && !isOwner) { toast.error("You must be a workspace member to sign"); return; }
     let sigData = "";
     if (doc.signature_type === "checkbox") {
       if (!signChecked) { toast.error("Tick the acknowledgement box"); return; }
@@ -104,7 +130,10 @@ export default function DocumentView() {
     }
     setSubmitting(true);
     const { error } = await supabase.from("document_signatures").insert({
-      document_id: doc.id, member_id: myMemberId, user_id: user.id, signature_data: sigData,
+      document_id: doc.id,
+      member_id: myMemberId || null,
+      user_id: user.id,
+      signature_data: sigData,
     });
     setSubmitting(false);
     if (error) { toast.error("Failed: " + error.message); return; }
@@ -172,7 +201,7 @@ export default function DocumentView() {
             <CheckCircle2 className="w-5 h-5" />
             <span className="text-sm font-medium">You have signed this document.</span>
           </div>
-        ) : myMemberId ? (
+        ) : (myMemberId || isOwner) ? (
           <div className="glass rounded-2xl p-6 space-y-4">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <PenTool className="w-4 h-4 text-primary" /> Sign this document
