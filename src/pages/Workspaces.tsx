@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones } from "lucide-react";
+import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones, BadgeCheck } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
@@ -15,6 +15,7 @@ interface Workspace {
   name: string;
   role: string;
   roblox_group_id: string | null;
+  verified_official: boolean;
 }
 
 export default function Workspaces() {
@@ -44,7 +45,7 @@ export default function Workspaces() {
 
     const { data: ownedWorkspaces } = await supabase
       .from("workspaces")
-      .select("id, name, owner_id, roblox_group_id")
+      .select("id, name, owner_id, roblox_group_id, verified_official")
       .eq("owner_id", user.id);
 
     const { data: memberships } = await supabase
@@ -56,7 +57,7 @@ export default function Workspaces() {
 
     if (ownedWorkspaces) {
       for (const w of ownedWorkspaces) {
-        ws.push({ id: w.id, name: w.name, role: "Owner", roblox_group_id: w.roblox_group_id });
+        ws.push({ id: w.id, name: w.name, role: "Owner", roblox_group_id: w.roblox_group_id, verified_official: !!w.verified_official });
       }
     }
 
@@ -66,11 +67,11 @@ export default function Workspaces() {
         if (!ownedIds.has(m.workspace_id)) {
           const { data: wsData } = await supabase
             .from("workspaces")
-            .select("id, name, roblox_group_id")
+            .select("id, name, roblox_group_id, verified_official")
             .eq("id", m.workspace_id)
             .single();
           if (wsData) {
-            ws.push({ id: wsData.id, name: wsData.name, role: m.role, roblox_group_id: wsData.roblox_group_id });
+            ws.push({ id: wsData.id, name: wsData.name, role: m.role, roblox_group_id: wsData.roblox_group_id, verified_official: !!wsData.verified_official });
           }
         }
       }
@@ -203,7 +204,10 @@ export default function Workspaces() {
                   )}
                   <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <h3 className="font-bold text-foreground mb-0.5">{ws.name}</h3>
+                <h3 className="font-bold text-foreground mb-0.5 flex items-center gap-1.5">
+                  <span className="truncate">{ws.name}</span>
+                  {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
+                </h3>
                 <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
               </button>
             ))}

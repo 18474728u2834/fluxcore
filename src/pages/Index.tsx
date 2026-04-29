@@ -111,7 +111,7 @@ export default function Index() {
                 <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
                 <div className="w-3 h-3 rounded-full bg-green-500/60" />
                 <div className="flex-1" />
-                <div className="px-3 py-1 rounded-md bg-muted/50 text-[10px] text-muted-foreground font-mono">fluxcore.app/dashboard</div>
+                <div className="px-3 py-1 rounded-md bg-muted/50 text-[10px] text-muted-foreground font-mono">fluxcore.works/dashboard</div>
               </div>
               <div className="grid grid-cols-4 gap-3">
                 {[

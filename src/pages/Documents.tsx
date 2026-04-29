@@ -139,8 +139,9 @@ export default function Documents() {
     canvas.getContext("2d")?.clearRect(0, 0, canvas.width, canvas.height);
   };
 
-  const filtered = docs.filter(d => d.doc_type === tab);
-  const unsignedCount = docs.filter(d => d.auto_assign && !hasSigned(d.id)).length;
+  const isHandbook = (doc: Doc) => doc.doc_type?.toLowerCase() === "handbook";
+  const filtered = docs.filter(d => tab === "handbook" ? isHandbook(d) : !isHandbook(d));
+  const unsignedCount = docs.filter(d => !isHandbook(d) && d.auto_assign && !hasSigned(d.id)).length;
 
   return (
     <DashboardLayout title="Documents">

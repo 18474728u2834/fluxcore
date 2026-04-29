@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -76,7 +76,12 @@ export function AppSidebar() {
                 <button onClick={() => navigate("/")} className="text-lg font-extrabold text-gradient tracking-tight hover:opacity-80 transition-opacity">
                   Fluxcore
                 </button>
-                {workspace && <p className="text-[10px] text-muted-foreground truncate mt-0.5">{workspace.name}</p>}
+                {workspace && (
+                  <p className="text-[10px] text-muted-foreground truncate mt-0.5 flex items-center gap-1">
+                    <span className="truncate">{workspace.name}</span>
+                    {workspace.verified_official && <BadgeCheck className="w-3 h-3 text-primary shrink-0" aria-label="Official verified group" />}
+                  </p>
+                )}
               </div>
             ) : (
               <button onClick={() => navigate("/")} className="text-lg font-extrabold text-primary hover:opacity-80 transition-opacity">

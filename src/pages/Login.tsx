@@ -6,8 +6,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Gamepad2, Shield } from "lucide-react";
 
-const ROBLOX_CLIENT_ID = "4787810466204050897";
-
 export default function Login() {
   const navigate = useNavigate();
   const { user, loading: authLoading, setSessionFromToken } = useAuth();
@@ -37,39 +35,10 @@ export default function Login() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleRobloxOAuth = async () => {
-    try {
-      // Generate PKCE code verifier and challenge
-      const codeVerifier = Array.from(crypto.getRandomValues(new Uint8Array(32)))
-        .map(b => b.toString(16).padStart(2, "0")).join("");
-      const encoder = new TextEncoder();
-      const digest = await crypto.subtle.digest("SHA-256", encoder.encode(codeVerifier));
-      const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-
-      const statePayload = btoa(JSON.stringify({
-        nonce: crypto.randomUUID(),
-        origin: window.location.origin,
-        code_verifier: codeVerifier,
-      }));
-
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
-
-      const params = new URLSearchParams({
-        client_id: ROBLOX_CLIENT_ID,
-        response_type: "code",
-        redirect_uri: redirectUri,
-        scope: "openid profile",
-        state: statePayload,
-        code_challenge: codeChallenge,
-        code_challenge_method: "S256",
-      });
-
-      window.location.href = `https://apis.roblox.com/oauth/v1/authorize?${params}`;
-    } catch (err) {
-      console.error("OAuth init error:", err);
-    }
+  const handleRobloxOAuth = () => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const origin = encodeURIComponent(window.location.origin);
+    window.location.href = `${supabaseUrl}/functions/v1/roblox-oauth-callback?start=1&origin=${origin}`;
   };
 
   if (authLoading) {
