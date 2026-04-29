@@ -61,8 +61,9 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-foreground">6. Cookies</h2>
+            <h2 className="text-lg font-bold text-foreground">6. Cookies & Local Storage</h2>
             <p>Fluxcore uses essential cookies only (authentication session tokens). We do <strong>not</strong> use tracking cookies, analytics cookies, or advertising cookies.</p>
+            <p>We use your browser's local storage to remember your language preference, cache UI translations, and record which workspace documents you have opened — so unread alerts clear once you have viewed them. This data stays on your device and is not transmitted to us.</p>
           </section>
 
           <section>
