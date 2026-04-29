@@ -124,6 +124,8 @@ export default function Terms() {
             </p>
           </section>
 
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">Contact</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               For questions about these Terms, contact us through our Roblox group or community channels.
             </p>
