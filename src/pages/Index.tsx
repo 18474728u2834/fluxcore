@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { ArrowRight, Sun, Moon, Headphones, ChevronRight, BarChart3, Shield, Calendar, FileText, Users, Bot, Zap, Palette, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Sun, Moon, Headphones, ChevronRight, BarChart3, Shield, Calendar, FileText, Users, Bot, Zap, Palette, CheckCircle2, MessageSquare, ClipboardList, Target, Plane, Megaphone, KeyRound, Activity, Lock, Webhook, Trophy } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -17,6 +17,12 @@ export default function Index() {
     { icon: FileText, title: "Policies & Signatures", desc: "Write policies, require digital signatures, auto-assign to new members.", color: "bg-amber-500" },
     { icon: Users, title: "Role Management", desc: "Import roles from Roblox, set granular permissions, split promote and demote.", color: "bg-pink-500" },
     { icon: Bot, title: "AI Support", desc: "Built-in ticket system with AI that handles common questions before escalating.", color: "bg-indigo-500" },
+    { icon: MessageSquare, title: "Message Logging", desc: "Premium chat logs of every staff message in-game. Search, audit, moderate.", color: "bg-rose-500" },
+    { icon: Plane, title: "Leave of Absence", desc: "Staff request time off, leadership approves in one click. Quotas adjust automatically.", color: "bg-cyan-500" },
+    { icon: Target, title: "Activity Quotas", desc: "Per-role weekly targets. Track session counts and time in-game without spreadsheets.", color: "bg-orange-500" },
+    { icon: Megaphone, title: "Staff Wall", desc: "Pin announcements, post updates, keep everyone aligned without another Discord channel.", color: "bg-teal-500" },
+    { icon: ClipboardList, title: "Member Logs", desc: "Warnings, notes, promotions — every action attributed and timestamped.", color: "bg-fuchsia-500" },
+    { icon: Trophy, title: "Verified Workspaces", desc: "Premium workspaces get a verified badge so members know they're in the real one.", color: "bg-yellow-500" },
   ];
 
   return (
