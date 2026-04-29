@@ -915,6 +915,7 @@ export type Database = {
         Args: { _permission: string; _workspace_id: string }
         Returns: boolean
       }
+      is_fluxcore_staff: { Args: never; Returns: boolean }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
       lookup_workspace_by_invite: {
