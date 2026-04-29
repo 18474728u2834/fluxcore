@@ -134,12 +134,18 @@ export default function Support() {
       setReply("");
       fetchMessages(selectedTicket.id);
 
-      // Trigger AI response
-      setAiThinking(true);
-      await triggerAI(selectedTicket.id, userMsg);
-      setAiThinking(false);
-      fetchMessages(selectedTicket.id);
-      // Refresh ticket list + selected so escalation status shows
+      // Staff replies don't trigger AI; mark ticket in_progress instead
+      if (isStaff) {
+        await supabase
+          .from("support_tickets")
+          .update({ status: "in_progress", assigned_to: robloxUsername || "Novavoff", updated_at: new Date().toISOString() })
+          .eq("id", selectedTicket.id);
+      } else {
+        setAiThinking(true);
+        await triggerAI(selectedTicket.id, userMsg);
+        setAiThinking(false);
+        fetchMessages(selectedTicket.id);
+      }
       const { data: refreshed } = await supabase.from("support_tickets").select("*").eq("id", selectedTicket.id).maybeSingle();
       if (refreshed) setSelectedTicket(refreshed as any);
       fetchTickets();
@@ -147,13 +153,32 @@ export default function Support() {
     setSendingReply(false);
   };
 
+  const setTicketStatus = async (status: string) => {
+    if (!selectedTicket) return;
+    setUpdatingStatus(true);
+    const { error } = await supabase
+      .from("support_tickets")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("id", selectedTicket.id);
+    if (error) toast.error("Failed: " + error.message);
+    else {
+      toast.success(`Marked as ${status}`);
+      setSelectedTicket({ ...selectedTicket, status });
+      fetchTickets();
+    }
+    setUpdatingStatus(false);
+  };
+
   const statusIcon = (s: string) => s === "open"
     ? <Clock className="w-3 h-3 text-warning" />
     : s === "escalated"
       ? <Bot className="w-3 h-3 text-primary" />
-      : <CheckCircle2 className="w-3 h-3 text-success" />;
+      : s === "in_progress"
+        ? <Loader2 className="w-3 h-3 text-primary" />
+        : <CheckCircle2 className="w-3 h-3 text-success" />;
 
   const isAI = (username: string) => username === "Fluxcore AI";
+  const isStaffMsg = (username: string) => (username || "").toLowerCase() === "novavoff";
 
   return (
     <div className="min-h-screen bg-background">
