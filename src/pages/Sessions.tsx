@@ -330,23 +330,60 @@ export default function Sessions() {
                         <SelectContent>
                           <SelectItem value="none">One-time</SelectItem>
                           <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
+                          <SelectItem value="weekly">Weekly (same day)</SelectItem>
+                          <SelectItem value="weekly_days">Weekly (pick days)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label className="text-sm">Date & Time</Label>
-                      <Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="bg-muted border-border" />
+
+                  {recurring === "weekly_days" ? (
+                    <div className="space-y-3 rounded-lg border border-border/40 bg-muted/40 p-3">
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-wider text-muted-foreground">Repeat on</Label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {WEEKDAYS.map((d) => {
+                            const active = recurringDays.includes(d);
+                            return (
+                              <button
+                                key={d}
+                                type="button"
+                                onClick={() => setRecurringDays((prev) => active ? prev.filter((x) => x !== d) : [...prev, d])}
+                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}
+                              >
+                                {d}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label className="text-xs">Time</Label>
+                          <Input type="time" value={recurringTime} onChange={(e) => setRecurringTime(e.target.value)} className="bg-muted border-border" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Duration (min)</Label>
+                          <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="bg-muted border-border" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Will repeat every chosen weekday at {recurringTime}.</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">Duration (min)</Label>
-                      <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="bg-muted border-border" />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label className="text-sm">Date & Time</Label>
+                        <Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="bg-muted border-border" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Duration (min)</Label>
+                        <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="bg-muted border-border" />
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Roles (Host, Co-Host, Trainer) can be assigned after creation.</p>
-                  <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || !scheduledAt}>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">{roleLabels.host}, {roleLabels.co_host} and {roleLabels.trainer} can be assigned after creation. Discord webhook (if configured) will announce this session.</p>
+                  <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || (recurring !== "weekly_days" && !scheduledAt) || (recurring === "weekly_days" && recurringDays.length === 0)}>
                     {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Schedule
                   </Button>
                 </div>
