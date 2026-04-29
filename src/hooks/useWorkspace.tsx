@@ -15,6 +15,9 @@ interface WorkspaceData {
   background_color: string | null;
   show_grid: boolean | null;
   verified_official: boolean;
+  premium: boolean;
+  premium_until: string | null;
+  tutorial_completed: boolean;
 }
 
 interface WorkspaceContextType {
@@ -23,6 +26,7 @@ interface WorkspaceContextType {
   isOwner: boolean;
   loading: boolean;
   memberRole: string | null;
+  refreshWorkspace: () => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
