@@ -271,6 +271,8 @@ export default function Sessions() {
     setDialogOpen(false);
     setTitle(""); setDescription(""); setScheduledAt("");
     setRecurringDays([]); setRecurring("none");
+    setGameUrl(""); setLabelHost(""); setLabelCoHost(""); setLabelTrainer("");
+    setPreAssignSelf("none");
     setCreating(false);
   };
 
