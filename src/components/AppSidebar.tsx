@@ -38,6 +38,7 @@ export function AppSidebar() {
     { title: "LOA", url: `${base}/loa`, icon: CalendarOff, show: true },
     { title: "Staff", url: `${base}/staff`, icon: UserX, show: isOwner || hasPermission("manage_members") },
     { title: "Quotas", url: `${base}/quotas`, icon: Target, show: true },
+    { title: "Message Logs", url: `${base}/message-logs`, icon: MessageSquare, show: isOwner || hasPermission("view_message_logs") },
   ];
 
   const showConfig = isOwner || hasPermission("view_config");
