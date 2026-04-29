@@ -54,6 +54,19 @@ export default function MessageLogs() {
     return <DashboardLayout title="Message Logs"><div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div></DashboardLayout>;
   }
 
+  if (!workspace?.premium) {
+    return (
+      <DashboardLayout title="Message Logs">
+        <div className="py-10">
+          <PremiumGate
+            feature="Message Logs"
+            description="In-game chat logging keeps a 30-day searchable history of every staff message in your servers. Unlock with the Fluxcore Premium gamepass."
+          />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (!allowed) {
     return (
       <DashboardLayout title="Message Logs">
