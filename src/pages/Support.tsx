@@ -43,24 +43,44 @@ export default function Support() {
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchTickets = async () => {
-    const { data } = await supabase
-      .from("support_tickets")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setTickets((data as any[]) || []);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from("support_tickets")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("fetchTickets error:", error);
+        toast.error("Couldn't load tickets. Please refresh.");
+      }
+      setTickets((data as any[]) || []);
+    } catch (e) {
+      console.error("fetchTickets threw:", e);
+      toast.error("Couldn't load tickets. Please refresh.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchMessages = async (ticketId: string) => {
-    const { data } = await supabase
-      .from("support_messages")
-      .select("*")
-      .eq("ticket_id", ticketId)
-      .order("created_at", { ascending: true });
-    setMessages((data as any[]) || []);
+    try {
+      const { data } = await supabase
+        .from("support_messages")
+        .select("*")
+        .eq("ticket_id", ticketId)
+        .order("created_at", { ascending: true });
+      setMessages((data as any[]) || []);
+    } catch (e) {
+      console.error("fetchMessages threw:", e);
+    }
   };
 
-  useEffect(() => { fetchTickets(); }, []);
+  useEffect(() => {
+    if (!user) {
+      const t = setTimeout(() => setLoading(false), 1500);
+      return () => clearTimeout(t);
+    }
+    fetchTickets();
+  }, [user?.id]);
   useEffect(() => {
     if (selectedTicket) fetchMessages(selectedTicket.id);
   }, [selectedTicket?.id]);
