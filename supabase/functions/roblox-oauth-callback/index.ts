@@ -80,8 +80,9 @@ serve(async (req) => {
     const decoded = atob(state);
     console.log("[OAuth] Decoded state:", decoded);
     const parsed = JSON.parse(decoded);
-    origin = parsed.origin;
+    origin = safeRedirectOrigin(parsed.origin);
     codeVerifier = parsed.code_verifier;
+    if (!origin) throw new Error("Missing safe origin");
   } catch (e) {
     console.error("[OAuth] State parse error:", e);
     return new Response("Invalid state", { status: 400, headers: corsHeaders });
