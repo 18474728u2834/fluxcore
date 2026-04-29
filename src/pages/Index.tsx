@@ -100,11 +100,11 @@ export default function Index() {
             Track activity, schedule shifts, manage ranks — all from one place.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
-            <Button size="lg" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 px-10 text-base shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all">
-              {isLoggedIn ? "Open Dashboard" : "Start for free"} <ArrowRight className="w-4 h-4 ml-2" />
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16 animate-fade-up" style={{ animationDelay: "120ms" }}>
+            <Button size="lg" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 px-10 text-base shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 hover:-translate-y-0.5 press-shrink">
+              {isLoggedIn ? "Open Dashboard" : "Start for free"} <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
             </Button>
-            <Button variant="outline" size="lg" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="h-14 px-10 text-base font-semibold border-border/30 hover:bg-white/5">
+            <Button variant="outline" size="lg" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="h-14 px-10 text-base font-semibold border-border/30 hover:bg-white/5 transition-all duration-300 hover:-translate-y-0.5 press-shrink">
               See what's included
             </Button>
           </div>
