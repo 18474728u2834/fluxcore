@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
-// Cache: username/userId -> resolved CDN URL
+// Cache: cacheKey -> resolved image URL (CDN or rolimons)
 const urlCache = new Map<string, string>();
-const idCache = new Map<string, number>();
-const inflightUrl = new Map<string, Promise<string | null>>();
-const inflightId = new Map<string, Promise<number | null>>();
+const inflight = new Map<string, Promise<string | null>>();
 
 // Deterministic colorful gradient background per username, used while loading
 // or when every avatar source fails. Gives the "random red/yellow/blue" feel.
@@ -29,76 +28,52 @@ export function avatarGradient(seed: string): string {
   return `linear-gradient(135deg, ${a}, ${b})`;
 }
 
-async function resolveUserId(username: string): Promise<number | null> {
-  const key = username.toLowerCase();
-  if (idCache.has(key)) return idCache.get(key)!;
-  if (inflightId.has(key)) return inflightId.get(key)!;
+async function resolveViaEdge(params: { username?: string; userId?: string | number }): Promise<string | null> {
+  const search = new URLSearchParams();
+  if (params.userId) search.set("userId", String(params.userId));
+  else if (params.username) search.set("username", params.username);
+  else return null;
 
-  const p = (async () => {
-    const hosts = ["users.roproxy.com", "users.roblox.com"];
-    for (const host of hosts) {
-      try {
-        const r = await fetch(`https://${host}/v1/usernames/users`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
-        });
-        if (!r.ok) continue;
-        const d = await r.json();
-        const id = d?.data?.[0]?.id;
-        if (id) {
-          idCache.set(key, id);
-          return id as number;
-        }
-      } catch {
-        // try next
-      }
-    }
-    return null;
-  })();
-
-  inflightId.set(key, p);
-  const result = await p;
-  inflightId.delete(key);
-  return result;
-}
-
-async function fetchHeadshotCdn(id: number): Promise<string | null> {
-  const hosts = ["thumbnails.roproxy.com", "thumbnails.roblox.com"];
-  for (const host of hosts) {
-    try {
-      const t = await fetch(
-        `https://${host}/v1/users/avatar-headshot?userIds=${id}&size=150x150&format=Png&isCircular=false`
-      );
-      if (!t.ok) continue;
-      const td = await t.json();
-      const url: string | undefined = td?.data?.[0]?.imageUrl;
-      if (url) return url;
-    } catch {
-      // try next
-    }
-  }
-  return null;
-}
-
-async function resolveAvatarUrl(cacheKey: string, idPromise: Promise<number | null>): Promise<string | null> {
+  const cacheKey = params.userId ? `id:${params.userId}` : `name:${(params.username || "").toLowerCase()}`;
   if (urlCache.has(cacheKey)) return urlCache.get(cacheKey)!;
-  if (inflightUrl.has(cacheKey)) return inflightUrl.get(cacheKey)!;
+  if (inflight.has(cacheKey)) return inflight.get(cacheKey)!;
 
   const p = (async () => {
-    const id = await idPromise;
-    if (!id) return null;
-    const url = await fetchHeadshotCdn(id);
-    if (url) {
-      urlCache.set(cacheKey, url);
+    try {
+      const { data, error } = await supabase.functions.invoke("roblox-avatar", {
+        method: "GET",
+        // The supabase client encodes query string via headers; we use POST-like body with method GET
+        // Workaround: build URL through fetch directly using the function URL.
+      } as any);
+      // Some supabase-js versions don't pass query for GET — fallback to direct fetch
+      let url: string | null = null;
+      if (data && (data as any).url) {
+        url = (data as any).url;
+      } else {
+        const projectRef = (import.meta as any).env?.VITE_SUPABASE_PROJECT_ID;
+        const base = projectRef
+          ? `https://${projectRef}.supabase.co/functions/v1/roblox-avatar`
+          : `/api/v1/roblox-avatar`;
+        const r = await fetch(`${base}?${search.toString()}`, {
+          headers: {
+            apikey: (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
+          },
+        });
+        if (r.ok) {
+          const j = await r.json();
+          url = j?.url ?? null;
+        }
+      }
+      if (url) urlCache.set(cacheKey, url);
       return url;
+    } catch {
+      return null;
     }
-    return null;
   })();
 
-  inflightUrl.set(cacheKey, p);
+  inflight.set(cacheKey, p);
   const result = await p;
-  inflightUrl.delete(cacheKey);
+  inflight.delete(cacheKey);
   return result;
 }
 
@@ -109,55 +84,24 @@ interface Props {
 }
 
 export function RobloxAvatar({ username, userId, className }: Props) {
-  const cacheKey = (userId ? `id:${userId}` : `name:${username.toLowerCase()}`);
+  const cacheKey = userId ? `id:${userId}` : `name:${username.toLowerCase()}`;
 
   const [src, setSrc] = useState<string | null>(() => urlCache.get(cacheKey) || null);
-  const [stage, setStage] = useState<"primary" | "rolimons" | "failed">("primary");
+  const [errored, setErrored] = useState(false);
 
   useEffect(() => {
     let alive = true;
-
-    const idPromise: Promise<number | null> = userId
-      ? Promise.resolve(Number(userId))
-      : resolveUserId(username);
-
-    // Stage 1: try to get the official Roblox CDN URL.
-    resolveAvatarUrl(cacheKey, idPromise).then(async (u) => {
-      if (!alive) return;
-      if (u) {
-        setSrc(u);
-        return;
-      }
-      // Primary failed before we even rendered an <img>. Jump to Rolimons.
-      const id = await idPromise;
-      if (!alive) return;
-      if (id) {
-        setStage("rolimons");
-        setSrc(`https://www.rolimons.com/playerassets/thumbs/${id}.png`);
-      }
-    });
-
-    return () => { alive = false; };
-  }, [username, userId, cacheKey]);
-
-  // When the primary image errors, fall back to Rolimons by user id.
-  const handleError = async () => {
-    if (stage === "primary") {
-      const id = userId ? Number(userId) : await resolveUserId(username);
-      if (id) {
-        setStage("rolimons");
-        setSrc(`https://www.rolimons.com/playerassets/thumbs/${id}.png`);
-        return;
-      }
-      setStage("failed");
-      setSrc(null);
-    } else if (stage === "rolimons") {
-      setStage("failed");
-      setSrc(null);
+    if (urlCache.has(cacheKey)) {
+      setSrc(urlCache.get(cacheKey)!);
+      return;
     }
-  };
+    resolveViaEdge({ username, userId }).then((u) => {
+      if (alive && u) setSrc(u);
+    });
+    return () => { alive = false; };
+  }, [cacheKey, username, userId]);
 
-  if (!src) {
+  if (!src || errored) {
     return (
       <div
         className={`${className ?? ""} flex items-center justify-center text-[10px] font-bold text-white`}
@@ -174,7 +118,7 @@ export function RobloxAvatar({ username, userId, className }: Props) {
       alt={username}
       loading="lazy"
       referrerPolicy="no-referrer"
-      onError={handleError}
+      onError={() => setErrored(true)}
       className={`${className ?? ""} object-cover animate-in fade-in zoom-in-95 duration-300`}
     />
   );
