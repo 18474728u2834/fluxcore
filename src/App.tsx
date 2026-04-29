@@ -90,6 +90,21 @@ function WorkspaceRoutes() {
 function AppRoutes() {
   const hostname = window.location.hostname;
 
+  if (hostname.startsWith("bargains.fluxcore")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Bargains />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/workspaces" element={<Workspaces />} />
+          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+          <Route path="*" element={<Bargains />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
   if (hostname.includes("bloxy-bargains") || hostname.includes("bargains.")) {
     return (
       <Suspense fallback={<PageLoader />}>
