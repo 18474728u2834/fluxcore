@@ -1032,10 +1032,13 @@ export type Database = {
           id: string
           name: string
           owner_id: string
+          premium: boolean
+          premium_until: string
           primary_color: string
           roblox_group_id: string
           show_grid: boolean
           text_color: string
+          tutorial_completed: boolean
           verified_official: boolean
         }[]
       }
