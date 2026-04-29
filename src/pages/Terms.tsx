@@ -39,7 +39,7 @@ export default function Terms() {
           <section className="space-y-3">
             <h2 className="text-lg font-semibold text-foreground">3. Account & Verification</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              You must verify your Roblox account through our emoji-based bio verification system to use the Service. You are responsible for maintaining the security of your account. You must not share your workspace access keys with unauthorized individuals.
+              You must verify your Roblox account through our bio code verification system or Roblox OAuth to use the Service. You are responsible for maintaining the security of your account. You must not share your workspace access keys with unauthorized individuals.
             </p>
           </section>
 
