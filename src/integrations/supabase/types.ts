@@ -458,12 +458,14 @@ export type Database = {
           created_at: string
           description: string | null
           duration_minutes: number
+          game_url: string | null
           host_id: string | null
           host_name: string
           id: string
           recurring: string | null
           recurring_days: string[] | null
           recurring_time: string | null
+          role_labels: Json | null
           scheduled_at: string
           status: string
           title: string
@@ -477,12 +479,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number
+          game_url?: string | null
           host_id?: string | null
           host_name: string
           id?: string
           recurring?: string | null
           recurring_days?: string[] | null
           recurring_time?: string | null
+          role_labels?: Json | null
           scheduled_at: string
           status?: string
           title: string
@@ -496,12 +500,14 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_minutes?: number
+          game_url?: string | null
           host_id?: string | null
           host_name?: string
           id?: string
           recurring?: string | null
           recurring_days?: string[] | null
           recurring_time?: string | null
+          role_labels?: Json | null
           scheduled_at?: string
           status?: string
           title?: string

@@ -19,6 +19,8 @@ interface ScheduledSession {
   description: string | null;
   recurring_days: string[] | null;
   recurring_time: string | null;
+  game_url: string | null;
+  role_labels: { host?: string; co_host?: string; trainer?: string } | null;
 }
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -116,13 +118,24 @@ export default function Sessions() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [duration, setDuration] = useState("60");
   const [description, setDescription] = useState("");
+  const [gameUrl, setGameUrl] = useState("");
+  const [labelHost, setLabelHost] = useState("");
+  const [labelCoHost, setLabelCoHost] = useState("");
+  const [labelTrainer, setLabelTrainer] = useState("");
+  const [preAssignSelf, setPreAssignSelf] = useState<"none" | "host" | "co_host" | "trainer">("none");
 
-  const roleLabels = (workspace as any)?.session_role_labels ?? { host: "Host", co_host: "Co-Host", trainer: "Trainer" };
+  const wsRoleLabels = (workspace as any)?.session_role_labels ?? { host: "Host", co_host: "Co-Host", trainer: "Trainer" };
+  const roleLabels = wsRoleLabels;
+  const sessionLabels = (s: ScheduledSession) => ({
+    host: s.role_labels?.host || wsRoleLabels.host || "Host",
+    co_host: s.role_labels?.co_host || wsRoleLabels.co_host || "Co-Host",
+    trainer: s.role_labels?.trainer || wsRoleLabels.trainer || "Trainer",
+  });
 
   const fetchSessions = async () => {
     const { data } = await supabase.from("scheduled_sessions").select("*")
       .eq("workspace_id", workspaceId).order("scheduled_at", { ascending: false });
-    setSessions(data || []);
+    setSessions((data as any) || []);
     setLoading(false);
   };
 
@@ -207,15 +220,25 @@ export default function Sessions() {
       firstOccurrence = new Date(scheduledAt);
     }
 
+    const meName = robloxUsername || "Unknown";
     const insertPayload: any = {
       workspace_id: workspaceId, title: title.trim(), category,
       scheduled_at: firstOccurrence.toISOString(),
       duration_minutes: parseInt(duration) || 60,
-      host_name: "Unassigned", host_id: user.id,
+      host_name: preAssignSelf === "host" ? meName : "Unassigned",
+      host_id: user.id,
+      co_host_name: preAssignSelf === "co_host" ? meName : null,
+      trainer_name: preAssignSelf === "trainer" ? meName : null,
       description: description.trim() || null,
       recurring: recurring === "none" ? null : (isWeekly ? "weekly" : recurring),
       recurring_days: isWeekly ? recurringDays : null,
       recurring_time: isWeekly ? recurringTime : null,
+      game_url: gameUrl.trim() || null,
+      role_labels: (labelHost.trim() || labelCoHost.trim() || labelTrainer.trim()) ? {
+        host: labelHost.trim() || undefined,
+        co_host: labelCoHost.trim() || undefined,
+        trainer: labelTrainer.trim() || undefined,
+      } : null,
     };
 
     const { error } = await supabase.from("scheduled_sessions").insert(insertPayload);
@@ -248,6 +271,8 @@ export default function Sessions() {
     setDialogOpen(false);
     setTitle(""); setDescription(""); setScheduledAt("");
     setRecurringDays([]); setRecurring("none");
+    setGameUrl(""); setLabelHost(""); setLabelCoHost(""); setLabelTrainer("");
+    setPreAssignSelf("none");
     setCreating(false);
   };
 
@@ -534,7 +559,44 @@ export default function Sessions() {
                     </div>
                   )}
 
-                  <p className="text-xs text-muted-foreground">{roleLabels.host}, {roleLabels.co_host} and {roleLabels.trainer} can be assigned after creation. Discord webhook (if configured) will announce this session.</p>
+                  {/* Game URL */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Game link <span className="text-muted-foreground">(optional, overrides workspace default)</span></Label>
+                    <Input
+                      placeholder="https://www.roblox.com/games/123456789/My-Training-Center"
+                      value={gameUrl}
+                      onChange={(e) => setGameUrl(e.target.value)}
+                      className="bg-muted border-border"
+                    />
+                  </div>
+
+                  {/* Custom role labels */}
+                  <div className="rounded-lg border border-border/40 bg-muted/40 p-3 space-y-3">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Custom role names <span className="normal-case text-[10px]">(optional)</span></Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input placeholder={wsRoleLabels.host} value={labelHost} onChange={(e) => setLabelHost(e.target.value)} className="bg-muted border-border h-9 text-xs" />
+                      <Input placeholder={wsRoleLabels.co_host} value={labelCoHost} onChange={(e) => setLabelCoHost(e.target.value)} className="bg-muted border-border h-9 text-xs" />
+                      <Input placeholder={wsRoleLabels.trainer} value={labelTrainer} onChange={(e) => setLabelTrainer(e.target.value)} className="bg-muted border-border h-9 text-xs" />
+                    </div>
+                  </div>
+
+                  {/* Pre-assign self */}
+                  {canHostSession(category) && (
+                    <div className="space-y-2">
+                      <Label className="text-sm">Assign yourself</Label>
+                      <Select value={preAssignSelf} onValueChange={(v) => setPreAssignSelf(v as any)}>
+                        <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Don't assign me</SelectItem>
+                          <SelectItem value="host">As {labelHost.trim() || wsRoleLabels.host}</SelectItem>
+                          <SelectItem value="co_host">As {labelCoHost.trim() || wsRoleLabels.co_host}</SelectItem>
+                          <SelectItem value="trainer">As {labelTrainer.trim() || wsRoleLabels.trainer}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">Roles can also be assigned after creation. Discord webhook (if configured) will announce this session.</p>
                   <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || (recurring !== "weekly_days" && !scheduledAt) || (recurring === "weekly_days" && recurringDays.length === 0)}>
                     {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Schedule
                   </Button>
@@ -646,7 +708,7 @@ export default function Sessions() {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assigned Roles</p>
 
                   <RoleSlot
-                    label={roleLabels.host || "Host"}
+                    label={sessionLabels(detailSession).host}
                     icon={User}
                     name={detailSession.host_name === "Unassigned" ? null : detailSession.host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -657,7 +719,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label={roleLabels.co_host || "Co-Host"}
+                    label={sessionLabels(detailSession).co_host}
                     icon={Users}
                     name={detailSession.co_host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -668,7 +730,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label={roleLabels.trainer || "Trainer"}
+                    label={sessionLabels(detailSession).trainer}
                     icon={GraduationCap}
                     name={detailSession.trainer_name}
                     canAssignSelf={canSelfAssign(detailSession)}
