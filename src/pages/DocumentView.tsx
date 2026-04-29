@@ -108,7 +108,8 @@ export default function DocumentView() {
   const clearCanvas = () => canvasRef.current?.getContext("2d")?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
 
   const sign = async () => {
-    if (!doc || !user || !myMemberId) { toast.error("You must be a workspace member to sign"); return; }
+    if (!doc || !user) { toast.error("You must be signed in"); return; }
+    if (!myMemberId && !isOwner) { toast.error("You must be a workspace member to sign"); return; }
     let sigData = "";
     if (doc.signature_type === "checkbox") {
       if (!signChecked) { toast.error("Tick the acknowledgement box"); return; }
@@ -129,7 +130,10 @@ export default function DocumentView() {
     }
     setSubmitting(true);
     const { error } = await supabase.from("document_signatures").insert({
-      document_id: doc.id, member_id: myMemberId, user_id: user.id, signature_data: sigData,
+      document_id: doc.id,
+      member_id: myMemberId || null,
+      user_id: user.id,
+      signature_data: sigData,
     });
     setSubmitting(false);
     if (error) { toast.error("Failed: " + error.message); return; }
