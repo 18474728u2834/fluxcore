@@ -6,6 +6,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+
+const categoryColor = (category: string) =>
+  category === "Training" ? 0xf59e0b : category === "Event" ? 0x8b5cf6 : 0x22c55e;
+
+const formatTime = (iso: string) =>
+  new Date(iso).toLocaleString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -15,110 +34,112 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const body = await req.json();
-    const { action, workspace_id } = body;
+    const { action, workspace_id } = body ?? {};
 
-    if (!workspace_id) {
-      return new Response(JSON.stringify({ error: "Missing workspace_id" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    if (!workspace_id) return json({ error: "Missing workspace_id" }, 400);
 
-    // Verify authorization
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // Get workspace with discord_webhook_url
-    const { data: ws } = await supabase
+    const { data: ws, error: wsErr } = await supabase
       .from("workspaces")
-      .select("discord_webhook_url")
+      .select("name, discord_webhook_url, game_url")
       .eq("id", workspace_id)
-      .single();
+      .maybeSingle();
 
-    if (!ws?.discord_webhook_url) {
-      return new Response(JSON.stringify({ error: "Discord webhook not configured" }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (wsErr) {
+      console.error("workspaces lookup failed:", wsErr);
+      return json({ error: "Workspace lookup failed" }, 500);
+    }
+    if (!ws) return json({ error: "Workspace not found" }, 404);
+    if (!ws.discord_webhook_url) {
+      return json({ error: "Discord webhook not configured" }, 400);
     }
 
-    // Send session reminder
+    const sendEmbed = async (embeds: unknown[]) => {
+      const res = await fetch(ws.discord_webhook_url!, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ embeds }),
+      });
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Discord webhook failed:", res.status, errText);
+        return { ok: false, status: res.status, error: errText };
+      }
+      return { ok: true };
+    };
+
+    // Session reminder (5 min before)
     if (action === "send_reminder") {
       const { session_title, session_time, host_name, category } = body;
 
-      const embed = {
-        embeds: [{
-          title: `📋 ${category || "Shift"} Starting Soon`,
-          description: `**${session_title}** starts in 5 minutes!`,
-          color: category === "Training" ? 0xf59e0b : category === "Event" ? 0x8b5cf6 : 0x22c55e,
-          fields: [
-            { name: "Time", value: new Date(session_time).toLocaleString("en-US", { timeZone: "UTC", hour: "2-digit", minute: "2-digit" }), inline: true },
-            { name: "Host", value: host_name || "TBA", inline: true },
-            { name: "Category", value: category || "Shift", inline: true },
-          ],
-          footer: { text: "Fluxcore Session Reminder" },
-          timestamp: new Date().toISOString(),
-        }],
-      };
+      const fields: any[] = [
+        { name: "🕐 Time", value: formatTime(session_time), inline: true },
+        { name: "👤 Host", value: host_name || "TBA", inline: true },
+        { name: "📂 Type", value: category || "Shift", inline: true },
+      ];
+      if (ws.game_url) fields.push({ name: "🎮 Game", value: `[Click to join](${ws.game_url})`, inline: false });
 
-      const res = await fetch(ws.discord_webhook_url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(embed),
-      });
+      const result = await sendEmbed([{
+        title: `⏰ ${category || "Shift"} Starting Soon`,
+        description: `**${session_title}** starts in 5 minutes!`,
+        color: categoryColor(category),
+        fields,
+        footer: { text: `${ws.name} · Fluxcore` },
+        timestamp: new Date().toISOString(),
+      }]);
 
-      if (!res.ok) {
-        const errText = await res.text();
-        console.error("Discord webhook failed:", errText);
-        return new Response(JSON.stringify({ error: "Discord webhook failed", details: errText }), {
-          status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      if (!result.ok) return json({ error: "Discord webhook failed", details: result.error }, 502);
+      return json({ success: true });
+    }
+
+    // Session created announcement
+    if (action === "session_created") {
+      const { session_title, session_time, host_name, category, recurring, recurring_days, recurring_time, description } = body;
+
+      const fields: any[] = [];
+      if (recurring_days && recurring_days.length) {
+        fields.push({
+          name: "🔁 Repeats",
+          value: `${recurring_days.join(", ")} at ${recurring_time || "scheduled time"}`,
+          inline: false,
         });
+      } else if (recurring && recurring !== "none") {
+        fields.push({ name: "🔁 Repeats", value: recurring, inline: true });
+      } else {
+        fields.push({ name: "🕐 When", value: formatTime(session_time), inline: false });
       }
+      fields.push({ name: "👤 Host", value: host_name || "TBA", inline: true });
+      fields.push({ name: "📂 Type", value: category || "Shift", inline: true });
+      if (ws.game_url) fields.push({ name: "🎮 Game", value: `[Click to join](${ws.game_url})`, inline: false });
 
-      return new Response(JSON.stringify({ success: true }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const result = await sendEmbed([{
+        title: `📅 New ${category || "Session"} Scheduled`,
+        description: `**${session_title}**${description ? `\n\n${description}` : ""}`,
+        color: categoryColor(category),
+        fields,
+        footer: { text: `${ws.name} · Fluxcore` },
+        timestamp: new Date().toISOString(),
+      }]);
+
+      if (!result.ok) return json({ error: "Discord webhook failed", details: result.error }, 502);
+      return json({ success: true });
     }
 
     // Test webhook
     if (action === "test") {
-      const embed = {
-        embeds: [{
-          title: "✅ Fluxcore Connected",
-          description: "Your Discord webhook is working! Session reminders will be sent here.",
-          color: 0x7c3aed,
-          footer: { text: "Fluxcore" },
-          timestamp: new Date().toISOString(),
-        }],
-      };
-
-      const res = await fetch(ws.discord_webhook_url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(embed),
-      });
-
-      if (!res.ok) {
-        const errText = await res.text();
-        return new Response(JSON.stringify({ error: "Test failed", details: errText }), {
-          status: res.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      return new Response(JSON.stringify({ success: true, message: "Test message sent!" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      const result = await sendEmbed([{
+        title: "✅ Fluxcore Connected",
+        description: "Your Discord webhook is working! Session reminders and announcements will be sent here.",
+        color: 0x06b6d4,
+        footer: { text: `${ws.name} · Fluxcore` },
+        timestamp: new Date().toISOString(),
+      }]);
+      if (!result.ok) return json({ error: "Test failed", details: result.error }, 502);
+      return json({ success: true, message: "Test message sent!" });
     }
 
-    return new Response(JSON.stringify({ error: "Unknown action" }), {
-      status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return json({ error: "Unknown action" }, 400);
   } catch (err) {
-    console.error("Error:", err);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    console.error("discord-notify error:", err);
+    return json({ error: "Internal server error", details: String(err) }, 500);
   }
 });
