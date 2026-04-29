@@ -28,9 +28,8 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Ambient grid + glow */}
+      {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-60 [mask-image:radial-gradient(ellipse_80%_60%_at_50%_0%,black,transparent_75%)]" />
         <div className="absolute top-[-20%] left-[50%] -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/[0.07] blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-500/[0.05] blur-[100px]" />
       </div>
