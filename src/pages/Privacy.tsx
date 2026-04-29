@@ -79,7 +79,7 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-foreground">8. Contact</h2>
+            <h2 className="text-lg font-bold text-foreground">9. Contact</h2>
             <p>For privacy-related questions, use the <button onClick={() => navigate("/feedback")} className="text-primary hover:underline">Feedback page</button> or contact us through the support center.</p>
           </section>
         </div>
