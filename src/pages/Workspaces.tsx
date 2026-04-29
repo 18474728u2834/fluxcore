@@ -42,45 +42,58 @@ export default function Workspaces() {
   const fetchWorkspaces = async () => {
     if (!user) return;
     setLoading(true);
-
-    const { data: ownedWorkspaces } = await supabase
-      .from("workspaces")
-      .select("id, name, owner_id, roblox_group_id, verified_official")
-      .eq("owner_id", user.id);
-
-    const { data: memberships } = await supabase
-      .from("workspace_members")
-      .select("workspace_id, role")
-      .eq("user_id", user.id);
-
     const ws: Workspace[] = [];
 
-    if (ownedWorkspaces) {
-      for (const w of ownedWorkspaces) {
-        ws.push({ id: w.id, name: w.name, role: "Owner", roblox_group_id: w.roblox_group_id, verified_official: !!w.verified_official });
-      }
-    }
+    try {
+      // Single RPC call — much faster and avoids N+1 .single() failures
+      const { data: rpcData, error: rpcErr } = await supabase.rpc("get_accessible_workspaces");
 
-    if (memberships) {
-      const ownedIds = new Set(ws.map(w => w.id));
-      for (const m of memberships) {
-        if (!ownedIds.has(m.workspace_id)) {
-          const { data: wsData } = await supabase
-            .from("workspaces")
-            .select("id, name, roblox_group_id, verified_official")
-            .eq("id", m.workspace_id)
-            .single();
-          if (wsData) {
-            ws.push({ id: wsData.id, name: wsData.name, role: m.role, roblox_group_id: wsData.roblox_group_id, verified_official: !!wsData.verified_official });
+      if (rpcErr) {
+        console.error("get_accessible_workspaces failed, falling back:", rpcErr);
+        // Fallback to direct queries
+        const { data: owned } = await supabase
+          .from("workspaces")
+          .select("id, name, roblox_group_id, verified_official")
+          .eq("owner_id", user.id);
+        if (owned) {
+          for (const w of owned) {
+            ws.push({ id: w.id, name: w.name, role: "Owner", roblox_group_id: w.roblox_group_id, verified_official: !!w.verified_official });
           }
         }
+        const { data: memberships } = await supabase
+          .from("workspace_members")
+          .select("workspace_id, role, workspaces(id, name, roblox_group_id, verified_official)")
+          .eq("user_id", user.id);
+        if (memberships) {
+          const ownedIds = new Set(ws.map(w => w.id));
+          for (const m of memberships as any[]) {
+            const w = m.workspaces;
+            if (w && !ownedIds.has(w.id)) {
+              ws.push({ id: w.id, name: w.name, role: m.role, roblox_group_id: w.roblox_group_id, verified_official: !!w.verified_official });
+            }
+          }
+        }
+      } else if (rpcData) {
+        for (const w of rpcData as any[]) {
+          ws.push({
+            id: w.id,
+            name: w.name,
+            role: w.role,
+            roblox_group_id: w.roblox_group_id,
+            verified_official: !!w.verified_official,
+          });
+        }
       }
+
+      setWorkspaces(ws);
+    } catch (e) {
+      console.error("Failed to load workspaces:", e);
+      toast.error("Couldn't load workspaces. Please refresh.");
+    } finally {
+      setLoading(false);
     }
 
-    setWorkspaces(ws);
-    setLoading(false);
-
-    // Fetch group icons via edge function proxy (avoids CORS)
+    // Fetch group icons separately (non-blocking, never affects loading state)
     const groupIds = ws.filter(w => w.roblox_group_id).map(w => w.roblox_group_id);
     if (groupIds.length > 0) {
       try {
