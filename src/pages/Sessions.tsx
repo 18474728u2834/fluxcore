@@ -118,8 +118,19 @@ export default function Sessions() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [duration, setDuration] = useState("60");
   const [description, setDescription] = useState("");
+  const [gameUrl, setGameUrl] = useState("");
+  const [labelHost, setLabelHost] = useState("");
+  const [labelCoHost, setLabelCoHost] = useState("");
+  const [labelTrainer, setLabelTrainer] = useState("");
+  const [preAssignSelf, setPreAssignSelf] = useState<"none" | "host" | "co_host" | "trainer">("none");
 
-  const roleLabels = (workspace as any)?.session_role_labels ?? { host: "Host", co_host: "Co-Host", trainer: "Trainer" };
+  const wsRoleLabels = (workspace as any)?.session_role_labels ?? { host: "Host", co_host: "Co-Host", trainer: "Trainer" };
+  const roleLabels = wsRoleLabels;
+  const sessionLabels = (s: ScheduledSession) => ({
+    host: s.role_labels?.host || wsRoleLabels.host || "Host",
+    co_host: s.role_labels?.co_host || wsRoleLabels.co_host || "Co-Host",
+    trainer: s.role_labels?.trainer || wsRoleLabels.trainer || "Trainer",
+  });
 
   const fetchSessions = async () => {
     const { data } = await supabase.from("scheduled_sessions").select("*")
