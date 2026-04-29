@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const { data: workspace, error: wsError } = await supabase
       .from('workspaces')
-      .select('id, message_logger_enabled')
+      .select('id, message_logger_enabled, roblox_api_key, roblox_group_id, auto_rank_enabled')
       .eq('api_key', apiKey)
       .single();
 
@@ -40,6 +40,41 @@ serve(async (req) => {
     const body = await req.json();
     const action = body.action;
 
+    // Helper: try to auto-add a Roblox user as a workspace member if their rank is mapped.
+    async function tryAutoAddMember(robloxUserId: string, robloxUsername: string) {
+      if (!workspace.auto_rank_enabled || !workspace.roblox_api_key || !workspace.roblox_group_id) return null;
+      try {
+        const apiKeyR = workspace.roblox_api_key as string;
+        const gid = workspace.roblox_group_id as string;
+        const memRes = await fetch(
+          `https://apis.roblox.com/cloud/v2/groups/${gid}/memberships?filter=user=='users/${robloxUserId}'&maxPageSize=1`,
+          { headers: { 'x-api-key': apiKeyR } },
+        );
+        if (!memRes.ok) return null;
+        const memJson = await memRes.json();
+        const m = memJson.groupMemberships?.[0];
+        if (!m) return null;
+        const roleId = String(m.role || '').split('/').pop();
+        if (!roleId) return null;
+        const { data: wsRole } = await supabase.from('workspace_roles')
+          .select('id, name')
+          .eq('workspace_id', workspace.id)
+          .eq('roblox_role_id', roleId)
+          .maybeSingle();
+        if (!wsRole) return null;
+        const { data: inserted } = await supabase.from('workspace_members').insert({
+          workspace_id: workspace.id,
+          roblox_user_id: robloxUserId,
+          roblox_username: robloxUsername,
+          role: wsRole.name,
+          role_id: wsRole.id,
+          verified: false,
+          user_id: null,
+        }).select('id').single();
+        return inserted;
+      } catch (_) { return null; }
+    }
+
     // JOIN
     if (action === 'join') {
       const { roblox_user_id, roblox_username, server_id } = body;
@@ -51,15 +86,19 @@ serve(async (req) => {
       }
 
       // Check if staff (workspace member)
-      const { data: existingMember } = await supabase
+      let { data: existingMember } = await supabase
         .from('workspace_members')
         .select('id')
         .eq('workspace_id', workspace.id)
         .eq('roblox_user_id', String(roblox_user_id))
         .maybeSingle();
 
+      // Not yet a member? Try to auto-add based on Roblox rank mapping.
       if (!existingMember) {
-        // Not staff - don't track, just return
+        existingMember = await tryAutoAddMember(String(roblox_user_id), roblox_username);
+      }
+
+      if (!existingMember) {
         return new Response(
           JSON.stringify({ success: true, tracked: false, reason: 'not_staff' }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
