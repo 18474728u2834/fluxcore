@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/v1/sessions",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions"
+    },
+    {
+      "source": "/api/v1/sessions/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions/:path*"
+    }
+  ]
+}
