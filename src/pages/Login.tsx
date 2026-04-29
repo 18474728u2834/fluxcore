@@ -38,7 +38,7 @@ export default function Login() {
   const handleRobloxOAuth = () => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const origin = encodeURIComponent(window.location.origin);
-    window.location.href = `${supabaseUrl}/functions/v1/roblox-oauth-callback/start?origin=${origin}`;
+    window.location.href = `${supabaseUrl}/functions/v1/roblox-oauth-callback?start=1&origin=${origin}`;
   };
 
   if (authLoading) {
