@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { ArrowRight, Sun, Moon, Headphones, ChevronRight, BarChart3, Shield, Calendar, FileText, Users, Bot, Zap, Palette, CheckCircle2, MessageSquare, ClipboardList, Target, Plane, Megaphone, KeyRound, Activity, Lock, Webhook, Trophy } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
 
 export default function Index() {
   const navigate = useNavigate();
