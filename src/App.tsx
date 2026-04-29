@@ -9,6 +9,7 @@ import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { I18nProvider } from "@/hooks/useI18n";
 import { DOMTranslator } from "@/components/DOMTranslator";
 import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
+import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -177,6 +178,7 @@ const App = () => {
               <Sonner />
               <HashRouter>
                 <DOMTranslator />
+                <LoadWatchdog />
                 <ChunkErrorBoundary fallback={<PageLoader />}>
                   <AppRoutes />
                 </ChunkErrorBoundary>
