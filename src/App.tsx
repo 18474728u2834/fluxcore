@@ -27,11 +27,13 @@ const SetupTracking = lazy(() => import("./pages/SetupTracking"));
 const SettingsPage = lazy(() => import("./pages/Settings"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Feedback = lazy(() => import("./pages/Feedback"));
+const FeedbackTicket = lazy(() => import("./pages/FeedbackTicket"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Support = lazy(() => import("./pages/Support"));
 const JoinWorkspace = lazy(() => import("./pages/JoinWorkspace"));
 const Documents = lazy(() => import("./pages/Documents"));
+const DocumentView = lazy(() => import("./pages/DocumentView"));
 const LOA = lazy(() => import("./pages/LOA"));
 const Staff = lazy(() => import("./pages/Staff"));
 const Roles = lazy(() => import("./pages/Roles"));
@@ -64,10 +66,12 @@ function WorkspaceRoutes() {
           <Route path="setup-tracking" element={<SetupTracking />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="documents" element={<Documents />} />
+          <Route path="documents/:docId" element={<DocumentView />} />
           <Route path="loa" element={<LOA />} />
           <Route path="staff" element={<Staff />} />
           <Route path="roles" element={<Roles />} />
           <Route path="quotas" element={<Quotas />} />
+          <Route path="join" element={<JoinWorkspace />} />
         </Routes>
       </Suspense>
     </WorkspaceProvider>
@@ -118,6 +122,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/support" element={<Support />} />
         <Route path="/feedback" element={<Feedback />} />
+        <Route path="/feedback/:ticketId" element={<FeedbackTicket />} />
         <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
         <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
