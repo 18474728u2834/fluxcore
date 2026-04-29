@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Search, Crown, ChevronLeft, ChevronRight, Copy, Users as UsersIcon, ArrowUpDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -256,10 +256,11 @@ export default function Members() {
                   <tr key={member.id} onClick={() => { if (member.id !== "owner-virtual") navigate(`/w/${workspaceId}/members/${member.id}`); }} className="hover:bg-secondary/30 transition-colors cursor-pointer">
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
-                        <Avatar className="w-9 h-9">
-                          {avatars[member.roblox_user_id] ? <AvatarImage src={avatars[member.roblox_user_id]} alt={member.roblox_username} /> : null}
-                          <AvatarFallback className="bg-secondary text-xs font-bold">{member.roblox_username.charAt(0).toUpperCase()}</AvatarFallback>
-                        </Avatar>
+                        <RobloxAvatar
+                          username={member.roblox_username}
+                          userId={member.roblox_user_id}
+                          className="w-9 h-9 rounded-full"
+                        />
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-medium text-foreground">{member.roblox_username}</span>
                           {member.role === "Owner" && <Crown className="w-3.5 h-3.5 text-warning" />}
