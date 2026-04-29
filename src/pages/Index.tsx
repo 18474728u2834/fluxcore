@@ -164,12 +164,8 @@ export default function Index() {
           <div className="flex items-center justify-center gap-10 flex-wrap">
             <span className="text-xs text-muted-foreground uppercase tracking-[0.2em] font-bold">Trusted by</span>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-[10px] font-black text-white">BB</div>
+              <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-8 h-8 rounded-lg object-cover" />
               <span className="text-sm font-bold text-foreground">Bloxy Bargains</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] font-black text-white">BD</div>
-              <span className="text-sm font-bold text-foreground">Bargains Downtown</span>
             </div>
           </div>
         </div>
