@@ -202,8 +202,13 @@ export default function Support() {
   const isStaffMsg = (username: string) => (username || "").toLowerCase() === "novavoff";
 
   return (
-    <div className="min-h-screen bg-background">
+    <ForceEnglish>
+    <div className="min-h-screen bg-background" data-no-translate>
       <div className="max-w-4xl mx-auto px-6 py-12">
+        <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-lg border border-border/30 bg-muted/30 text-xs text-muted-foreground">
+          <Globe className="w-3.5 h-3.5 shrink-0 text-primary" />
+          <span>Support is available in <strong className="text-foreground">English only</strong> so our team can assist you accurately. The rest of Fluxcore supports your language.</span>
+        </div>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-extrabold text-foreground">Support Center {isStaff && <span className="text-xs ml-2 px-2 py-0.5 rounded-full bg-primary/15 text-primary align-middle">Staff</span>}</h1>
