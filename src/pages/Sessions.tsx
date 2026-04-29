@@ -19,6 +19,8 @@ interface ScheduledSession {
   description: string | null;
   recurring_days: string[] | null;
   recurring_time: string | null;
+  game_url: string | null;
+  role_labels: { host?: string; co_host?: string; trainer?: string } | null;
 }
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
