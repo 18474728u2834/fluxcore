@@ -213,32 +213,42 @@ export default function Support() {
               ← Back to tickets
             </button>
             <div className="glass rounded-xl p-5">
-              <div className="flex items-center gap-2 mb-2">
+              <div className="flex items-center gap-2 mb-2 flex-wrap">
                 {statusIcon(selectedTicket.status)}
                 <h2 className="font-semibold text-foreground">{selectedTicket.subject}</h2>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize">{selectedTicket.status}</span>
+                <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize">{selectedTicket.status.replace("_", " ")}</span>
+                {selectedTicket.assigned_to && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary">Assigned: {selectedTicket.assigned_to}</span>
+                )}
+                <span className="text-xs text-muted-foreground ml-auto">From: {(selectedTicket as any).roblox_username || "Unknown"}</span>
               </div>
               <p className="text-sm text-muted-foreground">{selectedTicket.message}</p>
               <p className="text-xs text-muted-foreground mt-2">{new Date(selectedTicket.created_at).toLocaleString()}</p>
+              {isStaff && (
+                <div className="flex gap-2 mt-3 pt-3 border-t border-border/40">
+                  <Button size="sm" variant="outline" disabled={updatingStatus || selectedTicket.status === "in_progress"} onClick={() => setTicketStatus("in_progress")}>Mark In Progress</Button>
+                  <Button size="sm" variant="outline" disabled={updatingStatus || selectedTicket.status === "resolved"} onClick={() => setTicketStatus("resolved")}>Mark Resolved</Button>
+                  <Button size="sm" variant="ghost" disabled={updatingStatus || selectedTicket.status === "open"} onClick={() => setTicketStatus("open")}>Reopen</Button>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-3 max-h-[400px] overflow-y-auto">
-              {messages.map(m => (
-                <div key={m.id} className={`glass rounded-lg p-4 ${isAI(m.roblox_username) ? "border-l-2 border-primary/50" : ""}`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    {isAI(m.roblox_username) ? (
-                      <Bot className="w-3.5 h-3.5 text-primary" />
-                    ) : (
-                      <User className="w-3.5 h-3.5 text-muted-foreground" />
-                    )}
-                    <span className={`text-xs font-semibold ${isAI(m.roblox_username) ? "text-primary" : "text-foreground"}`}>
-                      {m.roblox_username}
-                    </span>
-                    <span className="text-xs text-muted-foreground">{new Date(m.created_at).toLocaleString()}</span>
+            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+              {messages.map(m => {
+                const ai = isAI(m.roblox_username);
+                const staff = isStaffMsg(m.roblox_username);
+                return (
+                  <div key={m.id} className={`glass rounded-lg p-4 ${ai ? "border-l-2 border-primary/50" : staff ? "border-l-2 border-success/60" : ""}`}>
+                    <div className="flex items-center gap-2 mb-1">
+                      {ai ? <Bot className="w-3.5 h-3.5 text-primary" /> : <User className={`w-3.5 h-3.5 ${staff ? "text-success" : "text-muted-foreground"}`} />}
+                      <span className={`text-xs font-semibold ${ai ? "text-primary" : staff ? "text-success" : "text-foreground"}`}>{m.roblox_username}</span>
+                      {staff && <span className="text-[10px] px-1.5 py-0.5 rounded bg-success/15 text-success font-semibold uppercase tracking-wide">Staff</span>}
+                      <span className="text-xs text-muted-foreground">{new Date(m.created_at).toLocaleString()}</span>
+                    </div>
+                    <p className="text-sm text-foreground whitespace-pre-wrap">{m.content}</p>
                   </div>
-                  <p className="text-sm text-foreground whitespace-pre-wrap">{m.content}</p>
-                </div>
-              ))}
+                );
+              })}
               {aiThinking && (
                 <div className="glass rounded-lg p-4 border-l-2 border-primary/50">
                   <div className="flex items-center gap-2">
