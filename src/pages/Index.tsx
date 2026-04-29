@@ -78,7 +78,7 @@ export default function Index() {
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs font-semibold text-primary mb-8 animate-fade-in">
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Free Forever · Paid Features From July
+            Free Forever · Premium Available
           </div>
 
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight mb-6">
