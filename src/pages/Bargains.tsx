@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Users, Calendar, Crown, ArrowRight, Loader2 } from "lucide-react";
+import bargainsLogo from "@/assets/bargains-logo.png";
 
 const WORKSPACE_ID = "81bd37c3-fb0a-465a-86b5-de4cfed43a09";
 
