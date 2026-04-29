@@ -2,3 +2,9 @@ project_id = "zulnuayumxsdbivigvfe"
 
 [functions.process-email-queue]
 verify_jwt = true
+
+[functions.activity-tracker]
+verify_jwt = false
+
+[functions.cron-sync-staff]
+verify_jwt = false
