@@ -46,6 +46,7 @@ const Quotas = lazy(() => import("./pages/Quotas"));
 const MessageLogs = lazy(() => import("./pages/MessageLogs"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const BloxyBargainsDowntown = lazy(() => import("./pages/BloxyBargainsDowntown"));
+const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 
 const queryClient = new QueryClient();
@@ -88,6 +89,21 @@ function WorkspaceRoutes() {
 
 function AppRoutes() {
   const hostname = window.location.hostname;
+
+  if (hostname.startsWith("bargains.fluxcore")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Bargains />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/workspaces" element={<Workspaces />} />
+          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+          <Route path="*" element={<Bargains />} />
+        </Routes>
+      </Suspense>
+    );
+  }
 
   if (hostname.includes("bloxy-bargains") || hostname.includes("bargains.")) {
     return (
