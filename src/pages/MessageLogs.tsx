@@ -16,7 +16,7 @@ interface LogRow {
 }
 
 export default function MessageLogs() {
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, workspace } = useWorkspace();
   const { hasPermission, isOwner, loading: permLoading } = usePermissions();
   const [rows, setRows] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(true);
