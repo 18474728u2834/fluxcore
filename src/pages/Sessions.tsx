@@ -220,15 +220,25 @@ export default function Sessions() {
       firstOccurrence = new Date(scheduledAt);
     }
 
+    const meName = robloxUsername || "Unknown";
     const insertPayload: any = {
       workspace_id: workspaceId, title: title.trim(), category,
       scheduled_at: firstOccurrence.toISOString(),
       duration_minutes: parseInt(duration) || 60,
-      host_name: "Unassigned", host_id: user.id,
+      host_name: preAssignSelf === "host" ? meName : "Unassigned",
+      host_id: user.id,
+      co_host_name: preAssignSelf === "co_host" ? meName : null,
+      trainer_name: preAssignSelf === "trainer" ? meName : null,
       description: description.trim() || null,
       recurring: recurring === "none" ? null : (isWeekly ? "weekly" : recurring),
       recurring_days: isWeekly ? recurringDays : null,
       recurring_time: isWeekly ? recurringTime : null,
+      game_url: gameUrl.trim() || null,
+      role_labels: (labelHost.trim() || labelCoHost.trim() || labelTrainer.trim()) ? {
+        host: labelHost.trim() || undefined,
+        co_host: labelCoHost.trim() || undefined,
+        trainer: labelTrainer.trim() || undefined,
+      } : null,
     };
 
     const { error } = await supabase.from("scheduled_sessions").insert(insertPayload);
