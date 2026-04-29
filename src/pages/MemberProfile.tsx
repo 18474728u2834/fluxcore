@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { ArrowLeft, Clock, AlertTriangle, TrendingUp, MessageSquare, Loader2, Plus, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -163,12 +163,11 @@ export default function MemberProfile() {
 
         {/* Profile Header */}
         <div className="glass rounded-xl p-6 flex items-center gap-5">
-          <Avatar className="w-16 h-16">
-            {avatar && <AvatarImage src={avatar} />}
-            <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">
-              {member.roblox_username.charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <RobloxAvatar
+            username={member.roblox_username}
+            userId={member.roblox_user_id}
+            className="w-16 h-16 rounded-full"
+          />
           <div className="flex-1">
             <h1 className="text-xl font-bold text-foreground">{member.roblox_username}</h1>
             <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
