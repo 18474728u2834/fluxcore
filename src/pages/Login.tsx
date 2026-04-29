@@ -14,6 +14,18 @@ export default function Login() {
   const [settingSession, setSettingSession] = useState(false);
   const [loginMethod, setLoginMethod] = useState<"choose" | "emoji">("choose");
 
+  // Persist any ?grant=TOKEN through the OAuth round-trip via localStorage
+  useEffect(() => {
+    try {
+      const hash = window.location.hash || "";
+      const qIdx = hash.indexOf("?");
+      const qs = qIdx >= 0 ? hash.slice(qIdx + 1) : window.location.search.slice(1);
+      const params = new URLSearchParams(qs);
+      const grant = params.get("grant");
+      if (grant) localStorage.setItem("fluxcore_pending_grant", grant);
+    } catch {}
+  }, []);
+
   useEffect(() => {
     if (!authLoading && user) navigate("/workspaces");
   }, [user, authLoading]);
