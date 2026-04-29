@@ -95,6 +95,7 @@ export function RobloxAvatar({ username, className }: Props) {
       src={src}
       alt={username}
       loading="lazy"
+      onError={() => setSrc(null)}
       className={`${className ?? ""} object-cover animate-in fade-in zoom-in-95 duration-300`}
     />
   );
