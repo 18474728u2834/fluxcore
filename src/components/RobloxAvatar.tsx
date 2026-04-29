@@ -3,37 +3,63 @@ import { useEffect, useState } from "react";
 const cache = new Map<string, string>();
 const inflight = new Map<string, Promise<string | null>>();
 
+async function resolveUserId(username: string): Promise<number | null> {
+  const hosts = ["users.roproxy.com", "users.roblox.com"];
+  for (const host of hosts) {
+    try {
+      const r = await fetch(`https://${host}/v1/usernames/users`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
+      });
+      if (!r.ok) continue;
+      const d = await r.json();
+      const id = d?.data?.[0]?.id;
+      if (id) return id;
+    } catch {
+      // try next host
+    }
+  }
+  return null;
+}
+
+async function fetchHeadshot(id: number): Promise<string | null> {
+  const hosts = ["thumbnails.roproxy.com", "thumbnails.roblox.com"];
+  for (const host of hosts) {
+    try {
+      const t = await fetch(
+        `https://${host}/v1/users/avatar-headshot?userIds=${id}&size=150x150&format=Png&isCircular=false`
+      );
+      if (!t.ok) continue;
+      const td = await t.json();
+      const url: string | undefined = td?.data?.[0]?.imageUrl;
+      if (url) return url;
+    } catch {
+      // try next host
+    }
+  }
+  return null;
+}
+
 async function fetchAvatar(username: string): Promise<string | null> {
   const key = username.toLowerCase();
   if (cache.has(key)) return cache.get(key)!;
   if (inflight.has(key)) return inflight.get(key)!;
 
   const p = (async () => {
-    try {
-      // 1. Resolve username -> userId
-      const r = await fetch("https://users.roproxy.com/v1/usernames/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usernames: [username], excludeBannedUsers: false }),
-      });
-      const d = await r.json();
-      const id = d?.data?.[0]?.id;
-      if (!id) return null;
+    const id = await resolveUserId(username);
+    if (!id) return null;
 
-      // 2. Fetch headshot
-      const t = await fetch(
-        `https://thumbnails.roproxy.com/v1/users/avatar-headshot?userIds=${id}&size=150x150&format=Png`
-      );
-      const td = await t.json();
-      const url: string | undefined = td?.data?.[0]?.imageUrl;
-      if (url) {
-        cache.set(key, url);
-        return url;
-      }
-    } catch {
-      // ignore
+    const url = await fetchHeadshot(id);
+    if (url) {
+      cache.set(key, url);
+      return url;
     }
-    return null;
+
+    // Last-resort fallback: Roblox redirect endpoint that always returns an image
+    const fallback = `https://www.roblox.com/headshot-thumbnail/image?userId=${id}&width=150&height=150&format=png`;
+    cache.set(key, fallback);
+    return fallback;
   })();
 
   inflight.set(key, p);
