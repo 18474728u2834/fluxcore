@@ -9,10 +9,11 @@ import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { lazy, Suspense } from "react";
 import { Loader2 } from "lucide-react";
 
-// Eager load critical paths
-import Index from "./pages/Index";
-import Login from "./pages/Login";
-import AuthCallback from "./pages/AuthCallback";
+// Lazy load every route — each gets its own JS chunk so devtools
+// only ever sees code for the page that's currently rendered.
+const Index = lazy(() => import("./pages/Index"));
+const Login = lazy(() => import("./pages/Login"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 
 // Lazy load everything else
 const Workspaces = lazy(() => import("./pages/Workspaces"));
