@@ -210,8 +210,25 @@ export default function Members() {
             <h1 className="text-2xl font-bold text-foreground">Staff Management</h1>
             <p className="text-sm text-muted-foreground mt-0.5">View and manage your staff members</p>
           </div>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <UsersIcon className="w-4 h-4" /> {members.length} members
+          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+            {canManage && (
+              <Button variant="outline" size="sm" onClick={async () => {
+                toast.loading("Syncing ranks from Roblox...", { id: "sync" });
+                const res = await supabase.functions.invoke("roblox-sync-rank", {
+                  body: { action: "sync_all", workspace_id: workspaceId },
+                });
+                toast.dismiss("sync");
+                if (res.data?.success) {
+                  toast.success(`Synced ${res.data.synced}/${res.data.total} members`);
+                  fetchMembers();
+                } else {
+                  toast.error(res.data?.error || "Sync failed");
+                }
+              }}>
+                <ArrowUpDown className="w-3 h-3 mr-1" /> Sync from Roblox
+              </Button>
+            )}
+            <span className="flex items-center gap-1"><UsersIcon className="w-4 h-4" /> {members.length} members</span>
           </div>
         </div>
 
