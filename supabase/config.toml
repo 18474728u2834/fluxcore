@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.cron-sync-staff]
 verify_jwt = false
+
+[functions.public-sessions]
+verify_jwt = false
