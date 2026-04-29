@@ -111,6 +111,12 @@ export default function Sessions() {
     setTags((data as any) || []);
   };
 
+  const fetchMembers = async () => {
+    const { data } = await supabase.from("workspace_members")
+      .select("roblox_username").eq("workspace_id", workspaceId).order("roblox_username");
+    setMembers((data as any) || []);
+  };
+
   // Discord 5-minute reminder
   const checkAndSendReminders = async (sessionList: ScheduledSession[]) => {
     const now = Date.now();
