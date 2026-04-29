@@ -125,6 +125,25 @@ export default function Workspaces() {
     if (!newName.trim() || !groupId.trim() || !user) return;
     setCreating(true);
 
+    // Free plan limit: 1 owned workspace. Premium on ANY owned workspace lifts the limit.
+    const { data: ownedRows } = await supabase
+      .from("workspaces")
+      .select("id, premium, premium_until")
+      .eq("owner_id", user.id);
+
+    const ownedCount = ownedRows?.length ?? 0;
+    const hasAnyPremium = (ownedRows || []).some((w: any) =>
+      w.premium && (!w.premium_until || new Date(w.premium_until) > new Date())
+    );
+
+    if (ownedCount >= 1 && !hasAnyPremium) {
+      toast.error("Free plan is limited to 1 workspace. Upgrade to Premium for unlimited workspaces.");
+      setCreating(false);
+      setDialogOpen(false);
+      navigate("/pricing");
+      return;
+    }
+
     const { data, error } = await supabase
       .from("workspaces")
       .insert({ name: newName.trim(), owner_id: user.id, roblox_group_id: groupId.trim() })
