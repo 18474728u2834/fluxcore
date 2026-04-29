@@ -32,7 +32,8 @@ serve(async (req) => {
   }
 
   const url = new URL(req.url);
-  const clientId = Deno.env.get("ROBLOX_CLIENT_ID");
+  const configuredClientId = Deno.env.get("ROBLOX_CLIENT_ID") || "";
+  const clientId = configuredClientId && configuredClientId !== "PLACEHOLDER_VALUE_TO_BE_REPLACED" ? configuredClientId : "4787810466204050897";
   const clientSecret = Deno.env.get("ROBLOX_CLIENT_SECRET");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
