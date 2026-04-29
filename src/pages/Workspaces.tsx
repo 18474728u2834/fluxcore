@@ -204,7 +204,10 @@ export default function Workspaces() {
                   )}
                   <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <h3 className="font-bold text-foreground mb-0.5">{ws.name}</h3>
+                <h3 className="font-bold text-foreground mb-0.5 flex items-center gap-1.5">
+                  <span className="truncate">{ws.name}</span>
+                  {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
+                </h3>
                 <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
               </button>
             ))}
