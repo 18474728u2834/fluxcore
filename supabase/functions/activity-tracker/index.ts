@@ -223,14 +223,21 @@ serve(async (req) => {
         );
       }
 
-      const { roblox_user_id, roblox_username, message_content } = body;
+      const { roblox_user_id, roblox_username, message_content, message } = body;
+      const text = String(message_content ?? message ?? '').trim();
+      if (!text) {
+        return new Response(
+          JSON.stringify({ success: true, logged: false, reason: 'empty' }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
 
       await supabase.from('activity_events').insert({
         workspace_id: workspace.id,
         roblox_user_id: String(roblox_user_id),
         roblox_username: roblox_username || null,
         event_type: 'chat_message',
-        event_data: { content: message_content },
+        event_data: { content: text },
       });
 
       return new Response(
@@ -246,6 +253,42 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({ error: 'Missing roblox_user_id or event_type' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      // Special handling for chat_message events from the Lua tracker:
+      // normalize payload to { content }, gate on message_logger_enabled, skip empty.
+      if (event_type === 'chat_message') {
+        if (!workspace.message_logger_enabled) {
+          return new Response(
+            JSON.stringify({ success: true, logged: false, reason: 'logger_disabled' }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const raw = event_data || {};
+        const text = String(raw.content ?? raw.message ?? '').trim();
+        if (!text) {
+          return new Response(
+            JSON.stringify({ success: true, logged: false, reason: 'empty' }),
+            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        const { error: ceErr } = await supabase.from('activity_events').insert({
+          workspace_id: workspace.id,
+          roblox_user_id: String(roblox_user_id),
+          roblox_username: roblox_username || null,
+          event_type: 'chat_message',
+          event_data: { content: text, server_id: raw.server_id || null },
+        });
+        if (ceErr) {
+          return new Response(
+            JSON.stringify({ error: 'Failed to log message' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        return new Response(
+          JSON.stringify({ success: true, logged: true }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
