@@ -137,6 +137,10 @@ export default function Support() {
       await triggerAI(selectedTicket.id, userMsg);
       setAiThinking(false);
       fetchMessages(selectedTicket.id);
+      // Refresh ticket list + selected so escalation status shows
+      const { data: refreshed } = await supabase.from("support_tickets").select("*").eq("id", selectedTicket.id).maybeSingle();
+      if (refreshed) setSelectedTicket(refreshed as any);
+      fetchTickets();
     }
     setSendingReply(false);
   };
