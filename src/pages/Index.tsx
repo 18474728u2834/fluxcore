@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { ArrowRight, Sun, Moon, Headphones, ChevronRight, BarChart3, Shield, Calendar, FileText, Users, Bot, Zap, Palette, CheckCircle2, MessageSquare, ClipboardList, Target, Plane, Megaphone, KeyRound, Activity, Lock, Webhook, Trophy } from "lucide-react";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -315,13 +316,14 @@ export default function Index() {
           <span className="text-lg font-black tracking-tight">
             <span className="text-primary">flux</span>core
           </span>
-          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+          <div className="flex items-center gap-6 text-sm text-muted-foreground flex-wrap justify-center">
             <button onClick={() => navigate("/support")} className="hover:text-foreground transition-colors flex items-center gap-1.5">
               <Headphones className="w-3.5 h-3.5" /> Support
             </button>
             <button onClick={() => navigate("/feedback")} className="hover:text-foreground transition-colors">Feedback</button>
             <button onClick={() => navigate("/terms")} className="hover:text-foreground transition-colors">Terms</button>
             <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>
+            <LanguageSelector />
           </div>
           <p className="text-xs text-muted-foreground">© 2026 Fluxcore</p>
         </div>

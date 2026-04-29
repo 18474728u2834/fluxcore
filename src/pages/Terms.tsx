@@ -18,7 +18,7 @@ export default function Terms() {
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground mb-2">Terms of Service</h1>
-          <p className="text-sm text-muted-foreground">Last updated: March 31, 2026</p>
+          <p className="text-sm text-muted-foreground">Last updated: April 29, 2026</p>
         </div>
 
         <div className="prose prose-invert prose-sm max-w-none space-y-6">
@@ -94,6 +94,16 @@ export default function Terms() {
             <h2 className="text-lg font-semibold text-foreground">10. Changes to Terms</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               We may update these Terms from time to time. Continued use of the Service after changes constitutes acceptance of the updated Terms.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">11. Language & Translations</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Fluxcore's interface is available in multiple languages. Translations outside of English are generated automatically using AI and provided for convenience only. They may contain inaccuracies. The <strong className="text-foreground">English version of the Service, these Terms, and our Privacy Policy is the authoritative version</strong>; in the event of any discrepancy, the English text controls.
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Our <strong className="text-foreground">Support Center is provided in English only</strong> to ensure clear communication and accurate troubleshooting between you and our team. Tickets, AI assistance, and staff replies are handled exclusively in English.
             </p>
           </section>
 

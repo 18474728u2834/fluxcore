@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.public-sessions]
 verify_jwt = false
+
+[functions.translate-batch]
+verify_jwt = false
