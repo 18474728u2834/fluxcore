@@ -72,7 +72,7 @@ export default function Sessions() {
   const [creating, setCreating] = useState(false);
   const [detailSession, setDetailSession] = useState<ScheduledSession | null>(null);
   const [tagsManagerOpen, setTagsManagerOpen] = useState(false);
-  const [members, setMembers] = useState<{ roblox_username: string }[]>([]);
+  const [members, setMembers] = useState<{ roblox_username: string; roblox_user_id: string }[]>([]);
   const canAssignOthers = isOwner || hasPermission("manage_members");
 
   // ---- Create session form state ----
@@ -118,9 +118,16 @@ export default function Sessions() {
 
   const fetchMembers = async () => {
     const { data } = await supabase.from("workspace_members")
-      .select("roblox_username").eq("workspace_id", workspaceId).order("roblox_username");
+      .select("roblox_username, roblox_user_id").eq("workspace_id", workspaceId).order("roblox_username");
     setMembers((data as any) || []);
   };
+
+  // username (lowercase) -> roblox_user_id
+  const memberIdByName = members.reduce<Record<string, string>>((acc, m) => {
+    if (m.roblox_username && m.roblox_user_id) acc[m.roblox_username.toLowerCase()] = m.roblox_user_id;
+    return acc;
+  }, {});
+  const lookupId = (name?: string | null) => (name ? memberIdByName[name.toLowerCase()] : undefined);
 
   // Discord 5-minute reminder
   const checkAndSendReminders = async (sessionList: ScheduledSession[]) => {
@@ -608,6 +615,7 @@ export default function Sessions() {
                     <div className="absolute -top-2 -right-2">
                       <RobloxAvatar
                         username={firstAssignee}
+                        userId={lookupId(firstAssignee)}
                         className={`w-10 h-10 rounded-full border-2 border-background shadow-lg transition-all ${status.live ? "ring-2 ring-success animate-pulse" : "ring-2 ring-primary/20 group-hover:ring-primary/50"}`}
                       />
                     </div>
@@ -698,7 +706,7 @@ export default function Sessions() {
                             };
                             return name ? (
                               <span key={posIdx} className={`text-[11px] pl-1 pr-2 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all hover:scale-105 animate-in fade-in zoom-in-95 duration-200 ${isMe ? "bg-primary/20 text-primary ring-1 ring-primary/40" : "bg-secondary text-foreground"}`}>
-                                <RobloxAvatar username={name} className="w-5 h-5 rounded-full" />
+                                <RobloxAvatar username={name} userId={lookupId(name)} className="w-5 h-5 rounded-full" />
                                 {name}
                                 {canRemove && (
                                   <button onClick={() => setSlot(null)} className="hover:text-destructive transition-colors"><UserMinus className="w-2.5 h-2.5" /></button>
@@ -733,7 +741,7 @@ export default function Sessions() {
                                                 onSelect={() => setSlot(m.roblox_username)}
                                                 className="gap-2 cursor-pointer"
                                               >
-                                                <RobloxAvatar username={m.roblox_username} className="w-5 h-5 rounded-full" />
+                                                <RobloxAvatar username={m.roblox_username} userId={m.roblox_user_id} className="w-5 h-5 rounded-full" />
                                                 {m.roblox_username}
                                               </CommandItem>
                                             ))}
