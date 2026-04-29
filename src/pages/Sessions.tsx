@@ -708,7 +708,7 @@ export default function Sessions() {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assigned Roles</p>
 
                   <RoleSlot
-                    label={roleLabels.host || "Host"}
+                    label={sessionLabels(detailSession).host}
                     icon={User}
                     name={detailSession.host_name === "Unassigned" ? null : detailSession.host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -719,7 +719,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label={roleLabels.co_host || "Co-Host"}
+                    label={sessionLabels(detailSession).co_host}
                     icon={Users}
                     name={detailSession.co_host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -730,7 +730,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label={roleLabels.trainer || "Trainer"}
+                    label={sessionLabels(detailSession).trainer}
                     icon={GraduationCap}
                     name={detailSession.trainer_name}
                     canAssignSelf={canSelfAssign(detailSession)}
