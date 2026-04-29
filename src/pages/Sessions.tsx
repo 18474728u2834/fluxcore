@@ -741,7 +741,7 @@ export default function Sessions() {
                                                 onSelect={() => setSlot(m.roblox_username)}
                                                 className="gap-2 cursor-pointer"
                                               >
-                                                <RobloxAvatar username={m.roblox_username} className="w-5 h-5 rounded-full" />
+                                                <RobloxAvatar username={m.roblox_username} userId={m.roblox_user_id} className="w-5 h-5 rounded-full" />
                                                 {m.roblox_username}
                                               </CommandItem>
                                             ))}
