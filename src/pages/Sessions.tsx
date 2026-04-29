@@ -118,9 +118,16 @@ export default function Sessions() {
 
   const fetchMembers = async () => {
     const { data } = await supabase.from("workspace_members")
-      .select("roblox_username").eq("workspace_id", workspaceId).order("roblox_username");
+      .select("roblox_username, roblox_user_id").eq("workspace_id", workspaceId).order("roblox_username");
     setMembers((data as any) || []);
   };
+
+  // username (lowercase) -> roblox_user_id
+  const memberIdByName = members.reduce<Record<string, string>>((acc, m) => {
+    if (m.roblox_username && m.roblox_user_id) acc[m.roblox_username.toLowerCase()] = m.roblox_user_id;
+    return acc;
+  }, {});
+  const lookupId = (name?: string | null) => (name ? memberIdByName[name.toLowerCase()] : undefined);
 
   // Discord 5-minute reminder
   const checkAndSendReminders = async (sessionList: ScheduledSession[]) => {
