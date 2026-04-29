@@ -141,23 +141,52 @@ function AppRoutes() {
   );
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AuthProvider>
-        <I18nProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <HashRouter>
-              <DOMTranslator />
-              <AppRoutes />
-            </HashRouter>
-          </TooltipProvider>
-        </I18nProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  // Catch unhandled lazy import failures globally as a second safety net
+  useEffect(() => {
+    const onErr = (e: ErrorEvent | PromiseRejectionEvent) => {
+      const err: any = (e as PromiseRejectionEvent).reason || (e as ErrorEvent).error || (e as ErrorEvent).message;
+      const msg = err?.message || String(err || "");
+      if (
+        /Loading chunk [\w-]+ failed/i.test(msg) ||
+        /Failed to fetch dynamically imported module/i.test(msg) ||
+        /Importing a module script failed/i.test(msg)
+      ) {
+        const last = parseInt(sessionStorage.getItem("fluxcore_chunk_reload_at") || "0", 10);
+        if (Date.now() - last > 10_000) {
+          sessionStorage.setItem("fluxcore_chunk_reload_at", String(Date.now()));
+          window.location.reload();
+        }
+      }
+    };
+    window.addEventListener("error", onErr as any);
+    window.addEventListener("unhandledrejection", onErr as any);
+    return () => {
+      window.removeEventListener("error", onErr as any);
+      window.removeEventListener("unhandledrejection", onErr as any);
+    };
+  }, []);
+
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <I18nProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <HashRouter>
+                <DOMTranslator />
+                <ChunkErrorBoundary fallback={<PageLoader />}>
+                  <AppRoutes />
+                </ChunkErrorBoundary>
+              </HashRouter>
+            </TooltipProvider>
+          </I18nProvider>
+        </AuthProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
