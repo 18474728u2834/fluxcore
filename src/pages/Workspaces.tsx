@@ -270,29 +270,48 @@ export default function Workspaces() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {workspaces.map((ws) => (
-              <button
-                key={ws.id}
-                onClick={() => navigate(`/w/${ws.id}/dashboard`)}
-                className="group rounded-xl border border-border/20 bg-card/30 hover:bg-card/60 hover:border-border/40 p-5 text-left transition-all duration-200"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  {groupIcons[ws.id] ? (
-                    <img src={groupIcons[ws.id]} alt={ws.name} className="w-12 h-12 rounded-xl object-cover" crossOrigin="anonymous" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-lg font-black text-primary">
-                      {ws.name.charAt(0).toUpperCase()}
+            {workspaces.map((ws) => {
+              const canApply = pendingGrant && ws.role === "Owner";
+              return (
+                <div
+                  key={ws.id}
+                  className="group rounded-xl border border-border/20 bg-card/30 hover:bg-card/60 hover:border-border/40 p-5 text-left transition-all duration-200 flex flex-col"
+                >
+                  <button
+                    onClick={() => navigate(`/w/${ws.id}/dashboard`)}
+                    className="text-left flex-1"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      {groupIcons[ws.id] ? (
+                        <img src={groupIcons[ws.id]} alt={ws.name} className="w-12 h-12 rounded-xl object-cover" crossOrigin="anonymous" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-lg font-black text-primary">
+                          {ws.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                     </div>
+                    <h3 className="font-bold text-foreground mb-0.5 flex items-center gap-1.5">
+                      <span className="truncate">{ws.name}</span>
+                      {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
+                    </h3>
+                    <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
+                  </button>
+                  {canApply && (
+                    <button
+                      onClick={() => applyGrant(ws.id)}
+                      disabled={applyingGrantTo === ws.id}
+                      className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold rounded-md bg-primary/15 hover:bg-primary/25 text-primary py-2 transition-colors disabled:opacity-60"
+                    >
+                      {applyingGrantTo === ws.id
+                        ? <Loader2 className="w-3 h-3 animate-spin" />
+                        : <Sparkles className="w-3 h-3" />}
+                      Apply {pendingGrant!.days}-day Premium
+                    </button>
                   )}
-                  <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <h3 className="font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  <span className="truncate">{ws.name}</span>
-                  {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
-                </h3>
-                <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
-              </button>
-            ))}
+              );
+            })}
 
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
