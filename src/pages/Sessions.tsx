@@ -17,7 +17,11 @@ interface ScheduledSession {
   duration_minutes: number; host_name: string; co_host_name: string | null;
   trainer_name: string | null; status: string; recurring: string | null;
   description: string | null;
+  recurring_days: string[] | null;
+  recurring_time: string | null;
 }
+
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const statusColors: Record<string, string> = {
   scheduled: "bg-primary/10 text-primary", active: "bg-success/10 text-success",
@@ -107,9 +111,13 @@ export default function Sessions() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>("Shift");
   const [recurring, setRecurring] = useState("none");
+  const [recurringDays, setRecurringDays] = useState<string[]>([]);
+  const [recurringTime, setRecurringTime] = useState("15:00");
   const [scheduledAt, setScheduledAt] = useState("");
   const [duration, setDuration] = useState("60");
   const [description, setDescription] = useState("");
+
+  const roleLabels = (workspace as any)?.session_role_labels ?? { host: "Host", co_host: "Co-Host", trainer: "Trainer" };
 
   const fetchSessions = async () => {
     const { data } = await supabase.from("scheduled_sessions").select("*")
