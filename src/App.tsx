@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Route, Routes } from "react-router-dom";
+import { HashRouter, Route, Routes, Navigate, useParams } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -86,18 +86,30 @@ function WorkspaceRoutes() {
   );
 }
 
+function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
+  const { workspaceId } = useParams();
+  if (workspaceId !== allowedId) {
+    return <Navigate to="/" replace />;
+  }
+  return <WorkspaceRoutes />;
+}
+
 function AppRoutes() {
   const hostname = window.location.hostname;
 
   if (hostname.startsWith("bargains.fluxcore")) {
+    const BARGAINS_WS = "81bd37c3-fb0a-465a-86b5-de4cfed43a09";
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Bargains />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/workspaces" element={<Workspaces />} />
-          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+          <Route path="/workspaces" element={<Navigate to={`/w/${BARGAINS_WS}/dashboard`} replace />} />
+          <Route
+            path="/w/:workspaceId/*"
+            element={<BargainsWorkspaceGuard allowedId={BARGAINS_WS} />}
+          />
           <Route path="*" element={<Bargains />} />
         </Routes>
       </Suspense>
