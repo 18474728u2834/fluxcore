@@ -615,6 +615,7 @@ export default function Sessions() {
                     <div className="absolute -top-2 -right-2">
                       <RobloxAvatar
                         username={firstAssignee}
+                        userId={lookupId(firstAssignee)}
                         className={`w-10 h-10 rounded-full border-2 border-background shadow-lg transition-all ${status.live ? "ring-2 ring-success animate-pulse" : "ring-2 ring-primary/20 group-hover:ring-primary/50"}`}
                       />
                     </div>
