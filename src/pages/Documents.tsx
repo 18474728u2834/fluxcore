@@ -29,6 +29,7 @@ export default function Documents() {
   const [docs, setDocs] = useState<Doc[]>([]);
   const [sigs, setSigs] = useState<Sig[]>([]);
   const [myMemberId, setMyMemberId] = useState<string>("");
+  const [readDocs, setReadDocs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"policy" | "handbook">("policy");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -65,6 +66,26 @@ export default function Documents() {
 
   useEffect(() => { fetchData(); }, [workspaceId]);
 
+  // Load locally-tracked "read" docs and refresh when DocumentView marks one
+  useEffect(() => {
+    if (!user) return;
+    const key = `fluxcore_doc_read_${user.id}`;
+    const refresh = () => {
+      try {
+        const raw = localStorage.getItem(key);
+        setReadDocs(new Set(raw ? JSON.parse(raw) : []));
+      } catch { setReadDocs(new Set()); }
+    };
+    refresh();
+    const onRead = () => refresh();
+    window.addEventListener("fluxcore:doc-read", onRead);
+    window.addEventListener("storage", onRead);
+    return () => {
+      window.removeEventListener("fluxcore:doc-read", onRead);
+      window.removeEventListener("storage", onRead);
+    };
+  }, [user]);
+
   const handleCreate = async () => {
     if (!title.trim() || !content.trim() || !user) return;
     setCreating(true);
@@ -83,7 +104,10 @@ export default function Documents() {
 
   const resetForm = () => { setTitle(""); setContent(""); setSigWord(""); setDeadline(""); };
 
-  const hasSigned = (docId: string) => sigs.some(s => s.document_id === docId && s.member_id === myMemberId);
+  const hasSigned = (docId: string) => sigs.some(s => s.document_id === docId && (
+    (myMemberId && s.member_id === myMemberId) || (user && s.user_id === user.id)
+  ));
+  const isRead = (docId: string) => readDocs.has(docId);
 
   const signDocument = async (doc: Doc) => {
     if (!myMemberId || !user) { toast.error("You must be a member"); return; }
