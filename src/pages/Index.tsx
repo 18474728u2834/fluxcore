@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { ArrowRight, Sun, Moon, Headphones, ChevronRight, BarChart3, Shield, Calendar, FileText, Users, Bot, Zap, Palette, CheckCircle2, MessageSquare, ClipboardList, Target, Plane, Megaphone, KeyRound, Activity, Lock, Webhook, Trophy } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -163,12 +164,8 @@ export default function Index() {
           <div className="flex items-center justify-center gap-10 flex-wrap">
             <span className="text-xs text-muted-foreground uppercase tracking-[0.2em] font-bold">Trusted by</span>
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-[10px] font-black text-white">BB</div>
+              <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-8 h-8 rounded-lg object-cover" />
               <span className="text-sm font-bold text-foreground">Bloxy Bargains</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] font-black text-white">BD</div>
-              <span className="text-sm font-bold text-foreground">Bargains Downtown</span>
             </div>
           </div>
         </div>

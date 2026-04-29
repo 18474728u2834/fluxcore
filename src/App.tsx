@@ -45,7 +45,6 @@ const Roles = lazy(() => import("./pages/Roles"));
 const Quotas = lazy(() => import("./pages/Quotas"));
 const MessageLogs = lazy(() => import("./pages/MessageLogs"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
-const BloxyBargainsDowntown = lazy(() => import("./pages/BloxyBargainsDowntown"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 
@@ -120,20 +119,6 @@ function AppRoutes() {
     );
   }
 
-  if (hostname.includes("downtown")) {
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<BloxyBargainsDowntown />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/workspaces" element={<Workspaces />} />
-          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
-          <Route path="*" element={<BloxyBargainsDowntown />} />
-        </Routes>
-      </Suspense>
-    );
-  }
 
   return (
     <Suspense fallback={<PageLoader />}>
@@ -151,7 +136,7 @@ function AppRoutes() {
         <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
         <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
-        <Route path="/bargains-downtown" element={<BloxyBargainsDowntown />} />
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
