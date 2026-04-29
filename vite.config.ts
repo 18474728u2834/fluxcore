@@ -41,13 +41,20 @@ export default defineConfig(({ mode }) => ({
           }
 
           // Vendor splitting — keep heavy libs out of the main bundle
-          if (id.includes("react-router")) return "v-router";
-          if (id.includes("@tanstack/react-query")) return "v-query";
+          // Keep React + scheduler + jsx-runtime together to avoid
+          // "cannot read properties of undefined" load-order issues.
+          if (
+            id.includes("/node_modules/react/") ||
+            id.includes("/node_modules/react-dom/") ||
+            id.includes("/node_modules/scheduler/") ||
+            id.includes("/node_modules/react-router") ||
+            id.includes("/node_modules/@tanstack/react-query")
+          ) {
+            return "v-react-core";
+          }
           if (id.includes("@supabase")) return "v-supabase";
           if (id.includes("@radix-ui")) return "v-radix";
           if (id.includes("lucide-react")) return "v-icons";
-          if (id.includes("react-dom")) return "v-react-dom";
-          if (id.includes("/react/")) return "v-react";
           if (id.includes("recharts") || id.includes("d3-")) return "v-charts";
           if (id.includes("date-fns")) return "v-date";
           if (id.includes("zod") || id.includes("react-hook-form")) return "v-forms";
