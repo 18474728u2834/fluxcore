@@ -930,12 +930,15 @@ export type Database = {
           message_logger_enabled: boolean | null
           name: string
           owner_id: string
+          premium: boolean
+          premium_until: string | null
           primary_color: string | null
           release_version: string | null
           roblox_api_key: string | null
           roblox_group_id: string | null
           show_grid: boolean | null
           text_color: string | null
+          tutorial_completed: boolean
           updated_at: string
           verified_official: boolean
         }
@@ -951,12 +954,15 @@ export type Database = {
           message_logger_enabled?: boolean | null
           name: string
           owner_id: string
+          premium?: boolean
+          premium_until?: string | null
           primary_color?: string | null
           release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
           show_grid?: boolean | null
           text_color?: string | null
+          tutorial_completed?: boolean
           updated_at?: string
           verified_official?: boolean
         }
@@ -972,12 +978,15 @@ export type Database = {
           message_logger_enabled?: boolean | null
           name?: string
           owner_id?: string
+          premium?: boolean
+          premium_until?: string | null
           primary_color?: string | null
           release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
           show_grid?: boolean | null
           text_color?: string | null
+          tutorial_completed?: boolean
           updated_at?: string
           verified_official?: boolean
         }
