@@ -201,7 +201,7 @@ export default function DocumentView() {
             <CheckCircle2 className="w-5 h-5" />
             <span className="text-sm font-medium">You have signed this document.</span>
           </div>
-        ) : myMemberId ? (
+        ) : (myMemberId || isOwner) ? (
           <div className="glass rounded-2xl p-6 space-y-4">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <PenTool className="w-4 h-4 text-primary" /> Sign this document
