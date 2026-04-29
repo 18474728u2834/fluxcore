@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
-import { ArrowRight, Sun, Moon, Headphones, ChevronRight, BarChart3, Shield, Calendar, FileText, Users, Bot, Zap, Palette, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Sun, Moon, Headphones, ChevronRight, BarChart3, Shield, Calendar, FileText, Users, Bot, Zap, Palette, CheckCircle2, MessageSquare, ClipboardList, Target, Plane, Megaphone, KeyRound, Activity, Lock, Webhook, Trophy } from "lucide-react";
 
 export default function Index() {
   const navigate = useNavigate();
@@ -17,6 +17,12 @@ export default function Index() {
     { icon: FileText, title: "Policies & Signatures", desc: "Write policies, require digital signatures, auto-assign to new members.", color: "bg-amber-500" },
     { icon: Users, title: "Role Management", desc: "Import roles from Roblox, set granular permissions, split promote and demote.", color: "bg-pink-500" },
     { icon: Bot, title: "AI Support", desc: "Built-in ticket system with AI that handles common questions before escalating.", color: "bg-indigo-500" },
+    { icon: MessageSquare, title: "Message Logging", desc: "Premium chat logs of every staff message in-game. Search, audit, moderate.", color: "bg-rose-500" },
+    { icon: Plane, title: "Leave of Absence", desc: "Staff request time off, leadership approves in one click. Quotas adjust automatically.", color: "bg-cyan-500" },
+    { icon: Target, title: "Activity Quotas", desc: "Per-role weekly targets. Track session counts and time in-game without spreadsheets.", color: "bg-orange-500" },
+    { icon: Megaphone, title: "Staff Wall", desc: "Pin announcements, post updates, keep everyone aligned without another Discord channel.", color: "bg-teal-500" },
+    { icon: ClipboardList, title: "Member Logs", desc: "Warnings, notes, promotions — every action attributed and timestamped.", color: "bg-fuchsia-500" },
+    { icon: Trophy, title: "Verified Workspaces", desc: "Premium workspaces get a verified badge so members know they're in the real one.", color: "bg-yellow-500" },
   ];
 
   return (
@@ -94,11 +100,11 @@ export default function Index() {
             Track activity, schedule shifts, manage ranks — all from one place.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16">
-            <Button size="lg" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 px-10 text-base shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all">
-              {isLoggedIn ? "Open Dashboard" : "Start for free"} <ArrowRight className="w-4 h-4 ml-2" />
+          <div className="flex flex-col sm:flex-row gap-3 justify-center mb-16 animate-fade-up" style={{ animationDelay: "120ms" }}>
+            <Button size="lg" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-14 px-10 text-base shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 hover:-translate-y-0.5 press-shrink">
+              {isLoggedIn ? "Open Dashboard" : "Start for free"} <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
             </Button>
-            <Button variant="outline" size="lg" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="h-14 px-10 text-base font-semibold border-border/30 hover:bg-white/5">
+            <Button variant="outline" size="lg" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="h-14 px-10 text-base font-semibold border-border/30 hover:bg-white/5 transition-all duration-300 hover:-translate-y-0.5 press-shrink">
               See what's included
             </Button>
           </div>
@@ -183,9 +189,12 @@ export default function Index() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((f, i) => (
-              <div key={f.title} className="group relative rounded-2xl border border-border/15 bg-card/20 p-7 hover:bg-card/40 hover:border-border/30 transition-all duration-500 hover:-translate-y-1"
-                style={{ animationDelay: `${i * 100}ms` }}>
-                <div className={`w-11 h-11 rounded-xl ${f.color} flex items-center justify-center mb-5 shadow-lg`}>
+              <div
+                key={f.title}
+                className="group relative rounded-2xl border border-border/15 bg-card/20 p-7 hover:bg-card/40 hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300 ease-out hover:-translate-y-1 opacity-0 animate-fade-up"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div className={`w-11 h-11 rounded-xl ${f.color} flex items-center justify-center mb-5 shadow-lg transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3`}>
                   <f.icon className="w-5 h-5 text-white" />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2">{f.title}</h3>
@@ -195,13 +204,22 @@ export default function Index() {
           </div>
 
           {/* Secondary features */}
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               { icon: Zap, title: "Discord Notifications", desc: "Webhook reminders before every session." },
               { icon: Palette, title: "Custom Branding", desc: "Your colors, your feel. Make it yours." },
               { icon: Shield, title: "Roblox OAuth", desc: "One click sign-in. No extra accounts." },
-            ].map((f) => (
-              <div key={f.title} className="rounded-xl border border-border/15 bg-card/20 p-5 flex items-start gap-4 hover:bg-card/40 transition-all">
+              { icon: KeyRound, title: "Granular Permissions", desc: "Lock pages and actions behind custom roles." },
+              { icon: Activity, title: "Live Heartbeats", desc: "30-second pings catch staff who go AFK." },
+              { icon: Lock, title: "Workspace Blacklist", desc: "Block bad actors from joining your group." },
+              { icon: Webhook, title: "Open Cloud API", desc: "Auto-rank syncs straight to Roblox via API key." },
+              { icon: FileText, title: "Document Deadlines", desc: "Require sign-off by a date — auto-reminders." },
+            ].map((f, i) => (
+              <div
+                key={f.title}
+                className="rounded-xl border border-border/15 bg-card/20 p-5 flex items-start gap-4 hover:bg-card/40 hover:border-border/40 transition-all duration-300 hover:-translate-y-0.5 opacity-0 animate-fade-up"
+                style={{ animationDelay: `${i * 50 + 200}ms` }}
+              >
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                   <f.icon className="w-4 h-4 text-primary" />
                 </div>

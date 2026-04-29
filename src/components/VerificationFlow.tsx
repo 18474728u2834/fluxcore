@@ -44,26 +44,28 @@ export function VerificationFlow({ gamepassId }: { gamepassId?: string }) {
       )}
 
       {state.step === "emoji" && (
-        <div className="glass rounded-xl p-8 space-y-6 gradient-border animate-fade-in">
+        <div className="glass rounded-xl p-8 space-y-6 gradient-border animate-scale-in">
           <div className="text-center space-y-2">
             <h2 className="text-xl font-bold text-foreground">Verify Your Identity</h2>
             <p className="text-muted-foreground text-sm">
-              Paste at the <strong className="text-foreground">start</strong> of your Roblox bio
+              Paste this code at the <strong className="text-foreground">start</strong> of your Roblox bio
             </p>
           </div>
           <div className="bg-muted rounded-xl p-4 space-y-3">
             <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Verification Code</p>
-            <div className="text-2xl leading-relaxed break-all select-all tracking-wide">{state.emojiCode}</div>
+            <div className="font-mono text-base sm:text-lg leading-relaxed break-all select-all tracking-tight text-foreground bg-background/40 rounded-lg px-3 py-2.5 border border-border/40">
+              {state.emojiCode}
+            </div>
             <div className="flex gap-2">
-              <Button onClick={copyEmojis} variant="secondary" size="sm" className="flex-1">
+              <Button onClick={copyEmojis} variant="secondary" size="sm" className="flex-1 press-shrink">
                 <Copy className="w-3 h-3 mr-1" /> {copied ? "Copied!" : "Copy"}
               </Button>
-              <Button onClick={regenerateEmojis} variant="ghost" size="sm">
+              <Button onClick={regenerateEmojis} variant="ghost" size="sm" className="press-shrink">
                 <RefreshCw className="w-3 h-3" />
               </Button>
             </div>
           </div>
-          <Button onClick={verify} className="w-full" variant="hero">Verify</Button>
+          <Button onClick={verify} className="w-full press-shrink" variant="hero">Verify</Button>
         </div>
       )}
 

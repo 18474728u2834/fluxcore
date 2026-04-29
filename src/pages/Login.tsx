@@ -114,9 +114,9 @@ export default function Login() {
                   </div>
                 </div>
 
-                <Button onClick={() => setLoginMethod("emoji")} variant="outline" className="w-full h-12">
+                <Button onClick={() => setLoginMethod("emoji")} variant="outline" className="w-full h-12 press-shrink">
                   <User className="w-4 h-4 mr-2" />
-                  Emoji Verification
+                  Bio Code Verification
                 </Button>
               </div>
 
@@ -129,12 +129,12 @@ export default function Login() {
             </div>
           )}
 
-          {/* Emoji Login - Username */}
+          {/* Bio Code Login - Username */}
           {loginMethod === "emoji" && state.step === "input" && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-6 animate-scale-in">
               <div className="space-y-2">
-                <h1 className="text-2xl font-extrabold text-foreground">Emoji Verification</h1>
-                <p className="text-sm text-muted-foreground">Verify your Roblox account via emoji bio</p>
+                <h1 className="text-2xl font-extrabold text-foreground">Bio Code Verification</h1>
+                <p className="text-sm text-muted-foreground">Verify your Roblox account with a one-time bio code</p>
               </div>
               <div className="space-y-4">
                 <div className="relative">
@@ -148,7 +148,7 @@ export default function Login() {
                   />
                 </div>
                 {state.error && <p className="text-destructive text-sm">{state.error}</p>}
-                <Button onClick={proceedToEmoji} variant="hero" className="w-full h-12">
+                <Button onClick={proceedToEmoji} variant="hero" className="w-full h-12 press-shrink">
                   Continue <ArrowRight className="w-4 h-4 ml-1" />
                 </Button>
                 <button onClick={() => setLoginMethod("choose")} className="text-xs text-muted-foreground hover:text-foreground transition-colors w-full text-center">
@@ -158,34 +158,36 @@ export default function Login() {
             </div>
           )}
 
-          {/* Emoji Step */}
+          {/* Code Step */}
           {state.step === "emoji" && (
-            <div className="space-y-6 animate-fade-in">
+            <div className="space-y-6 animate-scale-in">
               <div className="space-y-2">
                 <h1 className="text-2xl font-extrabold text-foreground">Verify Identity</h1>
                 <p className="text-sm text-muted-foreground">
-                  Paste these emojis at the <strong className="text-foreground">start</strong> of your Roblox bio
+                  Paste this code at the <strong className="text-foreground">start</strong> of your Roblox bio
                 </p>
               </div>
               <div className="bg-muted rounded-xl p-4 space-y-3">
                 <p className="text-xs text-muted-foreground font-mono uppercase tracking-wider">Verification Code</p>
-                <div className="text-2xl leading-relaxed break-all select-all tracking-wide">{state.emojiCode}</div>
+                <div className="font-mono text-base sm:text-lg leading-relaxed break-all select-all tracking-tight text-foreground bg-background/40 rounded-lg px-3 py-2.5 border border-border/40">
+                  {state.emojiCode}
+                </div>
                 <div className="flex gap-2">
-                  <Button onClick={copyEmojis} variant="secondary" size="sm" className="flex-1">
+                  <Button onClick={copyEmojis} variant="secondary" size="sm" className="flex-1 press-shrink">
                     <Copy className="w-3 h-3 mr-1" /> {copied ? "Copied!" : "Copy"}
                   </Button>
-                  <Button onClick={regenerateEmojis} variant="ghost" size="sm">
+                  <Button onClick={regenerateEmojis} variant="ghost" size="sm" className="press-shrink">
                     <RefreshCw className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
               <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                <li>Copy the emojis above</li>
-                <li>Go to your Roblox profile settings</li>
-                <li>Paste them at the start of your bio</li>
+                <li>Copy the code above</li>
+                <li>Open your Roblox profile settings</li>
+                <li>Paste it at the start of your bio</li>
                 <li>Click "Verify" below</li>
               </ol>
-              <Button onClick={verify} className="w-full h-12" variant="hero">Verify & Sign In</Button>
+              <Button onClick={verify} className="w-full h-12 press-shrink" variant="hero">Verify & Sign In</Button>
             </div>
           )}
 
