@@ -49,6 +49,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
         </div>
       </div>
       <ReleaseModal />
+      <SetupTutorial />
     </SidebarProvider>
   );
 }
