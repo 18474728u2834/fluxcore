@@ -108,7 +108,22 @@ export default function Terms() {
           </section>
 
           <section className="space-y-3">
-            <h2 className="text-lg font-semibold text-foreground">Contact</h2>
+            <h2 className="text-lg font-semibold text-foreground">12. Document Acknowledgements</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Workspaces may publish policies, handbooks, and similar documents that require digital acknowledgement. <strong className="text-foreground">Workspace owners and members</strong> who sign such documents (via checkbox, typed username, special word, or drawn signature) confirm they have read and agree to the contents of that document. Signature records are stored with a timestamp and the signer's identity within the workspace and are visible to the workspace owner and other members with relevant permissions.
+            </p>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Opening a document is also recorded in your browser as an acknowledgement that you have viewed it, which clears any "unread" notification for that document. This local view-tracking is independent of formal signing and is stored only on your device.
+            </p>
+          </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">13. Reliability & Auto-Recovery</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              To keep the Service running smoothly, your browser may automatically reload Fluxcore if a page fails to load — for example after we deploy a new version. Reloads are rate-limited so they do not loop. No data you have already saved is lost.
+            </p>
+          </section>
+
             <p className="text-sm text-muted-foreground leading-relaxed">
               For questions about these Terms, contact us through our Roblox group or community channels.
             </p>
