@@ -121,9 +121,20 @@ export function RobloxAvatar({ username, userId, className }: Props) {
       ? Promise.resolve(Number(userId))
       : resolveUserId(username);
 
-    // Stage 1: try to get the official Roblox CDN URL
-    resolveAvatarUrl(cacheKey, idPromise).then((u) => {
-      if (alive && u && stage === "primary") setSrc(u);
+    // Stage 1: try to get the official Roblox CDN URL.
+    resolveAvatarUrl(cacheKey, idPromise).then(async (u) => {
+      if (!alive) return;
+      if (u) {
+        setSrc(u);
+        return;
+      }
+      // Primary failed before we even rendered an <img>. Jump to Rolimons.
+      const id = await idPromise;
+      if (!alive) return;
+      if (id) {
+        setStage("rolimons");
+        setSrc(`https://www.rolimons.com/playerassets/thumbs/${id}.png`);
+      }
     });
 
     return () => { alive = false; };
