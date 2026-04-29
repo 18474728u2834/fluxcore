@@ -35,11 +35,12 @@ export default function Index() {
               <span className="text-primary">flux</span>core
             </span>
             <div className="hidden md:flex items-center gap-1">
-              {["Features", "Pricing"].map(item => (
-                <a key={item} href={`#${item.toLowerCase()}`} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">
-                  {item}
-                </a>
-              ))}
+              <a href="#features" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">
+                Features
+              </a>
+              <button onClick={() => navigate("/pricing")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">
+                Pricing
+              </button>
               <button onClick={() => navigate("/feedback")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">
                 Feedback
               </button>
