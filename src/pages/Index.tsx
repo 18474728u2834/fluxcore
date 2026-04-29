@@ -218,43 +218,74 @@ export default function Index() {
       {/* Pricing */}
       <section id="pricing" className="py-28 relative">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/[0.02] to-transparent pointer-events-none" />
-        <div className="max-w-lg mx-auto px-6 text-center relative">
+        <div className="max-w-4xl mx-auto px-6 text-center relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs font-semibold text-primary mb-4">
             Pricing
           </div>
           <h2 className="text-4xl sm:text-5xl font-black text-foreground mb-4">
-            Free forever
+            Free to start. Premium when you need it.
           </h2>
-          <p className="text-lg text-muted-foreground mb-12">
-            Every feature, no limits, no credit card. New paid features coming July 2026.
+          <p className="text-lg text-muted-foreground mb-12 max-w-xl mx-auto">
+            Free forever for the essentials. Unlock advanced features with a one-time Roblox gamepass — no subscriptions, no card required.
           </p>
 
-          <div className="rounded-2xl border border-border/20 bg-card/30 backdrop-blur-sm p-8 text-left shadow-2xl shadow-primary/5">
-            <div className="flex items-baseline gap-1 mb-8">
-              <span className="text-6xl font-black text-foreground">$0</span>
-              <span className="text-muted-foreground font-medium text-lg">/month</span>
+          <div className="grid md:grid-cols-2 gap-5 text-left">
+            {/* Free card */}
+            <div className="rounded-2xl border border-border/20 bg-card/30 backdrop-blur-sm p-7 shadow-xl shadow-primary/5 flex flex-col">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Free</p>
+              <div className="flex items-baseline gap-1 mb-6">
+                <span className="text-5xl font-black text-foreground">$0</span>
+                <span className="text-muted-foreground font-medium">forever</span>
+              </div>
+              <ul className="space-y-2.5 mb-8 flex-1">
+                {[
+                  "Unlimited workspaces & members",
+                  "Real-time activity tracking",
+                  "Group ranking & role sync",
+                  "Shift & event scheduling",
+                  "Discord webhook reminders",
+                  "Policies with digital signatures",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button variant="outline" className="w-full h-12 font-semibold border-border/30" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
+                {isLoggedIn ? "Open Dashboard" : "Get Started"} <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
-            <ul className="space-y-3.5 mb-10">
-              {[
-                "Unlimited workspaces & members",
-                "Real-time activity tracking",
-                "Group ranking & role sync",
-                "Shift & event scheduling",
-                "Discord webhook reminders",
-                "Policies with digital signatures",
-                "AI support center",
-                "Roblox OAuth sign-in",
-                "Custom branding",
-              ].map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm text-foreground">
-                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <Button className="w-full h-13 bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-base shadow-lg shadow-primary/25" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
-              {isLoggedIn ? "Open Dashboard" : "Get Started"} <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+
+            {/* Premium card */}
+            <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/[0.10] via-card/40 to-violet-500/[0.06] backdrop-blur-sm p-7 shadow-2xl shadow-primary/20 flex flex-col">
+              <div className="absolute -top-3 left-6 px-2.5 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
+                Premium
+              </div>
+              <p className="text-xs font-bold text-primary uppercase tracking-widest mb-3">One-time</p>
+              <div className="flex items-baseline gap-1 mb-6">
+                <span className="text-5xl font-black text-foreground">400</span>
+                <span className="text-muted-foreground font-medium">Robux</span>
+              </div>
+              <ul className="space-y-2.5 mb-8 flex-1">
+                {[
+                  "Everything in Free",
+                  "In-game message logging",
+                  "Auto-rank sync with Roblox",
+                  "Verified workspace badge",
+                  "Full custom branding",
+                  "Per-role quotas & analytics",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-2.5 text-sm text-foreground">
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/30" onClick={() => navigate("/pricing")}>
+                See full Premium <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
           </div>
         </div>
       </section>
