@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+// In-memory cache of resolved CDN URLs (e.g. https://tr.rbxcdn.com/...)
 const cache = new Map<string, string>();
 const inflight = new Map<string, Promise<string | null>>();
 
@@ -23,7 +24,7 @@ async function resolveUserId(username: string): Promise<number | null> {
   return null;
 }
 
-async function fetchHeadshot(id: number): Promise<string | null> {
+async function fetchHeadshotCdn(id: number): Promise<string | null> {
   const hosts = ["thumbnails.roproxy.com", "thumbnails.roblox.com"];
   for (const host of hosts) {
     try {
@@ -33,6 +34,7 @@ async function fetchHeadshot(id: number): Promise<string | null> {
       if (!t.ok) continue;
       const td = await t.json();
       const url: string | undefined = td?.data?.[0]?.imageUrl;
+      // Returns a real CDN url like https://tr.rbxcdn.com/.../AvatarHeadshot/Png/noFilter
       if (url) return url;
     } catch {
       // try next host
@@ -41,7 +43,7 @@ async function fetchHeadshot(id: number): Promise<string | null> {
   return null;
 }
 
-async function fetchAvatar(username: string): Promise<string | null> {
+async function resolveAvatar(username: string): Promise<string | null> {
   const key = username.toLowerCase();
   if (cache.has(key)) return cache.get(key)!;
   if (inflight.has(key)) return inflight.get(key)!;
@@ -49,17 +51,12 @@ async function fetchAvatar(username: string): Promise<string | null> {
   const p = (async () => {
     const id = await resolveUserId(username);
     if (!id) return null;
-
-    const url = await fetchHeadshot(id);
+    const url = await fetchHeadshotCdn(id);
     if (url) {
       cache.set(key, url);
       return url;
     }
-
-    // Last-resort fallback: Roblox redirect endpoint that always returns an image
-    const fallback = `https://www.roblox.com/headshot-thumbnail/image?userId=${id}&width=150&height=150&format=png`;
-    cache.set(key, fallback);
-    return fallback;
+    return null;
   })();
 
   inflight.set(key, p);
@@ -74,15 +71,26 @@ interface Props {
 }
 
 export function RobloxAvatar({ username, className }: Props) {
-  const [src, setSrc] = useState<string | null>(() => cache.get(username.toLowerCase()) || null);
+  const key = username.toLowerCase();
+  // Always start with a working image src so the user sees an avatar immediately.
+  // operatic.dev resolves username -> Roblox CDN headshot in a single redirect.
+  const initial =
+    cache.get(key) ||
+    `https://avatar.operatic.dev/headshot/${encodeURIComponent(username)}?size=150`;
+
+  const [src, setSrc] = useState<string>(initial);
+  const [errored, setErrored] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    fetchAvatar(username).then((u) => { if (alive) setSrc(u); });
+    // In the background, upgrade to the official tr.rbxcdn.com CDN URL.
+    resolveAvatar(username).then((u) => {
+      if (alive && u) setSrc(u);
+    });
     return () => { alive = false; };
   }, [username]);
 
-  if (!src) {
+  if (errored) {
     return (
       <div className={`${className ?? ""} bg-secondary flex items-center justify-center text-[10px] font-bold text-muted-foreground`}>
         {username.slice(0, 2).toUpperCase()}
@@ -95,7 +103,8 @@ export function RobloxAvatar({ username, className }: Props) {
       src={src}
       alt={username}
       loading="lazy"
-      onError={() => setSrc(null)}
+      referrerPolicy="no-referrer"
+      onError={() => setErrored(true)}
       className={`${className ?? ""} object-cover animate-in fade-in zoom-in-95 duration-300`}
     />
   );
