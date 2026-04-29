@@ -185,9 +185,9 @@ export default function Support() {
       <div className="max-w-4xl mx-auto px-6 py-12">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-extrabold text-foreground">Support Center</h1>
+            <h1 className="text-2xl font-extrabold text-foreground">Support Center {isStaff && <span className="text-xs ml-2 px-2 py-0.5 rounded-full bg-primary/15 text-primary align-middle">Staff</span>}</h1>
             <p className="text-sm text-muted-foreground mt-0.5">
-              Get instant AI help or escalate to our team by typing "staff".
+              {isStaff ? "You can view and respond to every ticket." : "Get instant AI help or escalate to our team by typing \"staff\"."}
             </p>
           </div>
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
