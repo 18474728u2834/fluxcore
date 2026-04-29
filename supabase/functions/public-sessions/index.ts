@@ -149,10 +149,11 @@ serve(async (req) => {
           } catch (_) { /* ignore */ }
         }
 
-        // gameId from workspace.game_url (extract numeric id)
+        // gameId — prefer per-session game_url, fall back to workspace.game_url
         let gameId = 0;
-        if (workspace.game_url) {
-          const m = String(workspace.game_url).match(/(\d{6,})/);
+        const gameSource = (s as any).game_url || workspace.game_url;
+        if (gameSource) {
+          const m = String(gameSource).match(/(\d{6,})/);
           if (m) gameId = parseInt(m[1], 10);
         }
 
@@ -167,6 +168,8 @@ serve(async (req) => {
           participants,
           type: { category: s.category, gameId },
           description: s.description,
+          role_labels: (s as any).role_labels || null,
+          game_url: (s as any).game_url || workspace.game_url || null,
         });
       }
     }
