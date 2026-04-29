@@ -13,7 +13,7 @@ export default function Privacy() {
         </Button>
 
         <h1 className="text-3xl font-extrabold text-foreground mb-2">Privacy Policy</h1>
-        <p className="text-sm text-muted-foreground mb-8">Last updated: April 29, 2026</p>
+        <p className="text-sm text-muted-foreground mb-8">Last updated: April 29, 2026 (multi-language support, owner document signing, and reliability improvements)</p>
 
         <div className="prose prose-sm prose-invert max-w-none space-y-6 text-muted-foreground">
           <section>
