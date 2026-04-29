@@ -283,10 +283,13 @@ export default function Support() {
                 <div className="flex items-center gap-2 mb-1">
                   {statusIcon(t.status)}
                   <h3 className="font-semibold text-foreground text-sm">{t.subject}</h3>
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize ml-auto">{t.status}</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-secondary text-muted-foreground capitalize ml-auto">{t.status.replace("_"," ")}</span>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">{t.message}</p>
-                <p className="text-xs text-muted-foreground mt-1">{new Date(t.created_at).toLocaleString()}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {isStaff && <span className="text-foreground font-medium">{(t as any).roblox_username || "Unknown"} · </span>}
+                  {new Date(t.created_at).toLocaleString()}
+                </p>
               </button>
             ))}
           </div>
