@@ -80,6 +80,78 @@ export default function Index() {
 
       {/* Hero */}
       <section className="relative pt-36 pb-24 overflow-hidden">
+        {/* Floating side cards (desktop only) */}
+        <div className="hidden xl:block pointer-events-none">
+          {/* Left side: live activity card */}
+          <div className="absolute left-8 top-44 w-56 rounded-xl border border-border/20 bg-card/40 backdrop-blur-md p-4 shadow-2xl shadow-primary/10 animate-fade-up" style={{ animationDelay: "300ms" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Live Activity</p>
+            </div>
+            {[
+              { name: "synt", action: "in-game", time: "2m" },
+              { name: "kai", action: "promoted", time: "5m" },
+              { name: "devs", action: "joined session", time: "12m" },
+            ].map((a) => (
+              <div key={a.name} className="flex items-center justify-between py-1.5 border-t border-border/10 first:border-t-0">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-violet-600 flex items-center justify-center text-[9px] font-black text-white">{a.name[0].toUpperCase()}</div>
+                  <div>
+                    <p className="text-xs font-semibold text-foreground leading-tight">{a.name}</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">{a.action}</p>
+                  </div>
+                </div>
+                <span className="text-[10px] text-muted-foreground">{a.time}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Left bottom: quota progress */}
+          <div className="absolute left-12 top-[26rem] w-52 rounded-xl border border-border/20 bg-card/40 backdrop-blur-md p-4 shadow-2xl shadow-primary/10 animate-fade-up" style={{ animationDelay: "500ms" }}>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Weekly Quota</p>
+              <span className="text-[10px] font-black text-emerald-400">+12%</span>
+            </div>
+            <p className="text-2xl font-black text-foreground mb-2">8.5h <span className="text-xs font-medium text-muted-foreground">/ 10h</span></p>
+            <div className="h-1.5 rounded-full bg-muted/40 overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-primary to-violet-500 rounded-full" style={{ width: "85%" }} />
+            </div>
+          </div>
+
+          {/* Right side: shift card */}
+          <div className="absolute right-8 top-40 w-56 rounded-xl border border-border/20 bg-card/40 backdrop-blur-md p-4 shadow-2xl shadow-primary/10 animate-fade-up" style={{ animationDelay: "400ms" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Calendar className="w-3.5 h-3.5 text-primary" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Next Shift</p>
+            </div>
+            <p className="text-sm font-bold text-foreground mb-1">Training Session</p>
+            <p className="text-[11px] text-muted-foreground mb-3">Today · 8:00 PM EST</p>
+            <div className="flex -space-x-2 mb-2">
+              {["bg-violet-500", "bg-emerald-500", "bg-amber-500", "bg-rose-500"].map((c, i) => (
+                <div key={i} className={`w-6 h-6 rounded-full ${c} border-2 border-background`} />
+              ))}
+              <div className="w-6 h-6 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[9px] font-bold text-muted-foreground">+3</div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">7 staff claimed</p>
+          </div>
+
+          {/* Right bottom: rank card */}
+          <div className="absolute right-12 top-[26rem] w-52 rounded-xl border border-border/20 bg-card/40 backdrop-blur-md p-4 shadow-2xl shadow-primary/10 animate-fade-up" style={{ animationDelay: "600ms" }}>
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-3.5 h-3.5 text-primary" />
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Rank Update</p>
+            </div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center text-[10px] font-black text-white">K</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-foreground truncate">kai</p>
+                <p className="text-[10px] text-muted-foreground">Trainee → Officer</p>
+              </div>
+            </div>
+            <p className="text-[10px] text-emerald-400 font-semibold mt-1">✓ Synced to Roblox</p>
+          </div>
+        </div>
+
         <div className="relative max-w-5xl mx-auto px-6 text-center">
           {/* Badge */}
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs font-semibold text-primary mb-8 animate-fade-in">
