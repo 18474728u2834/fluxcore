@@ -106,6 +106,9 @@ export default function Terms() {
               Our <strong className="text-foreground">Support Center is provided in English only</strong> to ensure clear communication and accurate troubleshooting between you and our team. Tickets, AI assistance, and staff replies are handled exclusively in English.
             </p>
           </section>
+
+          <section className="space-y-3">
+            <h2 className="text-lg font-semibold text-foreground">Contact</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
               For questions about these Terms, contact us through our Roblox group or community channels.
             </p>
