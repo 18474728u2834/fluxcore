@@ -44,7 +44,7 @@ serve(async (req) => {
     return origin ? Response.redirect(`${origin}/#/login?error=config`, 302) : new Response("OAuth is not configured", { status: 500, headers: corsHeaders });
   }
 
-  if (url.pathname.endsWith("/start")) {
+  if (url.searchParams.get("start") === "1") {
     const origin = safeRedirectOrigin(url.searchParams.get("origin"));
     if (!origin) return new Response("Missing origin", { status: 400, headers: corsHeaders });
 
