@@ -259,7 +259,7 @@ export default function Feedback() {
               return (
                 <button
                   key={t.id}
-                  onClick={() => openTicket(t)}
+                  onClick={() => navigate(`/feedback/${t.id}`)}
                   className="w-full glass-hover rounded-xl p-4 text-left flex items-center gap-4"
                 >
                   <div className="shrink-0">

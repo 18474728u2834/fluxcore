@@ -1,4 +1,5 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +24,7 @@ interface Sig { id: string; document_id: string; member_id: string; signed_at: s
 
 export default function Documents() {
   const { workspaceId, isOwner } = useWorkspace();
+  const navigate = useNavigate();
   const { user, robloxUsername } = useAuth();
   const [docs, setDocs] = useState<Doc[]>([]);
   const [sigs, setSigs] = useState<Sig[]>([]);
@@ -236,7 +238,7 @@ export default function Documents() {
               return (
                 <div
                   key={doc.id}
-                  onClick={() => setViewDoc(doc)}
+                  onClick={() => navigate(`/w/${workspaceId}/documents/${doc.id}`)}
                   className={`glass rounded-xl p-5 cursor-pointer hover:bg-secondary/30 transition-colors ${isOverdue ? "border-l-2 border-l-destructive" : ""}`}
                 >
                   <div className="flex items-start justify-between">
