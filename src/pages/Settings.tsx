@@ -171,16 +171,49 @@ export default function SettingsPage() {
             <h2 className="font-semibold text-foreground text-sm">Discord Integration</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            Add a Discord webhook URL to receive automatic session reminders 5 minutes before shifts start.
-            Create a webhook in your Discord server: Server Settings → Integrations → Webhooks → New Webhook.
+            Add a Discord webhook URL to receive announcements when sessions are scheduled and reminders 5 minutes before they start.
+            Create a webhook in: Server Settings → Integrations → Webhooks → New Webhook.
           </p>
-          <Input placeholder="https://discord.com/api/webhooks/..." value={discordWebhook}
-            onChange={(e) => setDiscordWebhook(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+          <div className="space-y-2">
+            <Label className="text-xs">Webhook URL</Label>
+            <Input placeholder="https://discord.com/api/webhooks/..." value={discordWebhook}
+              onChange={(e) => setDiscordWebhook(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Game Link <span className="text-muted-foreground">(included in webhook messages)</span></Label>
+            <Input placeholder="https://www.roblox.com/games/..." value={gameUrl}
+              onChange={(e) => setGameUrl(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+          </div>
           {discordWebhook && (
             <Button variant="secondary" size="sm" onClick={testDiscord} disabled={testingDiscord}>
               {testingDiscord && <Loader2 className="w-3 h-3 mr-1 animate-spin" />} Test Webhook
             </Button>
           )}
+        </div>
+
+        {/* Session Role Labels */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Bot className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Session Role Labels</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Customize what the three session roles are called in your workspace (e.g. "Trainer" → "Instructor").
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <Label className="text-xs">Host label</Label>
+              <Input value={hostLabel} onChange={(e) => setHostLabel(e.target.value)} className="bg-muted border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Co-Host label</Label>
+              <Input value={coHostLabel} onChange={(e) => setCoHostLabel(e.target.value)} className="bg-muted border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Trainer label</Label>
+              <Input value={trainerLabel} onChange={(e) => setTrainerLabel(e.target.value)} className="bg-muted border-border" />
+            </div>
+          </div>
         </div>
 
         {/* Feature Toggles */}
