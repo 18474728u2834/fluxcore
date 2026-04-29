@@ -262,7 +262,7 @@ export default function Support() {
             </div>
 
             <div className="flex gap-2">
-              <Input placeholder="Type a message... (type 'staff' for human help)" value={reply} onChange={(e) => setReply(e.target.value)} className="bg-muted border-border"
+              <Input placeholder={isStaff ? "Reply to user..." : "Type a message... (type 'staff' for human help)"} value={reply} onChange={(e) => setReply(e.target.value)} className="bg-muted border-border"
                 onKeyDown={(e) => e.key === "Enter" && handleReply()} />
               <Button variant="hero" size="sm" onClick={handleReply} disabled={sendingReply || !reply.trim()}>
                 {sendingReply ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
