@@ -23,6 +23,10 @@ export default function SettingsPage() {
   const [backgroundColor, setBackgroundColor] = useState("#0f0f11");
   const [showGrid, setShowGrid] = useState(true);
   const [discordWebhook, setDiscordWebhook] = useState("");
+  const [gameUrl, setGameUrl] = useState("");
+  const [hostLabel, setHostLabel] = useState("Host");
+  const [coHostLabel, setCoHostLabel] = useState("Co-Host");
+  const [trainerLabel, setTrainerLabel] = useState("Trainer");
   const [messageLogger, setMessageLogger] = useState(false);
   const [autoRank, setAutoRank] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,7 +38,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
@@ -46,6 +50,11 @@ export default function SettingsPage() {
           setDiscordWebhook((data as any).discord_webhook_url || "");
           setMessageLogger((data as any).message_logger_enabled || false);
           setAutoRank((data as any).auto_rank_enabled || false);
+          setGameUrl((data as any).game_url || "");
+          const labels = (data as any).session_role_labels || {};
+          setHostLabel(labels.host || "Host");
+          setCoHostLabel(labels.co_host || "Co-Host");
+          setTrainerLabel(labels.trainer || "Trainer");
         }
       };
       fetchExtras();
@@ -86,6 +95,12 @@ export default function SettingsPage() {
       discord_webhook_url: discordWebhook.trim() || null,
       message_logger_enabled: messageLogger,
       auto_rank_enabled: autoRank,
+      game_url: gameUrl.trim() || null,
+      session_role_labels: {
+        host: hostLabel.trim() || "Host",
+        co_host: coHostLabel.trim() || "Co-Host",
+        trainer: trainerLabel.trim() || "Trainer",
+      },
     } as any).eq("id", workspaceId);
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
