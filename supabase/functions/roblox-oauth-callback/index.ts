@@ -1,18 +1,69 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
+};
+
+const safeRedirectOrigin = (value: string | null) => {
+  if (!value) return "";
+  try {
+    const parsed = new URL(value);
+    return parsed.origin;
+  } catch {
+    return "";
+  }
+};
+
+const createCodeVerifier = () => {
+  const bytes = crypto.getRandomValues(new Uint8Array(64));
+  return btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+
+const createCodeChallenge = async (verifier: string) => {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+  return btoa(String.fromCharCode(...new Uint8Array(digest))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, {
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-      },
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
-  // Support both GET (redirect from Roblox) and POST (manual test)
   const url = new URL(req.url);
+  const clientId = Deno.env.get("ROBLOX_CLIENT_ID");
+  const clientSecret = Deno.env.get("ROBLOX_CLIENT_SECRET");
+  const supabaseUrl = Deno.env.get("SUPABASE_URL");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
+
+  if (!clientId || !clientSecret || !supabaseUrl || !serviceRoleKey) {
+    const origin = safeRedirectOrigin(url.searchParams.get("origin"));
+    console.error("[OAuth] Missing env:", { c: !!clientId, s: !!clientSecret, u: !!supabaseUrl, k: !!serviceRoleKey });
+    return origin ? Response.redirect(`${origin}/#/login?error=config`, 302) : new Response("OAuth is not configured", { status: 500, headers: corsHeaders });
+  }
+
+  if (url.pathname.endsWith("/start")) {
+    const origin = safeRedirectOrigin(url.searchParams.get("origin"));
+    if (!origin) return new Response("Missing origin", { status: 400, headers: corsHeaders });
+
+    const codeVerifier = createCodeVerifier();
+    const codeChallenge = await createCodeChallenge(codeVerifier);
+    const state = btoa(JSON.stringify({ nonce: crypto.randomUUID(), origin, code_verifier: codeVerifier }));
+    const params = new URLSearchParams({
+      client_id: clientId,
+      response_type: "code",
+      redirect_uri: redirectUri,
+      scope: "openid profile",
+      state,
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
+    });
+
+    return Response.redirect(`https://apis.roblox.com/oauth/v1/authorize?${params}`, 302);
+  }
+
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state");
 
@@ -20,7 +71,7 @@ serve(async (req) => {
 
   if (!code || !state) {
     console.error("[OAuth] Missing code or state. Full URL:", req.url);
-    return new Response("Missing code or state", { status: 400 });
+    return new Response("Missing code or state", { status: 400, headers: corsHeaders });
   }
 
   let origin: string;
@@ -33,20 +84,8 @@ serve(async (req) => {
     codeVerifier = parsed.code_verifier;
   } catch (e) {
     console.error("[OAuth] State parse error:", e);
-    return new Response("Invalid state", { status: 400 });
+    return new Response("Invalid state", { status: 400, headers: corsHeaders });
   }
-
-  const clientId = Deno.env.get("ROBLOX_CLIENT_ID");
-  const clientSecret = Deno.env.get("ROBLOX_CLIENT_SECRET");
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-
-  if (!clientId || !clientSecret || !supabaseUrl || !serviceRoleKey) {
-    console.error("[OAuth] Missing env:", { c: !!clientId, s: !!clientSecret, u: !!supabaseUrl, k: !!serviceRoleKey });
-    return Response.redirect(`${origin}/#/login?error=config`, 302);
-  }
-
-  const redirectUri = `${supabaseUrl}/functions/v1/roblox-oauth-callback`;
 
   try {
     // Step 1: Token exchange - Roblox requires Basic Auth for confidential clients
