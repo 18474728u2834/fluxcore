@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones, BadgeCheck } from "lucide-react";
+import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones, BadgeCheck, Sparkles, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { PremiumGrantManager } from "@/components/PremiumGrantManager";
 
 interface Workspace {
   id: string;
