@@ -146,6 +146,7 @@ export default function Sessions() {
     if (!workspaceId) return;
     fetchSessions();
     fetchTags();
+    fetchMembers();
     const channel = supabase.channel(`sessions-${workspaceId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "scheduled_sessions", filter: `workspace_id=eq.${workspaceId}` }, () => fetchSessions())
       .on("postgres_changes", { event: "*", schema: "public", table: "session_tags", filter: `workspace_id=eq.${workspaceId}` }, () => fetchTags())
