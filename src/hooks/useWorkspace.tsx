@@ -15,6 +15,9 @@ interface WorkspaceData {
   background_color: string | null;
   show_grid: boolean | null;
   verified_official: boolean;
+  premium: boolean;
+  premium_until: string | null;
+  tutorial_completed: boolean;
 }
 
 interface WorkspaceContextType {
@@ -23,6 +26,7 @@ interface WorkspaceContextType {
   isOwner: boolean;
   loading: boolean;
   memberRole: string | null;
+  refreshWorkspace: () => Promise<void>;
 }
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
@@ -47,12 +51,14 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       const { data: wsRows, error } = await supabase
         .rpc("get_workspace_context", { _workspace_id: workspaceId });
 
-      const wsData = wsRows?.[0];
+      const wsData: any = wsRows?.[0];
 
       if (!wsData || error) {
         navigate("/workspaces");
         return;
       }
+
+      const isPremiumActive = !!wsData.premium && (!wsData.premium_until || new Date(wsData.premium_until) > new Date());
 
       setWorkspace({
         id: wsData.id,
@@ -66,6 +72,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         background_color: wsData.background_color,
         show_grid: wsData.show_grid,
         verified_official: !!wsData.verified_official,
+        premium: isPremiumActive,
+        premium_until: wsData.premium_until ?? null,
+        tutorial_completed: !!wsData.tutorial_completed,
       });
       const ownerCheck = wsData.owner_id === user.id;
       setIsOwner(ownerCheck);
@@ -93,8 +102,23 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     fetchWorkspace();
   }, [workspaceId, user, authLoading]);
 
+  const refreshWorkspace = async () => {
+    if (!workspaceId) return;
+    const { data: wsRows } = await supabase.rpc("get_workspace_context", { _workspace_id: workspaceId });
+    const wsData: any = wsRows?.[0];
+    if (!wsData) return;
+    const isPremiumActive = !!wsData.premium && (!wsData.premium_until || new Date(wsData.premium_until) > new Date());
+    setWorkspace((prev) => prev ? {
+      ...prev,
+      premium: isPremiumActive,
+      premium_until: wsData.premium_until ?? null,
+      tutorial_completed: !!wsData.tutorial_completed,
+      verified_official: !!wsData.verified_official,
+    } : prev);
+  };
+
   return (
-    <WorkspaceContext.Provider value={{ workspaceId: workspaceId || "", workspace, isOwner, loading, memberRole }}>
+    <WorkspaceContext.Provider value={{ workspaceId: workspaceId || "", workspace, isOwner, loading, memberRole, refreshWorkspace }}>
       {children}
     </WorkspaceContext.Provider>
   );

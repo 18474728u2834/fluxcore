@@ -41,6 +41,7 @@ const Quotas = lazy(() => import("./pages/Quotas"));
 const MessageLogs = lazy(() => import("./pages/MessageLogs"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const BloxyBargainsDowntown = lazy(() => import("./pages/BloxyBargainsDowntown"));
+const Pricing = lazy(() => import("./pages/Pricing"));
 
 const queryClient = new QueryClient();
 
@@ -121,6 +122,7 @@ function AppRoutes() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/workspaces" element={<Workspaces />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/support" element={<Support />} />
         <Route path="/feedback" element={<Feedback />} />

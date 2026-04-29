@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { ReleaseModal } from "@/components/ReleaseModal";
+import { SetupTutorial } from "@/components/SetupTutorial";
 import { BadgeCheck, Loader2 } from "lucide-react";
 
 export function DashboardLayout({ children, title }: { children: React.ReactNode; title?: string }) {
@@ -48,6 +49,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
         </div>
       </div>
       <ReleaseModal />
+      <SetupTutorial />
     </SidebarProvider>
   );
 }

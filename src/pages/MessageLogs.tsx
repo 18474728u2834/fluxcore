@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { usePermissions } from "@/hooks/usePermissions";
+import { PremiumGate } from "@/components/PremiumGate";
 import { Loader2, MessageSquare, Search, ShieldOff } from "lucide-react";
 
 interface LogRow {
@@ -15,7 +16,7 @@ interface LogRow {
 }
 
 export default function MessageLogs() {
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, workspace } = useWorkspace();
   const { hasPermission, isOwner, loading: permLoading } = usePermissions();
   const [rows, setRows] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +52,19 @@ export default function MessageLogs() {
 
   if (permLoading) {
     return <DashboardLayout title="Message Logs"><div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div></DashboardLayout>;
+  }
+
+  if (!workspace?.premium) {
+    return (
+      <DashboardLayout title="Message Logs">
+        <div className="py-10">
+          <PremiumGate
+            feature="Message Logs"
+            description="In-game chat logging keeps a 30-day searchable history of every staff message in your servers. Unlock with the Fluxcore Premium gamepass."
+          />
+        </div>
+      </DashboardLayout>
+    );
   }
 
   if (!allowed) {
