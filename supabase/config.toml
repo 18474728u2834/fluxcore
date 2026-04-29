@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.translate-batch]
 verify_jwt = false
+
+[functions.roblox-avatar]
+verify_jwt = false
