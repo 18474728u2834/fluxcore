@@ -122,6 +122,7 @@ function AppRoutes() {
         <Route path="/auth/callback" element={<AuthCallback />} />
         <Route path="/workspaces" element={<Workspaces />} />
         <Route path="/terms" element={<Terms />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/support" element={<Support />} />
         <Route path="/feedback" element={<Feedback />} />
