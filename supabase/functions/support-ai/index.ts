@@ -44,9 +44,15 @@ serve(async (req) => {
     const needsStaff = /staff|human|agent|novavoff|real person|escalat/i.test(message);
 
     if (needsStaff) {
+      // Actually mark the ticket as escalated and assign to Novavoff
+      await supabase
+        .from("support_tickets")
+        .update({ status: "escalated", assigned_to: "Novavoff", updated_at: new Date().toISOString() })
+        .eq("id", ticket_id);
+
       return new Response(JSON.stringify({
         success: true,
-        ai_response: "I've escalated your ticket to our staff team. Novavoff will review it shortly. In the meantime, feel free to add more details to help us assist you faster!",
+        ai_response: "✅ Your ticket has been escalated to Novavoff (Fluxcore staff). They'll review it shortly. Add any extra details below to help them resolve it faster.",
         escalated: true,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

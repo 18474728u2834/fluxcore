@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS workspace_members_unique_per_ws ON public.workspace_members (workspace_id, roblox_user_id);
