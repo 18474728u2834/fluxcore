@@ -46,7 +46,7 @@ export function InviteSection() {
         <h2 className="font-semibold text-foreground text-sm">Invite Link</h2>
       </div>
       <p className="text-xs text-muted-foreground">
-        Share this link with members to let them join your workspace.
+        Permanent link — share with anyone to let them join. Reuses for unlimited members until you reset.
       </p>
       <div className="flex items-center gap-2">
         <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all truncate">
