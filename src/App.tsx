@@ -45,7 +45,6 @@ const Roles = lazy(() => import("./pages/Roles"));
 const Quotas = lazy(() => import("./pages/Quotas"));
 const MessageLogs = lazy(() => import("./pages/MessageLogs"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
-const BloxyBargainsDowntown = lazy(() => import("./pages/BloxyBargainsDowntown"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 
