@@ -33,12 +33,49 @@ export default function Workspaces() {
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [createdWorkspaceId, setCreatedWorkspaceId] = useState<string | null>(null);
   const [createdInviteCode, setCreatedInviteCode] = useState<string | null>(null);
+  const [pendingGrant, setPendingGrant] = useState<{ grant_id: string; days: number } | null>(null);
+  const [applyingGrantTo, setApplyingGrantTo] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/login"); return; }
     fetchWorkspaces();
+    claimPendingGrant();
   }, [user, authLoading]);
+
+  const claimPendingGrant = async () => {
+    const token = localStorage.getItem("fluxcore_pending_grant");
+    if (!token) return;
+    const { data, error } = await supabase.rpc("claim_premium_grant", { _token: token });
+    localStorage.removeItem("fluxcore_pending_grant");
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("expired")) toast.error("That premium link has expired.");
+      else if (msg.includes("used_up")) toast.error("That premium link has already been used up.");
+      else if (msg.includes("invalid_token")) toast.error("That premium link is invalid.");
+      else toast.error("Couldn't claim premium link.");
+      return;
+    }
+    const row = (data as any[])?.[0];
+    if (row) {
+      setPendingGrant({ grant_id: row.grant_id, days: row.days });
+      toast.success(`🎁 You have ${row.days} free Premium days! Pick a workspace to apply it to.`);
+    }
+  };
+
+  const applyGrant = async (workspaceId: string) => {
+    if (!pendingGrant) return;
+    setApplyingGrantTo(workspaceId);
+    const { error } = await supabase.rpc("apply_grant_to_workspace", {
+      _grant_id: pendingGrant.grant_id,
+      _workspace_id: workspaceId,
+    });
+    setApplyingGrantTo(null);
+    if (error) { toast.error("Couldn't apply: " + error.message); return; }
+    toast.success(`Premium added — ${pendingGrant.days} days!`);
+    setPendingGrant(null);
+    fetchWorkspaces();
+  };
 
   const fetchWorkspaces = async () => {
     if (!user) return;
