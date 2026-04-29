@@ -559,7 +559,44 @@ export default function Sessions() {
                     </div>
                   )}
 
-                  <p className="text-xs text-muted-foreground">{roleLabels.host}, {roleLabels.co_host} and {roleLabels.trainer} can be assigned after creation. Discord webhook (if configured) will announce this session.</p>
+                  {/* Game URL */}
+                  <div className="space-y-2">
+                    <Label className="text-sm">Game link <span className="text-muted-foreground">(optional, overrides workspace default)</span></Label>
+                    <Input
+                      placeholder="https://www.roblox.com/games/123456789/My-Training-Center"
+                      value={gameUrl}
+                      onChange={(e) => setGameUrl(e.target.value)}
+                      className="bg-muted border-border"
+                    />
+                  </div>
+
+                  {/* Custom role labels */}
+                  <div className="rounded-lg border border-border/40 bg-muted/40 p-3 space-y-3">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground">Custom role names <span className="normal-case text-[10px]">(optional)</span></Label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Input placeholder={wsRoleLabels.host} value={labelHost} onChange={(e) => setLabelHost(e.target.value)} className="bg-muted border-border h-9 text-xs" />
+                      <Input placeholder={wsRoleLabels.co_host} value={labelCoHost} onChange={(e) => setLabelCoHost(e.target.value)} className="bg-muted border-border h-9 text-xs" />
+                      <Input placeholder={wsRoleLabels.trainer} value={labelTrainer} onChange={(e) => setLabelTrainer(e.target.value)} className="bg-muted border-border h-9 text-xs" />
+                    </div>
+                  </div>
+
+                  {/* Pre-assign self */}
+                  {canHostSession(category) && (
+                    <div className="space-y-2">
+                      <Label className="text-sm">Assign yourself</Label>
+                      <Select value={preAssignSelf} onValueChange={(v) => setPreAssignSelf(v as any)}>
+                        <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Don't assign me</SelectItem>
+                          <SelectItem value="host">As {labelHost.trim() || wsRoleLabels.host}</SelectItem>
+                          <SelectItem value="co_host">As {labelCoHost.trim() || wsRoleLabels.co_host}</SelectItem>
+                          <SelectItem value="trainer">As {labelTrainer.trim() || wsRoleLabels.trainer}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">Roles can also be assigned after creation. Discord webhook (if configured) will announce this session.</p>
                   <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || (recurring !== "weekly_days" && !scheduledAt) || (recurring === "weekly_days" && recurringDays.length === 0)}>
                     {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Schedule
                   </Button>
