@@ -706,7 +706,7 @@ export default function Sessions() {
                             };
                             return name ? (
                               <span key={posIdx} className={`text-[11px] pl-1 pr-2 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all hover:scale-105 animate-in fade-in zoom-in-95 duration-200 ${isMe ? "bg-primary/20 text-primary ring-1 ring-primary/40" : "bg-secondary text-foreground"}`}>
-                                <RobloxAvatar username={name} className="w-5 h-5 rounded-full" />
+                                <RobloxAvatar username={name} userId={lookupId(name)} className="w-5 h-5 rounded-full" />
                                 {name}
                                 {canRemove && (
                                   <button onClick={() => setSlot(null)} className="hover:text-destructive transition-colors"><UserMinus className="w-2.5 h-2.5" /></button>
