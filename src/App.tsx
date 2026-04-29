@@ -90,14 +90,18 @@ function AppRoutes() {
   const hostname = window.location.hostname;
 
   if (hostname.startsWith("bargains.fluxcore")) {
+    const BARGAINS_WS = "81bd37c3-fb0a-465a-86b5-de4cfed43a09";
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Bargains />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/workspaces" element={<Workspaces />} />
-          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+          <Route path="/workspaces" element={<Navigate to={`/w/${BARGAINS_WS}/dashboard`} replace />} />
+          <Route
+            path="/w/:workspaceId/*"
+            element={<BargainsWorkspaceGuard allowedId={BARGAINS_WS} />}
+          />
           <Route path="*" element={<Bargains />} />
         </Routes>
       </Suspense>
