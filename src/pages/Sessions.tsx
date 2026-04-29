@@ -415,7 +415,11 @@ export default function Sessions() {
                     <h3 className="font-semibold text-foreground text-sm">{session.title}</h3>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>{session.category}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[session.status]}`}>{session.status}</span>
-                    {session.recurring && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">{session.recurring}</span>}
+                    {session.recurring && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
+                        {session.recurring_days?.length ? session.recurring_days.join("/") + ` ${session.recurring_time || ""}` : session.recurring}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDate(session.scheduled_at)}</span>
@@ -477,7 +481,9 @@ export default function Sessions() {
                   </span>
                   {detailSession.recurring && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
-                      Repeats {detailSession.recurring}
+                      {detailSession.recurring_days?.length
+                        ? `Repeats ${detailSession.recurring_days.join(", ")} at ${detailSession.recurring_time || ""}`
+                        : `Repeats ${detailSession.recurring}`}
                     </span>
                   )}
                 </div>
@@ -486,7 +492,7 @@ export default function Sessions() {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assigned Roles</p>
 
                   <RoleSlot
-                    label="Host"
+                    label={roleLabels.host || "Host"}
                     icon={User}
                     name={detailSession.host_name === "Unassigned" ? null : detailSession.host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -497,7 +503,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label="Co-Host"
+                    label={roleLabels.co_host || "Co-Host"}
                     icon={Users}
                     name={detailSession.co_host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -508,7 +514,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label="Trainer"
+                    label={roleLabels.trainer || "Trainer"}
                     icon={GraduationCap}
                     name={detailSession.trainer_name}
                     canAssignSelf={canSelfAssign(detailSession)}
