@@ -11,6 +11,9 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 
 interface SessionSlot {
   label: string;
@@ -64,6 +67,8 @@ export default function Sessions() {
   const [creating, setCreating] = useState(false);
   const [detailSession, setDetailSession] = useState<ScheduledSession | null>(null);
   const [tagsManagerOpen, setTagsManagerOpen] = useState(false);
+  const [members, setMembers] = useState<{ roblox_username: string }[]>([]);
+  const canAssignOthers = isOwner || hasPermission("manage_members");
 
   // ---- Create session form state ----
   const [title, setTitle] = useState("");
@@ -106,6 +111,12 @@ export default function Sessions() {
     setTags((data as any) || []);
   };
 
+  const fetchMembers = async () => {
+    const { data } = await supabase.from("workspace_members")
+      .select("roblox_username").eq("workspace_id", workspaceId).order("roblox_username");
+    setMembers((data as any) || []);
+  };
+
   // Discord 5-minute reminder
   const checkAndSendReminders = async (sessionList: ScheduledSession[]) => {
     const now = Date.now();
@@ -135,6 +146,7 @@ export default function Sessions() {
     if (!workspaceId) return;
     fetchSessions();
     fetchTags();
+    fetchMembers();
     const channel = supabase.channel(`sessions-${workspaceId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "scheduled_sessions", filter: `workspace_id=eq.${workspaceId}` }, () => fetchSessions())
       .on("postgres_changes", { event: "*", schema: "public", table: "session_tags", filter: `workspace_id=eq.${workspaceId}` }, () => fetchTags())
@@ -586,13 +598,11 @@ export default function Sessions() {
               const sessionTags = (session.tag_ids || []).map(id => tagsById[id]).filter(Boolean);
               return (
                 <button key={`${session.id}-${occursAt.getTime()}`} onClick={() => setDetailSession(session)}
-                  className="glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 transition-colors border border-border/30 hover:border-primary/40 group relative">
+                  className="glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 border border-border/30 hover:border-primary/40 group relative animate-in fade-in slide-in-from-bottom-2 duration-300">
                   {firstAssignee && (
-                    <img
-                      src={`https://www.roblox.com/headshot-thumbnail/image?username=${encodeURIComponent(firstAssignee)}&width=150&height=150&format=png`}
-                      alt={firstAssignee}
-                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
-                      className="absolute -top-2 -right-2 w-9 h-9 rounded-full border-2 border-background bg-secondary object-cover shadow-md"
+                    <RobloxAvatar
+                      username={firstAssignee}
+                      className="absolute -top-2 -right-2 w-10 h-10 rounded-full border-2 border-background shadow-lg ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all"
                     />
                   )}
                   <div className="flex items-start justify-between gap-2">
@@ -665,7 +675,7 @@ export default function Sessions() {
                     <p className="text-xs text-muted-foreground italic">No roles defined.</p>
                   ) : (
                     (detailSession.slots || []).map((slot, i) => (
-                      <div key={i} className="glass rounded-lg p-3 space-y-2">
+                      <div key={i} className="glass rounded-lg p-3 space-y-2 animate-in fade-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 60}ms` }}>
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{slot.label}</span>
                           <span className="text-[10px] text-muted-foreground">{slot.assigned.filter(Boolean).length}/{slot.count}</span>
@@ -673,27 +683,63 @@ export default function Sessions() {
                         <div className="flex flex-wrap gap-1.5">
                           {slot.assigned.map((name, posIdx) => {
                             const isMe = name && robloxUsername && name.toLowerCase() === robloxUsername.toLowerCase();
-                            const canEdit = canHostSession(detailSession.category) || isOwner;
+                            const canSelfHost = canHostSession(detailSession.category);
+                            const canRemove = canSelfHost || isOwner || canAssignOthers || isMe;
+                            const setSlot = (value: string | null) => {
+                              const next = (detailSession.slots || []).map((s, si) => si === i ? { ...s, assigned: s.assigned.map((a, ai) => ai === posIdx ? value : a) } : s);
+                              updateSessionSlots(detailSession, next);
+                            };
                             return name ? (
-                              <span key={posIdx} className={`text-[11px] px-2 py-1 rounded-full font-medium flex items-center gap-1 ${isMe ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
+                              <span key={posIdx} className={`text-[11px] pl-1 pr-2 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all hover:scale-105 animate-in fade-in zoom-in-95 duration-200 ${isMe ? "bg-primary/20 text-primary ring-1 ring-primary/40" : "bg-secondary text-foreground"}`}>
+                                <RobloxAvatar username={name} className="w-5 h-5 rounded-full" />
                                 {name}
-                                {(canEdit || isMe) && (
-                                  <button onClick={() => {
-                                    const next = (detailSession.slots || []).map((s, si) => si === i ? { ...s, assigned: s.assigned.map((a, ai) => ai === posIdx ? null : a) } : s);
-                                    updateSessionSlots(detailSession, next);
-                                  }} className="hover:text-destructive"><UserMinus className="w-2.5 h-2.5" /></button>
+                                {canRemove && (
+                                  <button onClick={() => setSlot(null)} className="hover:text-destructive transition-colors"><UserMinus className="w-2.5 h-2.5" /></button>
                                 )}
                               </span>
                             ) : (
-                              <button key={posIdx}
-                                disabled={!canHostSession(detailSession.category) || !robloxUsername}
-                                onClick={() => {
-                                  const next = (detailSession.slots || []).map((s, si) => si === i ? { ...s, assigned: s.assigned.map((a, ai) => ai === posIdx ? robloxUsername : a) } : s);
-                                  updateSessionSlots(detailSession, next);
-                                }}
-                                className="text-[11px] px-2 py-1 rounded-full font-medium border border-dashed border-border/60 text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-50">
-                                + Assign me
-                              </button>
+                              <div key={posIdx} className="flex items-center gap-1">
+                                {canSelfHost && robloxUsername && (
+                                  <button
+                                    onClick={() => setSlot(robloxUsername)}
+                                    className="text-[11px] px-2 py-1 rounded-full font-medium border border-dashed border-border/60 text-muted-foreground hover:border-primary hover:text-primary hover:scale-105 transition-all">
+                                    + Assign me
+                                  </button>
+                                )}
+                                {canAssignOthers && (
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <button className="text-[11px] px-2 py-1 rounded-full font-medium border border-dashed border-border/60 text-muted-foreground hover:border-primary hover:text-primary hover:scale-105 transition-all">
+                                        + Assign other
+                                      </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-56 p-0 glass border-border/40" align="start">
+                                      <Command>
+                                        <CommandInput placeholder="Search member..." className="h-9" />
+                                        <CommandList>
+                                          <CommandEmpty>No members found.</CommandEmpty>
+                                          <CommandGroup>
+                                            {members.map((m) => (
+                                              <CommandItem
+                                                key={m.roblox_username}
+                                                value={m.roblox_username}
+                                                onSelect={() => setSlot(m.roblox_username)}
+                                                className="gap-2 cursor-pointer"
+                                              >
+                                                <RobloxAvatar username={m.roblox_username} className="w-5 h-5 rounded-full" />
+                                                {m.roblox_username}
+                                              </CommandItem>
+                                            ))}
+                                          </CommandGroup>
+                                        </CommandList>
+                                      </Command>
+                                    </PopoverContent>
+                                  </Popover>
+                                )}
+                                {!canSelfHost && !canAssignOthers && (
+                                  <span className="text-[11px] px-2 py-1 rounded-full text-muted-foreground/60 italic">Open</span>
+                                )}
+                              </div>
                             );
                           })}
                         </div>
