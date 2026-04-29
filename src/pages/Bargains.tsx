@@ -22,10 +22,11 @@ export default function Bargains() {
 
       <div className="relative max-w-4xl mx-auto px-6 py-16 md:py-24">
         <header className="text-center space-y-4 mb-16">
+          <img src={bargainsLogo} alt="Bloxy Bargains" className="w-24 h-24 mx-auto rounded-2xl shadow-lg" />
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-white/60">
             Staff Portal
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold tracking-tight">Bargains</h1>
+          <h1 className="text-5xl md:text-6xl font-bold tracking-tight">Bloxy Bargains</h1>
           <p className="text-lg text-white/60 max-w-xl mx-auto">
             Welcome to the official staff hub. Manage operations, sessions, and your team — all in one place.
           </p>
