@@ -7,6 +7,7 @@ import {
   Sparkles, MessageSquareText, BadgeCheck, Palette, Webhook, BarChart3, Bot,
   Crown, ShieldCheck, FileSignature, Users
 } from "lucide-react";
+import { LanguageSelector } from "@/components/LanguageSelector";
 
 const PREMIUM_GAMEPASS_URL = "https://www.roblox.com/game-pass/1816876657/Fluxcore-Premium";
 const PREMIUM_PRICE_ROBUX = 400;
