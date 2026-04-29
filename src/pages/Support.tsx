@@ -28,6 +28,7 @@ interface Message {
 
 export default function Support() {
   const { user, robloxUsername } = useAuth();
+  const isStaff = (robloxUsername || "").toLowerCase() === "novavoff";
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,6 +40,7 @@ export default function Support() {
   const [reply, setReply] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
   const [aiThinking, setAiThinking] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   const fetchTickets = async () => {
     const { data } = await supabase
