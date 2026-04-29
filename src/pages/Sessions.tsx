@@ -96,7 +96,7 @@ function RoleSlot({
 }
 
 export default function Sessions() {
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, workspace } = useWorkspace();
   const { user, robloxUsername } = useAuth();
   const { hasPermission, canCreateSession, canHostSession, isOwner } = usePermissions();
   const canCreateAny = CATEGORIES.some(c => canCreateSession(c));
