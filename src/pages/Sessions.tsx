@@ -61,6 +61,11 @@ export default function Sessions() {
   const canManageTags = isOwner || hasPermission("manage_members");
 
   const [sessions, setSessions] = useState<ScheduledSession[]>([]);
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick(t => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
   const [tags, setTags] = useState<SessionTag[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -598,12 +603,14 @@ export default function Sessions() {
               const sessionTags = (session.tag_ids || []).map(id => tagsById[id]).filter(Boolean);
               return (
                 <button key={`${session.id}-${occursAt.getTime()}`} onClick={() => setDetailSession(session)}
-                  className="glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 border border-border/30 hover:border-primary/40 group relative animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  className={`glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 border group relative animate-in fade-in slide-in-from-bottom-2 duration-300 ${status.live ? "border-success/60 shadow-[0_0_20px_-5px_hsl(var(--success)/0.5)]" : "border-border/30 hover:border-primary/40"}`}>
                   {firstAssignee && (
-                    <RobloxAvatar
-                      username={firstAssignee}
-                      className="absolute -top-2 -right-2 w-10 h-10 rounded-full border-2 border-background shadow-lg ring-2 ring-primary/20 group-hover:ring-primary/50 transition-all"
-                    />
+                    <div className="absolute -top-2 -right-2">
+                      <RobloxAvatar
+                        username={firstAssignee}
+                        className={`w-10 h-10 rounded-full border-2 border-background shadow-lg transition-all ${status.live ? "ring-2 ring-success animate-pulse" : "ring-2 ring-primary/20 group-hover:ring-primary/50"}`}
+                      />
+                    </div>
                   )}
                   <div className="flex items-start justify-between gap-2">
                     <h3 className="font-semibold text-foreground text-sm truncate flex-1 pr-8">{session.title}</h3>
@@ -615,7 +622,7 @@ export default function Sessions() {
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    {status.live && <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-success/20 text-success flex items-center gap-1"><span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> LIVE</span>}
+                    {status.live && <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-success text-success-foreground flex items-center gap-1 shadow-md shadow-success/40 animate-in zoom-in-95 duration-300"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE</span>}
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>{session.category}</span>
                     {sessionTags.slice(0, 2).map(t => (
                       <span key={t.id} className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ backgroundColor: t.color + "30", color: t.color }}>{t.name}</span>
