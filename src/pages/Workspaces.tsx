@@ -395,6 +395,8 @@ export default function Workspaces() {
             <p className="text-sm text-muted-foreground">Create your first workspace to get started, or ask a workspace owner to invite you.</p>
           </div>
         )}
+
+        <PremiumGrantManager />
       </div>
     </div>
   );
