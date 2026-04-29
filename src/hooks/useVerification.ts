@@ -1,21 +1,27 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-const EMOJI_POOL = [
-  "🎮", "🕹️", "🎯", "🏆", "⭐", "🔥", "💎", "🎲", "🎪", "🎭",
-  "🌟", "💫", "🚀", "⚡", "🎵", "🎶", "🌈", "🍀", "🦊", "🐉",
-  "🦁", "🐺", "🦅", "🐬", "🦋", "🌸", "🌺", "🍄", "🌙", "☀️",
-  "🔮", "🗡️", "🛡️", "👑", "💰", "🎁", "🧩", "🎃", "❄️", "🔑",
-  "🏅", "🥇", "🎖️", "🏵️", "🎗️", "🧸", "🎠", "🎡", "🎢", "🎬",
+const ADJECTIVES = [
+  "swift", "bright", "calm", "bold", "quiet", "lucky", "wild", "loyal",
+  "noble", "clever", "fierce", "gentle", "rapid", "quirky", "vivid", "stoic",
+  "sunny", "amber", "cobalt", "crimson", "midnight", "frosty", "stormy", "mellow",
+];
+const NOUNS = [
+  "tiger", "falcon", "panther", "wolf", "otter", "raven", "lynx", "fox",
+  "comet", "ember", "harbor", "ridge", "meadow", "summit", "river", "delta",
+  "pixel", "vector", "nebula", "atlas", "echo", "lumen", "axiom", "cipher",
 ];
 
-function generateEmojiCode(length = 20): string {
-  const emojis: string[] = [];
-  for (let i = 0; i < length; i++) {
-    const idx = Math.floor(Math.random() * EMOJI_POOL.length);
-    emojis.push(EMOJI_POOL[idx]);
-  }
-  return emojis.join("");
+function pick<T>(arr: readonly T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Generates a human, brand-feeling verification phrase
+// Format: fluxcore-{adj}-{noun}-{4 digits}
+// Example: fluxcore-amber-falcon-4127
+function generateEmojiCode(): string {
+  const num = String(Math.floor(1000 + Math.random() * 9000));
+  return `fluxcore-${pick(ADJECTIVES)}-${pick(NOUNS)}-${num}`;
 }
 
 export interface VerificationState {
