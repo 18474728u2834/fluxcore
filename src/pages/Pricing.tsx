@@ -8,7 +8,7 @@ import {
   Crown, ShieldCheck, FileSignature, Users
 } from "lucide-react";
 
-const PREMIUM_GAMEPASS_URL = "https://www.roblox.com/game-pass/000000000/Fluxcore-Premium";
+const PREMIUM_GAMEPASS_URL = "https://www.roblox.com/game-pass/1816876657/Fluxcore-Premium";
 const PREMIUM_PRICE_ROBUX = 400;
 
 export default function Pricing() {
@@ -18,25 +18,28 @@ export default function Pricing() {
   const isLoggedIn = !authLoading && !!user;
 
   const freeFeatures = [
-    "Unlimited workspaces & members",
+    "1 workspace",
+    "Unlimited members",
+    "Auto-rank sync with Roblox group",
     "Real-time activity tracking",
-    "Group ranking & role sync",
     "Shift, training & event scheduling",
-    "Discord webhook reminders",
+    "Discord webhook for session reminders",
     "Policies with digital signatures",
+    "Leave of absence workflow",
+    "Basic primary color customization",
     "AI support assistant",
     "Roblox OAuth sign-in",
   ];
 
   const premiumFeatures = [
+    { icon: Sparkles, title: "Unlimited Workspaces", desc: "Run multiple groups, projects or sub-divisions from a single Roblox account." },
     { icon: MessageSquareText, title: "In-Game Message Logs", desc: "Searchable 30-day chat history of every staff message in your servers." },
-    { icon: Bot, title: "Auto-Rank Sync", desc: "Background worker keeps Roblox ranks in sync with workspace roles every minute." },
-    { icon: BadgeCheck, title: "Verified Badge", desc: "Official Fluxcore checkmark on your dashboard, wall posts and join page." },
-    { icon: Palette, title: "Full Branding", desc: "Custom colors, background, and a hidden grid toggle — make Fluxcore yours." },
-    { icon: BarChart3, title: "Advanced Analytics", desc: "Per-role quotas, leaderboards, and idle-time breakdowns going back 90 days." },
-    { icon: Webhook, title: "Unlimited Webhooks", desc: "Wire session reminders, joins, leaves, and warnings into multiple Discord channels." },
+    { icon: BarChart3, title: "Per-Role Quotas", desc: "Set different session and time targets for every rank — Hyra-style accountability." },
+    { icon: Palette, title: "Full Custom Branding", desc: "Custom primary, text and background colors, hidden grid toggle, and verified badge." },
+    { icon: ShieldCheck, title: "Audit Log", desc: "Full timeline of every promotion, demotion, warning, and config change in the workspace." },
+    { icon: Bot, title: "Analytics Dashboard", desc: "Heatmaps, leaderboards, idle-time breakdowns and 90-day historical trends." },
     { icon: FileSignature, title: "Document Auto-Assign", desc: "Push policies to new staff automatically and require signatures on rank-up." },
-    { icon: ShieldCheck, title: "Priority Support", desc: "Fast-tracked tickets, direct line to the team, and early access to beta features." },
+    { icon: BadgeCheck, title: "Priority Support", desc: "Fast-tracked tickets, direct line to the team, and early access to beta features." },
   ];
 
   return (
@@ -145,12 +148,13 @@ export default function Pricing() {
             <ul className="space-y-3 mb-10 flex-1">
               {[
                 "Everything in Free, plus:",
+                "Unlimited workspaces",
                 "In-game message logging (30 days)",
-                "Auto-rank sync with Roblox group",
-                "Verified workspace badge",
-                "Full branding & custom theme",
                 "Per-role quotas & leaderboards",
-                "Unlimited Discord webhooks",
+                "Full custom branding (colors, grid, badge)",
+                "Verified workspace badge",
+                "Audit log of every staff action",
+                "Analytics dashboard with 90-day trends",
                 "Document auto-assign on rank-up",
                 "Priority support",
               ].map((item, i) => (

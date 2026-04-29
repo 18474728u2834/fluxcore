@@ -17,7 +17,11 @@ interface ScheduledSession {
   duration_minutes: number; host_name: string; co_host_name: string | null;
   trainer_name: string | null; status: string; recurring: string | null;
   description: string | null;
+  recurring_days: string[] | null;
+  recurring_time: string | null;
 }
+
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const statusColors: Record<string, string> = {
   scheduled: "bg-primary/10 text-primary", active: "bg-success/10 text-success",
@@ -92,7 +96,7 @@ function RoleSlot({
 }
 
 export default function Sessions() {
-  const { workspaceId } = useWorkspace();
+  const { workspaceId, workspace } = useWorkspace();
   const { user, robloxUsername } = useAuth();
   const { hasPermission, canCreateSession, canHostSession, isOwner } = usePermissions();
   const canCreateAny = CATEGORIES.some(c => canCreateSession(c));
@@ -107,9 +111,13 @@ export default function Sessions() {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>("Shift");
   const [recurring, setRecurring] = useState("none");
+  const [recurringDays, setRecurringDays] = useState<string[]>([]);
+  const [recurringTime, setRecurringTime] = useState("15:00");
   const [scheduledAt, setScheduledAt] = useState("");
   const [duration, setDuration] = useState("60");
   const [description, setDescription] = useState("");
+
+  const roleLabels = (workspace as any)?.session_role_labels ?? { host: "Host", co_host: "Co-Host", trainer: "Trainer" };
 
   const fetchSessions = async () => {
     const { data } = await supabase.from("scheduled_sessions").select("*")
@@ -162,23 +170,84 @@ export default function Sessions() {
   }, [workspaceId]);
 
   const handleCreate = async () => {
-    if (!title.trim() || !scheduledAt || !user) return;
+    if (!title.trim() || !user) return;
     if (!canCreateSession(category)) { toast.error(`No permission to create ${category}s`); return; }
+
+    const isWeekly = recurring === "weekly_days";
+    if (!isWeekly && !scheduledAt) {
+      toast.error("Please pick a date & time");
+      return;
+    }
+    if (isWeekly && recurringDays.length === 0) {
+      toast.error("Pick at least one weekday");
+      return;
+    }
+
     setCreating(true);
-    const { error } = await supabase.from("scheduled_sessions").insert({
+
+    // Compute first occurrence for weekly_days based on the next matching day at the chosen time
+    let firstOccurrence: Date;
+    if (isWeekly) {
+      const [hh, mm] = recurringTime.split(":").map(Number);
+      const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      const targetDays = recurringDays.map((d) => dayMap[d]).sort((a, b) => a - b);
+      const now = new Date();
+      let candidate: Date | null = null;
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + i);
+        d.setHours(hh, mm, 0, 0);
+        if (targetDays.includes(d.getDay()) && d.getTime() > now.getTime()) {
+          candidate = d;
+          break;
+        }
+      }
+      firstOccurrence = candidate ?? new Date(Date.now() + 60_000);
+    } else {
+      firstOccurrence = new Date(scheduledAt);
+    }
+
+    const insertPayload: any = {
       workspace_id: workspaceId, title: title.trim(), category,
-      scheduled_at: new Date(scheduledAt).toISOString(),
+      scheduled_at: firstOccurrence.toISOString(),
       duration_minutes: parseInt(duration) || 60,
       host_name: "Unassigned", host_id: user.id,
       description: description.trim() || null,
-      recurring: recurring === "none" ? null : recurring,
-    });
-    if (error) toast.error("Failed: " + error.message);
-    else {
-      toast.success("Session scheduled!");
-      setDialogOpen(false);
-      setTitle(""); setDescription(""); setScheduledAt("");
+      recurring: recurring === "none" ? null : (isWeekly ? "weekly" : recurring),
+      recurring_days: isWeekly ? recurringDays : null,
+      recurring_time: isWeekly ? recurringTime : null,
+    };
+
+    const { error } = await supabase.from("scheduled_sessions").insert(insertPayload);
+    if (error) {
+      toast.error("Failed: " + error.message);
+      setCreating(false);
+      return;
     }
+
+    toast.success("Session scheduled!");
+
+    // Fire Discord webhook (non-blocking)
+    supabase.functions.invoke("discord-notify", {
+      body: {
+        action: "session_created",
+        workspace_id: workspaceId,
+        session_title: title.trim(),
+        session_time: firstOccurrence.toISOString(),
+        host_name: "TBA",
+        category,
+        recurring: insertPayload.recurring,
+        recurring_days: insertPayload.recurring_days,
+        recurring_time: insertPayload.recurring_time,
+        description: description.trim() || undefined,
+      },
+    }).then((res) => {
+      if (res.error) console.warn("Discord notify failed:", res.error);
+    }).catch(() => {});
+
+    setDialogOpen(false);
+    setTitle(""); setDescription(""); setScheduledAt("");
+    setRecurringDays([]); setRecurring("none");
     setCreating(false);
   };
 
@@ -261,23 +330,60 @@ export default function Sessions() {
                         <SelectContent>
                           <SelectItem value="none">One-time</SelectItem>
                           <SelectItem value="daily">Daily</SelectItem>
-                          <SelectItem value="weekly">Weekly</SelectItem>
+                          <SelectItem value="weekly">Weekly (same day)</SelectItem>
+                          <SelectItem value="weekly_days">Weekly (pick days)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label className="text-sm">Date & Time</Label>
-                      <Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="bg-muted border-border" />
+
+                  {recurring === "weekly_days" ? (
+                    <div className="space-y-3 rounded-lg border border-border/40 bg-muted/40 p-3">
+                      <div className="space-y-2">
+                        <Label className="text-xs uppercase tracking-wider text-muted-foreground">Repeat on</Label>
+                        <div className="flex flex-wrap gap-1.5">
+                          {WEEKDAYS.map((d) => {
+                            const active = recurringDays.includes(d);
+                            return (
+                              <button
+                                key={d}
+                                type="button"
+                                onClick={() => setRecurringDays((prev) => active ? prev.filter((x) => x !== d) : [...prev, d])}
+                                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${active ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"}`}
+                              >
+                                {d}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="space-y-2">
+                          <Label className="text-xs">Time</Label>
+                          <Input type="time" value={recurringTime} onChange={(e) => setRecurringTime(e.target.value)} className="bg-muted border-border" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Duration (min)</Label>
+                          <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="bg-muted border-border" />
+                        </div>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground">Will repeat every chosen weekday at {recurringTime}.</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm">Duration (min)</Label>
-                      <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="bg-muted border-border" />
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label className="text-sm">Date & Time</Label>
+                        <Input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} className="bg-muted border-border" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Duration (min)</Label>
+                        <Input type="number" value={duration} onChange={(e) => setDuration(e.target.value)} className="bg-muted border-border" />
+                      </div>
                     </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Roles (Host, Co-Host, Trainer) can be assigned after creation.</p>
-                  <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || !scheduledAt}>
+                  )}
+
+                  <p className="text-xs text-muted-foreground">{roleLabels.host}, {roleLabels.co_host} and {roleLabels.trainer} can be assigned after creation. Discord webhook (if configured) will announce this session.</p>
+                  <Button variant="hero" className="w-full" onClick={handleCreate} disabled={creating || !title.trim() || (recurring !== "weekly_days" && !scheduledAt) || (recurring === "weekly_days" && recurringDays.length === 0)}>
                     {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Schedule
                   </Button>
                 </div>
@@ -309,7 +415,11 @@ export default function Sessions() {
                     <h3 className="font-semibold text-foreground text-sm">{session.title}</h3>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>{session.category}</span>
                     <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[session.status]}`}>{session.status}</span>
-                    {session.recurring && <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">{session.recurring}</span>}
+                    {session.recurring && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
+                        {session.recurring_days?.length ? session.recurring_days.join("/") + ` ${session.recurring_time || ""}` : session.recurring}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
                     <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDate(session.scheduled_at)}</span>
@@ -371,7 +481,9 @@ export default function Sessions() {
                   </span>
                   {detailSession.recurring && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
-                      Repeats {detailSession.recurring}
+                      {detailSession.recurring_days?.length
+                        ? `Repeats ${detailSession.recurring_days.join(", ")} at ${detailSession.recurring_time || ""}`
+                        : `Repeats ${detailSession.recurring}`}
                     </span>
                   )}
                 </div>
@@ -380,7 +492,7 @@ export default function Sessions() {
                   <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Assigned Roles</p>
 
                   <RoleSlot
-                    label="Host"
+                    label={roleLabels.host || "Host"}
                     icon={User}
                     name={detailSession.host_name === "Unassigned" ? null : detailSession.host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -391,7 +503,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label="Co-Host"
+                    label={roleLabels.co_host || "Co-Host"}
                     icon={Users}
                     name={detailSession.co_host_name}
                     canAssignSelf={canSelfAssign(detailSession)}
@@ -402,7 +514,7 @@ export default function Sessions() {
                   />
 
                   <RoleSlot
-                    label="Trainer"
+                    label={roleLabels.trainer || "Trainer"}
                     icon={GraduationCap}
                     name={detailSession.trainer_name}
                     canAssignSelf={canSelfAssign(detailSession)}

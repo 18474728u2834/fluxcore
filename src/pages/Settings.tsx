@@ -23,6 +23,10 @@ export default function SettingsPage() {
   const [backgroundColor, setBackgroundColor] = useState("#0f0f11");
   const [showGrid, setShowGrid] = useState(true);
   const [discordWebhook, setDiscordWebhook] = useState("");
+  const [gameUrl, setGameUrl] = useState("");
+  const [hostLabel, setHostLabel] = useState("Host");
+  const [coHostLabel, setCoHostLabel] = useState("Co-Host");
+  const [trainerLabel, setTrainerLabel] = useState("Trainer");
   const [messageLogger, setMessageLogger] = useState(false);
   const [autoRank, setAutoRank] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -34,7 +38,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
@@ -46,6 +50,11 @@ export default function SettingsPage() {
           setDiscordWebhook((data as any).discord_webhook_url || "");
           setMessageLogger((data as any).message_logger_enabled || false);
           setAutoRank((data as any).auto_rank_enabled || false);
+          setGameUrl((data as any).game_url || "");
+          const labels = (data as any).session_role_labels || {};
+          setHostLabel(labels.host || "Host");
+          setCoHostLabel(labels.co_host || "Co-Host");
+          setTrainerLabel(labels.trainer || "Trainer");
         }
       };
       fetchExtras();
@@ -86,6 +95,12 @@ export default function SettingsPage() {
       discord_webhook_url: discordWebhook.trim() || null,
       message_logger_enabled: messageLogger,
       auto_rank_enabled: autoRank,
+      game_url: gameUrl.trim() || null,
+      session_role_labels: {
+        host: hostLabel.trim() || "Host",
+        co_host: coHostLabel.trim() || "Co-Host",
+        trainer: trainerLabel.trim() || "Trainer",
+      },
     } as any).eq("id", workspaceId);
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
@@ -156,16 +171,49 @@ export default function SettingsPage() {
             <h2 className="font-semibold text-foreground text-sm">Discord Integration</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            Add a Discord webhook URL to receive automatic session reminders 5 minutes before shifts start.
-            Create a webhook in your Discord server: Server Settings → Integrations → Webhooks → New Webhook.
+            Add a Discord webhook URL to receive announcements when sessions are scheduled and reminders 5 minutes before they start.
+            Create a webhook in: Server Settings → Integrations → Webhooks → New Webhook.
           </p>
-          <Input placeholder="https://discord.com/api/webhooks/..." value={discordWebhook}
-            onChange={(e) => setDiscordWebhook(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+          <div className="space-y-2">
+            <Label className="text-xs">Webhook URL</Label>
+            <Input placeholder="https://discord.com/api/webhooks/..." value={discordWebhook}
+              onChange={(e) => setDiscordWebhook(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs">Game Link <span className="text-muted-foreground">(included in webhook messages)</span></Label>
+            <Input placeholder="https://www.roblox.com/games/..." value={gameUrl}
+              onChange={(e) => setGameUrl(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+          </div>
           {discordWebhook && (
             <Button variant="secondary" size="sm" onClick={testDiscord} disabled={testingDiscord}>
               {testingDiscord && <Loader2 className="w-3 h-3 mr-1 animate-spin" />} Test Webhook
             </Button>
           )}
+        </div>
+
+        {/* Session Role Labels */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Bot className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Session Role Labels</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Customize what the three session roles are called in your workspace (e.g. "Trainer" → "Instructor").
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-2">
+              <Label className="text-xs">Host label</Label>
+              <Input value={hostLabel} onChange={(e) => setHostLabel(e.target.value)} className="bg-muted border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Co-Host label</Label>
+              <Input value={coHostLabel} onChange={(e) => setCoHostLabel(e.target.value)} className="bg-muted border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs">Trainer label</Label>
+              <Input value={trainerLabel} onChange={(e) => setTrainerLabel(e.target.value)} className="bg-muted border-border" />
+            </div>
+          </div>
         </div>
 
         {/* Feature Toggles */}

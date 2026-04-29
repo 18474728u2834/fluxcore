@@ -462,6 +462,8 @@ export type Database = {
           host_name: string
           id: string
           recurring: string | null
+          recurring_days: string[] | null
+          recurring_time: string | null
           scheduled_at: string
           status: string
           title: string
@@ -479,6 +481,8 @@ export type Database = {
           host_name: string
           id?: string
           recurring?: string | null
+          recurring_days?: string[] | null
+          recurring_time?: string | null
           scheduled_at: string
           status?: string
           title: string
@@ -496,6 +500,8 @@ export type Database = {
           host_name?: string
           id?: string
           recurring?: string | null
+          recurring_days?: string[] | null
+          recurring_time?: string | null
           scheduled_at?: string
           status?: string
           title?: string
@@ -924,6 +930,7 @@ export type Database = {
           background_color: string | null
           created_at: string
           discord_webhook_url: string | null
+          game_url: string | null
           gamepass_id: string | null
           id: string
           invite_code: string
@@ -936,6 +943,7 @@ export type Database = {
           release_version: string | null
           roblox_api_key: string | null
           roblox_group_id: string | null
+          session_role_labels: Json
           show_grid: boolean | null
           text_color: string | null
           tutorial_completed: boolean
@@ -948,6 +956,7 @@ export type Database = {
           background_color?: string | null
           created_at?: string
           discord_webhook_url?: string | null
+          game_url?: string | null
           gamepass_id?: string | null
           id?: string
           invite_code?: string
@@ -960,6 +969,7 @@ export type Database = {
           release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
+          session_role_labels?: Json
           show_grid?: boolean | null
           text_color?: string | null
           tutorial_completed?: boolean
@@ -972,6 +982,7 @@ export type Database = {
           background_color?: string | null
           created_at?: string
           discord_webhook_url?: string | null
+          game_url?: string | null
           gamepass_id?: string | null
           id?: string
           invite_code?: string
@@ -984,6 +995,7 @@ export type Database = {
           release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
+          session_role_labels?: Json
           show_grid?: boolean | null
           text_color?: string | null
           tutorial_completed?: boolean
@@ -1028,6 +1040,8 @@ export type Database = {
         Args: { _workspace_id: string }
         Returns: {
           background_color: string
+          discord_webhook_url: string
+          game_url: string
           gamepass_id: string
           id: string
           name: string
@@ -1036,6 +1050,7 @@ export type Database = {
           premium_until: string
           primary_color: string
           roblox_group_id: string
+          session_role_labels: Json
           show_grid: boolean
           text_color: string
           tutorial_completed: boolean
