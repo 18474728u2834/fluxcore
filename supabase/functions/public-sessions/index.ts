@@ -49,10 +49,17 @@ serve(async (req) => {
 
     let query = supabase
       .from("scheduled_sessions")
-      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels")
+      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels, slots, tag_ids")
       .eq("workspace_id", workspace.id)
       .in("status", ["scheduled", "started"])
       .order("scheduled_at", { ascending: true });
+
+    // Fetch all tags for this workspace once
+    const { data: allTags } = await supabase
+      .from("session_tags")
+      .select("id, name, color, category")
+      .eq("workspace_id", workspace.id);
+    const tagsById = new Map((allTags || []).map((t: any) => [t.id, t]));
 
     if (category !== "all") query = query.ilike("category", category);
 
@@ -157,6 +164,37 @@ serve(async (req) => {
           if (m) gameId = parseInt(m[1], 10);
         }
 
+        // Resolve all slot assignees -> Roblox userIds (best effort, batched per session)
+        const sessionSlots = Array.isArray((s as any).slots) ? (s as any).slots : [];
+        const allNames = sessionSlots.flatMap((sl: any) => (sl.assigned || []).filter((n: any) => n));
+        const nameToId = new Map<string, { id: number; name: string }>();
+        if (allNames.length > 0) {
+          try {
+            const r = await fetch("https://users.roblox.com/v1/usernames/users", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ usernames: allNames, excludeBannedUsers: false }),
+            });
+            const j = await r.json();
+            for (const u of (j.data || [])) {
+              if (u?.id) nameToId.set(String(u.requestedUsername || u.name).toLowerCase(), { id: u.id, name: u.name });
+            }
+          } catch (_) { /* ignore */ }
+        }
+        const resolvedSlots = sessionSlots.map((sl: any) => ({
+          label: sl.label,
+          count: sl.count,
+          assigned: (sl.assigned || []).map((n: any) => {
+            if (!n) return null;
+            const found = nameToId.get(String(n).toLowerCase());
+            return found ? { userId: found.id, username: found.name } : { userId: 0, username: n };
+          }),
+        }));
+
+        // Resolve tags
+        const tagIds: string[] = (s as any).tag_ids || [];
+        const resolvedTags = tagIds.map((id) => tagsById.get(id)).filter(Boolean);
+
         out.push({
           id: s.id,
           name: s.title,
@@ -170,6 +208,8 @@ serve(async (req) => {
           description: s.description,
           role_labels: (s as any).role_labels || null,
           game_url: (s as any).game_url || workspace.game_url || null,
+          slots: resolvedSlots,
+          tags: resolvedTags,
         });
       }
     }
