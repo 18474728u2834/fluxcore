@@ -20,7 +20,7 @@ interface Doc {
   signature_type: string; signature_word: string | null; auto_assign: boolean;
   deadline: string | null; created_at: string;
 }
-interface Sig { id: string; document_id: string; member_id: string; signed_at: string; }
+interface Sig { id: string; document_id: string; member_id: string | null; user_id: string; signed_at: string; }
 
 export default function Documents() {
   const { workspaceId, isOwner } = useWorkspace();
