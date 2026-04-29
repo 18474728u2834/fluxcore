@@ -14,6 +14,7 @@ interface WorkspaceData {
   text_color: string | null;
   background_color: string | null;
   show_grid: boolean | null;
+  verified_official: boolean;
 }
 
 interface WorkspaceContextType {
@@ -64,6 +65,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         text_color: wsData.text_color,
         background_color: wsData.background_color,
         show_grid: wsData.show_grid,
+        verified_official: !!wsData.verified_official,
       });
       const ownerCheck = wsData.owner_id === user.id;
       setIsOwner(ownerCheck);
