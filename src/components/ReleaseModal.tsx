@@ -45,6 +45,8 @@ export function ReleaseModal() {
       .from("workspaces")
       .update({ release_version: CURRENT_VERSION } as any)
       .eq("id", workspaceId);
+    // Force refresh so new pages, permissions and styles load without manual reload
+    window.location.reload();
   };
 
   return (
