@@ -106,7 +106,7 @@ export function DOMTranslator() {
 
     // Initial pass + interval to pick up async-loaded content & translation cache updates
     translatePass();
-    const interval = window.setInterval(translatePass, 600);
+    const interval = window.setInterval(translatePass, 250);
 
     // Mutation observer for new content
     const observer = new MutationObserver(() => {
