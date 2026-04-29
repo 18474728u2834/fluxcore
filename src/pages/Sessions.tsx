@@ -170,23 +170,84 @@ export default function Sessions() {
   }, [workspaceId]);
 
   const handleCreate = async () => {
-    if (!title.trim() || !scheduledAt || !user) return;
+    if (!title.trim() || !user) return;
     if (!canCreateSession(category)) { toast.error(`No permission to create ${category}s`); return; }
+
+    const isWeekly = recurring === "weekly_days";
+    if (!isWeekly && !scheduledAt) {
+      toast.error("Please pick a date & time");
+      return;
+    }
+    if (isWeekly && recurringDays.length === 0) {
+      toast.error("Pick at least one weekday");
+      return;
+    }
+
     setCreating(true);
-    const { error } = await supabase.from("scheduled_sessions").insert({
+
+    // Compute first occurrence for weekly_days based on the next matching day at the chosen time
+    let firstOccurrence: Date;
+    if (isWeekly) {
+      const [hh, mm] = recurringTime.split(":").map(Number);
+      const dayMap: Record<string, number> = { Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6 };
+      const targetDays = recurringDays.map((d) => dayMap[d]).sort((a, b) => a - b);
+      const now = new Date();
+      let candidate: Date | null = null;
+      for (let i = 0; i < 14; i++) {
+        const d = new Date(now);
+        d.setDate(now.getDate() + i);
+        d.setHours(hh, mm, 0, 0);
+        if (targetDays.includes(d.getDay()) && d.getTime() > now.getTime()) {
+          candidate = d;
+          break;
+        }
+      }
+      firstOccurrence = candidate ?? new Date(Date.now() + 60_000);
+    } else {
+      firstOccurrence = new Date(scheduledAt);
+    }
+
+    const insertPayload: any = {
       workspace_id: workspaceId, title: title.trim(), category,
-      scheduled_at: new Date(scheduledAt).toISOString(),
+      scheduled_at: firstOccurrence.toISOString(),
       duration_minutes: parseInt(duration) || 60,
       host_name: "Unassigned", host_id: user.id,
       description: description.trim() || null,
-      recurring: recurring === "none" ? null : recurring,
-    });
-    if (error) toast.error("Failed: " + error.message);
-    else {
-      toast.success("Session scheduled!");
-      setDialogOpen(false);
-      setTitle(""); setDescription(""); setScheduledAt("");
+      recurring: recurring === "none" ? null : (isWeekly ? "weekly" : recurring),
+      recurring_days: isWeekly ? recurringDays : null,
+      recurring_time: isWeekly ? recurringTime : null,
+    };
+
+    const { error } = await supabase.from("scheduled_sessions").insert(insertPayload);
+    if (error) {
+      toast.error("Failed: " + error.message);
+      setCreating(false);
+      return;
     }
+
+    toast.success("Session scheduled!");
+
+    // Fire Discord webhook (non-blocking)
+    supabase.functions.invoke("discord-notify", {
+      body: {
+        action: "session_created",
+        workspace_id: workspaceId,
+        session_title: title.trim(),
+        session_time: firstOccurrence.toISOString(),
+        host_name: "TBA",
+        category,
+        recurring: insertPayload.recurring,
+        recurring_days: insertPayload.recurring_days,
+        recurring_time: insertPayload.recurring_time,
+        description: description.trim() || undefined,
+      },
+    }).then((res) => {
+      if (res.error) console.warn("Discord notify failed:", res.error);
+    }).catch(() => {});
+
+    setDialogOpen(false);
+    setTitle(""); setDescription(""); setScheduledAt("");
+    setRecurringDays([]); setRecurring("none");
     setCreating(false);
   };
 
