@@ -136,7 +136,7 @@ function AppRoutes() {
         <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
         <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
-        <Route path="/bargains-downtown" element={<BloxyBargainsDowntown />} />
+        
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Suspense>
