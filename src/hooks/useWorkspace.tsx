@@ -45,15 +45,18 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     if (!user) { navigate("/login"); return; }
     if (!workspaceId) { navigate("/workspaces"); return; }
 
+    let cancelled = false;
     const fetchWorkspace = async () => {
       setLoading(true);
 
       const { data: wsRows, error } = await supabase
         .rpc("get_workspace_context", { _workspace_id: workspaceId });
 
+      if (cancelled) return;
       const wsData: any = wsRows?.[0];
 
       if (!wsData || error) {
+        setLoading(false);
         navigate("/workspaces");
         return;
       }
@@ -87,7 +90,9 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
           .eq("user_id", user.id)
           .maybeSingle();
 
+        if (cancelled) return;
         if (!member) {
+          setLoading(false);
           navigate("/workspaces");
           return;
         }
@@ -100,6 +105,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     };
 
     fetchWorkspace();
+    return () => { cancelled = true; };
   }, [workspaceId, user, authLoading]);
 
   const refreshWorkspace = async () => {
