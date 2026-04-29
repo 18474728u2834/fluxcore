@@ -203,3 +203,45 @@
     background: transparent;
   }
 }
+
+/* Polished motion utilities */
+@layer utilities {
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg;
+  }
+  .hover-glow {
+    @apply transition-shadow duration-300 hover:shadow-[0_0_24px_-4px_hsl(var(--primary)/0.4)];
+  }
+  .press-shrink {
+    @apply transition-transform duration-150 active:scale-[0.97];
+  }
+  .smooth-base {
+    @apply transition-all duration-300 ease-out;
+  }
+  .stagger-fade > * {
+    opacity: 0;
+    animation: fade-up 0.5s ease forwards;
+  }
+  .stagger-fade > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger-fade > *:nth-child(2) { animation-delay: 60ms; }
+  .stagger-fade > *:nth-child(3) { animation-delay: 120ms; }
+  .stagger-fade > *:nth-child(4) { animation-delay: 180ms; }
+  .stagger-fade > *:nth-child(5) { animation-delay: 240ms; }
+  .stagger-fade > *:nth-child(6) { animation-delay: 300ms; }
+  .stagger-fade > *:nth-child(7) { animation-delay: 360ms; }
+  .stagger-fade > *:nth-child(8) { animation-delay: 420ms; }
+  .stagger-fade > *:nth-child(9) { animation-delay: 480ms; }
+}
+
+/* Smooth all interactive defaults */
+@layer base {
+  a, button {
+    @apply transition-colors duration-200;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
