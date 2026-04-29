@@ -170,8 +170,13 @@ export default function Members() {
             log_type: "rank_change",
             content: `Ranked to ${roleName} in Roblox group`,
           });
+          // Two-way sync: update Fluxcore role to match the Roblox role mapping
+          await supabase.functions.invoke("roblox-sync-rank", {
+            body: { action: "sync_member", workspace_id: workspaceId, member_id: rankTarget.id },
+          });
         }
         setRankDialogOpen(false);
+        fetchMembers();
       } else {
         toast.error(res.data?.error || "Failed to change rank");
       }
