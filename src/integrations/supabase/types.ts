@@ -451,6 +451,77 @@ export type Database = {
           },
         ]
       }
+      premium_grant_claims: {
+        Row: {
+          claimed_at: string
+          days: number
+          grant_id: string
+          id: string
+          user_id: string
+          workspace_id: string | null
+        }
+        Insert: {
+          claimed_at?: string
+          days: number
+          grant_id: string
+          id?: string
+          user_id: string
+          workspace_id?: string | null
+        }
+        Update: {
+          claimed_at?: string
+          days?: number
+          grant_id?: string
+          id?: string
+          user_id?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_grant_claims_grant_id_fkey"
+            columns: ["grant_id"]
+            isOneToOne: false
+            referencedRelation: "premium_grants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      premium_grants: {
+        Row: {
+          created_at: string
+          created_by: string
+          days: number
+          expires_at: string | null
+          id: string
+          label: string | null
+          max_uses: number
+          token: string
+          uses: number
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          days?: number
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number
+          token?: string
+          uses?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          days?: number
+          expires_at?: string | null
+          id?: string
+          label?: string | null
+          max_uses?: number
+          token?: string
+          uses?: number
+        }
+        Relationships: []
+      }
       scheduled_sessions: {
         Row: {
           category: string
@@ -1048,9 +1119,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_grant_to_workspace: {
+        Args: { _grant_id: string; _workspace_id: string }
+        Returns: boolean
+      }
       calculate_session_duration: {
         Args: { ws_id: string }
         Returns: undefined
+      }
+      claim_premium_grant: {
+        Args: { _token: string }
+        Returns: {
+          days: number
+          grant_id: string
+        }[]
       }
       delete_email: {
         Args: { message_id: number; queue_name: string }

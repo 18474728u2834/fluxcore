@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones, BadgeCheck } from "lucide-react";
+import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones, BadgeCheck, Sparkles, Gift } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { PremiumGrantManager } from "@/components/PremiumGrantManager";
 
 interface Workspace {
   id: string;
@@ -32,12 +33,49 @@ export default function Workspaces() {
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [createdWorkspaceId, setCreatedWorkspaceId] = useState<string | null>(null);
   const [createdInviteCode, setCreatedInviteCode] = useState<string | null>(null);
+  const [pendingGrant, setPendingGrant] = useState<{ grant_id: string; days: number } | null>(null);
+  const [applyingGrantTo, setApplyingGrantTo] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/login"); return; }
     fetchWorkspaces();
+    claimPendingGrant();
   }, [user, authLoading]);
+
+  const claimPendingGrant = async () => {
+    const token = localStorage.getItem("fluxcore_pending_grant");
+    if (!token) return;
+    const { data, error } = await supabase.rpc("claim_premium_grant", { _token: token });
+    localStorage.removeItem("fluxcore_pending_grant");
+    if (error) {
+      const msg = error.message || "";
+      if (msg.includes("expired")) toast.error("That premium link has expired.");
+      else if (msg.includes("used_up")) toast.error("That premium link has already been used up.");
+      else if (msg.includes("invalid_token")) toast.error("That premium link is invalid.");
+      else toast.error("Couldn't claim premium link.");
+      return;
+    }
+    const row = (data as any[])?.[0];
+    if (row) {
+      setPendingGrant({ grant_id: row.grant_id, days: row.days });
+      toast.success(`🎁 You have ${row.days} free Premium days! Pick a workspace to apply it to.`);
+    }
+  };
+
+  const applyGrant = async (workspaceId: string) => {
+    if (!pendingGrant) return;
+    setApplyingGrantTo(workspaceId);
+    const { error } = await supabase.rpc("apply_grant_to_workspace", {
+      _grant_id: pendingGrant.grant_id,
+      _workspace_id: workspaceId,
+    });
+    setApplyingGrantTo(null);
+    if (error) { toast.error("Couldn't apply: " + error.message); return; }
+    toast.success(`Premium added — ${pendingGrant.days} days!`);
+    setPendingGrant(null);
+    fetchWorkspaces();
+  };
 
   const fetchWorkspaces = async () => {
     if (!user) return;
@@ -214,35 +252,66 @@ export default function Workspaces() {
           <p className="text-muted-foreground text-sm">Select a workspace or create a new one</p>
         </div>
 
+        {pendingGrant && (
+          <div className="mb-6 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-violet-500/10 p-4 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center shrink-0">
+              <Gift className="w-5 h-5 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-bold text-foreground text-sm">You have {pendingGrant.days} days of free Premium</p>
+              <p className="text-xs text-muted-foreground">Pick a workspace below to apply it, or create a new one.</p>
+            </div>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-7 h-7 text-primary animate-spin" />
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {workspaces.map((ws) => (
-              <button
-                key={ws.id}
-                onClick={() => navigate(`/w/${ws.id}/dashboard`)}
-                className="group rounded-xl border border-border/20 bg-card/30 hover:bg-card/60 hover:border-border/40 p-5 text-left transition-all duration-200"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  {groupIcons[ws.id] ? (
-                    <img src={groupIcons[ws.id]} alt={ws.name} className="w-12 h-12 rounded-xl object-cover" crossOrigin="anonymous" />
-                  ) : (
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-lg font-black text-primary">
-                      {ws.name.charAt(0).toUpperCase()}
+            {workspaces.map((ws) => {
+              const canApply = pendingGrant && ws.role === "Owner";
+              return (
+                <div
+                  key={ws.id}
+                  className="group rounded-xl border border-border/20 bg-card/30 hover:bg-card/60 hover:border-border/40 p-5 text-left transition-all duration-200 flex flex-col"
+                >
+                  <button
+                    onClick={() => navigate(`/w/${ws.id}/dashboard`)}
+                    className="text-left flex-1"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      {groupIcons[ws.id] ? (
+                        <img src={groupIcons[ws.id]} alt={ws.name} className="w-12 h-12 rounded-xl object-cover" crossOrigin="anonymous" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-lg font-black text-primary">
+                          {ws.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                     </div>
+                    <h3 className="font-bold text-foreground mb-0.5 flex items-center gap-1.5">
+                      <span className="truncate">{ws.name}</span>
+                      {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
+                    </h3>
+                    <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
+                  </button>
+                  {canApply && (
+                    <button
+                      onClick={() => applyGrant(ws.id)}
+                      disabled={applyingGrantTo === ws.id}
+                      className="mt-3 w-full inline-flex items-center justify-center gap-1.5 text-xs font-semibold rounded-md bg-primary/15 hover:bg-primary/25 text-primary py-2 transition-colors disabled:opacity-60"
+                    >
+                      {applyingGrantTo === ws.id
+                        ? <Loader2 className="w-3 h-3 animate-spin" />
+                        : <Sparkles className="w-3 h-3" />}
+                      Apply {pendingGrant!.days}-day Premium
+                    </button>
                   )}
-                  <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <h3 className="font-bold text-foreground mb-0.5 flex items-center gap-1.5">
-                  <span className="truncate">{ws.name}</span>
-                  {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
-                </h3>
-                <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
-              </button>
-            ))}
+              );
+            })}
 
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
@@ -326,6 +395,8 @@ export default function Workspaces() {
             <p className="text-sm text-muted-foreground">Create your first workspace to get started, or ask a workspace owner to invite you.</p>
           </div>
         )}
+
+        <PremiumGrantManager />
       </div>
     </div>
   );
