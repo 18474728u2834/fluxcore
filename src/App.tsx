@@ -86,6 +86,14 @@ function WorkspaceRoutes() {
   );
 }
 
+function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
+  const { workspaceId } = useParams();
+  if (workspaceId !== allowedId) {
+    return <Navigate to="/" replace />;
+  }
+  return <WorkspaceRoutes />;
+}
+
 function AppRoutes() {
   const hostname = window.location.hostname;
 
