@@ -1,9 +1,9 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarDays, Plus, Clock, User, Users, Loader2, Trash2, UserPlus, UserMinus, GraduationCap } from "lucide-react";
+import { CalendarDays, Plus, Clock, User, Users, Loader2, Trash2, UserPlus, UserMinus, GraduationCap, ChevronLeft, ChevronRight, History } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
@@ -289,13 +289,165 @@ export default function Sessions() {
 
   const canSelfAssign = (session: ScheduledSession) => canHostSession(session.category);
 
+  // ---- Week-strip + day expansion ----
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+  const [weekStart, setWeekStart] = useState<Date>(() => {
+    const d = new Date();
+    const day = d.getDay(); // 0=Sun..6=Sat
+    const diff = (day === 0 ? -6 : 1 - day); // Monday-based
+    d.setDate(d.getDate() + diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  });
+  const [showHistory, setShowHistory] = useState(false);
+
+  const weekDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(weekStart);
+      d.setDate(weekStart.getDate() + i);
+      return d;
+    });
+  }, [weekStart]);
+
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+
+  // Expand recurring sessions into occurrences for the selected day
+  const dayOccurrences = useMemo(() => {
+    const dayKey = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][selectedDate.getDay()];
+    const startOfDay = new Date(selectedDate); startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(selectedDate); endOfDay.setHours(23, 59, 59, 999);
+    const out: { session: ScheduledSession; occursAt: Date }[] = [];
+
+    for (const s of sessions) {
+      if (s.recurring_days?.length && s.recurring_time) {
+        if (!s.recurring_days.includes(dayKey)) continue;
+        const [hh, mm] = s.recurring_time.split(":").map(Number);
+        const occ = new Date(selectedDate);
+        occ.setHours(hh || 0, mm || 0, 0, 0);
+        out.push({ session: s, occursAt: occ });
+      } else if (s.recurring === "weekly") {
+        const base = new Date(s.scheduled_at);
+        if (base.getDay() !== selectedDate.getDay()) continue;
+        const occ = new Date(selectedDate);
+        occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+        if (occ < base) continue; // before original creation
+        out.push({ session: s, occursAt: occ });
+      } else if (s.recurring === "daily") {
+        const base = new Date(s.scheduled_at);
+        const occ = new Date(selectedDate);
+        occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+        if (occ < base) continue;
+        out.push({ session: s, occursAt: occ });
+      } else {
+        const base = new Date(s.scheduled_at);
+        if (base >= startOfDay && base <= endOfDay) {
+          out.push({ session: s, occursAt: base });
+        }
+      }
+    }
+
+    out.sort((a, b) => a.occursAt.getTime() - b.occursAt.getTime());
+    return out;
+  }, [sessions, selectedDate]);
+
+  const filteredOccurrences = useMemo(() => {
+    const now = Date.now();
+    return dayOccurrences.filter(({ session, occursAt }) => {
+      const end = occursAt.getTime() + (session.duration_minutes || 60) * 60_000;
+      const isPast = end < now;
+      return showHistory ? isPast : !isPast;
+    });
+  }, [dayOccurrences, showHistory]);
+
+  const today = new Date();
+  const isToday = isSameDay(selectedDate, today);
+  const dayHeader = isToday
+    ? "Today"
+    : selectedDate.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+
+  const shiftWeek = (delta: number) => {
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate() + delta * 7);
+    setWeekStart(d);
+  };
+
+  const computeStatus = (session: ScheduledSession, occursAt: Date) => {
+    const now = Date.now();
+    const start = occursAt.getTime();
+    const end = start + (session.duration_minutes || 60) * 60_000;
+    if (now >= start && now <= end) return { live: true, label: "In Progress" };
+    if (now > end) return { live: false, label: "Completed" };
+    return { live: false, label: "Scheduled" };
+  };
+
   return (
     <DashboardLayout title="Sessions">
-      <div className="space-y-5 max-w-4xl">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Sessions</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">Schedule and manage team events</p>
+      <div className="space-y-6 max-w-7xl">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Sessions</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">Plan, schedule, and manage sessions for your group</p>
+        </div>
+
+        {/* Week strip */}
+        <div className="flex items-center justify-center gap-2">
+          <button
+            onClick={() => shiftWeek(-1)}
+            className="w-9 h-9 rounded-lg glass flex items-center justify-center hover:bg-secondary/40 transition-colors"
+            aria-label="Previous week"
+          >
+            <ChevronLeft className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <div className="flex gap-2">
+            {weekDays.map((d) => {
+              const active = isSameDay(d, selectedDate);
+              const isTodayPill = isSameDay(d, today);
+              return (
+                <button
+                  key={d.toISOString()}
+                  onClick={() => setSelectedDate(d)}
+                  className={`min-w-[58px] px-3 py-2 rounded-lg flex flex-col items-center transition-all ${
+                    active
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                      : "glass hover:bg-secondary/40"
+                  }`}
+                >
+                  <span className={`text-[10px] font-bold tracking-wider ${active ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                    {d.toLocaleDateString(undefined, { weekday: "short" }).toUpperCase()}
+                  </span>
+                  <span className={`text-base font-bold ${active ? "text-primary-foreground" : isTodayPill ? "text-primary" : "text-foreground"}`}>
+                    {d.getDate()}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            onClick={() => shiftWeek(1)}
+            className="w-9 h-9 rounded-lg glass flex items-center justify-center hover:bg-secondary/40 transition-colors"
+            aria-label="Next week"
+          >
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Day header */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <h2 className="text-2xl font-bold text-foreground">{dayHeader}</h2>
+            <Button
+              variant={showHistory ? "secondary" : "ghost"}
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+              className="h-8 text-xs"
+            >
+              <History className="w-3.5 h-3.5 mr-1.5" />
+              {showHistory ? "Show Upcoming" : "Show History"}
+            </Button>
           </div>
           {canCreateAny && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -392,64 +544,66 @@ export default function Sessions() {
           )}
         </div>
 
+        {/* Sessions grid */}
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div>
-        ) : sessions.length === 0 ? (
+        ) : filteredOccurrences.length === 0 ? (
           <div className="glass rounded-xl p-8 text-center">
             <CalendarDays className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-            <p className="text-muted-foreground text-sm">No sessions scheduled yet.</p>
+            <p className="text-muted-foreground text-sm">
+              {showHistory ? "No past sessions for this day." : "No sessions scheduled for this day."}
+            </p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className="glass rounded-xl p-5 flex items-start gap-4 cursor-pointer hover:bg-secondary/30 transition-colors"
-                onClick={() => setDetailSession(session)}
-              >
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>
-                  <CalendarDays className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-semibold text-foreground text-sm">{session.title}</h3>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>{session.category}</span>
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[session.status]}`}>{session.status}</span>
-                    {session.recurring && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
-                        {session.recurring_days?.length ? session.recurring_days.join("/") + ` ${session.recurring_time || ""}` : session.recurring}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
+            {filteredOccurrences.map(({ session, occursAt }) => {
+              const status = computeStatus(session, occursAt);
+              const unclaimed = !session.host_name || session.host_name === "Unassigned";
+              return (
+                <button
+                  key={`${session.id}-${occursAt.getTime()}`}
+                  onClick={() => setDetailSession(session)}
+                  className="glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 transition-colors border border-border/30 hover:border-primary/40 group"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-semibold text-foreground text-sm truncate flex-1">{session.title}</h3>
+                    {isOwner && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}
+                        className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    {status.live && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-bold bg-success/20 text-success flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> LIVE
+                      </span>
+                    )}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>
+                      {session.category}
+                    </span>
+                    {status.live && (
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold bg-primary/15 text-primary">
+                        {status.label}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
-                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatDate(session.scheduled_at)}</span>
-                    <span>{session.duration_minutes}min</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs flex-wrap">
-                    <span className={`flex items-center gap-1 ${session.host_name === "Unassigned" ? "text-muted-foreground italic" : "text-foreground"}`}>
-                      <User className="w-3 h-3 text-primary" /> {session.host_name}
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-auto pt-1">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {occursAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                     </span>
-                    {session.co_host_name && (
-                      <span className="flex items-center gap-1 text-muted-foreground"><Users className="w-3 h-3" /> {session.co_host_name}</span>
-                    )}
-                    {session.trainer_name && (
-                      <span className="flex items-center gap-1 text-muted-foreground"><GraduationCap className="w-3 h-3" /> {session.trainer_name}</span>
-                    )}
-                    {(!session.co_host_name || !session.trainer_name || session.host_name === "Unassigned") && (
-                      <span className="text-[10px] text-primary font-medium">Click to assign roles</span>
-                    )}
+                    <span className={`flex items-center gap-1 ${unclaimed ? "italic" : "text-foreground"}`}>
+                      <User className="w-3 h-3" />
+                      {unclaimed ? "Unclaimed" : session.host_name}
+                    </span>
                   </div>
-                </div>
-                {isOwner && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDelete(session.id); }}
-                    className="text-muted-foreground hover:text-destructive transition-colors shrink-0"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-              </div>
-            ))}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
