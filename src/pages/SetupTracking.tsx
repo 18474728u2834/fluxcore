@@ -285,7 +285,7 @@ end)`;
       <div className="max-w-3xl space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Setup Tracking</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v2 in your Roblox game</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v3 in your Roblox game</p>
         </div>
 
         <div className="glass rounded-xl p-5 space-y-3">
@@ -301,19 +301,19 @@ end)`;
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
-            <h2 className="font-semibold text-foreground text-sm">Add Tracker Script (v2)</h2>
+            <h2 className="font-semibold text-foreground text-sm">Add Server Script (v3)</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
             Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>.
           </p>
           <div className="pl-8 text-xs text-muted-foreground space-y-1">
-            <p><strong className="text-foreground">v2 Features:</strong></p>
+            <p><strong className="text-foreground">v3 Features:</strong></p>
             <ul className="list-disc pl-4 space-y-0.5">
               <li>Idle detection (120s threshold)</li>
               <li>Message counting & logging</li>
               <li>30-second heartbeat keepalive</li>
               <li>Staff-only tracking mode</li>
-              <li>Automatic session cleanup on leave</li>
+              <li><strong className="text-foreground">AFK confirm prompt</strong> — discards session time if ignored (configure timer in Settings)</li>
             </ul>
           </div>
           <div className="relative pl-8">
@@ -329,10 +329,29 @@ end)`;
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+            <h2 className="font-semibold text-foreground text-sm">Add Client Script (AFK prompt UI)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground pl-8">
+            Create a <strong className="text-foreground">LocalScript</strong> named <code className="text-primary">FluxcoreAfkClient</code> in{" "}
+            <strong className="text-foreground">StarterPlayer → StarterPlayerScripts</strong>. This shows the on-screen "remove AFK timer" button.
+          </p>
+          <div className="relative pl-8">
+            <pre className="bg-muted rounded-lg p-3 text-[11px] font-mono text-secondary-foreground overflow-x-auto max-h-80 overflow-y-auto leading-relaxed">
+              {luaClientScript}
+            </pre>
+            <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={copyClientToClipboard}>
+              <Copy className="w-3 h-3 mr-1" /> {copiedClient ? "Copied" : "Copy"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
             <h2 className="font-semibold text-foreground text-sm">Test It</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
-            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v2 initialized</code>. Activity will appear in the dashboard immediately.
+            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v3 initialized</code>. Activity will appear in the dashboard immediately.
           </p>
         </div>
       </div>
