@@ -2,6 +2,8 @@ import { DashboardLayout } from "@/components/DashboardLayout";
 import { ActivityLeaderboard } from "@/components/ActivityLeaderboard";
 import { RecentSessions } from "@/components/RecentSessions";
 import { ActivityEvents } from "@/components/ActivityEvents";
+import { ActivityHeatmap } from "@/components/ActivityHeatmap";
+import { SessionManager } from "@/components/SessionManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function Activity() {
@@ -17,6 +19,8 @@ export default function Activity() {
           <TabsList className="bg-secondary/60 border border-border/40">
             <TabsTrigger value="leaderboard">Leaderboard</TabsTrigger>
             <TabsTrigger value="sessions">Sessions</TabsTrigger>
+            <TabsTrigger value="heatmap">Heatmap</TabsTrigger>
+            <TabsTrigger value="manage">Manage & Export</TabsTrigger>
             <TabsTrigger value="events">Event Logs</TabsTrigger>
           </TabsList>
 
@@ -26,6 +30,14 @@ export default function Activity() {
 
           <TabsContent value="sessions">
             <RecentSessions />
+          </TabsContent>
+
+          <TabsContent value="heatmap">
+            <ActivityHeatmap />
+          </TabsContent>
+
+          <TabsContent value="manage">
+            <SessionManager />
           </TabsContent>
 
           <TabsContent value="events">
