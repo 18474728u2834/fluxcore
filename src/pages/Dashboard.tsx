@@ -3,6 +3,7 @@ import { StatsGrid } from "@/components/StatsGrid";
 import { MemberList } from "@/components/MemberList";
 import { ActivityLog } from "@/components/ActivityLog";
 import { RecentSessions } from "@/components/RecentSessions";
+import { TopPerformer } from "@/components/TopPerformer";
 
 export default function Dashboard() {
   return (
@@ -14,10 +15,13 @@ export default function Dashboard() {
         </div>
         <StatsGrid />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <MemberList compact />
+          <TopPerformer />
           <ActivityLog />
         </div>
-        <RecentSessions />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <MemberList compact />
+          <RecentSessions />
+        </div>
       </div>
     </DashboardLayout>
   );
