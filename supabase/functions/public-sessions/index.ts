@@ -89,9 +89,10 @@ serve(async (req) => {
       const baseDate = new Date(s.scheduled_at);
 
       if (s.recurring_days && s.recurring_days.length && s.recurring_time) {
-        // Weekly recurrence — does today match?
-        const days = (s.recurring_days as string[]).map((d) => d.toLowerCase());
-        if (days.includes(todayName)) {
+        // Weekly recurrence — does today match? Accept both short ("Mon") and full ("monday") forms.
+        const todayShort = todayName.slice(0, 3); // "mon", "tue", ...
+        const days = (s.recurring_days as string[]).map((d) => d.toLowerCase().slice(0, 3));
+        if (days.includes(todayShort)) {
           const [hh, mm] = (s.recurring_time as string).split(":").map((n) => parseInt(n, 10));
           const occ = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), hh || 0, mm || 0));
           occurrences.push(occ);
