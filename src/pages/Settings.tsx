@@ -51,6 +51,7 @@ export default function SettingsPage() {
           setDiscordWebhook((data as any).discord_webhook_url || "");
           setMessageLogger((data as any).message_logger_enabled || false);
           setAutoRank((data as any).auto_rank_enabled || false);
+          setAfkConfirmSeconds((data as any).afk_confirm_seconds || 0);
           setGameUrl((data as any).game_url || "");
           const labels = (data as any).session_role_labels || {};
           setHostLabel(labels.host || "Host");
