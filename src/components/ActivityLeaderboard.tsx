@@ -73,23 +73,35 @@ export function ActivityLeaderboard() {
     );
   }
 
+  const top = leaderboard.slice(0, 3);
+  // Display order: 2nd, 1st, 3rd — with 1st raised, 3rd lowest
+  const podium = [
+    top[1] && { entry: top[1], rank: 2, offset: "sm:mt-10", scale: "", trophySize: "w-10 h-10", iconSize: "w-5 h-5", nameSize: "text-base", timeSize: "text-2xl", ring: "ring-1 ring-muted-foreground/30" },
+    top[0] && { entry: top[0], rank: 1, offset: "sm:-mt-2", scale: "sm:scale-110", trophySize: "w-14 h-14", iconSize: "w-7 h-7", nameSize: "text-lg", timeSize: "text-3xl", ring: "ring-2 ring-warning/50 shadow-[0_0_30px_-6px_hsl(var(--warning)/0.6)]" },
+    top[2] && { entry: top[2], rank: 3, offset: "sm:mt-16", scale: "", trophySize: "w-10 h-10", iconSize: "w-5 h-5", nameSize: "text-base", timeSize: "text-2xl", ring: "ring-1 ring-orange-400/30" },
+  ].filter(Boolean) as Array<{ entry: LeaderboardEntry; rank: number; offset: string; scale: string; trophySize: string; iconSize: string; nameSize: string; timeSize: string; ring: string }>;
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       {leaderboard.length >= 3 && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {leaderboard.slice(0, 3).map((user, i) => (
-            <div key={user.roblox_user_id} className="glass-hover rounded-xl p-5 text-center space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end pt-4">
+          {podium.map(({ entry, rank, offset, scale, trophySize, iconSize, nameSize, timeSize, ring }) => (
+            <div
+              key={entry.roblox_user_id}
+              className={`glass-hover rounded-xl p-5 text-center space-y-3 transition-transform ${offset} ${scale} ${ring}`}
+            >
               <div className="flex justify-center">
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${i === 0 ? "bg-warning/10" : "bg-secondary"}`}>
-                  <Trophy className={`w-5 h-5 ${rankStyles[i + 1] || "text-muted-foreground"}`} />
+                <div className={`${trophySize} rounded-full flex items-center justify-center ${rank === 1 ? "bg-warning/15" : "bg-secondary"}`}>
+                  <Trophy className={`${iconSize} ${rankStyles[rank] || "text-muted-foreground"}`} />
                 </div>
               </div>
               <div>
-                <p className="font-bold text-foreground">{user.roblox_username}</p>
-                <p className="text-2xl font-extrabold text-gradient mt-1">{formatTime(user.totalSeconds)}</p>
+                <p className={`font-bold text-foreground ${nameSize}`}>{entry.roblox_username}</p>
+                <p className={`font-extrabold text-gradient mt-1 ${timeSize}`}>{formatTime(entry.totalSeconds)}</p>
+                <p className={`text-xs font-bold mt-1 ${rankStyles[rank]}`}>#{rank}</p>
               </div>
               <div className="flex justify-center gap-4 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {user.sessions} sessions</span>
+                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {entry.sessions} sessions</span>
               </div>
             </div>
           ))}
