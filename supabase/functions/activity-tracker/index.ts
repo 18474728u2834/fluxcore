@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const { data: workspace, error: wsError } = await supabase
       .from('workspaces')
-      .select('id, message_logger_enabled, roblox_api_key, roblox_group_id, auto_rank_enabled')
+      .select('id, message_logger_enabled, roblox_api_key, roblox_group_id, auto_rank_enabled, afk_confirm_seconds')
       .eq('api_key', apiKey)
       .single();
 
