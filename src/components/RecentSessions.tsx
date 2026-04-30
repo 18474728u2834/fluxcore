@@ -31,6 +31,7 @@ export function RecentSessions() {
   const { workspaceId } = useWorkspace();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setTick] = useState(0);
 
   const fetchSessions = async () => {
     const { data } = await supabase
@@ -53,6 +54,14 @@ export function RecentSessions() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [workspaceId]);
+
+  // Live heartbeat ticker — updates active session durations every second
+  useEffect(() => {
+    const hasActive = sessions.some((s) => !s.left_at);
+    if (!hasActive) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [sessions]);
 
   if (loading) {
     return <div className="glass rounded-xl p-8 flex justify-center"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>;
