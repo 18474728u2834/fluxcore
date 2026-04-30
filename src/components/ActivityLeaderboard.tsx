@@ -2,6 +2,7 @@ import { Trophy, Clock, TrendingUp, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
 
 interface LeaderboardEntry {
   roblox_username: string;
