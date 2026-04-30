@@ -97,6 +97,7 @@ export default function SettingsPage() {
       discord_webhook_url: discordWebhook.trim() || null,
       message_logger_enabled: messageLogger,
       auto_rank_enabled: autoRank,
+      afk_confirm_seconds: Math.max(0, Math.floor(Number(afkConfirmSeconds) || 0)),
       game_url: gameUrl.trim() || null,
       session_role_labels: {
         host: hostLabel.trim() || "Host",
