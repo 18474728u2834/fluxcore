@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const [trainerLabel, setTrainerLabel] = useState("Trainer");
   const [messageLogger, setMessageLogger] = useState(false);
   const [autoRank, setAutoRank] = useState(false);
+  const [afkConfirmSeconds, setAfkConfirmSeconds] = useState<number>(0);
   const [saving, setSaving] = useState(false);
   const [testingDiscord, setTestingDiscord] = useState(false);
 
@@ -38,7 +39,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
@@ -50,6 +51,7 @@ export default function SettingsPage() {
           setDiscordWebhook((data as any).discord_webhook_url || "");
           setMessageLogger((data as any).message_logger_enabled || false);
           setAutoRank((data as any).auto_rank_enabled || false);
+          setAfkConfirmSeconds((data as any).afk_confirm_seconds || 0);
           setGameUrl((data as any).game_url || "");
           const labels = (data as any).session_role_labels || {};
           setHostLabel(labels.host || "Host");
@@ -95,6 +97,7 @@ export default function SettingsPage() {
       discord_webhook_url: discordWebhook.trim() || null,
       message_logger_enabled: messageLogger,
       auto_rank_enabled: autoRank,
+      afk_confirm_seconds: Math.max(0, Math.floor(Number(afkConfirmSeconds) || 0)),
       game_url: gameUrl.trim() || null,
       session_role_labels: {
         host: hostLabel.trim() || "Host",
@@ -243,6 +246,30 @@ export default function SettingsPage() {
               </div>
             </div>
             <Switch checked={autoRank} onCheckedChange={setAutoRank} />
+          </div>
+
+          <div className="p-3 rounded-lg bg-muted space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">AFK Confirmation Timer</p>
+                <p className="text-xs text-muted-foreground">
+                  After a staff member is idle for this many seconds, an in-game button appears: "Click here to remove AFK timer".
+                  If they don't click within 30 seconds, their session time is discarded. Set to <strong>0</strong> to disable.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <Input
+                type="number"
+                min={0}
+                step={30}
+                value={afkConfirmSeconds}
+                onChange={(e) => setAfkConfirmSeconds(parseInt(e.target.value) || 0)}
+                className="bg-background border-border w-32"
+              />
+              <span className="text-xs text-muted-foreground">seconds (e.g. 300 = 5 min)</span>
+            </div>
           </div>
         </div>
 

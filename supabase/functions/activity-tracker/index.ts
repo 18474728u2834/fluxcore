@@ -26,7 +26,7 @@ serve(async (req) => {
 
     const { data: workspace, error: wsError } = await supabase
       .from('workspaces')
-      .select('id, message_logger_enabled, roblox_api_key, roblox_group_id, auto_rank_enabled')
+      .select('id, message_logger_enabled, roblox_api_key, roblox_group_id, auto_rank_enabled, afk_confirm_seconds')
       .eq('api_key', apiKey)
       .single();
 
@@ -136,7 +136,70 @@ serve(async (req) => {
       });
 
       return new Response(
-        JSON.stringify({ success: true, session_id: data.id, tracked: true }),
+        JSON.stringify({
+          success: true,
+          session_id: data.id,
+          tracked: true,
+          afk_confirm_seconds: workspace.afk_confirm_seconds || 0,
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // AFK_PROMPT - record that the AFK prompt was shown to the player
+    if (action === 'afk_prompt') {
+      const { session_id } = body;
+      if (session_id) {
+        await supabase.from('activity_sessions')
+          .update({ afk_prompt_at: new Date().toISOString() })
+          .eq('id', session_id)
+          .eq('workspace_id', workspace.id);
+      }
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // AFK_CONFIRM - player clicked the "I'm not AFK" button in time
+    if (action === 'afk_confirm') {
+      const { session_id } = body;
+      if (session_id) {
+        await supabase.from('activity_sessions')
+          .update({ afk_confirmed_at: new Date().toISOString(), afk_prompt_at: null })
+          .eq('id', session_id)
+          .eq('workspace_id', workspace.id);
+      }
+      return new Response(
+        JSON.stringify({ success: true }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // AFK_TIMEOUT - player did not respond; discard their session time
+    if (action === 'afk_timeout') {
+      const { session_id, roblox_user_id, roblox_username } = body;
+      if (session_id) {
+        await supabase.from('activity_sessions')
+          .update({
+            left_at: new Date().toISOString(),
+            discarded: true,
+            discard_reason: 'afk_timeout',
+            duration_seconds: 0,
+          })
+          .eq('id', session_id)
+          .eq('workspace_id', workspace.id);
+
+        await supabase.from('activity_events').insert({
+          workspace_id: workspace.id,
+          roblox_user_id: String(roblox_user_id || ''),
+          roblox_username: roblox_username || null,
+          event_type: 'afk_discarded',
+          event_data: { session_id },
+        });
+      }
+      return new Response(
+        JSON.stringify({ success: true }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
