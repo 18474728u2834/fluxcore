@@ -39,7 +39,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
