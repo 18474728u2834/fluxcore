@@ -247,6 +247,30 @@ export default function SettingsPage() {
             </div>
             <Switch checked={autoRank} onCheckedChange={setAutoRank} />
           </div>
+
+          <div className="p-3 rounded-lg bg-muted space-y-2">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-foreground">AFK Confirmation Timer</p>
+                <p className="text-xs text-muted-foreground">
+                  After a staff member is idle for this many seconds, an in-game button appears: "Click here to remove AFK timer".
+                  If they don't click within 30 seconds, their session time is discarded. Set to <strong>0</strong> to disable.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-1">
+              <Input
+                type="number"
+                min={0}
+                step={30}
+                value={afkConfirmSeconds}
+                onChange={(e) => setAfkConfirmSeconds(parseInt(e.target.value) || 0)}
+                className="bg-background border-border w-32"
+              />
+              <span className="text-xs text-muted-foreground">seconds (e.g. 300 = 5 min)</span>
+            </div>
+          </div>
         </div>
 
         {/* Branding */}
