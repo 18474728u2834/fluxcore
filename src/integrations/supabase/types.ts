@@ -54,7 +54,11 @@ export type Database = {
       }
       activity_sessions: {
         Row: {
+          afk_confirmed_at: string | null
+          afk_prompt_at: string | null
           created_at: string
+          discard_reason: string | null
+          discarded: boolean
           duration_seconds: number | null
           id: string
           idle_seconds: number | null
@@ -67,7 +71,11 @@ export type Database = {
           workspace_id: string
         }
         Insert: {
+          afk_confirmed_at?: string | null
+          afk_prompt_at?: string | null
           created_at?: string
+          discard_reason?: string | null
+          discarded?: boolean
           duration_seconds?: number | null
           id?: string
           idle_seconds?: number | null
@@ -80,7 +88,11 @@ export type Database = {
           workspace_id: string
         }
         Update: {
+          afk_confirmed_at?: string | null
+          afk_prompt_at?: string | null
           created_at?: string
+          discard_reason?: string | null
+          discarded?: boolean
           duration_seconds?: number | null
           id?: string
           idle_seconds?: number | null
@@ -1035,6 +1047,7 @@ export type Database = {
       }
       workspaces: {
         Row: {
+          afk_confirm_seconds: number | null
           api_key: string
           auto_rank_enabled: boolean | null
           background_color: string | null
@@ -1061,6 +1074,7 @@ export type Database = {
           verified_official: boolean
         }
         Insert: {
+          afk_confirm_seconds?: number | null
           api_key?: string
           auto_rank_enabled?: boolean | null
           background_color?: string | null
@@ -1087,6 +1101,7 @@ export type Database = {
           verified_official?: boolean
         }
         Update: {
+          afk_confirm_seconds?: number | null
           api_key?: string
           auto_rank_enabled?: boolean | null
           background_color?: string | null
