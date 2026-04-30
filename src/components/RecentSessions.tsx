@@ -19,10 +19,13 @@ function formatDuration(seconds: number | null, joinedAt: string, leftAt: string
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   }
   if (!leftAt) {
-    const diff = Math.floor((Date.now() - new Date(joinedAt).getTime()) / 60000);
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-    return h > 0 ? `${h}h ${m}m+` : `${m}m+`;
+    const totalSec = Math.max(0, Math.floor((Date.now() - new Date(joinedAt).getTime()) / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
   }
   return "—";
 }
@@ -31,6 +34,7 @@ export function RecentSessions() {
   const { workspaceId } = useWorkspace();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setTick] = useState(0);
 
   const fetchSessions = async () => {
     const { data } = await supabase
@@ -53,6 +57,14 @@ export function RecentSessions() {
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [workspaceId]);
+
+  // Live heartbeat ticker — updates active session durations every second
+  useEffect(() => {
+    const hasActive = sessions.some((s) => !s.left_at);
+    if (!hasActive) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [sessions]);
 
   if (loading) {
     return <div className="glass rounded-xl p-8 flex justify-center"><Loader2 className="w-5 h-5 text-primary animate-spin" /></div>;
