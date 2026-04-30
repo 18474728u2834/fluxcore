@@ -29,6 +29,7 @@ export default function SettingsPage() {
   const [trainerLabel, setTrainerLabel] = useState("Trainer");
   const [messageLogger, setMessageLogger] = useState(false);
   const [autoRank, setAutoRank] = useState(false);
+  const [afkConfirmSeconds, setAfkConfirmSeconds] = useState<number>(0);
   const [saving, setSaving] = useState(false);
   const [testingDiscord, setTestingDiscord] = useState(false);
 
