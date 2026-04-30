@@ -19,10 +19,13 @@ function formatDuration(seconds: number | null, joinedAt: string, leftAt: string
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   }
   if (!leftAt) {
-    const diff = Math.floor((Date.now() - new Date(joinedAt).getTime()) / 60000);
-    const h = Math.floor(diff / 60);
-    const m = diff % 60;
-    return h > 0 ? `${h}h ${m}m+` : `${m}m+`;
+    const totalSec = Math.max(0, Math.floor((Date.now() - new Date(joinedAt).getTime()) / 1000));
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h ${m}m ${s}s`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
   }
   return "—";
 }
