@@ -303,7 +303,7 @@ export default function Sessions() {
 
   const handleDelete = async (id: string) => {
     await supabase.from("scheduled_sessions").delete().eq("id", id);
-    if (detailSession?.id === id) setDetailSession(null);
+    if (detailSession?.session.id === id) setDetailSession(null);
     fetchSessions();
   };
 
@@ -324,15 +324,33 @@ export default function Sessions() {
     fetchTags();
   };
 
-  // ---- Detail view: assign to slot ----
-  const updateSessionSlots = async (session: ScheduledSession, nextSlots: SessionSlot[]) => {
+  // ---- Detail view: assign to slot (per-occurrence for recurring) ----
+  const updateSessionSlots = async (session: ScheduledSession, occursAt: Date, nextSlots: SessionSlot[]) => {
+    const isRecurring = !!(session.recurring || (session.recurring_days && session.recurring_days.length));
     const firstAssignee = nextSlots.flatMap(s => s.assigned).find(n => n && n.trim()) || "Unassigned";
+
+    let updatePayload: any;
+    let nextSession: ScheduledSession;
+
+    if (isRecurring) {
+      const key = occurrenceKey(occursAt);
+      const nextAssignments = {
+        ...(session.occurrence_assignments || {}),
+        [key]: nextSlots.map(s => s.assigned),
+      };
+      updatePayload = { occurrence_assignments: nextAssignments };
+      nextSession = { ...session, occurrence_assignments: nextAssignments };
+    } else {
+      updatePayload = { slots: nextSlots, host_name: firstAssignee };
+      nextSession = { ...session, slots: nextSlots, host_name: firstAssignee };
+    }
+
     const { error } = await supabase.from("scheduled_sessions")
-      .update({ slots: nextSlots, host_name: firstAssignee } as any)
+      .update(updatePayload as any)
       .eq("id", session.id);
     if (error) toast.error(error.message);
     else {
-      setDetailSession({ ...session, slots: nextSlots, host_name: firstAssignee });
+      setDetailSession({ session: nextSession, occursAt });
       fetchSessions();
     }
   };
