@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, Clock, CalendarDays, Megaphone, FileText, CalendarOff,
   UserX, Target, MessageSquare, ShieldCheck, Code, Settings, Sun, Moon, LogOut,
-  DoorOpen, BadgeCheck, Sparkles, PanelLeftClose, PanelLeftOpen, ChevronRight,
+  DoorOpen, BadgeCheck, Sparkles, ChevronRight, Command,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -29,7 +29,7 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
   const { hasPermission } = usePermissions();
   const { theme, toggleTheme } = useTheme();
   const { setVersion } = useUIVersion();
-  const [collapsed, setCollapsed] = useState(false);
+  const [hovered, setHovered] = useState(false);
 
   const base = `/w/${workspaceId}`;
   const primary = workspace?.primary_color || "#7c3aed";
@@ -63,76 +63,114 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
     else { toast.success("Left workspace"); navigate("/workspaces"); }
   };
 
-  // Modern Linear/Vercel-style nav rows: roomy hit area, subtle active indicator
-  const linkBase =
-    "group relative flex items-center gap-3 px-3 h-9 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04] transition-all duration-150";
-  const linkActive =
-    "bg-foreground/[0.06] text-foreground font-medium shadow-[inset_0_0_0_1px_hsl(var(--border)/0.5)]";
+  // Hover-expand rail style nav (Raycast/Vercel hybrid). Icon-only by default,
+  // expands a labeled flyout on hover for a unique, ultra-clean feel.
+  const expanded = hovered;
+  const railWidth = expanded ? 240 : 64;
 
-  return (
-    <div className="min-h-screen flex w-full font-sans bg-background text-foreground">
-      {/* Sidebar */}
-      <aside
+  const RailItem = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => (
+    <NavLink
+      to={to}
+      end
+      className="rail-item group relative flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+      activeClassName="rail-item-active !text-foreground"
+    >
+      <span
+        className="rail-indicator absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full transition-all h-0 opacity-0"
+        style={{ background: primary, boxShadow: `0 0 12px ${primary}` }}
+      />
+      <span className="rail-icon ml-2 w-10 h-10 grid place-items-center rounded-xl shrink-0 transition-all group-hover:bg-foreground/[0.04]">
+        <Icon className="w-[18px] h-[18px]" />
+      </span>
+      <span
         className={cn(
-          "shrink-0 flex flex-col border-r border-border/50 bg-background/60 backdrop-blur-xl transition-[width] duration-200 ease-out",
-          collapsed ? "w-[68px]" : "w-[256px]"
+          "ml-3 text-[13px] font-medium whitespace-nowrap transition-all",
+          expanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"
         )}
       >
-        {/* Brand */}
-        <div className="h-14 flex items-center justify-between px-4">
-          {!collapsed ? (
-            <button
-              onClick={() => navigate("/")}
-              className="flex items-center gap-2.5 group"
-            >
-              <span
-                className="w-7 h-7 rounded-lg grid place-items-center text-[12px] font-bold text-white shadow-md transition-transform group-hover:scale-105"
-                style={{
-                  background: `linear-gradient(135deg, ${primary}, ${primary}aa)`,
-                  boxShadow: `0 4px 14px -4px ${primary}66`,
-                }}
-              >
-                F
-              </span>
-              <span className="text-[15px] font-semibold tracking-tight text-foreground">
-                Fluxcore
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate("/")}
-              className="w-7 h-7 rounded-lg grid place-items-center text-[12px] font-bold text-white mx-auto shadow-md"
-              style={{
-                background: `linear-gradient(135deg, ${primary}, ${primary}aa)`,
-                boxShadow: `0 4px 14px -4px ${primary}66`,
-              }}
-            >
-              F
-            </button>
-          )}
-          {!collapsed && (
-            <button
-              onClick={() => setCollapsed(true)}
-              className="text-muted-foreground/60 hover:text-foreground p-1.5 rounded-md hover:bg-foreground/[0.04] transition-colors"
-              aria-label="Collapse sidebar"
-            >
-              <PanelLeftClose className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        {label}
+      </span>
+    </NavLink>
+  );
 
-        {/* Workspace pill */}
-        {workspace && !collapsed && (
-          <div className="px-3 pb-3">
-            <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-foreground/[0.03] border border-border/40">
+  return (
+    <div
+      className="min-h-screen flex w-full font-sans bg-background text-foreground relative"
+      style={{
+        backgroundImage:
+          theme === "dark"
+            ? "radial-gradient(circle at 20% 0%, hsl(var(--primary) / 0.08), transparent 40%), radial-gradient(circle at 80% 100%, hsl(var(--primary) / 0.05), transparent 40%)"
+            : "radial-gradient(circle at 20% 0%, hsl(var(--primary) / 0.05), transparent 40%)",
+      }}
+    >
+      {/* dotted grid backdrop */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0 opacity-[0.35] dark:opacity-[0.18]"
+        style={{
+          backgroundImage:
+            "radial-gradient(hsl(var(--foreground) / 0.12) 1px, transparent 1px)",
+          backgroundSize: "22px 22px",
+          maskImage:
+            "radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 100%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 100%)",
+        }}
+      />
+
+      {/* Floating rail sidebar */}
+      <aside
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        className="fixed left-3 top-3 bottom-3 z-40 flex flex-col rounded-2xl border border-border/50 bg-background/70 backdrop-blur-2xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.4)] overflow-hidden transition-[width] duration-300 ease-out"
+        style={{ width: railWidth }}
+      >
+        {/* Brand */}
+        <button
+          onClick={() => navigate("/")}
+          className="h-14 flex items-center gap-3 px-3.5 shrink-0 border-b border-border/40 hover:bg-foreground/[0.03] transition-colors"
+        >
+          <span
+            className="w-9 h-9 rounded-xl grid place-items-center shrink-0 relative overflow-hidden"
+            style={{
+              background: `linear-gradient(135deg, ${primary}, ${primary}80)`,
+              boxShadow: `0 6px 20px -6px ${primary}, inset 0 1px 0 rgba(255,255,255,0.2)`,
+            }}
+          >
+            <span className="text-white font-black text-base tracking-tighter">F</span>
+            <span className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
+          </span>
+          <span
+            className={cn(
+              "text-[17px] font-extrabold tracking-tight text-gradient whitespace-nowrap transition-all",
+              expanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+            )}
+          >
+            Fluxcore
+          </span>
+        </button>
+
+        {/* Workspace badge */}
+        {workspace && (
+          <div className="px-2 pt-2 pb-1 shrink-0">
+            <div
+              className={cn(
+                "flex items-center gap-2 h-9 rounded-xl bg-foreground/[0.03] border border-border/40 px-2.5 overflow-hidden",
+              )}
+            >
               <div
-                className="w-1.5 h-1.5 rounded-full shrink-0"
-                style={{ backgroundColor: primary, boxShadow: `0 0 8px ${primary}` }}
+                className="w-2 h-2 rounded-full shrink-0 animate-pulse"
+                style={{ background: primary, boxShadow: `0 0 8px ${primary}` }}
               />
-              <span className="text-[13px] font-medium text-foreground/90 truncate flex-1">
+              <span
+                className={cn(
+                  "text-[12px] font-medium text-foreground/90 truncate flex-1 transition-opacity",
+                  expanded ? "opacity-100" : "opacity-0"
+                )}
+              >
                 {workspace.name}
               </span>
-              {workspace.verified_official && (
+              {workspace.verified_official && expanded && (
                 <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />
               )}
             </div>
@@ -140,80 +178,56 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
         )}
 
         {/* Nav */}
-        <nav className="flex-1 overflow-y-auto px-2.5 space-y-0.5 scrollbar-thin">
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden px-2 py-2 space-y-1 scrollbar-thin">
           {main.filter(i => i.show).map(i => (
-            <NavLink key={i.title} to={i.url} end className={linkBase} activeClassName={linkActive}>
-              <i.icon className="w-[18px] h-[18px] shrink-0 opacity-80 group-hover:opacity-100" />
-              {!collapsed && <span className="truncate">{i.title}</span>}
-            </NavLink>
+            <RailItem key={i.title} to={i.url} icon={i.icon} label={i.title} />
           ))}
 
           {showConfig && (
             <>
-              {!collapsed ? (
-                <div className="px-3 pt-5 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/50">
-                  Workspace
-                </div>
-              ) : (
-                <div className="my-3 mx-2 border-t border-border/40" />
-              )}
+              <div className="my-3 mx-3 border-t border-border/40" />
               {config.map(i => (
-                <NavLink key={i.title} to={i.url} end className={linkBase} activeClassName={linkActive}>
-                  <i.icon className="w-[18px] h-[18px] shrink-0 opacity-80 group-hover:opacity-100" />
-                  {!collapsed && <span className="truncate">{i.title}</span>}
-                </NavLink>
+                <RailItem key={i.title} to={i.url} icon={i.icon} label={i.title} />
               ))}
             </>
           )}
         </nav>
 
-        {/* Footer actions */}
-        <div className="p-2.5 border-t border-border/40 space-y-0.5">
-          {collapsed && (
-            <button
-              onClick={() => setCollapsed(false)}
-              className={cn(linkBase, "w-full justify-center")}
-              aria-label="Expand sidebar"
-            >
-              <PanelLeftOpen className="w-[18px] h-[18px] shrink-0" />
-            </button>
-          )}
-          <button onClick={() => setVersion("classic")} className={cn(linkBase, "w-full")}>
-            <Sparkles className="w-[18px] h-[18px] shrink-0 opacity-80" />
-            {!collapsed && <span>Classic UI</span>}
+        {/* Footer */}
+        <div className="border-t border-border/40 p-2 space-y-1 shrink-0">
+          <button
+            onClick={() => setVersion("classic")}
+            className="group w-full flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="ml-2 w-10 h-10 grid place-items-center rounded-xl shrink-0 group-hover:bg-foreground/[0.04]">
+              <Sparkles className="w-[18px] h-[18px]" />
+            </span>
+            <span className={cn("ml-3 text-[13px] font-medium whitespace-nowrap transition-all", expanded ? "opacity-100" : "opacity-0 pointer-events-none")}>
+              Classic UI
+            </span>
           </button>
-          <button onClick={toggleTheme} className={cn(linkBase, "w-full")}>
-            {theme === "dark"
-              ? <Sun className="w-[18px] h-[18px] shrink-0 opacity-80" />
-              : <Moon className="w-[18px] h-[18px] shrink-0 opacity-80" />}
-            {!collapsed && <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>}
+          <button
+            onClick={toggleTheme}
+            className="group w-full flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="ml-2 w-10 h-10 grid place-items-center rounded-xl shrink-0 group-hover:bg-foreground/[0.04]">
+              {theme === "dark" ? <Sun className="w-[18px] h-[18px]" /> : <Moon className="w-[18px] h-[18px]" />}
+            </span>
+            <span className={cn("ml-3 text-[13px] font-medium whitespace-nowrap transition-all", expanded ? "opacity-100" : "opacity-0 pointer-events-none")}>
+              {theme === "dark" ? "Light mode" : "Dark mode"}
+            </span>
           </button>
 
-          {/* User chip */}
-          {!collapsed && robloxUsername && (
-            <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-foreground/[0.03] transition-colors">
-              <RobloxAvatar username={robloxUsername} className="w-7 h-7 rounded-full ring-1 ring-border/60" />
-              <div className="flex-1 min-w-0">
-                <div className="text-[13px] font-medium text-foreground truncate">{robloxUsername}</div>
-                <div className="text-[11px] text-muted-foreground truncate">{isOwner ? "Owner" : "Member"}</div>
-              </div>
-              <button
-                onClick={logout}
-                className="text-muted-foreground/60 hover:text-destructive p-1 rounded transition-colors"
-                aria-label="Sign out"
-                title="Sign out"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-
-          {!isOwner && !collapsed && (
+          {!isOwner && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <button className={cn(linkBase, "w-full text-warning/80 hover:text-warning")}>
-                  <DoorOpen className="w-[18px] h-[18px] shrink-0" />
-                  <span>Leave workspace</span>
+                <button className="group w-full flex items-center h-10 rounded-xl text-warning/80 hover:text-warning transition-colors">
+                  <span className="ml-2 w-10 h-10 grid place-items-center rounded-xl shrink-0 group-hover:bg-warning/10">
+                    <DoorOpen className="w-[18px] h-[18px]" />
+                  </span>
+                  <span className={cn("ml-3 text-[13px] font-medium whitespace-nowrap transition-all", expanded ? "opacity-100" : "opacity-0 pointer-events-none")}>
+                    Leave workspace
+                  </span>
                 </button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -229,41 +243,66 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
             </AlertDialog>
           )}
 
-          {collapsed && (
+          {/* user chip */}
+          <div className="mt-1 pt-2 border-t border-border/40 flex items-center h-12 px-1.5 rounded-xl">
+            {robloxUsername ? (
+              <RobloxAvatar
+                username={robloxUsername}
+                className="w-9 h-9 rounded-full ring-2 ring-primary/30 shrink-0"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-foreground/10 shrink-0" />
+            )}
+            <div
+              className={cn(
+                "ml-3 flex-1 min-w-0 transition-all",
+                expanded ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}
+            >
+              <div className="text-[12px] font-semibold text-foreground truncate">{robloxUsername || "Account"}</div>
+              <div className="text-[10px] text-muted-foreground truncate">{isOwner ? "Workspace owner" : "Member"}</div>
+            </div>
             <button
               onClick={logout}
-              className={cn(linkBase, "w-full justify-center text-destructive/80 hover:text-destructive")}
+              className={cn(
+                "p-2 rounded-lg text-muted-foreground/70 hover:text-destructive hover:bg-destructive/10 transition-all",
+                expanded ? "opacity-100" : "opacity-0 pointer-events-none"
+              )}
               aria-label="Sign out"
+              title="Sign out"
             >
-              <LogOut className="w-[18px] h-[18px] shrink-0" />
+              <LogOut className="w-3.5 h-3.5" />
             </button>
-          )}
+          </div>
         </div>
       </aside>
 
       {/* Main */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 flex items-center justify-between px-8 border-b border-border/40 backdrop-blur-xl bg-background/70 sticky top-0 z-30">
+      <div className="flex-1 flex flex-col min-w-0 pl-[88px] relative z-10">
+        <header className="h-14 flex items-center justify-between px-8 shrink-0">
           <div className="flex items-center gap-2 text-sm">
-            <span className="text-muted-foreground/70">{workspace?.name || "Fluxcore"}</span>
+            <span className="text-muted-foreground/60">{workspace?.name || "Fluxcore"}</span>
             {title && (
               <>
-                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40" />
-                <span className="text-foreground font-medium">{title}</span>
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/30" />
+                <span className="text-foreground font-semibold">{title}</span>
               </>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <kbd className="hidden md:inline-flex items-center gap-1 text-[10px] font-mono px-1.5 h-6 rounded-md border border-border/50 bg-foreground/[0.03] text-muted-foreground">
+              <Command className="w-3 h-3" /> K
+            </kbd>
             {workspace?.verified_official && (
-              <span className="hidden sm:flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/20">
-                <BadgeCheck className="w-3 h-3" /> Verified
+              <span className="hidden sm:flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/20">
+                <BadgeCheck className="w-3 h-3" /> VERIFIED
               </span>
             )}
           </div>
         </header>
 
         <main className="flex-1 overflow-auto">
-          <div className="px-8 py-8 max-w-[1400px] mx-auto w-full">
+          <div className="px-8 pb-10 pt-2 max-w-[1400px] mx-auto w-full">
             {children}
           </div>
         </main>
