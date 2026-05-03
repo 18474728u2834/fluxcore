@@ -712,44 +712,63 @@ export default function Sessions() {
       {/* Detail Dialog */}
       <Dialog open={!!detailSession} onOpenChange={(open) => { if (!open) setDetailSession(null); }}>
         <DialogContent className="glass border-border/40 max-w-md max-h-[90vh] overflow-y-auto">
-          {detailSession && (
+          {detailSession && (() => {
+            const ds = detailSession.session;
+            const dOcc = detailSession.occursAt;
+            const detailSlots = effectiveSlots(ds, dOcc);
+            const dStatus = computeStatus(ds, dOcc);
+            const dMsUntil = dOcc.getTime() - Date.now();
+            const dStartingSoon = dMsUntil > 0 && dMsUntil <= 5 * 60 * 1000;
+            const dShowGameLink = !!ds.game_url && (dStatus.live || dStartingSoon) && detailSlots.flatMap(s => s.assigned).some(Boolean);
+            return (
             <>
               <DialogHeader>
                 <DialogTitle className="text-foreground flex items-center gap-2 flex-wrap">
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${categoryColors[detailSession.category] || "bg-secondary text-muted-foreground"}`}>{detailSession.category}</span>
-                  {detailSession.title}
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${categoryColors[ds.category] || "bg-secondary text-muted-foreground"}`}>{ds.category}</span>
+                  {ds.title}
                 </DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-2">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {formatDate(detailSession.scheduled_at)}</span>
-                  <span>{detailSession.duration_minutes} min</span>
+                  <span className="flex items-center gap-1"><Clock className="w-4 h-4" /> {formatDate(dOcc.toISOString())}</span>
+                  <span>{ds.duration_minutes} min</span>
                 </div>
-                {detailSession.description && <p className="text-sm text-muted-foreground bg-muted rounded-lg p-3">{detailSession.description}</p>}
+                {ds.description && <p className="text-sm text-muted-foreground bg-muted rounded-lg p-3">{ds.description}</p>}
 
-                {(detailSession.tag_ids || []).length > 0 && (
+                {dShowGameLink && (
+                  <a
+                    href={ds.game_url!}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block text-center text-sm font-semibold px-3 py-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                  >
+                    🎮 Join Game{dStatus.live ? " — Live now" : " — Starts in a moment"}
+                  </a>
+                )}
+
+                {(ds.tag_ids || []).length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
-                    {(detailSession.tag_ids || []).map(id => tagsById[id]).filter(Boolean).map(t => (
+                    {(ds.tag_ids || []).map(id => tagsById[id]).filter(Boolean).map(t => (
                       <span key={t.id} className="text-[11px] px-2 py-0.5 rounded-md font-semibold" style={{ backgroundColor: t.color + "30", color: t.color }}>{t.name}</span>
                     ))}
                   </div>
                 )}
 
                 <div className="flex items-center gap-2">
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[detailSession.status]}`}>{detailSession.status}</span>
-                  {detailSession.recurring && (
+                  <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${statusColors[ds.status]}`}>{ds.status}</span>
+                  {ds.recurring && (
                     <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary text-muted-foreground font-medium">
-                      {detailSession.recurring_days?.length ? `Repeats ${detailSession.recurring_days.join(", ")} at ${detailSession.recurring_time || ""}` : `Repeats ${detailSession.recurring}`}
+                      {ds.recurring_days?.length ? `Repeats ${ds.recurring_days.join(", ")} at ${ds.recurring_time || ""}` : `Repeats ${ds.recurring}`}
                     </span>
                   )}
                 </div>
 
                 <div className="border-t border-border/40 pt-4 space-y-3">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Roles</p>
-                  {(detailSession.slots || []).length === 0 ? (
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Roles {ds.recurring || ds.recurring_days?.length ? <span className="normal-case text-[10px] text-muted-foreground/70">(this occurrence only)</span> : null}</p>
+                  {detailSlots.length === 0 ? (
                     <p className="text-xs text-muted-foreground italic">No roles defined.</p>
                   ) : (
-                    (detailSession.slots || []).map((slot, i) => (
+                    detailSlots.map((slot, i) => (
                       <div key={i} className="glass rounded-lg p-3 space-y-2 animate-in fade-in slide-in-from-left-2 duration-300" style={{ animationDelay: `${i * 60}ms` }}>
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{slot.label}</span>
@@ -758,11 +777,11 @@ export default function Sessions() {
                         <div className="flex flex-wrap gap-1.5">
                           {slot.assigned.map((name, posIdx) => {
                             const isMe = name && robloxUsername && name.toLowerCase() === robloxUsername.toLowerCase();
-                            const canSelfHost = canHostSession(detailSession.category);
+                            const canSelfHost = canHostSession(ds.category);
                             const canRemove = canSelfHost || isOwner || canAssignOthers || isMe;
                             const setSlot = (value: string | null) => {
-                              const next = (detailSession.slots || []).map((s, si) => si === i ? { ...s, assigned: s.assigned.map((a, ai) => ai === posIdx ? value : a) } : s);
-                              updateSessionSlots(detailSession, next);
+                              const next = detailSlots.map((s, si) => si === i ? { ...s, assigned: s.assigned.map((a, ai) => ai === posIdx ? value : a) } : s);
+                              updateSessionSlots(ds, dOcc, next);
                             };
                             return name ? (
                               <span key={posIdx} className={`text-[11px] pl-1 pr-2 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all hover:scale-105 animate-in fade-in zoom-in-95 duration-200 ${isMe ? "bg-primary/20 text-primary ring-1 ring-primary/40" : "bg-secondary text-foreground"}`}>
