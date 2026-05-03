@@ -102,6 +102,22 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
       }
 
       setLoading(false);
+
+      // Owner-only: re-check Roblox gamepass ownership for Premium (max once per 5 min)
+      if (ownerCheck) {
+        const cacheKey = `fluxcore_premium_check_${workspaceId}`;
+        const last = parseInt(localStorage.getItem(cacheKey) || "0", 10);
+        if (Date.now() - last > 5 * 60 * 1000) {
+          localStorage.setItem(cacheKey, String(Date.now()));
+          supabase.functions.invoke("check-premium", { body: { workspace_id: workspaceId } })
+            .then(({ data }) => {
+              if (cancelled || !data) return;
+              const newPremium = !!(data as any).premium;
+              setWorkspace((prev) => prev && prev.premium !== newPremium ? { ...prev, premium: newPremium } : prev);
+            })
+            .catch(() => {});
+        }
+      }
     };
 
     fetchWorkspace();
