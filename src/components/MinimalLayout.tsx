@@ -131,16 +131,6 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
           className="h-14 flex items-center gap-3 px-3.5 shrink-0 border-b border-border/40 hover:bg-foreground/[0.03] transition-colors"
         >
           <span
-            className="w-9 h-9 rounded-xl grid place-items-center shrink-0 relative overflow-hidden"
-            style={{
-              background: `linear-gradient(135deg, ${primary}, ${primary}80)`,
-              boxShadow: `0 6px 20px -6px ${primary}, inset 0 1px 0 rgba(255,255,255,0.2)`,
-            }}
-          >
-            <span className="text-white font-black text-base tracking-tighter">F</span>
-            <span className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-transparent" />
-          </span>
-          <span
             className={cn(
               "text-[17px] font-extrabold tracking-tight text-gradient whitespace-nowrap transition-all",
               expanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
