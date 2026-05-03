@@ -94,15 +94,31 @@ function Fluxcore:OnPlayerChatted(player, message)
     session.message_count = session.message_count + 1
     session.last_input = tick()
     session.afk_prompt_sent_at = nil
-    self:Send({
-      action = "event",
-      roblox_user_id = tostring(player.UserId),
-      roblox_username = player.Name,
-      event_type = "chat_message",
-      event_data = { message = message, server_id = tostring(game.JobId) },
-    })
   end
+  -- Always send chat (server gates on message_logger_enabled + staff-only filtering happens via session existence elsewhere)
+  self:Send({
+    action = "event",
+    roblox_user_id = tostring(player.UserId),
+    roblox_username = player.Name,
+    event_type = "chat_message",
+    event_data = { message = message, server_id = tostring(game.JobId) },
+  })
 end
+
+function Fluxcore:HookChat(player)
+  -- Legacy chat (works when ChatVersion = LegacyChatService)
+  player.Chatted:Connect(function(msg) self:OnPlayerChatted(player, msg) end)
+end
+
+-- TextChatService (new Roblox chat) - covers ChatVersion = TextChatService
+local TextChatService = game:GetService("TextChatService")
+TextChatService.MessageReceived:Connect(function(message)
+  if not message.TextSource then return end
+  local userId = message.TextSource.UserId
+  local player = Players:GetPlayerByUserId(userId)
+  if not player then return end
+  Fluxcore:OnPlayerChatted(player, message.Text)
+end)
 
 AfkEvent.OnServerEvent:Connect(function(player)
   local session = Fluxcore.Sessions[player.UserId]
@@ -168,12 +184,12 @@ end
 function Fluxcore:Init()
   Players.PlayerAdded:Connect(function(p)
     self:OnPlayerAdded(p)
-    p.Chatted:Connect(function(msg) self:OnPlayerChatted(p, msg) end)
+    self:HookChat(p)
   end)
   Players.PlayerRemoving:Connect(function(p) self:OnPlayerRemoving(p) end)
   for _, p in ipairs(Players:GetPlayers()) do
     self:OnPlayerAdded(p)
-    p.Chatted:Connect(function(msg) self:OnPlayerChatted(p, msg) end)
+    self:HookChat(p)
   end
   spawn(function() self:RunHeartbeats() end)
   print("[Fluxcore] Tracker v3 initialized")
