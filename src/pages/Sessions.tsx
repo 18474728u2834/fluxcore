@@ -843,7 +843,8 @@ export default function Sessions() {
                 </div>
               </div>
             </>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
