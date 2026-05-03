@@ -248,8 +248,7 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
             {robloxUsername ? (
               <RobloxAvatar
                 username={robloxUsername}
-                className="w-9 h-9 rounded-full ring-2 shrink-0"
-                style={{ ['--tw-ring-color' as any]: `${primary}55` } as any}
+                className="w-9 h-9 rounded-full ring-2 ring-primary/30 shrink-0"
               />
             ) : (
               <div className="w-9 h-9 rounded-full bg-foreground/10 shrink-0" />
