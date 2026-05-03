@@ -545,6 +545,7 @@ export type Database = {
           host_id: string | null
           host_name: string
           id: string
+          occurrence_assignments: Json
           recurring: string | null
           recurring_days: string[] | null
           recurring_time: string | null
@@ -568,6 +569,7 @@ export type Database = {
           host_id?: string | null
           host_name: string
           id?: string
+          occurrence_assignments?: Json
           recurring?: string | null
           recurring_days?: string[] | null
           recurring_time?: string | null
@@ -591,6 +593,7 @@ export type Database = {
           host_id?: string | null
           host_name?: string
           id?: string
+          occurrence_assignments?: Json
           recurring?: string | null
           recurring_days?: string[] | null
           recurring_time?: string | null
