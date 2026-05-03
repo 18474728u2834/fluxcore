@@ -69,14 +69,15 @@ serve(async (req) => {
 
     // Session reminder (5 min before)
     if (action === "send_reminder") {
-      const { session_title, session_time, host_name, category } = body;
+      const { session_title, session_time, host_name, category, game_url } = body;
+      const effectiveGameUrl = game_url || ws.game_url;
 
       const fields: any[] = [
         { name: "🕐 Time", value: formatTime(session_time), inline: true },
         { name: "👤 Host", value: host_name || "TBA", inline: true },
         { name: "📂 Type", value: category || "Shift", inline: true },
       ];
-      if (ws.game_url) fields.push({ name: "🎮 Game", value: `[Click to join](${ws.game_url})`, inline: false });
+      if (effectiveGameUrl) fields.push({ name: "🎮 Game", value: `[Click to join](${effectiveGameUrl})`, inline: false });
 
       const result = await sendEmbed([{
         title: `⏰ ${category || "Shift"} Starting Soon`,
