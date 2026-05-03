@@ -19,6 +19,10 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
     );
   }
 
+  if (version === "minimal") {
+    return <MinimalLayout title={title}>{children}</MinimalLayout>;
+  }
+
   const bgColor = workspace?.background_color || "#0f0f11";
   const showGrid = workspace?.show_grid ?? true;
   const primaryColor = workspace?.primary_color || "#7c3aed";
