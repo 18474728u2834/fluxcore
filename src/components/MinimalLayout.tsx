@@ -72,39 +72,24 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
     <NavLink
       to={to}
       end
-      className="group relative flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
-      activeClassName="!text-foreground"
+      className="rail-item group relative flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+      activeClassName="rail-item-active !text-foreground"
     >
-      {({ isActive }: { isActive: boolean }) => (
-        <>
-          {/* active indicator pill on the left */}
-          <span
-            className={cn(
-              "absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full transition-all",
-              isActive ? "h-5 opacity-100" : "h-0 opacity-0"
-            )}
-            style={{ background: primary, boxShadow: `0 0 12px ${primary}` }}
-          />
-          <span
-            className={cn(
-              "ml-2 w-10 h-10 grid place-items-center rounded-xl shrink-0 transition-all",
-              isActive
-                ? "bg-foreground/[0.06] ring-1 ring-border/60"
-                : "group-hover:bg-foreground/[0.04]"
-            )}
-          >
-            <Icon className="w-[18px] h-[18px]" />
-          </span>
-          <span
-            className={cn(
-              "ml-3 text-[13px] font-medium whitespace-nowrap transition-all",
-              expanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"
-            )}
-          >
-            {label}
-          </span>
-        </>
-      ) as any}
+      <span
+        className="rail-indicator absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full transition-all h-0 opacity-0"
+        style={{ background: primary, boxShadow: `0 0 12px ${primary}` }}
+      />
+      <span className="rail-icon ml-2 w-10 h-10 grid place-items-center rounded-xl shrink-0 transition-all group-hover:bg-foreground/[0.04]">
+        <Icon className="w-[18px] h-[18px]" />
+      </span>
+      <span
+        className={cn(
+          "ml-3 text-[13px] font-medium whitespace-nowrap transition-all",
+          expanded ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2 pointer-events-none"
+        )}
+      >
+        {label}
+      </span>
     </NavLink>
   );
 
