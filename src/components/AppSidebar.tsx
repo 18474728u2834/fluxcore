@@ -26,6 +26,7 @@ export function AppSidebar() {
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
   const { theme, toggleTheme } = useTheme();
+  const { setVersion } = useUIVersion();
 
   const base = `/w/${workspaceId}`;
 
