@@ -650,11 +650,15 @@ export default function Sessions() {
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
             {filteredOccurrences.map(({ session, occursAt }) => {
               const status = computeStatus(session, occursAt);
-              const firstAssignee = (session.slots || []).flatMap(s => s.assigned).find(n => n) || (session.host_name !== "Unassigned" ? session.host_name : null);
+              const slotsForOcc = effectiveSlots(session, occursAt);
+              const firstAssignee = slotsForOcc.flatMap(s => s.assigned).find(n => n) || null;
               const sessionTags = (session.tag_ids || []).map(id => tagsById[id]).filter(Boolean);
+              const msUntilStart = occursAt.getTime() - Date.now();
+              const startingSoon = msUntilStart > 0 && msUntilStart <= 5 * 60 * 1000;
+              const showGameLink = !!firstAssignee && !!session.game_url && (status.live || startingSoon);
               return (
-                <button key={`${session.id}-${occursAt.getTime()}`} onClick={() => setDetailSession(session)}
-                  className={`glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 border group relative animate-in fade-in slide-in-from-bottom-2 duration-300 ${status.live ? "border-success/60 shadow-[0_0_20px_-5px_hsl(var(--success)/0.5)]" : "border-border/30 hover:border-primary/40"}`}>
+                <button key={`${session.id}-${occursAt.getTime()}`} onClick={() => setDetailSession({ session, occursAt })}
+                  className={`glass rounded-xl p-4 text-left flex flex-col gap-2 hover:bg-secondary/30 hover:scale-[1.02] hover:-translate-y-0.5 transition-all duration-200 border group relative animate-in fade-in slide-in-from-bottom-2 duration-300 ${status.live ? "border-success/60 shadow-[0_0_20px_-5px_hsl(var(--success)/0.5)]" : startingSoon ? "border-warning/60 shadow-[0_0_20px_-5px_hsl(var(--warning)/0.5)]" : "border-border/30 hover:border-primary/40"}`}>
                   {firstAssignee && (
                     <div className="absolute -top-2 -right-2">
                       <RobloxAvatar
@@ -675,6 +679,7 @@ export default function Sessions() {
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {status.live && <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-success text-success-foreground flex items-center gap-1 shadow-md shadow-success/40 animate-in zoom-in-95 duration-300"><span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" /> LIVE</span>}
+                    {!status.live && startingSoon && <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-warning text-warning-foreground flex items-center gap-1 shadow-md shadow-warning/40"><Clock className="w-2.5 h-2.5" /> STARTING SOON</span>}
                     <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${categoryColors[session.category] || "bg-secondary text-muted-foreground"}`}>{session.category}</span>
                     {sessionTags.slice(0, 2).map(t => (
                       <span key={t.id} className="text-[10px] px-1.5 py-0.5 rounded font-semibold" style={{ backgroundColor: t.color + "30", color: t.color }}>{t.name}</span>
@@ -686,6 +691,17 @@ export default function Sessions() {
                       <User className="w-3 h-3" />{firstAssignee || "Unclaimed"}
                     </span>
                   </div>
+                  {showGameLink && (
+                    <a
+                      href={session.game_url!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="mt-1 text-[11px] font-semibold text-center px-2 py-1.5 rounded-md bg-primary text-primary-foreground hover:opacity-90 transition-opacity"
+                    >
+                      🎮 Join Game
+                    </a>
+                  )}
                 </button>
               );
             })}
