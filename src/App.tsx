@@ -200,6 +200,7 @@ const App = () => {
               </HashRouter>
             </TooltipProvider>
           </I18nProvider>
+          </UIVersionProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
