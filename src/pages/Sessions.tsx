@@ -37,7 +37,33 @@ interface ScheduledSession {
   game_url: string | null;
   slots: SessionSlot[] | null;
   tag_ids: string[] | null;
+  occurrence_assignments: Record<string, (string | null)[][]> | null;
 }
+
+// Build a stable key for a given occurrence of a session
+const occurrenceKey = (occursAt: Date) => occursAt.toISOString();
+
+// Returns the effective slots for a given occurrence, merging the base slots
+// with any per-occurrence override stored in occurrence_assignments.
+const effectiveSlots = (session: ScheduledSession, occursAt: Date): SessionSlot[] => {
+  const base = session.slots || [];
+  const isRecurring = !!(session.recurring || (session.recurring_days && session.recurring_days.length));
+  if (!isRecurring) return base;
+  const key = occurrenceKey(occursAt);
+  const override = session.occurrence_assignments?.[key];
+  return base.map((s, i) => {
+    const overrideAssigned = override?.[i];
+    if (overrideAssigned) {
+      // ensure length matches slot count
+      const next = [...overrideAssigned];
+      while (next.length < s.count) next.push(null);
+      next.length = s.count;
+      return { ...s, assigned: next };
+    }
+    // recurring with no override yet → all open for this occurrence
+    return { ...s, assigned: Array(s.count).fill(null) };
+  });
+};
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
