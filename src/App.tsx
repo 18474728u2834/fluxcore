@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { UIVersionProvider } from "@/hooks/useUIVersion";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { I18nProvider } from "@/hooks/useI18n";
 import { DOMTranslator } from "@/components/DOMTranslator";
