@@ -3,7 +3,7 @@ import { useState } from "react";
 import {
   LayoutDashboard, Users, Clock, CalendarDays, Megaphone, FileText, CalendarOff,
   UserX, Target, MessageSquare, ShieldCheck, Code, Settings, Sun, Moon, LogOut,
-  DoorOpen, Menu as MenuIcon, BadgeCheck, Sparkles, ChevronsLeft, ChevronsRight,
+  DoorOpen, BadgeCheck, Sparkles, PanelLeftClose, PanelLeftOpen, ChevronRight,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReleaseModal } from "@/components/ReleaseModal";
 import { SetupTutorial } from "@/components/SetupTutorial";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -23,7 +24,7 @@ import { cn } from "@/lib/utils";
 
 export function MinimalLayout({ children, title }: { children: React.ReactNode; title?: string }) {
   const navigate = useNavigate();
-  const { signOut, user } = useAuth();
+  const { signOut, user, robloxUsername } = useAuth();
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
   const { theme, toggleTheme } = useTheme();
@@ -32,7 +33,6 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
 
   const base = `/w/${workspaceId}`;
   const primary = workspace?.primary_color || "#7c3aed";
-  const bg = workspace?.background_color || "#0a0a0c";
 
   const main = [
     { title: "Dashboard", url: `${base}/dashboard`, icon: LayoutDashboard, show: true },
@@ -63,65 +63,103 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
     else { toast.success("Left workspace"); navigate("/workspaces"); }
   };
 
-  const linkBase = "group flex items-center gap-2.5 px-2.5 h-8 rounded-md text-[13px] text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04] transition-colors";
-  const linkActive = "bg-foreground/[0.06] text-foreground font-medium";
+  // Modern Linear/Vercel-style nav rows: roomy hit area, subtle active indicator
+  const linkBase =
+    "group relative flex items-center gap-3 px-3 h-9 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04] transition-all duration-150";
+  const linkActive =
+    "bg-foreground/[0.06] text-foreground font-medium shadow-[inset_0_0_0_1px_hsl(var(--border)/0.5)]";
 
   return (
-    <div className="min-h-screen flex w-full font-sans" style={{ backgroundColor: bg }}>
+    <div className="min-h-screen flex w-full font-sans bg-background text-foreground">
+      {/* Sidebar */}
       <aside
         className={cn(
-          "shrink-0 flex flex-col border-r border-border/40 transition-all duration-200",
-          collapsed ? "w-[56px]" : "w-[220px]"
+          "shrink-0 flex flex-col border-r border-border/50 bg-background/60 backdrop-blur-xl transition-[width] duration-200 ease-out",
+          collapsed ? "w-[68px]" : "w-[256px]"
         )}
-        style={{ backgroundColor: bg }}
       >
-        <div className="h-12 flex items-center justify-between px-3 border-b border-border/40">
-          {!collapsed && (
-            <button onClick={() => navigate("/")} className="flex items-center gap-1.5 text-[13px] font-semibold tracking-tight">
-              <span className="w-5 h-5 rounded-[5px] grid place-items-center text-[10px] font-bold text-white" style={{ backgroundColor: primary }}>F</span>
-              <span className="text-foreground">Fluxcore</span>
+        {/* Brand */}
+        <div className="h-14 flex items-center justify-between px-4">
+          {!collapsed ? (
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center gap-2.5 group"
+            >
+              <span
+                className="w-7 h-7 rounded-lg grid place-items-center text-[12px] font-bold text-white shadow-md transition-transform group-hover:scale-105"
+                style={{
+                  background: `linear-gradient(135deg, ${primary}, ${primary}aa)`,
+                  boxShadow: `0 4px 14px -4px ${primary}66`,
+                }}
+              >
+                F
+              </span>
+              <span className="text-[15px] font-semibold tracking-tight text-foreground">
+                Fluxcore
+              </span>
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/")}
+              className="w-7 h-7 rounded-lg grid place-items-center text-[12px] font-bold text-white mx-auto shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${primary}, ${primary}aa)`,
+                boxShadow: `0 4px 14px -4px ${primary}66`,
+              }}
+            >
+              F
             </button>
           )}
-          {collapsed && (
-            <button onClick={() => navigate("/")} className="w-5 h-5 rounded-[5px] grid place-items-center text-[10px] font-bold text-white mx-auto" style={{ backgroundColor: primary }}>F</button>
+          {!collapsed && (
+            <button
+              onClick={() => setCollapsed(true)}
+              className="text-muted-foreground/60 hover:text-foreground p-1.5 rounded-md hover:bg-foreground/[0.04] transition-colors"
+              aria-label="Collapse sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
           )}
-          <button
-            onClick={() => setCollapsed(c => !c)}
-            className="text-muted-foreground hover:text-foreground p-1 rounded"
-            aria-label="Toggle sidebar"
-          >
-            {collapsed ? <ChevronsRight className="w-3.5 h-3.5" /> : <ChevronsLeft className="w-3.5 h-3.5" />}
-          </button>
         </div>
 
+        {/* Workspace pill */}
         {workspace && !collapsed && (
-          <div className="px-3 py-2 border-b border-border/40">
-            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
-              <span className="truncate font-medium text-foreground/80">{workspace.name}</span>
-              {workspace.verified_official && <BadgeCheck className="w-3 h-3 text-primary shrink-0" />}
+          <div className="px-3 pb-3">
+            <div className="flex items-center gap-2 px-2.5 py-2 rounded-lg bg-foreground/[0.03] border border-border/40">
+              <div
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ backgroundColor: primary, boxShadow: `0 0 8px ${primary}` }}
+              />
+              <span className="text-[13px] font-medium text-foreground/90 truncate flex-1">
+                {workspace.name}
+              </span>
+              {workspace.verified_official && (
+                <BadgeCheck className="w-3.5 h-3.5 text-primary shrink-0" />
+              )}
             </div>
           </div>
         )}
 
-        <nav className="flex-1 overflow-y-auto p-1.5 space-y-0.5">
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto px-2.5 space-y-0.5 scrollbar-thin">
           {main.filter(i => i.show).map(i => (
             <NavLink key={i.title} to={i.url} end className={linkBase} activeClassName={linkActive}>
-              <i.icon className="w-3.5 h-3.5 shrink-0" />
+              <i.icon className="w-[18px] h-[18px] shrink-0 opacity-80 group-hover:opacity-100" />
               {!collapsed && <span className="truncate">{i.title}</span>}
             </NavLink>
           ))}
 
           {showConfig && (
             <>
-              {!collapsed && (
-                <div className="px-2.5 pt-3 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground/60">
-                  Config
+              {!collapsed ? (
+                <div className="px-3 pt-5 pb-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-muted-foreground/50">
+                  Workspace
                 </div>
+              ) : (
+                <div className="my-3 mx-2 border-t border-border/40" />
               )}
-              {collapsed && <div className="my-2 mx-2 border-t border-border/40" />}
               {config.map(i => (
                 <NavLink key={i.title} to={i.url} end className={linkBase} activeClassName={linkActive}>
-                  <i.icon className="w-3.5 h-3.5 shrink-0" />
+                  <i.icon className="w-[18px] h-[18px] shrink-0 opacity-80 group-hover:opacity-100" />
                   {!collapsed && <span className="truncate">{i.title}</span>}
                 </NavLink>
               ))}
@@ -129,25 +167,53 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
           )}
         </nav>
 
-        <div className="p-1.5 border-t border-border/40 space-y-0.5">
+        {/* Footer actions */}
+        <div className="p-2.5 border-t border-border/40 space-y-0.5">
+          {collapsed && (
+            <button
+              onClick={() => setCollapsed(false)}
+              className={cn(linkBase, "w-full justify-center")}
+              aria-label="Expand sidebar"
+            >
+              <PanelLeftOpen className="w-[18px] h-[18px] shrink-0" />
+            </button>
+          )}
           <button onClick={() => setVersion("classic")} className={cn(linkBase, "w-full")}>
-            <Sparkles className="w-3.5 h-3.5 shrink-0" />
+            <Sparkles className="w-[18px] h-[18px] shrink-0 opacity-80" />
             {!collapsed && <span>Classic UI</span>}
           </button>
           <button onClick={toggleTheme} className={cn(linkBase, "w-full")}>
-            {theme === "dark" ? <Sun className="w-3.5 h-3.5 shrink-0" /> : <Moon className="w-3.5 h-3.5 shrink-0" />}
-            {!collapsed && <span>{theme === "dark" ? "Light" : "Dark"}</span>}
+            {theme === "dark"
+              ? <Sun className="w-[18px] h-[18px] shrink-0 opacity-80" />
+              : <Moon className="w-[18px] h-[18px] shrink-0 opacity-80" />}
+            {!collapsed && <span>{theme === "dark" ? "Light mode" : "Dark mode"}</span>}
           </button>
-          <button onClick={() => navigate("/workspaces")} className={cn(linkBase, "w-full")}>
-            <MenuIcon className="w-3.5 h-3.5 shrink-0" />
-            {!collapsed && <span>Switch</span>}
-          </button>
-          {!isOwner && (
+
+          {/* User chip */}
+          {!collapsed && robloxUsername && (
+            <div className="mt-2 pt-2 border-t border-border/40 flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-foreground/[0.03] transition-colors">
+              <RobloxAvatar username={robloxUsername} className="w-7 h-7 rounded-full ring-1 ring-border/60" />
+              <div className="flex-1 min-w-0">
+                <div className="text-[13px] font-medium text-foreground truncate">{robloxUsername}</div>
+                <div className="text-[11px] text-muted-foreground truncate">{isOwner ? "Owner" : "Member"}</div>
+              </div>
+              <button
+                onClick={logout}
+                className="text-muted-foreground/60 hover:text-destructive p-1 rounded transition-colors"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
+          {!isOwner && !collapsed && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <button className={cn(linkBase, "w-full text-warning/80 hover:text-warning")}>
-                  <DoorOpen className="w-3.5 h-3.5 shrink-0" />
-                  {!collapsed && <span>Leave</span>}
+                  <DoorOpen className="w-[18px] h-[18px] shrink-0" />
+                  <span>Leave workspace</span>
                 </button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -162,22 +228,42 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
               </AlertDialogContent>
             </AlertDialog>
           )}
-          <button onClick={logout} className={cn(linkBase, "w-full text-destructive/80 hover:text-destructive")}>
-            <LogOut className="w-3.5 h-3.5 shrink-0" />
-            {!collapsed && <span>Logout</span>}
-          </button>
+
+          {collapsed && (
+            <button
+              onClick={logout}
+              className={cn(linkBase, "w-full justify-center text-destructive/80 hover:text-destructive")}
+              aria-label="Sign out"
+            >
+              <LogOut className="w-[18px] h-[18px] shrink-0" />
+            </button>
+          )}
         </div>
       </aside>
 
+      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-12 flex items-center px-5 border-b border-border/40 backdrop-blur-xl shrink-0" style={{ backgroundColor: `${bg}cc` }}>
-          <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
-            <span className="text-foreground/90 font-medium">{title || workspace?.name || "Fluxcore"}</span>
-            {workspace?.verified_official && <BadgeCheck className="w-3.5 h-3.5 text-primary" />}
+        <header className="h-14 flex items-center justify-between px-8 border-b border-border/40 backdrop-blur-xl bg-background/70 sticky top-0 z-30">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted-foreground/70">{workspace?.name || "Fluxcore"}</span>
+            {title && (
+              <>
+                <ChevronRight className="w-3.5 h-3.5 text-muted-foreground/40" />
+                <span className="text-foreground font-medium">{title}</span>
+              </>
+            )}
+          </div>
+          <div className="flex items-center gap-3">
+            {workspace?.verified_official && (
+              <span className="hidden sm:flex items-center gap-1.5 text-[11px] font-medium px-2 py-1 rounded-md bg-primary/10 text-primary border border-primary/20">
+                <BadgeCheck className="w-3 h-3" /> Verified
+              </span>
+            )}
           </div>
         </header>
+
         <main className="flex-1 overflow-auto">
-          <div className="px-6 py-6 max-w-[1400px] mx-auto w-full">
+          <div className="px-8 py-8 max-w-[1400px] mx-auto w-full">
             {children}
           </div>
         </main>
