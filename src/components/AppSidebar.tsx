@@ -1,4 +1,5 @@
-import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck, MessageSquare, Sparkles } from "lucide-react";
+import { useUIVersion } from "@/hooks/useUIVersion";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -25,6 +26,7 @@ export function AppSidebar() {
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
   const { theme, toggleTheme } = useTheme();
+  const { setVersion } = useUIVersion();
 
   const base = `/w/${workspaceId}`;
 
@@ -131,6 +133,12 @@ export function AppSidebar() {
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={() => setVersion("minimal")} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
+              <Sparkles className="mr-2 h-4 w-4" />
+              {!collapsed && <span>Try New UI</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={toggleTheme} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
               {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
