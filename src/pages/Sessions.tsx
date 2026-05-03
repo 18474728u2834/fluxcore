@@ -155,28 +155,58 @@ export default function Sessions() {
   }, {});
   const lookupId = (name?: string | null) => (name ? memberIdByName[name.toLowerCase()] : undefined);
 
-  // Discord 5-minute reminder
+  // Discord 5-minute reminder (per occurrence)
   const checkAndSendReminders = async (sessionList: ScheduledSession[]) => {
     const now = Date.now();
     const fiveMinFromNow = now + 5 * 60 * 1000;
-    const upcoming = sessionList.filter(s => {
-      const t = new Date(s.scheduled_at).getTime();
-      return s.status === "scheduled" && t > now && t <= fiveMinFromNow;
-    });
-    for (const s of upcoming) {
-      const reminderKey = `discord_reminded_${s.id}`;
-      if (sessionStorage.getItem(reminderKey)) continue;
-      sessionStorage.setItem(reminderKey, "1");
-      supabase.functions.invoke("discord-notify", {
-        body: {
-          action: "send_reminder",
-          workspace_id: workspaceId,
-          session_title: s.title,
-          session_time: s.scheduled_at,
-          host_name: s.host_name,
-          category: s.category,
-        },
-      }).catch(() => {});
+    // Build today/tomorrow occurrences for recurring + one-time
+    const computeOccurrences = (s: ScheduledSession): Date[] => {
+      const out: Date[] = [];
+      const base = new Date(s.scheduled_at);
+      const todayD = new Date(); todayD.setHours(0, 0, 0, 0);
+      const tomorrowD = new Date(todayD); tomorrowD.setDate(todayD.getDate() + 1);
+      const dayKey = (d: Date) => ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][d.getDay()];
+      for (const day of [todayD, tomorrowD]) {
+        if (s.recurring_days?.length && s.recurring_time) {
+          if (!s.recurring_days.includes(dayKey(day))) continue;
+          const [hh, mm] = s.recurring_time.split(":").map(Number);
+          const occ = new Date(day); occ.setHours(hh || 0, mm || 0, 0, 0);
+          out.push(occ);
+        } else if (s.recurring === "weekly") {
+          if (base.getDay() !== day.getDay()) continue;
+          const occ = new Date(day); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+          out.push(occ);
+        } else if (s.recurring === "daily") {
+          const occ = new Date(day); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+          out.push(occ);
+        } else {
+          if (base.toDateString() === day.toDateString()) out.push(base);
+        }
+      }
+      return out;
+    };
+    for (const s of sessionList) {
+      if (s.status !== "scheduled") continue;
+      for (const occ of computeOccurrences(s)) {
+        const t = occ.getTime();
+        if (t <= now || t > fiveMinFromNow) continue;
+        const reminderKey = `discord_reminded_${s.id}_${occ.toISOString()}`;
+        if (sessionStorage.getItem(reminderKey)) continue;
+        sessionStorage.setItem(reminderKey, "1");
+        const slotsForOcc = effectiveSlots(s, occ);
+        const firstAssignee = slotsForOcc.flatMap(sl => sl.assigned).find(n => n) || s.host_name;
+        supabase.functions.invoke("discord-notify", {
+          body: {
+            action: "send_reminder",
+            workspace_id: workspaceId,
+            session_title: s.title,
+            session_time: occ.toISOString(),
+            host_name: firstAssignee,
+            category: s.category,
+            game_url: s.game_url,
+          },
+        }).catch(() => {});
+      }
     }
   };
 
