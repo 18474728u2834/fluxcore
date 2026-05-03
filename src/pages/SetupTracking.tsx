@@ -184,12 +184,12 @@ end
 function Fluxcore:Init()
   Players.PlayerAdded:Connect(function(p)
     self:OnPlayerAdded(p)
-    p.Chatted:Connect(function(msg) self:OnPlayerChatted(p, msg) end)
+    self:HookChat(p)
   end)
   Players.PlayerRemoving:Connect(function(p) self:OnPlayerRemoving(p) end)
   for _, p in ipairs(Players:GetPlayers()) do
     self:OnPlayerAdded(p)
-    p.Chatted:Connect(function(msg) self:OnPlayerChatted(p, msg) end)
+    self:HookChat(p)
   end
   spawn(function() self:RunHeartbeats() end)
   print("[Fluxcore] Tracker v3 initialized")
