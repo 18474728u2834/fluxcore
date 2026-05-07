@@ -223,9 +223,10 @@ serve(async (req) => {
       (wsRoles || []).forEach((r: any) => { if (r.roblox_role_id) roleMap.set(r.roblox_role_id, r); });
 
       let synced = 0;
+      const rankCache = new Map<string, number>();
       for (const m of (members || [])) {
         try {
-          const gr = await fetchGroupRoleId(ws.roblox_api_key, ws.roblox_group_id, m.roblox_user_id);
+          const gr = await fetchGroupRoleId(ws.roblox_api_key, ws.roblox_group_id, m.roblox_user_id, rankCache);
           if (!gr) continue;
           const target = roleMap.get(gr.roleIdShort);
           if (!target) continue;
@@ -233,7 +234,7 @@ serve(async (req) => {
             role_id: target.id, role: target.name, roblox_group_rank: gr.rank, updated_at: new Date().toISOString(),
           }).eq("id", m.id);
           synced++;
-        } catch (_) { /* skip */ }
+        } catch (e) { console.error("[roblox-sync] member sync error", e); }
       }
       return new Response(JSON.stringify({ success: true, synced, total: members?.length || 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
