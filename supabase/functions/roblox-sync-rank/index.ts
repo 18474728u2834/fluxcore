@@ -6,29 +6,46 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Fetches a Roblox user's role in the group via Open Cloud
-async function fetchGroupRoleId(apiKey: string, groupId: string, robloxUserId: string): Promise<{ roleIdShort: string; rank: number } | null> {
-  const res = await fetch(
-    `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=user=='users/${robloxUserId}'&maxPageSize=1`,
-    { headers: { "x-api-key": apiKey } }
-  );
-  if (!res.ok) return null;
+// Fetches a Roblox user's role in the group via Open Cloud v2.
+// IMPORTANT: filter param must be URL-encoded (single quotes + ==).
+async function fetchGroupRoleId(
+  apiKey: string,
+  groupId: string,
+  robloxUserId: string,
+  rankCache?: Map<string, number>,
+): Promise<{ roleIdShort: string; rank: number } | null> {
+  const filter = encodeURIComponent(`user == 'users/${robloxUserId}'`);
+  const url = `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?maxPageSize=1&filter=${filter}`;
+  const res = await fetch(url, { headers: { "x-api-key": apiKey } });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error(`[roblox-sync] memberships ${res.status}: ${body.slice(0, 300)}`);
+    return null;
+  }
   const data = await res.json();
   const m = data.groupMemberships?.[0];
-  if (!m) return null;
-  const roleId = m.role?.split("/").pop();
+  if (!m?.role) return null;
+  // role looks like: "groups/123/roles/456" — take last segment
+  const roleIdShort = String(m.role).split("/").pop()!;
 
-  // Get rank by listing roles (cheap; cached by client)
+  if (rankCache?.has(roleIdShort)) {
+    return { roleIdShort, rank: rankCache.get(roleIdShort)! };
+  }
+
   const rRes = await fetch(
-    `https://apis.roblox.com/cloud/v2/groups/${groupId}/roles/${roleId}`,
-    { headers: { "x-api-key": apiKey } }
+    `https://apis.roblox.com/cloud/v2/groups/${groupId}/roles/${roleIdShort}`,
+    { headers: { "x-api-key": apiKey } },
   );
   let rank = 0;
   if (rRes.ok) {
     const rData = await rRes.json();
     rank = rData.rank || 0;
+  } else {
+    const body = await rRes.text().catch(() => "");
+    console.error(`[roblox-sync] role ${rRes.status}: ${body.slice(0, 300)}`);
   }
-  return { roleIdShort: roleId, rank };
+  rankCache?.set(roleIdShort, rank);
+  return { roleIdShort, rank };
 }
 
 serve(async (req) => {
@@ -206,9 +223,10 @@ serve(async (req) => {
       (wsRoles || []).forEach((r: any) => { if (r.roblox_role_id) roleMap.set(r.roblox_role_id, r); });
 
       let synced = 0;
+      const rankCache = new Map<string, number>();
       for (const m of (members || [])) {
         try {
-          const gr = await fetchGroupRoleId(ws.roblox_api_key, ws.roblox_group_id, m.roblox_user_id);
+          const gr = await fetchGroupRoleId(ws.roblox_api_key, ws.roblox_group_id, m.roblox_user_id, rankCache);
           if (!gr) continue;
           const target = roleMap.get(gr.roleIdShort);
           if (!target) continue;
@@ -216,7 +234,7 @@ serve(async (req) => {
             role_id: target.id, role: target.name, roblox_group_rank: gr.rank, updated_at: new Date().toISOString(),
           }).eq("id", m.id);
           synced++;
-        } catch (_) { /* skip */ }
+        } catch (e) { console.error("[roblox-sync] member sync error", e); }
       }
       return new Response(JSON.stringify({ success: true, synced, total: members?.length || 0 }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
