@@ -22,6 +22,22 @@ interface Quota {
   period: string;
   role_id: string | null;
   created_at: string;
+  last_reset_at: string;
+}
+
+function periodSince(quota: Quota): string {
+  const now = new Date();
+  if (quota.period === "weekly") {
+    const ws = new Date(now);
+    ws.setDate(now.getDate() - now.getDay());
+    ws.setHours(0, 0, 0, 0);
+    return ws.toISOString();
+  }
+  if (quota.period === "monthly") {
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  }
+  // manual / no auto-reset
+  return quota.last_reset_at || quota.created_at;
 }
 
 interface Role {
