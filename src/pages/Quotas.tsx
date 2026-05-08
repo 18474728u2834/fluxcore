@@ -129,12 +129,7 @@ export default function Quotas() {
 
     if (!members) return;
 
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    weekStart.setHours(0, 0, 0, 0);
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const since = quota.period === "weekly" ? weekStart.toISOString() : monthStart.toISOString();
+    const since = periodSince(quota);
 
     const filtered = quota.role_id ? members.filter(m => m.role_id === quota.role_id) : members;
     const progress: MemberProgress[] = [];
