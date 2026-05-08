@@ -22,6 +22,22 @@ interface Quota {
   period: string;
   role_id: string | null;
   created_at: string;
+  last_reset_at: string;
+}
+
+function periodSince(quota: Quota): string {
+  const now = new Date();
+  if (quota.period === "weekly") {
+    const ws = new Date(now);
+    ws.setDate(now.getDate() - now.getDay());
+    ws.setHours(0, 0, 0, 0);
+    return ws.toISOString();
+  }
+  if (quota.period === "monthly") {
+    return new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+  }
+  // manual / no auto-reset
+  return quota.last_reset_at || quota.created_at;
 }
 
 interface Role {
@@ -78,15 +94,9 @@ export default function Quotas() {
 
     // Calculate my progress
     if (robloxUserId && q) {
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
       const progress: { quota: Quota; current: number }[] = [];
       for (const quota of q) {
-        const since = quota.period === "weekly" ? weekStart.toISOString() : monthStart.toISOString();
+        const since = periodSince(quota);
         if (quota.quota_type === "sessions") {
           const { count } = await supabase.from("scheduled_sessions")
             .select("*", { count: "exact", head: true })
@@ -119,12 +129,7 @@ export default function Quotas() {
 
     if (!members) return;
 
-    const now = new Date();
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    weekStart.setHours(0, 0, 0, 0);
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const since = quota.period === "weekly" ? weekStart.toISOString() : monthStart.toISOString();
+    const since = periodSince(quota);
 
     const filtered = quota.role_id ? members.filter(m => m.role_id === quota.role_id) : members;
     const progress: MemberProgress[] = [];
@@ -183,6 +188,17 @@ export default function Quotas() {
     fetchData();
   };
 
+  const handleReset = async (id: string) => {
+    const { error } = await supabase
+      .from("workspace_quotas")
+      .update({ last_reset_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) { toast.error("Failed to reset: " + error.message); return; }
+    toast.success("Progress reset");
+    if (selectedQuota === id) await fetchMemberProgress(id);
+    fetchData();
+  };
+
   const getRoleName = (roleId: string | null) => {
     if (!roleId) return "All Members";
     return roles.find(r => r.id === roleId)?.name || "Unknown";
@@ -227,8 +243,9 @@ export default function Quotas() {
                       <Select value={period} onValueChange={setPeriod}>
                         <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="weekly">Weekly (auto-reset)</SelectItem>
+                          <SelectItem value="monthly">Monthly (auto-reset)</SelectItem>
+                          <SelectItem value="manual">Manual (no auto-reset)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -295,9 +312,18 @@ export default function Quotas() {
                               </div>
                             </div>
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); handleDelete(q.id); }} className="text-muted-foreground hover:text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleReset(q.id); }}
+                              className="text-[11px] px-2 py-1 rounded bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground"
+                              title="Reset everyone's progress on this quota"
+                            >
+                              Reset
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); handleDelete(q.id); }} className="text-muted-foreground hover:text-destructive p-1">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </button>
                     ))}

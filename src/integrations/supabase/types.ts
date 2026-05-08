@@ -987,6 +987,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          last_reset_at: string
           period: string
           quota_type: string
           role_id: string | null
@@ -997,6 +998,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          last_reset_at?: string
           period?: string
           quota_type?: string
           role_id?: string | null
@@ -1007,6 +1009,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          last_reset_at?: string
           period?: string
           quota_type?: string
           role_id?: string | null
