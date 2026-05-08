@@ -46,11 +46,16 @@ serve(async (req) => {
       try {
         const apiKeyR = workspace.roblox_api_key as string;
         const gid = workspace.roblox_group_id as string;
+        const filter = encodeURIComponent(`user == 'users/${robloxUserId}'`);
         const memRes = await fetch(
-          `https://apis.roblox.com/cloud/v2/groups/${gid}/memberships?filter=user=='users/${robloxUserId}'&maxPageSize=1`,
+          `https://apis.roblox.com/cloud/v2/groups/${gid}/memberships?maxPageSize=1&filter=${filter}`,
           { headers: { 'x-api-key': apiKeyR } },
         );
-        if (!memRes.ok) return null;
+        if (!memRes.ok) {
+          const text = await memRes.text().catch(() => '');
+          console.error('Roblox auto-add membership lookup failed:', memRes.status, text.slice(0, 200));
+          return null;
+        }
         const memJson = await memRes.json();
         const m = memJson.groupMemberships?.[0];
         if (!m) return null;
@@ -104,6 +109,18 @@ serve(async (req) => {
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
+
+      // Close any stale open rows for this player before starting a fresh tracked session.
+      // Roblox servers can shut down without firing PlayerRemoving, which otherwise leaves someone "online" forever.
+      const staleCutoff = new Date(Date.now() - 10 * 60_000).toISOString();
+      await supabase
+        .from('activity_sessions')
+        .update({ left_at: new Date().toISOString() })
+        .eq('workspace_id', workspace.id)
+        .eq('roblox_user_id', String(roblox_user_id))
+        .is('left_at', null)
+        .lt('joined_at', staleCutoff);
+      await supabase.rpc('calculate_session_duration', { ws_id: workspace.id });
 
       const { data, error } = await supabase
         .from('activity_sessions')

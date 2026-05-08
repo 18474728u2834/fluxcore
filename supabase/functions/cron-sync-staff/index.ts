@@ -27,7 +27,10 @@ async function listGroupMembersAtRole(apiKey: string, groupId: string, roleId: s
     url.searchParams.set("maxPageSize", "100");
     if (pageToken) url.searchParams.set("pageToken", pageToken);
     const res = await fetch(url.toString(), { headers: { "x-api-key": apiKey } });
-    if (!res.ok) break;
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Roblox memberships role list failed ${res.status}: ${body.slice(0, 200)}`);
+    }
     const j = await res.json();
     for (const m of j.groupMemberships || []) {
       const uid = String(m.user || "").split("/").pop();
@@ -57,16 +60,19 @@ async function fetchUsernames(userIds: string[]): Promise<Record<string, string>
   return map;
 }
 
-async function fetchUserCurrentRoleInGroup(apiKey: string, groupId: string, userId: string): Promise<string | null> {
-  const res = await fetch(
-    `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=user=='users/${userId}'&maxPageSize=1`,
-    { headers: { "x-api-key": apiKey } },
-  );
-  if (!res.ok) return null;
+async function fetchUserCurrentRoleInGroup(apiKey: string, groupId: string, userId: string): Promise<{ ok: true; roleId: string | null } | { ok: false; error: string }> {
+  const url = new URL(`https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships`);
+  url.searchParams.set("filter", `user == 'users/${userId}'`);
+  url.searchParams.set("maxPageSize", "1");
+  const res = await fetch(url.toString(), { headers: { "x-api-key": apiKey } });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    return { ok: false, error: `Roblox membership lookup failed ${res.status}: ${body.slice(0, 200)}` };
+  }
   const j = await res.json();
   const m = j.groupMemberships?.[0];
-  if (!m) return null;
-  return String(m.role || "").split("/").pop() || null;
+  if (!m) return { ok: true, roleId: null };
+  return { ok: true, roleId: String(m.role || "").split("/").pop() || null };
 }
 
 serve(async (req) => {
@@ -121,7 +127,13 @@ serve(async (req) => {
 
       // 2a) ADD missing staff per mapped role
       for (const r of roles) {
-        const inRole = await listGroupMembersAtRole(apiKey, groupId, r.roblox_role_id as string);
+        let inRole: { userId: string }[] = [];
+        try {
+          inRole = await listGroupMembersAtRole(apiKey, groupId, r.roblox_role_id as string);
+        } catch (e) {
+          console.error("cron-sync-staff role list failed:", e);
+          continue;
+        }
         const missing: string[] = [];
         for (const { userId } of inRole) {
           if (!memberByUid.has(userId)) missing.push(userId);
@@ -151,8 +163,13 @@ serve(async (req) => {
       const toCheck = (members || []).slice(0, 50);
       for (const m of toCheck) {
         try {
-          const currentRoleId = await fetchUserCurrentRoleInGroup(apiKey, groupId, String(m.roblox_user_id));
-          // Not in group OR rank not mapped -> remove
+          const currentRole = await fetchUserCurrentRoleInGroup(apiKey, groupId, String(m.roblox_user_id));
+          if (!currentRole.ok) {
+            console.error("cron-sync-staff member lookup failed:", currentRole.error);
+            continue;
+          }
+          const currentRoleId = currentRole.roleId;
+          // Only remove on a confirmed lookup where the user is not in the group or rank is not mapped.
           const stillStaff = currentRoleId && roleByRobloxId.has(currentRoleId);
           if (!stillStaff) {
             await sb.from("workspace_members").delete().eq("id", m.id);

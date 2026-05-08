@@ -49,7 +49,7 @@ serve(async (req) => {
 
     let query = supabase
       .from("scheduled_sessions")
-      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels, slots, tag_ids")
+      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels, slots, tag_ids, occurrence_assignments")
       .eq("workspace_id", workspace.id)
       .in("status", ["scheduled", "started"])
       .order("scheduled_at", { ascending: true });
@@ -116,25 +116,33 @@ serve(async (req) => {
         const endTs = occ.getTime() + (s.duration_minutes || 60) * 60_000;
         if (Date.now() > endTs) continue;
 
-        // Resolve host roblox id
+        const sessionSlots = Array.isArray((s as any).slots) ? (s as any).slots : [];
+        const occurrenceAssignments = (s as any).occurrence_assignments?.[occ.toISOString()];
+        const effectiveSlotAssignments = Array.isArray(occurrenceAssignments)
+          ? sessionSlots.map((sl: any, idx: number) => ({ ...sl, assigned: occurrenceAssignments[idx] || [] }))
+          : sessionSlots;
+        const firstAssignedName = effectiveSlotAssignments.flatMap((sl: any) => sl.assigned || []).find((n: any) => n);
+        const hostName = firstAssignedName || (s.host_name && s.host_name !== "Unassigned" ? s.host_name : null);
+
+        // Resolve host roblox id. Prefer explicit slot assignment; only use creator id when a host name is actually set.
         let host: OutSession["host"] = null;
-        if (s.host_id) {
+        if (s.host_id && hostName) {
           const { data: vu } = await supabase
             .from("verified_users")
             .select("roblox_user_id, roblox_username")
             .eq("user_id", s.host_id)
             .maybeSingle();
           if (vu?.roblox_user_id) {
-            host = { userId: Number(vu.roblox_user_id), username: vu.roblox_username || s.host_name };
+            host = { userId: Number(vu.roblox_user_id), username: hostName };
           }
         }
-        if (!host && s.host_name) {
+        if (!host && hostName) {
           // Try lookup by username via Roblox
           try {
             const r = await fetch("https://users.roblox.com/v1/usernames/users", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ usernames: [s.host_name], excludeBannedUsers: false }),
+              body: JSON.stringify({ usernames: [hostName], excludeBannedUsers: false }),
             });
             const j = await r.json();
             const u = j.data?.[0];
@@ -166,8 +174,7 @@ serve(async (req) => {
         }
 
         // Resolve all slot assignees -> Roblox userIds (best effort, batched per session)
-        const sessionSlots = Array.isArray((s as any).slots) ? (s as any).slots : [];
-        const allNames = sessionSlots.flatMap((sl: any) => (sl.assigned || []).filter((n: any) => n));
+        const allNames = effectiveSlotAssignments.flatMap((sl: any) => (sl.assigned || []).filter((n: any) => n));
         const nameToId = new Map<string, { id: number; name: string }>();
         if (allNames.length > 0) {
           try {
@@ -182,7 +189,7 @@ serve(async (req) => {
             }
           } catch (_) { /* ignore */ }
         }
-        const resolvedSlots = sessionSlots.map((sl: any) => ({
+        const resolvedSlots = effectiveSlotAssignments.map((sl: any) => ({
           label: sl.label,
           count: sl.count,
           assigned: (sl.assigned || []).map((n: any) => {
