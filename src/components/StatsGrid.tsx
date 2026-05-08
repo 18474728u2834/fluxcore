@@ -10,25 +10,41 @@ export function StatsGrid() {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const [membersRes, activeRes, sessionsRes, eventsRes] = await Promise.all([
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+
+      const [membersRes, activeRes, weekRes, eventsRes] = await Promise.all([
         supabase.from("workspace_members").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
-        supabase.from("activity_sessions").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId).is("left_at", null),
-        supabase.from("activity_sessions").select("duration_seconds").eq("workspace_id", workspaceId).not("duration_seconds", "is", null),
+        supabase.from("activity_sessions").select("id, joined_at, idle_seconds").eq("workspace_id", workspaceId).is("left_at", null).eq("discarded", false),
+        supabase.from("activity_sessions").select("duration_seconds, joined_at, left_at, idle_seconds").eq("workspace_id", workspaceId).eq("discarded", false).gte("joined_at", weekStart.toISOString()),
         supabase.from("scheduled_sessions").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId).eq("status", "scheduled"),
       ]);
 
-      const totalSeconds = (sessionsRes.data || []).reduce((sum, s) => sum + (s.duration_seconds || 0), 0);
+      // Sum completed sessions this week + live counted time on active sessions this week
+      const now = Date.now();
+      let weekSeconds = 0;
+      for (const s of weekRes.data || []) {
+        if (s.duration_seconds != null) {
+          weekSeconds += Math.max(0, (s.duration_seconds || 0) - (s.idle_seconds || 0));
+        } else if (!s.left_at) {
+          const live = Math.max(0, Math.floor((now - new Date(s.joined_at).getTime()) / 1000) - (s.idle_seconds || 0));
+          weekSeconds += live;
+        }
+      }
 
       setStats({
         members: membersRes.count || 0,
-        activeSessions: activeRes.count || 0,
-        totalHours: Math.round(totalSeconds / 3600),
+        activeSessions: activeRes.data?.length || 0,
+        totalHours: Math.round(weekSeconds / 3600),
         scheduledEvents: eventsRes.count || 0,
       });
       setLoading(false);
     };
 
     fetchStats();
+    // Periodic refresh so live counters stay current even without realtime events
+    const id = setInterval(fetchStats, 30_000);
 
     const channel = supabase
       .channel(`stats-${workspaceId}`)
@@ -36,7 +52,7 @@ export function StatsGrid() {
       .on("postgres_changes", { event: "*", schema: "public", table: "activity_sessions", filter: `workspace_id=eq.${workspaceId}` }, () => fetchStats())
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => { clearInterval(id); supabase.removeChannel(channel); };
   }, [workspaceId]);
 
   if (loading) {
@@ -50,7 +66,7 @@ export function StatsGrid() {
   const items = [
     { label: "Members", value: stats.members.toString(), icon: Users, live: false },
     { label: "Active Now", value: stats.activeSessions.toString(), icon: Activity, live: stats.activeSessions > 0 },
-    { label: "Total Hours", value: stats.totalHours.toString(), icon: Clock, live: false },
+    { label: "Hours This Week", value: stats.totalHours.toString(), icon: Clock, live: stats.activeSessions > 0 },
     { label: "Upcoming Events", value: stats.scheduledEvents.toString(), icon: CalendarDays, live: false },
   ];
 
