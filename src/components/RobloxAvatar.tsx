@@ -1,20 +1,34 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-// Cache: cacheKey -> resolved image URL (CDN or rolimons)
+// In-memory + localStorage cache: cacheKey -> resolved image URL (CDN or rolimons)
 const urlCache = new Map<string, string>();
 const inflight = new Map<string, Promise<string | null>>();
 
-// Deterministic colorful gradient background per username, used while loading
-// or when every avatar source fails. Gives the "random red/yellow/blue" feel.
+const LS_PREFIX = "rbx_av_v1:";
+
+function lsGet(key: string): string | null {
+  try { return localStorage.getItem(LS_PREFIX + key); } catch { return null; }
+}
+function lsSet(key: string, value: string) {
+  try { localStorage.setItem(LS_PREFIX + key, value); } catch { /* ignore */ }
+}
+
+// Direct Roblox redirect endpoint -> 302s straight to the CDN image.
+// Browser treats it as an image so it bypasses the JSON edge-call entirely.
+function directHeadshotUrl(userId: string | number): string {
+  return `https://www.roblox.com/headshot-thumbnail/image?userId=${userId}&width=150&height=150&format=png`;
+}
+
+// Deterministic colorful gradient background per username
 const PALETTES: Array<[string, string]> = [
-  ["#ef4444", "#f97316"], // red -> orange
-  ["#f59e0b", "#eab308"], // amber -> yellow
-  ["#10b981", "#06b6d4"], // emerald -> cyan
-  ["#3b82f6", "#6366f1"], // blue -> indigo
-  ["#8b5cf6", "#ec4899"], // violet -> pink
-  ["#14b8a6", "#22c55e"], // teal -> green
-  ["#f43f5e", "#a855f7"], // rose -> purple
+  ["#ef4444", "#f97316"],
+  ["#f59e0b", "#eab308"],
+  ["#10b981", "#06b6d4"],
+  ["#3b82f6", "#6366f1"],
+  ["#8b5cf6", "#ec4899"],
+  ["#14b8a6", "#22c55e"],
+  ["#f43f5e", "#a855f7"],
 ];
 
 function hashString(s: string): number {
@@ -36,35 +50,26 @@ async function resolveViaEdge(params: { username?: string; userId?: string | num
 
   const cacheKey = params.userId ? `id:${params.userId}` : `name:${(params.username || "").toLowerCase()}`;
   if (urlCache.has(cacheKey)) return urlCache.get(cacheKey)!;
+  const cached = lsGet(cacheKey);
+  if (cached) { urlCache.set(cacheKey, cached); return cached; }
   if (inflight.has(cacheKey)) return inflight.get(cacheKey)!;
 
   const p = (async () => {
     try {
-      const { data, error } = await supabase.functions.invoke("roblox-avatar", {
-        method: "GET",
-        // The supabase client encodes query string via headers; we use POST-like body with method GET
-        // Workaround: build URL through fetch directly using the function URL.
-      } as any);
-      // Some supabase-js versions don't pass query for GET — fallback to direct fetch
-      let url: string | null = null;
-      if (data && (data as any).url) {
-        url = (data as any).url;
-      } else {
-        const projectRef = (import.meta as any).env?.VITE_SUPABASE_PROJECT_ID;
-        const base = projectRef
-          ? `https://${projectRef}.supabase.co/functions/v1/roblox-avatar`
-          : `/api/v1/roblox-avatar`;
-        const r = await fetch(`${base}?${search.toString()}`, {
-          headers: {
-            apikey: (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY ?? "",
-          },
-        });
-        if (r.ok) {
-          const j = await r.json();
-          url = j?.url ?? null;
-        }
+      const projectRef = (import.meta as any).env?.VITE_SUPABASE_PROJECT_ID;
+      const base = projectRef
+        ? `https://${projectRef}.supabase.co/functions/v1/roblox-avatar`
+        : `/api/v1/roblox-avatar`;
+      const r = await fetch(`${base}?${search.toString()}`, {
+        headers: { apikey: (import.meta as any).env?.VITE_SUPABASE_PUBLISHABLE_KEY ?? "" },
+      });
+      if (!r.ok) return null;
+      const j = await r.json();
+      const url: string | null = j?.url ?? null;
+      if (url) {
+        urlCache.set(cacheKey, url);
+        lsSet(cacheKey, url);
       }
-      if (url) urlCache.set(cacheKey, url);
       return url;
     } catch {
       return null;
@@ -86,15 +91,26 @@ interface Props {
 export function RobloxAvatar({ username, userId, className }: Props) {
   const cacheKey = userId ? `id:${userId}` : `name:${username.toLowerCase()}`;
 
-  const [src, setSrc] = useState<string | null>(() => urlCache.get(cacheKey) || null);
+  // Compute initial src synchronously so first paint shows the image.
+  const initialSrc = (() => {
+    if (urlCache.has(cacheKey)) return urlCache.get(cacheKey)!;
+    const ls = lsGet(cacheKey);
+    if (ls) { urlCache.set(cacheKey, ls); return ls; }
+    if (userId) return directHeadshotUrl(userId); // instant, no roundtrip
+    return null;
+  })();
+
+  const [src, setSrc] = useState<string | null>(initialSrc);
   const [errored, setErrored] = useState(false);
 
   useEffect(() => {
     let alive = true;
-    if (urlCache.has(cacheKey)) {
-      setSrc(urlCache.get(cacheKey)!);
-      return;
-    }
+    if (urlCache.has(cacheKey)) { setSrc(urlCache.get(cacheKey)!); return; }
+    const ls = lsGet(cacheKey);
+    if (ls) { urlCache.set(cacheKey, ls); setSrc(ls); return; }
+    // For username-only, resolve via edge to get a userId/CDN url.
+    // For userId we already render the direct URL, but still resolve in
+    // background to upgrade to a stable CDN URL we can cache.
     resolveViaEdge({ username, userId }).then((u) => {
       if (alive && u) setSrc(u);
     });
@@ -117,9 +133,10 @@ export function RobloxAvatar({ username, userId, className }: Props) {
       src={src}
       alt={username}
       loading="lazy"
+      decoding="async"
       referrerPolicy="no-referrer"
       onError={() => setErrored(true)}
-      className={`${className ?? ""} object-cover animate-in fade-in zoom-in-95 duration-300`}
+      className={`${className ?? ""} object-cover`}
     />
   );
 }
