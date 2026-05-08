@@ -103,8 +103,9 @@ serve(async (req) => {
 
     for (const ws of workspaces || []) {
       summary.workspaces++;
-      const groupId = ws.roblox_group_id as string;
-      const apiKey = ws.roblox_api_key as string;
+      const groupId = String(ws.roblox_group_id || "").trim();
+      const apiKey = String(ws.roblox_api_key || "").trim();
+      if (!groupId || !apiKey) continue;
 
       // Roles with mapping
       const { data: roles } = await sb
