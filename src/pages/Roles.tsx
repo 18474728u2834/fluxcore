@@ -125,10 +125,12 @@ export default function Roles() {
       const res = await supabase.functions.invoke("roblox-rank", {
         body: { action: "import_roles", workspace_id: workspaceId },
       });
-      if (res.error) {
-        toast.error("Import failed: " + (res.error.message || "Check your Roblox API key"));
-      } else if (res.data?.error) {
-        toast.error("Import failed: " + res.data.error);
+      const errMsg = res.error?.message || res.data?.error;
+      if (errMsg) {
+        const friendly = /Unsupported authorization|UNAUTHENTICATED|401/i.test(errMsg)
+          ? "Roblox rejected your API key. Make sure you pasted a User API Key from create.roblox.com → Credentials → API Keys (NOT an OAuth client secret), and that it has the group:read and group:write scopes for your group."
+          : errMsg;
+        toast.error("Import failed: " + friendly);
       } else {
         toast.success(`Imported ${res.data?.imported || 0} roles from Roblox group`);
         fetchRoles();

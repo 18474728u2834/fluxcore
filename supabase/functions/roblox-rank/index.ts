@@ -41,6 +41,9 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    // Trim whitespace/newlines from pasted API key (common cause of "Unsupported authorization method")
+    ws.roblox_api_key = String(ws.roblox_api_key).trim();
+    ws.roblox_group_id = String(ws.roblox_group_id).trim();
 
     // Helper: fetch ALL roles with pagination
     async function fetchAllRoles(): Promise<any[]> {
@@ -220,8 +223,8 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       } catch (err: any) {
-        return new Response(JSON.stringify({ error: err.message }), {
-          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        return new Response(JSON.stringify({ error: err.message || "Import failed" }), {
+          status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
     }
