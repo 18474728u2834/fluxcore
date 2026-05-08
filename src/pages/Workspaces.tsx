@@ -147,16 +147,19 @@ export default function Workspaces() {
         });
         if (res.ok) {
           const data = await res.json();
-          const icons: Record<string, string> = {};
           if (data.data) {
-            for (const item of data.data) {
-              if (item.imageUrl) {
-                const matchingWs = ws.find(w => w.roblox_group_id === String(item.targetId));
-                if (matchingWs) icons[matchingWs.id] = item.imageUrl;
+            setGroupIcons(prev => {
+              const next = { ...prev };
+              for (const item of data.data) {
+                if (item.imageUrl) {
+                  const matchingWs = ws.find(w => w.roblox_group_id === String(item.targetId));
+                  if (matchingWs) next[matchingWs.id] = item.imageUrl;
+                }
               }
-            }
+              try { localStorage.setItem("fluxcore_group_icons_v1", JSON.stringify(next)); } catch {}
+              return next;
+            });
           }
-          setGroupIcons(icons);
         }
       } catch (e) {
         console.error("Failed to fetch group icons:", e);
