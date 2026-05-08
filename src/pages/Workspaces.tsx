@@ -24,7 +24,12 @@ export default function Workspaces() {
   const { user, signOut, loading: authLoading, robloxUsername } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [groupIcons, setGroupIcons] = useState<Record<string, string>>({});
+  const [groupIcons, setGroupIcons] = useState<Record<string, string>>(() => {
+    try {
+      const raw = localStorage.getItem("fluxcore_group_icons_v1");
+      return raw ? JSON.parse(raw) : {};
+    } catch { return {}; }
+  });
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
