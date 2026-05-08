@@ -94,15 +94,9 @@ export default function Quotas() {
 
     // Calculate my progress
     if (robloxUserId && q) {
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
       const progress: { quota: Quota; current: number }[] = [];
       for (const quota of q) {
-        const since = quota.period === "weekly" ? weekStart.toISOString() : monthStart.toISOString();
+        const since = periodSince(quota);
         if (quota.quota_type === "sessions") {
           const { count } = await supabase.from("scheduled_sessions")
             .select("*", { count: "exact", head: true })
