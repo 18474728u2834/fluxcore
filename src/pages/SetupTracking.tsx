@@ -10,29 +10,28 @@ export default function SetupTracking() {
 
   const FUNCTION_URL = "https://fluxcore.works/api/v1/track";
 
-  const luaScript = `-- Fluxcore Activity Tracker v3
+  const luaScript = `-- Fluxcore Activity Tracker v4 (silent)
 -- Place in ServerScriptService as a Script named "FluxcoreTracker"
--- Features: Staff-only tracking, idle detection, message logging, heartbeats,
---           owner-configured AFK confirm prompt (drops session time if ignored)
+-- Detects AFK silently: 30s of no input OR window unfocus pauses tracked time.
+-- No on-screen GUI, no popups.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local AfkEvent = ReplicatedStorage:FindFirstChild("FluxcoreAfkPrompt")
-if not AfkEvent then
-  AfkEvent = Instance.new("RemoteEvent")
-  AfkEvent.Name = "FluxcoreAfkPrompt"
-  AfkEvent.Parent = ReplicatedStorage
+local InputEvent = ReplicatedStorage:FindFirstChild("FluxcoreInput")
+if not InputEvent then
+  InputEvent = Instance.new("RemoteEvent")
+  InputEvent.Name = "FluxcoreInput"
+  InputEvent.Parent = ReplicatedStorage
 end
 
 local Fluxcore = {}
 Fluxcore.API_URL = "${FUNCTION_URL}"
 Fluxcore.API_KEY = "${workspace?.api_key || "YOUR_API_KEY_FROM_SETTINGS"}"
 Fluxcore.Sessions = {}
-Fluxcore.HEARTBEAT_INTERVAL = 30
-Fluxcore.IDLE_THRESHOLD = 120
-Fluxcore.AFK_RESPONSE_WINDOW = 30 -- seconds player has to click the button
+Fluxcore.HEARTBEAT_INTERVAL = 15
+Fluxcore.IDLE_THRESHOLD = 30 -- seconds with no input/focus = idle (time stops counting)
 Fluxcore.STAFF_ONLY = true
 
 function Fluxcore:Send(payload)
@@ -49,7 +48,6 @@ function Fluxcore:Send(payload)
     local okDecode, decoded = pcall(function() return HttpService:JSONDecode(res) end)
     if okDecode then return decoded end
   end
-  warn("[Fluxcore] Request failed:", res)
   return nil
 end
 
@@ -66,9 +64,7 @@ function Fluxcore:OnPlayerAdded(player)
       last_input = tick(),
       message_count = 0,
       idle_seconds = 0,
-      afk_confirm_seconds = tonumber(data.afk_confirm_seconds) or 0,
-      afk_prompt_sent_at = nil,
-      discarded = false,
+      focused = true,
     }
     print("[Fluxcore] Tracking", player.Name)
   end
@@ -76,7 +72,7 @@ end
 
 function Fluxcore:OnPlayerRemoving(player)
   local session = self.Sessions[player.UserId]
-  if session and not session.discarded then
+  if session then
     self:Send({
       action = "leave",
       roblox_user_id = tostring(player.UserId),
@@ -93,9 +89,7 @@ function Fluxcore:OnPlayerChatted(player, message)
   if session then
     session.message_count = session.message_count + 1
     session.last_input = tick()
-    session.afk_prompt_sent_at = nil
   end
-  -- Always send chat (server gates on message_logger_enabled + staff-only filtering happens via session existence elsewhere)
   self:Send({
     action = "event",
     roblox_user_id = tostring(player.UserId),
@@ -106,11 +100,9 @@ function Fluxcore:OnPlayerChatted(player, message)
 end
 
 function Fluxcore:HookChat(player)
-  -- Legacy chat (works when ChatVersion = LegacyChatService)
   player.Chatted:Connect(function(msg) self:OnPlayerChatted(player, msg) end)
 end
 
--- TextChatService (new Roblox chat) - covers ChatVersion = TextChatService
 local TextChatService = game:GetService("TextChatService")
 TextChatService.MessageReceived:Connect(function(message)
   if not message.TextSource then return end
@@ -120,63 +112,35 @@ TextChatService.MessageReceived:Connect(function(message)
   Fluxcore:OnPlayerChatted(player, message.Text)
 end)
 
-AfkEvent.OnServerEvent:Connect(function(player)
+-- Client tells us about input or focus changes (silent, no UI)
+InputEvent.OnServerEvent:Connect(function(player, kind)
   local session = Fluxcore.Sessions[player.UserId]
   if not session then return end
-  session.last_input = tick()
-  session.afk_prompt_sent_at = nil
-  Fluxcore:Send({
-    action = "afk_confirm",
-    roblox_user_id = tostring(player.UserId),
-    session_id = session.session_id,
-  })
+  if kind == "input" or kind == "focus" then
+    session.last_input = tick()
+    session.focused = true
+  elseif kind == "blur" then
+    session.focused = false
+  end
 end)
 
 function Fluxcore:RunHeartbeats()
   while true do
     wait(self.HEARTBEAT_INTERVAL)
     for userId, session in pairs(self.Sessions) do
-      if not session.discarded then
-        local idleTime = tick() - session.last_input
-        local isIdle = idleTime >= self.IDLE_THRESHOLD
-        if isIdle then
-          session.idle_seconds = session.idle_seconds + self.HEARTBEAT_INTERVAL
-        end
-
-        if session.afk_confirm_seconds and session.afk_confirm_seconds > 0 then
-          if not session.afk_prompt_sent_at and idleTime >= session.afk_confirm_seconds then
-            local player = Players:GetPlayerByUserId(userId)
-            if player then
-              session.afk_prompt_sent_at = tick()
-              AfkEvent:FireClient(player, self.AFK_RESPONSE_WINDOW)
-              self:Send({
-                action = "afk_prompt",
-                roblox_user_id = tostring(userId),
-                session_id = session.session_id,
-              })
-            end
-          elseif session.afk_prompt_sent_at and (tick() - session.afk_prompt_sent_at) >= self.AFK_RESPONSE_WINDOW then
-            session.discarded = true
-            local player = Players:GetPlayerByUserId(userId)
-            self:Send({
-              action = "afk_timeout",
-              roblox_user_id = tostring(userId),
-              roblox_username = player and player.Name or nil,
-              session_id = session.session_id,
-            })
-            print("[Fluxcore] Session discarded for AFK:", userId)
-          end
-        end
-
-        self:Send({
-          action = "heartbeat",
-          roblox_user_id = tostring(userId),
-          session_id = session.session_id,
-          is_idle = isIdle,
-          message_count = session.message_count,
-          idle_seconds = session.idle_seconds,
-        })
+      local idleTime = tick() - session.last_input
+      local isIdle = (not session.focused) or (idleTime >= self.IDLE_THRESHOLD)
+      if isIdle then
+        session.idle_seconds = session.idle_seconds + self.HEARTBEAT_INTERVAL
       end
+      self:Send({
+        action = "heartbeat",
+        roblox_user_id = tostring(userId),
+        session_id = session.session_id,
+        is_idle = isIdle,
+        message_count = session.message_count,
+        idle_seconds = session.idle_seconds,
+      })
     end
   end
 end
@@ -192,95 +156,46 @@ function Fluxcore:Init()
     self:HookChat(p)
   end
   spawn(function() self:RunHeartbeats() end)
-  print("[Fluxcore] Tracker v3 initialized")
+  print("[Fluxcore] Tracker v4 initialized")
 end
 
 Fluxcore:Init()
 return Fluxcore`;
 
-  const luaClientScript = `-- Fluxcore AFK Confirm UI (CLIENT)
--- Place in StarterPlayer > StarterPlayerScripts as a LocalScript named "FluxcoreAfkClient"
+  const luaClientScript = `-- Fluxcore Input Beacon (CLIENT) - silent, no GUI
+-- Place in StarterPlayer > StarterPlayerScripts as a LocalScript named "FluxcoreInputBeacon"
+-- Pings the server when the player presses keys/clicks or focuses/unfocuses the window.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
 
-local player = Players.LocalPlayer
-local AfkEvent = ReplicatedStorage:WaitForChild("FluxcoreAfkPrompt")
+local InputEvent = ReplicatedStorage:WaitForChild("FluxcoreInput")
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "FluxcoreAfkPrompt"
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
-gui.Enabled = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local PING_INTERVAL = 5 -- only ping at most every 5 seconds while active
+local lastPing = 0
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 360, 0, 130)
-frame.Position = UDim2.new(0.5, -180, 0.5, -65)
-frame.BackgroundColor3 = Color3.fromRGB(20, 20, 28)
-frame.BorderSizePixel = 0
-frame.Parent = gui
+local function pingActive()
+  local now = tick()
+  if now - lastPing < PING_INTERVAL then return end
+  lastPing = now
+  pcall(function() InputEvent:FireServer("input") end)
+end
 
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
-
-local stroke = Instance.new("UIStroke", frame)
-stroke.Color = Color3.fromRGB(124, 58, 237)
-stroke.Thickness = 2
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -20, 0, 28)
-title.Position = UDim2.new(0, 10, 0, 12)
-title.BackgroundTransparency = 1
-title.Text = "Are you still active?"
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = frame
-
-local sub = Instance.new("TextLabel")
-sub.Size = UDim2.new(1, -20, 0, 36)
-sub.Position = UDim2.new(0, 10, 0, 42)
-sub.BackgroundTransparency = 1
-sub.Text = "Click below or your session time won't be logged."
-sub.TextColor3 = Color3.fromRGB(180, 180, 195)
-sub.Font = Enum.Font.Gotham
-sub.TextSize = 13
-sub.TextXAlignment = Enum.TextXAlignment.Left
-sub.TextWrapped = true
-sub.Parent = frame
-
-local btn = Instance.new("TextButton")
-btn.Size = UDim2.new(1, -20, 0, 36)
-btn.Position = UDim2.new(0, 10, 1, -46)
-btn.BackgroundColor3 = Color3.fromRGB(124, 58, 237)
-btn.Text = "Click here to remove AFK timer"
-btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-btn.Font = Enum.Font.GothamBold
-btn.TextSize = 14
-btn.AutoButtonColor = true
-btn.Parent = frame
-local btnCorner = Instance.new("UICorner", btn)
-btnCorner.CornerRadius = UDim.new(0, 8)
-
-btn.MouseButton1Click:Connect(function()
-  AfkEvent:FireServer()
-  gui.Enabled = false
+UserInputService.InputBegan:Connect(function(_, gpe)
+  if gpe then return end
+  pingActive()
 end)
 
-AfkEvent.OnClientEvent:Connect(function(window)
-  gui.Enabled = true
-  local startTime = tick()
-  task.spawn(function()
-    while gui.Enabled do
-      local remaining = math.max(0, math.floor(window - (tick() - startTime)))
-      sub.Text = "Click below in " .. remaining .. "s or your session time won't be logged."
-      if remaining <= 0 then gui.Enabled = false break end
-      task.wait(1)
-    end
-  end)
-end)`;
+UserInputService.WindowFocused:Connect(function()
+  lastPing = 0
+  pcall(function() InputEvent:FireServer("focus") end)
+end)
+
+UserInputService.WindowFocusReleased:Connect(function()
+  pcall(function() InputEvent:FireServer("blur") end)
+end)
+`;
 
   const [copiedClient, setCopiedClient] = useState(false);
 
