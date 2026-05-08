@@ -243,8 +243,9 @@ export default function Quotas() {
                       <Select value={period} onValueChange={setPeriod}>
                         <SelectTrigger className="bg-muted border-border"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="weekly">Weekly</SelectItem>
-                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="weekly">Weekly (auto-reset)</SelectItem>
+                          <SelectItem value="monthly">Monthly (auto-reset)</SelectItem>
+                          <SelectItem value="manual">Manual (no auto-reset)</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
