@@ -188,6 +188,17 @@ export default function Quotas() {
     fetchData();
   };
 
+  const handleReset = async (id: string) => {
+    const { error } = await supabase
+      .from("workspace_quotas")
+      .update({ last_reset_at: new Date().toISOString() })
+      .eq("id", id);
+    if (error) { toast.error("Failed to reset: " + error.message); return; }
+    toast.success("Progress reset");
+    if (selectedQuota === id) await fetchMemberProgress(id);
+    fetchData();
+  };
+
   const getRoleName = (roleId: string | null) => {
     if (!roleId) return "All Members";
     return roles.find(r => r.id === roleId)?.name || "Unknown";
