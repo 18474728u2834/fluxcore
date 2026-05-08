@@ -312,9 +312,18 @@ export default function Quotas() {
                               </div>
                             </div>
                           </div>
-                          <button onClick={(e) => { e.stopPropagation(); handleDelete(q.id); }} className="text-muted-foreground hover:text-destructive">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleReset(q.id); }}
+                              className="text-[11px] px-2 py-1 rounded bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground"
+                              title="Reset everyone's progress on this quota"
+                            >
+                              Reset
+                            </button>
+                            <button onClick={(e) => { e.stopPropagation(); handleDelete(q.id); }} className="text-muted-foreground hover:text-destructive p-1">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </button>
                     ))}
