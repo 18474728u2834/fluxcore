@@ -158,6 +158,36 @@ export type Database = {
           },
         ]
       }
+      data_export_requests: {
+        Row: {
+          created_at: string
+          id: string
+          payload: Json | null
+          requested_by: string
+          status: string
+          target_user_id: string
+          target_username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          requested_by: string
+          status?: string
+          target_user_id: string
+          target_username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          requested_by?: string
+          status?: string
+          target_user_id?: string
+          target_username?: string | null
+        }
+        Relationships: []
+      }
       document_signatures: {
         Row: {
           document_id: string
@@ -643,6 +673,95 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: []
+      }
+      staff_admins: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          id: string
+          roblox_username: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          id?: string
+          roblox_username: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          id?: string
+          roblox_username?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      staff_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string
+          admin_username: string | null
+          created_at: string
+          details: Json | null
+          id: string
+          target_id: string | null
+          target_type: string | null
+        }
+        Insert: {
+          action: string
+          admin_user_id: string
+          admin_username?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string
+          admin_username?: string | null
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_type?: string | null
+        }
+        Relationships: []
+      }
+      staff_permissions: {
+        Row: {
+          admin_id: string
+          granted_at: string
+          id: string
+          permission: string
+        }
+        Insert: {
+          admin_id: string
+          granted_at?: string
+          id?: string
+          permission: string
+        }
+        Update: {
+          admin_id?: string
+          granted_at?: string
+          id?: string
+          permission?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_permissions_admin_id_fkey"
+            columns: ["admin_id"]
+            isOneToOne: false
+            referencedRelation: "staff_admins"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       support_messages: {
         Row: {
@@ -1223,11 +1342,14 @@ export type Database = {
           verified_official: boolean
         }[]
       }
+      has_staff_permission: { Args: { _perm: string }; Returns: boolean }
       has_workspace_permission: {
         Args: { _permission: string; _workspace_id: string }
         Returns: boolean
       }
       is_fluxcore_staff: { Args: never; Returns: boolean }
+      is_staff_admin: { Args: never; Returns: boolean }
+      is_staff_owner_admin: { Args: never; Returns: boolean }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
       lookup_workspace_by_invite: {

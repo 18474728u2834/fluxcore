@@ -48,6 +48,7 @@ const MessageLogs = lazy(() => import("./pages/MessageLogs"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const Admin = lazy(() => import("./pages/Admin"));
 
 const queryClient = new QueryClient();
 
@@ -149,6 +150,8 @@ function AppRoutes() {
         <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
         <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="/staff-dashboard" element={<Admin />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
