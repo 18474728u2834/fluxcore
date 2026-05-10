@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones, BadgeCheck, Sparkles, Gift } from "lucide-react";
+import { Plus, ArrowRight, Loader2, LogOut, Sun, Moon, Headphones, BadgeCheck, Sparkles, Gift, Shield } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
@@ -40,12 +40,21 @@ export default function Workspaces() {
   const [createdInviteCode, setCreatedInviteCode] = useState<string | null>(null);
   const [pendingGrant, setPendingGrant] = useState<{ grant_id: string; days: number } | null>(null);
   const [applyingGrantTo, setApplyingGrantTo] = useState<string | null>(null);
+  const [isStaff, setIsStaff] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) { navigate("/login"); return; }
     fetchWorkspaces();
     claimPendingGrant();
+    // Check if current user is a Fluxcore staff admin
+    (async () => {
+      const [{ data: sa }, { data: vu }] = await Promise.all([
+        supabase.from("staff_admins").select("id").eq("user_id", user.id).maybeSingle(),
+        supabase.from("verified_users").select("roblox_username").eq("user_id", user.id).maybeSingle(),
+      ]);
+      setIsStaff(!!sa || vu?.roblox_username?.toLowerCase() === "novavoff");
+    })();
   }, [user, authLoading]);
 
   const claimPendingGrant = async () => {
@@ -406,6 +415,19 @@ export default function Workspaces() {
         )}
 
         <PremiumGrantManager />
+
+        {isStaff && (
+          <div className="mt-10 pt-6 border-t border-border/20 flex justify-center">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/admin")}
+              className="gap-2"
+            >
+              <Shield className="w-4 h-4 text-primary" />
+              Open Staff Dashboard
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   );
