@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { PremiumGrantManager } from "@/components/PremiumGrantManager";
+
 
 interface Workspace {
   id: string;
@@ -413,8 +413,6 @@ export default function Workspaces() {
             <p className="text-sm text-muted-foreground">Create your first workspace to get started, or ask a workspace owner to invite you.</p>
           </div>
         )}
-
-        <PremiumGrantManager />
 
         {isStaff && (
           <div className="mt-10 pt-6 border-t border-border/20 flex justify-center">
