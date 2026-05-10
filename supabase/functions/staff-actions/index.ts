@@ -163,19 +163,66 @@ Deno.serve(async (req) => {
         if (!caller.isOwnerAdmin) return json({ error: "forbidden" }, 403);
         const id = String(body.admin_id || "");
         const perms: string[] = Array.isArray(body.permissions) ? body.permissions : [];
+
+        // Capture previous perms before mutating
+        const { data: prevRows } = await sb
+          .from("staff_permissions")
+          .select("permission")
+          .eq("admin_id", id);
+        const prev = (prevRows || []).map((r: any) => r.permission).sort();
+        const next = [...perms].sort();
+
         await sb.from("staff_permissions").delete().eq("admin_id", id);
         if (perms.length) {
           await sb.from("staff_permissions").insert(perms.map((p) => ({ admin_id: id, permission: p })));
         }
-        await audit(caller, "set_permissions", "staff_admin", id, { permissions: perms });
+
+        // Resolve target username for nicer audit summary
+        const { data: target } = await sb.from("staff_admins").select("roblox_username").eq("id", id).maybeSingle();
+        const targetName = target?.roblox_username || id.slice(0, 8);
+
+        // Consolidate: drop prior set_permissions rows for this target by this caller
+        await sb
+          .from("staff_audit_log")
+          .delete()
+          .eq("action", "set_permissions")
+          .eq("target_id", id)
+          .eq("admin_user_id", caller.user.id);
+
+        const added = next.filter((p) => !prev.includes(p));
+        const removed = prev.filter((p) => !next.includes(p));
+        const summary =
+          added.length || removed.length
+            ? `edited "${targetName}" permissions` +
+              (removed.length ? ` — removed [${removed.join(", ")}]` : "") +
+              (added.length ? ` — added [${added.join(", ")}]` : "")
+            : `reviewed "${targetName}" permissions (no change)`;
+
+        await audit(caller, "set_permissions", "staff_admin", id, {
+          target: targetName,
+          from: prev,
+          to: next,
+          added,
+          removed,
+          summary,
+        });
         return json({ ok: true });
+      }
+
+      case "list_all_workspaces": {
+        if (!caller.has("claim_premium_self")) return json({ error: "forbidden" }, 403);
+        const q = String(body.query || "").trim();
+        let qb = sb.from("workspaces").select("id, name, premium, premium_until").order("name").limit(200);
+        if (q) qb = qb.ilike("name", `%${q}%`);
+        const { data } = await qb;
+        return json({ workspaces: data || [] });
       }
 
       case "grant_self_premium": {
         if (!caller.has("claim_premium_self")) return json({ error: "forbidden" }, 403);
         const workspace_id = String(body.workspace_id || "");
         const days = Math.max(1, Math.min(3650, Number(body.days || 30)));
-        const { data: ws } = await sb.from("workspaces").select("id, owner_id, premium_until").eq("id", workspace_id).maybeSingle();
+        const { data: ws } = await sb.from("workspaces").select("id, name, owner_id, premium_until").eq("id", workspace_id).maybeSingle();
         if (!ws) return json({ error: "workspace_not_found" }, 404);
         const base = ws.premium_until && new Date(ws.premium_until) > new Date() ? new Date(ws.premium_until) : new Date();
         const next = new Date(base.getTime() + days * 86400_000);
@@ -220,12 +267,17 @@ Deno.serve(async (req) => {
         ]);
 
         const username = vu.data?.[0]?.roblox_username || null;
+        // Strip sensitive workspace-owner secrets (Roblox Open Cloud key, internal API key)
+        const sanitizedWorkspaces = (owned.data || []).map((w: any) => {
+          const { roblox_api_key, api_key, ...safe } = w;
+          return safe;
+        });
         const payload = {
           exported_at: new Date().toISOString(),
           target_user_id,
           target_username: username,
           verified_user: vu.data,
-          workspaces_owned: owned.data,
+          workspaces_owned: sanitizedWorkspaces,
           workspace_memberships: memberships.data,
           activity_sessions: sessions.data,
           support_tickets: tickets.data,
@@ -288,14 +340,14 @@ Deno.serve(async (req) => {
       }
 
       case "list_chats": {
+        // Now lists Fluxcore Wall announcements for moderation
         if (!caller.has("moderate_chats")) return json({ error: "forbidden" }, 403);
         const workspace_id = String(body.workspace_id || "");
         if (!workspace_id) return json({ error: "missing_workspace_id" }, 400);
         const { data } = await sb
-          .from("activity_events")
-          .select("id, roblox_username, event_type, event_data, created_at")
+          .from("announcements")
+          .select("id, title, content, author_name, pinned, created_at")
           .eq("workspace_id", workspace_id)
-          .eq("event_type", "chat")
           .order("created_at", { ascending: false })
           .limit(200);
         return json({ events: data || [] });
@@ -304,8 +356,8 @@ Deno.serve(async (req) => {
       case "delete_chat": {
         if (!caller.has("moderate_chats")) return json({ error: "forbidden" }, 403);
         const id = String(body.event_id || "");
-        await sb.from("activity_events").delete().eq("id", id);
-        await audit(caller, "delete_chat", "activity_event", id);
+        await sb.from("announcements").delete().eq("id", id);
+        await audit(caller, "delete_announcement", "announcement", id);
         return json({ ok: true });
       }
 
