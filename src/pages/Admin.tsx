@@ -249,16 +249,17 @@ function PremiumTab({ canClaimSelf, canCreateGrants }: { canClaimSelf: boolean; 
   const [wsId, setWsId] = useState("");
   const [days, setDays] = useState("30");
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
 
-  useEffect(() => {
+  const loadWorkspaces = async () => {
     if (!canClaimSelf) return;
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from("workspaces").select("id, name, premium_until").eq("owner_id", user.id);
-      setWorkspaces(data || []);
-    })();
-  }, [canClaimSelf]);
+    try {
+      const r = await callStaff<{ workspaces: any[] }>("list_all_workspaces", {});
+      setWorkspaces(r.workspaces || []);
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  useEffect(() => { loadWorkspaces(); }, [canClaimSelf]);
 
   const grant = async () => {
     if (!wsId) return;
@@ -266,25 +267,51 @@ function PremiumTab({ canClaimSelf, canCreateGrants }: { canClaimSelf: boolean; 
     try {
       await callStaff("grant_self_premium", { workspace_id: wsId, days: Number(days) });
       toast.success("Premium granted");
+      loadWorkspaces();
     } catch (e: any) { toast.error(e.message); }
     finally { setBusy(false); }
   };
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return workspaces;
+    return workspaces.filter((w) => w.name?.toLowerCase().includes(q) || w.id?.includes(q));
+  }, [workspaces, query]);
 
   return (
     <div className="space-y-6">
       {canClaimSelf && (
         <Card>
-          <div className="flex items-center gap-2 mb-3"><Sparkles className="w-5 h-5 text-primary" /><h3 className="font-semibold">Grant Premium to your own workspace</h3></div>
+          <div className="flex items-center gap-2 mb-3"><Sparkles className="w-5 h-5 text-primary" /><h3 className="font-semibold">Grant Premium to any workspace</h3></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-            <div>
-              <Label>Workspace</Label>
-              <select className="w-full h-10 rounded-md border border-border bg-background px-2 text-sm" value={wsId} onChange={(e) => setWsId(e.target.value)}>
-                <option value="">Select…</option>
-                {workspaces.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-              </select>
+            <div className="md:col-span-2">
+              <Label>Search workspaces</Label>
+              <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Filter by name or ID…" />
             </div>
             <div><Label>Days</Label><Input type="number" value={days} onChange={(e) => setDays(e.target.value)} /></div>
-            <Button onClick={grant} disabled={busy || !wsId}>{busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Grant</Button>
+          </div>
+          <div className="mt-3 max-h-72 overflow-y-auto rounded border border-border divide-y divide-border/40">
+            {filtered.length === 0 && <div className="p-3 text-sm text-muted-foreground">No workspaces.</div>}
+            {filtered.map((w) => {
+              const active = wsId === w.id;
+              const isPremium = w.premium && (!w.premium_until || new Date(w.premium_until) > new Date());
+              return (
+                <button
+                  key={w.id}
+                  onClick={() => setWsId(w.id)}
+                  className={`w-full text-left p-2 flex items-center justify-between hover:bg-muted/30 ${active ? "bg-primary/10" : ""}`}
+                >
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate">{w.name}</div>
+                    <div className="text-[11px] text-muted-foreground truncate">{w.id}</div>
+                  </div>
+                  {isPremium && <Badge variant="outline" className="text-[10px]">Premium</Badge>}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-3 flex justify-end">
+            <Button onClick={grant} disabled={busy || !wsId}>{busy && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}Grant {days} days</Button>
           </div>
         </Card>
       )}
@@ -494,7 +521,7 @@ function ChatsTab() {
   };
 
   const del = async (id: string) => {
-    if (!confirm("Delete this chat message?")) return;
+    if (!confirm("Delete this Wall post?")) return;
     try { await callStaff("delete_chat", { event_id: id }); setEvents(events.filter((e) => e.id !== id)); }
     catch (e: any) { toast.error(e.message); }
   };
@@ -503,18 +530,23 @@ function ChatsTab() {
     <div className="space-y-4">
       <Card>
         <Label>Workspace ID</Label>
+        <p className="text-xs text-muted-foreground mt-0.5 mb-1">Loads Fluxcore Wall announcements for moderation.</p>
         <div className="flex gap-2 mt-1">
           <Input value={wsId} onChange={(e) => setWsId(e.target.value)} placeholder="UUID of the workspace" />
-          <Button onClick={load} disabled={busy}>Load chats</Button>
+          <Button onClick={load} disabled={busy}>Load Wall</Button>
         </div>
       </Card>
       <div className="space-y-2">
         {events.map((e) => (
           <Card key={e.id}>
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-xs text-muted-foreground">{e.roblox_username} · {new Date(e.created_at).toLocaleString()}</div>
-                <div className="text-sm break-words">{(e.event_data?.message ?? e.event_data?.text ?? JSON.stringify(e.event_data))}</div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <div className="text-sm font-semibold truncate">{e.title}</div>
+                  {e.pinned && <Badge variant="outline" className="text-[10px]">Pinned</Badge>}
+                </div>
+                <div className="text-xs text-muted-foreground">{e.author_name} · {new Date(e.created_at).toLocaleString()}</div>
+                <div className="text-sm break-words whitespace-pre-wrap mt-1">{e.content}</div>
               </div>
               <Button variant="destructive" size="sm" onClick={() => del(e.id)}><Trash2 className="w-4 h-4" /></Button>
             </div>
@@ -527,29 +559,57 @@ function ChatsTab() {
 
 function AuditTab() {
   const [rows, setRows] = useState<any[]>([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     (async () => {
-      const { data } = await supabase.from("staff_audit_log").select("*").order("created_at", { ascending: false }).limit(200);
+      const { data } = await supabase.from("staff_audit_log").select("*").order("created_at", { ascending: false }).limit(500);
       setRows(data || []);
+      setLoading(false);
     })();
   }, []);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return rows;
+    return rows.filter((r) => {
+      const blob = `${r.admin_username || ""} ${r.action} ${r.target_type || ""} ${r.target_id || ""} ${JSON.stringify(r.details || {})}`.toLowerCase();
+      return blob.includes(q);
+    });
+  }, [rows, query]);
+
   return (
-    <div className="space-y-2">
-      {rows.map((r) => (
-        <Card key={r.id}>
-          <div className="flex justify-between text-sm">
-            <div>
-              <span className="font-semibold">{r.admin_username || r.admin_user_id.slice(0, 8)}</span>{" "}
-              <span className="text-primary">{r.action}</span>
-              {r.target_type && <span className="text-muted-foreground"> · {r.target_type}/{r.target_id?.slice(0, 8)}</span>}
+    <div className="space-y-3">
+      <Card>
+        <Label>Search audit log</Label>
+        <Input className="mt-1" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by admin, action, target or details…" />
+      </Card>
+      {loading ? <Loader2 className="animate-spin" /> : filtered.map((r) => {
+        const summary = r.details?.summary as string | undefined;
+        return (
+          <Card key={r.id}>
+            <div className="flex justify-between text-sm gap-3">
+              <div className="min-w-0">
+                <div>
+                  <span className="font-semibold">{r.admin_username || r.admin_user_id.slice(0, 8)}</span>{" "}
+                  {summary
+                    ? <span>{summary}</span>
+                    : <>
+                        <span className="text-primary">{r.action}</span>
+                        {r.target_type && <span className="text-muted-foreground"> · {r.target_type}/{r.target_id?.slice(0, 8)}</span>}
+                      </>}
+                </div>
+                {!summary && r.details && Object.keys(r.details).length > 0 && (
+                  <pre className="text-[11px] text-muted-foreground mt-1 whitespace-pre-wrap break-all">{JSON.stringify(r.details)}</pre>
+                )}
+              </div>
+              <div className="text-xs text-muted-foreground shrink-0">{new Date(r.created_at).toLocaleString()}</div>
             </div>
-            <div className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleString()}</div>
-          </div>
-          {r.details && Object.keys(r.details).length > 0 && (
-            <pre className="text-[11px] text-muted-foreground mt-1 whitespace-pre-wrap">{JSON.stringify(r.details)}</pre>
-          )}
-        </Card>
-      ))}
+          </Card>
+        );
+      })}
+      {!loading && filtered.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No matching entries.</p>}
     </div>
   );
 }
