@@ -101,7 +101,7 @@ export default function Admin() {
             {(has("support_reply") || has("support_assign")) && <TabsTrigger value="support">Support</TabsTrigger>}
             {has("export_user_data") && <TabsTrigger value="users">User Data</TabsTrigger>}
             {has("delete_workspaces") && <TabsTrigger value="workspaces">Workspaces</TabsTrigger>}
-            {has("moderate_chats") && <TabsTrigger value="chats">Chat Moderation</TabsTrigger>}
+            {has("moderate_chats") && <TabsTrigger value="chats">Wall Moderation</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
