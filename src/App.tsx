@@ -50,6 +50,7 @@ const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Admin = lazy(() => import("./pages/Admin"));
+const Almore = lazy(() => import("./pages/Almore"));
 
 const queryClient = new QueryClient();
 
@@ -99,6 +100,21 @@ function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
 
 function AppRoutes() {
   const hostname = window.location.hostname;
+
+  if (hostname.startsWith("almore.fluxcore") || hostname.startsWith("almore.")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Almore />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/workspaces" element={<Workspaces />} />
+          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+          <Route path="*" element={<Almore />} />
+        </Routes>
+      </Suspense>
+    );
+  }
 
   if (hostname.startsWith("bargains.fluxcore")) {
     const BARGAINS_WS = "81bd37c3-fb0a-465a-86b5-de4cfed43a09";
