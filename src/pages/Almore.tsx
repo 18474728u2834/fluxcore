@@ -147,7 +147,7 @@ export default function Almore() {
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-24">
           {[
             { icon: Users, label: "Members", value: "68K+" },
-            { icon: Crown, label: "Owner", value: "AlmoreShopping" },
+            { icon: Crown, label: "Owner", value: "Alex" },
             { icon: Globe2, label: "Players", value: "Worldwide" },
             { icon: Award, label: "Status", value: "Verified" },
           ].map((s, i) => (
