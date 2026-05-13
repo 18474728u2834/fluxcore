@@ -100,7 +100,7 @@ export default function Admin() {
             {me.owner_admin && <TabsTrigger value="admins">Admins</TabsTrigger>}
             {(has("create_premium_grants") || has("claim_premium_self")) && <TabsTrigger value="premium">Premium</TabsTrigger>}
             {(has("support_reply") || has("support_assign")) && <TabsTrigger value="support">Support</TabsTrigger>}
-            {has("export_user_data") && <TabsTrigger value="users">User Data</TabsTrigger>}
+            {(has("export_user_data") || has("delete_users")) && <TabsTrigger value="users">User Data</TabsTrigger>}
             {has("delete_workspaces") && <TabsTrigger value="workspaces">Workspaces</TabsTrigger>}
             {has("moderate_chats") && <TabsTrigger value="chats">Wall Moderation</TabsTrigger>}
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
