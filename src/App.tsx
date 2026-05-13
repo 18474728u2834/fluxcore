@@ -10,6 +10,7 @@ import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { I18nProvider } from "@/hooks/useI18n";
 import { DOMTranslator } from "@/components/DOMTranslator";
 import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
+import { BlacklistGate } from "@/components/BlacklistGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -198,7 +199,9 @@ const App = () => {
                 <DOMTranslator />
                 <LoadWatchdog />
                 <ChunkErrorBoundary fallback={<PageLoader />}>
-                  <AppRoutes />
+                  <BlacklistGate>
+                    <AppRoutes />
+                  </BlacklistGate>
                 </ChunkErrorBoundary>
               </HashRouter>
             </TooltipProvider>
