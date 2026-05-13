@@ -406,7 +406,7 @@ function SupportTab({ me, canAssign }: { me: WhoAmI; canAssign: boolean }) {
   );
 }
 
-function UsersTab({ canDelete }: { canDelete: boolean }) {
+function UsersTab({ canDelete, canExport }: { canDelete: boolean; canExport: boolean }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
@@ -464,7 +464,7 @@ function UsersTab({ canDelete }: { canDelete: boolean }) {
                 <div className="text-xs text-muted-foreground">Roblox ID {u.roblox_user_id} · verified {new Date(u.verified_at).toLocaleDateString()}</div>
               </div>
               <div className="flex gap-2 flex-wrap">
-                <Button variant="outline" size="sm" onClick={() => exportData(u)}><Download className="w-4 h-4 mr-1" />Export</Button>
+                {canExport && <Button variant="outline" size="sm" onClick={() => exportData(u)}><Download className="w-4 h-4 mr-1" />Export</Button>}
                 {canDelete && <Button variant="outline" size="sm" onClick={() => requestRemoval(u)}>Request removal</Button>}
                 {canDelete && <Button variant="destructive" size="sm" onClick={() => del(u)}><Trash2 className="w-4 h-4 mr-1" />Force delete</Button>}
               </div>
