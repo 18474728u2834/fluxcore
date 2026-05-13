@@ -377,17 +377,18 @@ export default function Index() {
 
       {/* Trusted */}
       <section className="py-20 relative">
-        <div className="max-w-6xl mx-auto px-6 text-center">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
+        <div className="max-w-6xl mx-auto px-6">
+          <p className="text-center text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
             Trusted by Roblox communities
           </p>
-          <div className="flex items-center justify-center gap-10 flex-wrap opacity-80">
+          <div className="flex items-center justify-center gap-10 flex-wrap opacity-80 mb-8">
             <div className="flex items-center gap-2.5 grayscale hover:grayscale-0 transition-all">
               <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-7 h-7 rounded-md object-cover" />
               <span className="text-sm font-bold">Bloxy Bargains</span>
             </div>
             <span className="text-sm font-bold text-muted-foreground/40">+ a growing list of groups</span>
           </div>
+          <WorkspaceMarquee />
         </div>
       </section>
 
