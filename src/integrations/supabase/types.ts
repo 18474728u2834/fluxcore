@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_removal_requests: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          requested_by: string
+          requested_by_username: string | null
+          responded_at: string | null
+          status: string
+          target_user_id: string
+          target_username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_by: string
+          requested_by_username?: string | null
+          responded_at?: string | null
+          status?: string
+          target_user_id: string
+          target_username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          requested_by?: string
+          requested_by_username?: string | null
+          responded_at?: string | null
+          status?: string
+          target_user_id?: string
+          target_username?: string | null
+        }
+        Relationships: []
+      }
       activity_events: {
         Row: {
           created_at: string

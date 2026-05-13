@@ -431,8 +431,17 @@ function UsersTab({ canDelete }: { canDelete: boolean }) {
     } catch (e: any) { toast.error(e.message); }
   };
 
+  const requestRemoval = async (u: any) => {
+    const reason = prompt(`Request account removal for ${u.roblox_username}?\n\nThe user will be shown a full-screen approval prompt next time they open Fluxcore.\n\nReason (optional):`, "");
+    if (reason === null) return;
+    try {
+      await callStaff("request_account_removal", { user_id: u.user_id, reason });
+      toast.success("Removal request sent — awaiting user approval");
+    } catch (e: any) { toast.error(e.message); }
+  };
+
   const del = async (u: any) => {
-    if (!confirm(`PERMANENTLY delete ${u.roblox_username}? This removes their workspaces, memberships and account.`)) return;
+    if (!confirm(`PERMANENTLY delete ${u.roblox_username} right now? This bypasses approval and removes their workspaces, memberships and account.`)) return;
     try { await callStaff("delete_user", { user_id: u.user_id }); toast.success("Deleted"); setResults(results.filter((x) => x.user_id !== u.user_id)); }
     catch (e: any) { toast.error(e.message); }
   };
@@ -454,9 +463,10 @@ function UsersTab({ canDelete }: { canDelete: boolean }) {
                 <div className="font-semibold">{u.roblox_username}</div>
                 <div className="text-xs text-muted-foreground">Roblox ID {u.roblox_user_id} · verified {new Date(u.verified_at).toLocaleDateString()}</div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => exportData(u)}><Download className="w-4 h-4 mr-1" />Export</Button>
-                {canDelete && <Button variant="destructive" size="sm" onClick={() => del(u)}><Trash2 className="w-4 h-4 mr-1" />Delete</Button>}
+                {canDelete && <Button variant="outline" size="sm" onClick={() => requestRemoval(u)}>Request removal</Button>}
+                {canDelete && <Button variant="destructive" size="sm" onClick={() => del(u)}><Trash2 className="w-4 h-4 mr-1" />Force delete</Button>}
               </div>
             </div>
           </Card>
