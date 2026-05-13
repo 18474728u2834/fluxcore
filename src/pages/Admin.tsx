@@ -115,7 +115,7 @@ export default function Admin() {
           {(has("support_reply") || has("support_assign")) && (
             <TabsContent value="support"><SupportTab me={me} canAssign={has("support_assign")} /></TabsContent>
           )}
-          {has("export_user_data") && <TabsContent value="users"><UsersTab canDelete={has("delete_users")} /></TabsContent>}
+          {(has("export_user_data") || has("delete_users")) && <TabsContent value="users"><UsersTab canExport={has("export_user_data")} canDelete={has("delete_users")} /></TabsContent>}
           {has("delete_workspaces") && <TabsContent value="workspaces"><WorkspacesTab /></TabsContent>}
           {has("moderate_chats") && <TabsContent value="chats"><ChatsTab /></TabsContent>}
           {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
