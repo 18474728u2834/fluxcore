@@ -301,6 +301,42 @@ Deno.serve(async (req) => {
         return json({ payload });
       }
 
+      case "request_account_removal": {
+        if (!caller.has("delete_users")) return json({ error: "forbidden" }, 403);
+        const target_user_id = String(body.user_id || "");
+        const reason = String(body.reason || "").trim() || null;
+        if (!target_user_id) return json({ error: "missing_user_id" }, 400);
+        if (target_user_id === caller.user.id) return json({ error: "cannot_target_self" }, 400);
+
+        const { data: vu } = await sb
+          .from("verified_users")
+          .select("roblox_username")
+          .eq("user_id", target_user_id)
+          .maybeSingle();
+
+        // Cancel any existing pending request first
+        await sb.from("account_removal_requests")
+          .delete()
+          .eq("target_user_id", target_user_id)
+          .eq("status", "pending");
+
+        const { data: ins, error } = await sb
+          .from("account_removal_requests")
+          .insert({
+            target_user_id,
+            target_username: vu?.roblox_username ?? null,
+            requested_by: caller.user.id,
+            requested_by_username: caller.staff.roblox_username,
+            reason,
+            status: "pending",
+          })
+          .select()
+          .single();
+        if (error) return json({ error: error.message }, 400);
+        await audit(caller, "request_account_removal", "user", target_user_id, { username: vu?.roblox_username, reason });
+        return json({ request: ins });
+      }
+
       case "delete_user": {
         if (!caller.has("delete_users")) return json({ error: "forbidden" }, 403);
         const target_user_id = String(body.user_id || "");
@@ -316,6 +352,7 @@ Deno.serve(async (req) => {
         await sb.from("feedback_tickets").delete().eq("user_id", target_user_id);
         await sb.from("user_preferences").delete().eq("user_id", target_user_id);
         await sb.from("verified_users").delete().eq("user_id", target_user_id);
+        await sb.from("account_removal_requests").delete().eq("target_user_id", target_user_id);
 
         const { error } = await sb.auth.admin.deleteUser(target_user_id);
         await audit(caller, "delete_user", "user", target_user_id, { auth_error: error?.message });
