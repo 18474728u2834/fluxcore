@@ -51,6 +51,7 @@ const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Almore = lazy(() => import("./pages/Almore"));
+const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 
 const queryClient = new QueryClient();
 
@@ -149,7 +150,7 @@ function AppRoutes() {
       </Suspense>
     );
   }
-const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
+
 
   return (
     <Suspense fallback={<PageLoader />}>
