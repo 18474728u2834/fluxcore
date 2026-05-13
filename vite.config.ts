@@ -20,7 +20,6 @@ export default defineConfig(({ mode }) => ({
       include: ["**/assets/*.js"],
       exclude: ["**/*.css", "**/*.html"],
       apply: "build",
-      enforce: "post",
       options: {
         compact: true,
         controlFlowFlattening: true,
