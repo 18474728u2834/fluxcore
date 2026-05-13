@@ -17,8 +17,8 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     mode === "production" && obfuscator({
-      include: ["**/*.js"],
-      exclude: [],
+      include: ["src/**/*.{js,jsx,ts,tsx}"],
+      exclude: ["node_modules/**", "**/node_modules/**"],
       apply: "build",
       options: {
         compact: true,
