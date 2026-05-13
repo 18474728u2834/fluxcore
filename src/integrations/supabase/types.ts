@@ -388,6 +388,36 @@ export type Database = {
         }
         Relationships: []
       }
+      fluxcore_blacklist: {
+        Row: {
+          blacklisted_by: string
+          blacklisted_by_username: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          roblox_user_id: string
+          roblox_username: string
+        }
+        Insert: {
+          blacklisted_by: string
+          blacklisted_by_username?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          roblox_user_id: string
+          roblox_username: string
+        }
+        Update: {
+          blacklisted_by?: string
+          blacklisted_by_username?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          roblox_user_id?: string
+          roblox_username?: string
+        }
+        Relationships: []
+      }
       loa_requests: {
         Row: {
           created_at: string

@@ -392,6 +392,55 @@ Deno.serve(async (req) => {
         return json({ ok: true });
       }
 
+      case "list_blacklist": {
+        if (!caller.has("manage_blacklist")) return json({ error: "forbidden" }, 403);
+        const q = String(body.query || "").trim();
+        let qb = sb
+          .from("fluxcore_blacklist")
+          .select("id, roblox_user_id, roblox_username, reason, blacklisted_by_username, created_at")
+          .order("created_at", { ascending: false })
+          .limit(200);
+        if (q) qb = qb.or(`roblox_username.ilike.%${q}%,roblox_user_id.eq.${/^\d+$/.test(q) ? q : 0}`);
+        const { data } = await qb;
+        return json({ entries: data || [] });
+      }
+
+      case "add_blacklist": {
+        if (!caller.has("manage_blacklist")) return json({ error: "forbidden" }, 403);
+        const username = String(body.roblox_username || "").trim();
+        const reason = String(body.reason || "").trim() || null;
+        if (!username) return json({ error: "missing_username" }, 400);
+        const { data: vu } = await sb
+          .from("verified_users")
+          .select("roblox_user_id, roblox_username")
+          .ilike("roblox_username", username)
+          .maybeSingle();
+        if (!vu) return json({ error: "user_not_verified" }, 404);
+        const { data: ins, error } = await sb
+          .from("fluxcore_blacklist")
+          .insert({
+            roblox_user_id: vu.roblox_user_id,
+            roblox_username: vu.roblox_username,
+            reason,
+            blacklisted_by: caller.user.id,
+            blacklisted_by_username: caller.staff.roblox_username,
+          })
+          .select()
+          .single();
+        if (error) return json({ error: error.message }, 400);
+        await audit(caller, "add_blacklist", "fluxcore_blacklist", ins.id, { username: vu.roblox_username, reason });
+        return json({ entry: ins });
+      }
+
+      case "remove_blacklist": {
+        if (!caller.has("manage_blacklist")) return json({ error: "forbidden" }, 403);
+        const id = String(body.entry_id || "");
+        const { data: prev } = await sb.from("fluxcore_blacklist").select("roblox_username").eq("id", id).maybeSingle();
+        await sb.from("fluxcore_blacklist").delete().eq("id", id);
+        await audit(caller, "remove_blacklist", "fluxcore_blacklist", id, { username: prev?.roblox_username });
+        return json({ ok: true });
+      }
+
       default:
         return json({ error: "unknown_action" }, 400);
     }
