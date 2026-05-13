@@ -51,6 +51,7 @@ const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Admin = lazy(() => import("./pages/Admin"));
 const Almore = lazy(() => import("./pages/Almore"));
+const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 
 const queryClient = new QueryClient();
 
@@ -106,7 +107,7 @@ function AppRoutes() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Almore />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<AlmoreLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/workspaces" element={<Workspaces />} />
           <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
