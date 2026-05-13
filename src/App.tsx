@@ -218,7 +218,9 @@ const App = () => {
                 <LoadWatchdog />
                 <ChunkErrorBoundary fallback={<PageLoader />}>
                   <BlacklistGate>
-                    <AppRoutes />
+                    <AccountRemovalGate>
+                      <AppRoutes />
+                    </AccountRemovalGate>
                   </BlacklistGate>
                 </ChunkErrorBoundary>
               </HashRouter>
