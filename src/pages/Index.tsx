@@ -34,6 +34,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
 
 export default function Index() {
