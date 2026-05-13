@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Shield, Trash2, UserPlus, Sparkles, Download, MessageSquare, ScrollText, Database, Plus } from "lucide-react";
+import { Loader2, Shield, Trash2, UserPlus, Sparkles, Download, MessageSquare, ScrollText, Database, Plus, Ban } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PremiumGrantManager } from "@/components/PremiumGrantManager";
@@ -32,6 +32,7 @@ const ALL_PERMS = [
   { key: "delete_users", label: "Delete user accounts" },
   { key: "delete_workspaces", label: "Delete workspaces" },
   { key: "moderate_chats", label: "Moderate workspace chats" },
+  { key: "manage_blacklist", label: "Manage Fluxcore blacklist" },
 ];
 
 async function callStaff<T = any>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
@@ -102,6 +103,7 @@ export default function Admin() {
             {has("export_user_data") && <TabsTrigger value="users">User Data</TabsTrigger>}
             {has("delete_workspaces") && <TabsTrigger value="workspaces">Workspaces</TabsTrigger>}
             {has("moderate_chats") && <TabsTrigger value="chats">Wall Moderation</TabsTrigger>}
+            {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -116,6 +118,7 @@ export default function Admin() {
           {has("export_user_data") && <TabsContent value="users"><UsersTab canDelete={has("delete_users")} /></TabsContent>}
           {has("delete_workspaces") && <TabsContent value="workspaces"><WorkspacesTab /></TabsContent>}
           {has("moderate_chats") && <TabsContent value="chats"><ChatsTab /></TabsContent>}
+          {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
