@@ -11,6 +11,7 @@ import { I18nProvider } from "@/hooks/useI18n";
 import { DOMTranslator } from "@/components/DOMTranslator";
 import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
 import { BlacklistGate } from "@/components/BlacklistGate";
+import { AccountRemovalGate } from "@/components/AccountRemovalGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { lazy, Suspense, useEffect } from "react";
 import { Loader2 } from "lucide-react";
