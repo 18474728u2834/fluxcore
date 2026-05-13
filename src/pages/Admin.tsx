@@ -616,3 +616,98 @@ function AuditTab() {
     </div>
   );
 }
+
+function BlacklistTab() {
+  const [items, setItems] = useState<any[]>([]);
+  const [q, setQ] = useState("");
+  const [username, setUsername] = useState("");
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const { entries } = await callStaff<{ entries: any[] }>("list_blacklist", { query: q });
+      setItems(entries);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to load");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+
+  const add = async () => {
+    if (!username.trim()) return;
+    setBusy(true);
+    try {
+      await callStaff("add_blacklist", { roblox_username: username.trim(), reason: reason.trim() });
+      toast.success(`${username} blacklisted`);
+      setUsername(""); setReason("");
+      load();
+    } catch (e: any) {
+      toast.error(e.message || "Failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async (id: string, name: string) => {
+    if (!confirm(`Remove ${name} from the blacklist?`)) return;
+    try {
+      await callStaff("remove_blacklist", { entry_id: id });
+      toast.success("Removed");
+      setItems((prev) => prev.filter((x) => x.id !== id));
+    } catch (e: any) {
+      toast.error(e.message || "Failed");
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <h3 className="font-semibold flex items-center gap-2 mb-3"><Ban className="w-4 h-4 text-destructive" /> Add to Fluxcore Blacklist</h3>
+        <p className="text-xs text-muted-foreground mb-3">
+          Blacklisted users will be locked out of every Fluxcore workspace. They keep access only to the support page so they can appeal.
+        </p>
+        <div className="grid md:grid-cols-[1fr_2fr_auto] gap-2">
+          <Input placeholder="Roblox username" value={username} onChange={(e) => setUsername(e.target.value)} />
+          <Input placeholder="Reason (optional)" value={reason} onChange={(e) => setReason(e.target.value)} />
+          <Button onClick={add} disabled={busy || !username.trim()}>
+            {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Plus className="w-4 h-4 mr-1" /> Blacklist</>}
+          </Button>
+        </div>
+      </Card>
+
+      <div className="flex gap-2">
+        <Input placeholder="Search by username or Roblox ID" value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={(e) => e.key === "Enter" && load()} />
+        <Button variant="outline" onClick={load}>Search</Button>
+      </div>
+
+      <div className="space-y-2">
+        {loading && <div className="flex justify-center py-6"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>}
+        {!loading && items.length === 0 && <p className="text-sm text-muted-foreground text-center py-6">No one is currently blacklisted.</p>}
+        {items.map((r) => (
+          <Card key={r.id} className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <div className="font-semibold flex items-center gap-2">
+                <Ban className="w-4 h-4 text-destructive" />
+                {r.roblox_username}
+                <span className="text-xs text-muted-foreground font-normal">#{r.roblox_user_id}</span>
+              </div>
+              {r.reason && <div className="text-sm text-muted-foreground mt-1">{r.reason}</div>}
+              <div className="text-[11px] text-muted-foreground mt-1">
+                Added by {r.blacklisted_by_username || "unknown"} · {new Date(r.created_at).toLocaleString()}
+              </div>
+            </div>
+            <Button size="sm" variant="ghost" onClick={() => remove(r.id, r.roblox_username)}>
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
