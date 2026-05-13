@@ -406,7 +406,7 @@ function SupportTab({ me, canAssign }: { me: WhoAmI; canAssign: boolean }) {
   );
 }
 
-function UsersTab({ canDelete }: { canDelete: boolean }) {
+function UsersTab({ canDelete, canExport }: { canDelete: boolean; canExport: boolean }) {
   const [q, setQ] = useState("");
   const [results, setResults] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
