@@ -87,7 +87,11 @@ export default function Support() {
   }, [selectedTicket?.id]);
 
   const handleCreate = async () => {
-    if (!subject.trim() || !message.trim() || !user) return;
+    if (!subject.trim() || !message.trim()) return;
+    if (!user) {
+      toast.error("You need to sign in before submitting a ticket.");
+      return;
+    }
     setCreating(true);
     const { data, error } = await supabase.from("support_tickets").insert({
       user_id: user.id,
@@ -97,7 +101,8 @@ export default function Support() {
     } as any).select().single();
 
     if (error) {
-      toast.error("Failed: " + error.message);
+      console.error("support_tickets insert error:", error);
+      toast.error("Failed: " + (error.message || "Unknown error"));
     } else {
       toast.success("Ticket created!");
       setDialogOpen(false);
