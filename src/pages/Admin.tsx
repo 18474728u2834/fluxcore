@@ -463,9 +463,10 @@ function UsersTab({ canDelete }: { canDelete: boolean }) {
                 <div className="font-semibold">{u.roblox_username}</div>
                 <div className="text-xs text-muted-foreground">Roblox ID {u.roblox_user_id} · verified {new Date(u.verified_at).toLocaleDateString()}</div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button variant="outline" size="sm" onClick={() => exportData(u)}><Download className="w-4 h-4 mr-1" />Export</Button>
-                {canDelete && <Button variant="destructive" size="sm" onClick={() => del(u)}><Trash2 className="w-4 h-4 mr-1" />Delete</Button>}
+                {canDelete && <Button variant="outline" size="sm" onClick={() => requestRemoval(u)}>Request removal</Button>}
+                {canDelete && <Button variant="destructive" size="sm" onClick={() => del(u)}><Trash2 className="w-4 h-4 mr-1" />Force delete</Button>}
               </div>
             </div>
           </Card>
