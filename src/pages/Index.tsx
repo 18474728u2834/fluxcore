@@ -21,6 +21,17 @@ import {
   Megaphone,
   KeyRound,
   Zap,
+  LayoutDashboard,
+  Clock,
+  CalendarDays,
+  FileText,
+  CalendarOff,
+  UserX,
+  ShieldCheck,
+  Code,
+  Settings,
+  Command,
+  BadgeCheck,
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
@@ -46,6 +57,37 @@ export default function Index() {
     { icon: Zap, title: "Discord webhooks", desc: "Session reminders, role changes, alerts — all routed where your team already lives." },
   ];
 
+  // Mirrors the real MinimalLayout rail
+  const railNav = [
+    { icon: LayoutDashboard, label: "Dashboard", active: true },
+    { icon: Users, label: "Members" },
+    { icon: Clock, label: "Activity" },
+    { icon: CalendarDays, label: "Sessions" },
+    { icon: Megaphone, label: "Wall" },
+    { icon: FileText, label: "Documents" },
+    { icon: CalendarOff, label: "LOA" },
+    { icon: UserX, label: "Staff" },
+    { icon: Target, label: "Quotas" },
+    { icon: MessageSquare, label: "Logs" },
+  ];
+  const railConfig = [
+    { icon: ShieldCheck, label: "Roles" },
+    { icon: Code, label: "Tracking" },
+    { icon: Settings, label: "Settings" },
+  ];
+
+  // The Fluxcore logo — restored from the original wordmark, refined.
+  const Logo = ({ size = "md" }: { size?: "sm" | "md" }) => (
+    <button onClick={() => navigate("/")} className="group flex items-center gap-1.5">
+      <span className={`${size === "sm" ? "text-[15px]" : "text-[18px]"} font-black tracking-[-0.02em]`}>
+        <span className="bg-gradient-to-br from-primary via-violet-400 to-primary bg-clip-text text-transparent group-hover:from-primary group-hover:to-violet-300 transition-all">
+          flux
+        </span>
+        <span className="text-foreground">core</span>
+      </span>
+    </button>
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
       {/* Ambient glow */}
@@ -55,14 +97,9 @@ export default function Index() {
       </div>
 
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl">
+      <nav className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl border-b border-border/10">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
-              <span className="text-primary-foreground font-black text-sm">F</span>
-            </div>
-            <span className="text-[17px] font-bold tracking-tight">Fluxcore</span>
-          </button>
+          <Logo />
 
           <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
             <a href="#features" className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Product</a>
@@ -94,7 +131,7 @@ export default function Index() {
       </nav>
 
       {/* HERO */}
-      <section className="relative pt-40 pb-16">
+      <section className="relative pt-40 pb-12">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-border/40 bg-card/40 backdrop-blur-sm text-[12px] font-medium text-muted-foreground mb-9 animate-fade-in">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
@@ -125,7 +162,7 @@ export default function Index() {
             <Button
               variant="ghost"
               size="lg"
-              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => document.getElementById("showcase")?.scrollIntoView({ behavior: "smooth" })}
               className="h-12 px-6 text-[15px] font-semibold text-foreground/90 hover:bg-card/60 rounded-xl"
             >
               <Play className="w-4 h-4 mr-2 text-primary fill-primary" />
@@ -138,108 +175,208 @@ export default function Index() {
           </p>
         </div>
 
-        {/* Dashboard mockup — 3D tilted */}
-        <div className="relative mt-20 mx-auto max-w-6xl px-6" style={{ perspective: "2000px" }}>
+        {/* Real-UI dashboard mockup — mirrors MinimalLayout */}
+        <div id="showcase" className="relative mt-20 mx-auto max-w-6xl px-6" style={{ perspective: "2400px" }}>
           <div
-            className="relative rounded-2xl border border-border/30 bg-card/80 backdrop-blur-xl shadow-[0_50px_120px_-20px_hsl(var(--primary)/0.35)] overflow-hidden"
-            style={{ transform: "rotateX(8deg)", transformStyle: "preserve-3d" }}
+            className="relative rounded-2xl border border-border/40 bg-background shadow-[0_50px_140px_-20px_hsl(var(--primary)/0.4)] overflow-hidden"
+            style={{ transform: "rotateX(6deg)", transformStyle: "preserve-3d" }}
           >
-            {/* Window chrome */}
-            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border/30 bg-card/60">
+            {/* Browser chrome */}
+            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border/30 bg-card/40">
               <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
               <div className="flex-1 flex justify-center">
-                <div className="px-3 py-1 rounded-md bg-background/40 text-[11px] text-muted-foreground font-mono">fluxcore.app/w/staff/dashboard</div>
+                <div className="px-3 py-1 rounded-md bg-background/60 border border-border/30 text-[11px] text-muted-foreground font-mono">
+                  fluxcore.works/w/staff-team/dashboard
+                </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-12 gap-0">
-              {/* Sidebar */}
-              <div className="col-span-2 border-r border-border/30 p-4 space-y-1 bg-background/20">
-                <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Workspace</div>
-                {[
-                  ["Dashboard", true],
-                  ["Members", false],
-                  ["Activity", false],
-                  ["Sessions", false],
-                  ["Roles", false],
-                  ["Wall", false],
-                  ["Policies", false],
-                  ["Quotas", false],
-                ].map(([name, active]) => (
-                  <div
-                    key={name as string}
-                    className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium ${active ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
-                  >
-                    {name}
-                  </div>
-                ))}
-              </div>
+            {/* App body — recreates MinimalLayout */}
+            <div
+              className="relative min-h-[460px]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 20% 0%, hsl(var(--primary) / 0.08), transparent 40%), radial-gradient(circle at 80% 100%, hsl(var(--primary) / 0.05), transparent 40%)",
+              }}
+            >
+              {/* dotted backdrop */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 opacity-[0.18]"
+                style={{
+                  backgroundImage: "radial-gradient(hsl(var(--foreground) / 0.18) 1px, transparent 1px)",
+                  backgroundSize: "22px 22px",
+                  maskImage: "radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 100%)",
+                }}
+              />
 
-              {/* Main */}
-              <div className="col-span-10 p-5 space-y-4">
-                {/* Stat row */}
-                <div className="grid grid-cols-4 gap-3">
-                  {[
-                    { label: "Active staff", val: "24", change: "+3", up: true },
-                    { label: "Sessions today", val: "18", change: "+5", up: true },
-                    { label: "Hours tracked", val: "142h", change: "+12h", up: true },
-                    { label: "Online now", val: "8", change: "live", up: true },
-                  ].map((s) => (
-                    <div key={s.label} className="rounded-xl border border-border/30 bg-background/30 p-3.5">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">{s.label}</p>
-                      <p className="text-2xl font-black tracking-tight">{s.val}</p>
-                      <p className="text-[10px] text-emerald-400 font-mono mt-0.5">▲ {s.change}</p>
+              {/* Floating rail */}
+              <aside className="absolute left-3 top-3 bottom-3 w-[58px] rounded-2xl border border-border/50 bg-background/70 backdrop-blur-2xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+                <div className="h-12 flex items-center justify-center border-b border-border/40">
+                  <span className="text-[13px] font-black bg-gradient-to-br from-primary to-violet-400 bg-clip-text text-transparent">F</span>
+                </div>
+                <div className="px-1.5 pt-1.5 pb-1">
+                  <div className="h-7 rounded-lg bg-foreground/[0.04] border border-border/40 flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))]" />
+                  </div>
+                </div>
+                <nav className="flex-1 overflow-hidden px-1.5 py-1.5 space-y-0.5">
+                  {railNav.map((i, idx) => (
+                    <div
+                      key={i.label}
+                      className={`relative h-8 rounded-lg flex items-center justify-center ${i.active ? "bg-foreground/[0.06]" : ""}`}
+                    >
+                      {i.active && (
+                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                      )}
+                      <i.icon className={`w-[15px] h-[15px] ${i.active ? "text-foreground" : "text-muted-foreground/70"}`} />
                     </div>
                   ))}
+                  <div className="my-1.5 mx-2 border-t border-border/40" />
+                  {railConfig.map((i) => (
+                    <div key={i.label} className="h-8 rounded-lg flex items-center justify-center">
+                      <i.icon className="w-[15px] h-[15px] text-muted-foreground/70" />
+                    </div>
+                  ))}
+                </nav>
+                <div className="border-t border-border/40 p-1.5">
+                  <div className="w-7 h-7 mx-auto rounded-full bg-gradient-to-br from-primary/60 to-violet-500/60 ring-2 ring-primary/30" />
                 </div>
+              </aside>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-2 rounded-xl border border-border/30 bg-background/30 p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-[11px] font-semibold text-foreground">Activity · last 14 days</p>
-                      <div className="flex gap-1">
-                        <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-mono">Day</span>
-                        <span className="px-1.5 py-0.5 rounded text-muted-foreground text-[9px] font-mono">Week</span>
+              {/* Main content */}
+              <div className="pl-[78px] relative">
+                {/* App header */}
+                <header className="h-12 flex items-center justify-between px-6">
+                  <div className="flex items-center gap-1.5 text-[12px]">
+                    <span className="text-muted-foreground/60">Staff Team</span>
+                    <ArrowRight className="w-3 h-3 text-muted-foreground/30" />
+                    <span className="text-foreground font-semibold">Dashboard</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <kbd className="inline-flex items-center gap-1 text-[9px] font-mono px-1.5 h-5 rounded border border-border/50 bg-foreground/[0.03] text-muted-foreground">
+                      <Command className="w-2.5 h-2.5" /> K
+                    </kbd>
+                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
+                      <BadgeCheck className="w-2.5 h-2.5" /> VERIFIED
+                    </span>
+                  </div>
+                </header>
+
+                <div className="px-6 pb-6 pt-1 space-y-3">
+                  <div>
+                    <h2 className="text-[20px] font-black tracking-tight">Overview</h2>
+                    <p className="text-[11px] text-muted-foreground">Your workspace at a glance</p>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-4 gap-2.5">
+                    {[
+                      { label: "Active staff", val: "24", change: "+3", glyph: Users },
+                      { label: "Sessions today", val: "18", change: "+5", glyph: CalendarDays },
+                      { label: "Hours tracked", val: "142h", change: "+12h", glyph: Clock },
+                      { label: "Online now", val: "8", change: "live", glyph: Activity },
+                    ].map((s) => (
+                      <div key={s.label} className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <s.glyph className="w-3.5 h-3.5 text-muted-foreground/70" />
+                          <span className="text-[9px] font-mono text-emerald-400">▲ {s.change}</span>
+                        </div>
+                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">{s.label}</p>
+                        <p className="text-[22px] font-black tracking-tight leading-none">{s.val}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Two-col */}
+                  <div className="grid grid-cols-3 gap-2.5">
+                    {/* Top performer / chart */}
+                    <div className="col-span-2 rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3.5">
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <p className="text-[11px] font-semibold">Activity</p>
+                          <p className="text-[9px] text-muted-foreground">Last 14 days</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-mono">Day</span>
+                          <span className="px-1.5 py-0.5 rounded text-muted-foreground text-[9px] font-mono">Week</span>
+                          <span className="px-1.5 py-0.5 rounded text-muted-foreground text-[9px] font-mono">Month</span>
+                        </div>
+                      </div>
+                      <div className="flex items-end gap-1.5 h-20">
+                        {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95, 70, 88].map((h, i) => (
+                          <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-primary/20 to-primary/80 hover:to-primary transition-colors" style={{ height: `${h}%` }} />
+                        ))}
+                      </div>
+                      <div className="flex justify-between mt-1.5 text-[8px] text-muted-foreground/60 font-mono">
+                        <span>Apr 30</span><span>May 7</span><span>May 13</span>
                       </div>
                     </div>
-                    <div className="flex items-end gap-1.5 h-24">
-                      {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95, 70, 88].map((h, i) => (
-                        <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-primary/20 to-primary/80" style={{ height: `${h}%` }} />
-                      ))}
+
+                    {/* Online list */}
+                    <div className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3.5">
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-[11px] font-semibold">Online now</p>
+                        <span className="flex items-center gap-1 text-[9px] text-emerald-400 font-mono">
+                          <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+                          live
+                        </span>
+                      </div>
+                      <div className="space-y-1.5">
+                        {[
+                          ["synt", "2h 14m", "in-game"],
+                          ["kai", "47m", "in-game"],
+                          ["mira", "1h 02m", "in-game"],
+                          ["devs", "3m", "idle"],
+                        ].map(([n, t, st], i) => (
+                          <div key={n} className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary/60 to-violet-500/60 shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[10px] font-semibold leading-tight truncate">@{n}</p>
+                              <p className="text-[8px] text-muted-foreground leading-tight">{st}</p>
+                            </div>
+                            <span className={`text-[9px] font-mono ${i === 3 ? "text-amber-400" : "text-muted-foreground"}`}>{t}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-border/30 bg-background/30 p-4">
-                    <p className="text-[11px] font-semibold text-foreground mb-3">Online now</p>
-                    <div className="space-y-2">
+                  {/* Recent activity strip */}
+                  <div className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3.5">
+                    <p className="text-[11px] font-semibold mb-2.5">Recent activity</p>
+                    <div className="space-y-1.5">
                       {[
-                        ["synt", "2h 14m"],
-                        ["kai", "47m"],
-                        ["mira", "1h 02m"],
-                        ["devs", "idle"],
-                      ].map(([n, t], i) => (
-                        <div key={n} className="flex items-center gap-2">
-                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary/60 to-violet-500/60" />
-                          <span className="text-[11px] font-medium flex-1">@{n}</span>
-                          <span className={`text-[10px] font-mono ${i === 3 ? "text-amber-400" : "text-muted-foreground"}`}>{t}</span>
+                        ["@kai", "promoted to Senior Mod", "2m ago"],
+                        ["@synt", "completed 1h training session", "14m ago"],
+                        ["@devs", "submitted leave of absence", "1h ago"],
+                      ].map(([who, what, when]) => (
+                        <div key={who as string} className="flex items-center gap-2 text-[10px]">
+                          <div className="w-1 h-1 rounded-full bg-primary" />
+                          <span className="font-semibold">{who}</span>
+                          <span className="text-muted-foreground flex-1 truncate">{what}</span>
+                          <span className="text-muted-foreground/60 font-mono text-[9px]">{when}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Bottom fade */}
-            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+              {/* Bottom fade */}
+              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+            </div>
           </div>
+
+          {/* Reflection / glow under */}
+          <div className="absolute inset-x-12 -bottom-10 h-40 bg-primary/30 blur-[80px] rounded-full opacity-60 pointer-events-none" />
         </div>
       </section>
 
       {/* Trusted */}
-      <section className="py-16 relative">
+      <section className="py-20 relative">
         <div className="max-w-6xl mx-auto px-6 text-center">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
             Trusted by Roblox communities
@@ -274,7 +411,7 @@ export default function Index() {
                 className="group rounded-2xl border border-border/30 bg-card/40 backdrop-blur-sm p-6 hover:border-primary/40 hover:bg-card/70 transition-all duration-300"
               >
                 <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-105 transition-all">
-                  <f.icon className="w-4.5 h-4.5 text-primary" strokeWidth={2.2} />
+                  <f.icon className="w-[18px] h-[18px] text-primary" strokeWidth={2.2} />
                 </div>
                 <h3 className="text-[15px] font-bold mb-1.5">{f.title}</h3>
                 <p className="text-[13px] text-muted-foreground leading-relaxed">{f.desc}</p>
@@ -385,12 +522,7 @@ export default function Index() {
       {/* Footer */}
       <footer className="border-t border-border/20 py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center">
-              <span className="text-primary-foreground font-black text-[11px]">F</span>
-            </div>
-            <span className="text-[15px] font-bold tracking-tight">Fluxcore</span>
-          </div>
+          <Logo size="sm" />
           <div className="flex items-center gap-5 text-sm text-muted-foreground flex-wrap justify-center">
             <button onClick={() => navigate("/support")} className="hover:text-foreground transition-colors flex items-center gap-1.5">
               <Headphones className="w-3.5 h-3.5" /> Support
