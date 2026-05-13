@@ -7,8 +7,20 @@ import {
   Sun,
   Moon,
   Headphones,
-  ChevronRight,
+  Play,
   CheckCircle2,
+  Activity,
+  Calendar,
+  Shield,
+  FileSignature,
+  Users,
+  Bot,
+  MessageSquare,
+  Plane,
+  Target,
+  Megaphone,
+  KeyRound,
+  Zap,
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
@@ -19,323 +31,286 @@ export default function Index() {
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = !authLoading && !!user;
 
-  // Stuff people actually care about, written like a person wrote it
-  const pillars = [
-    {
-      kicker: "01",
-      title: "See who's actually around.",
-      body:
-        "Live heartbeats every 30 seconds. Idle? We notice. No more taking screenshots of in-game lists at 2am to prove someone wasn't there.",
-    },
-    {
-      kicker: "02",
-      title: "Run shifts without the spreadsheet.",
-      body:
-        "Schedule trainings, raids, patrols — whatever your group does. Discord pings before they start. Staff claim their own slots.",
-    },
-    {
-      kicker: "03",
-      title: "Promote straight from the dashboard.",
-      body:
-        "Connected to your Roblox group through Open Cloud. One click and they're ranked. No tab juggling, no copy-pasting usernames.",
-    },
-    {
-      kicker: "04",
-      title: "Policies that don't get ignored.",
-      body:
-        "Write the rules once. Require digital signatures. Auto-assign to anyone new. Deadlines remind themselves.",
-    },
-  ];
-
-  // Quiet feature list — read like a manifesto bullet, not a marketing card
-  const everythingElse = [
-    "Per-role weekly quotas",
-    "Leave-of-absence flow",
-    "In-game message logs (Premium)",
-    "Auto-rank sync over Open Cloud",
-    "Custom roles & granular perms",
-    "Discord webhook reminders",
-    "Workspace-wide blacklist",
-    "Document deadlines",
-    "Built-in support tickets",
-    "AI assistant for common questions",
-    "Staff wall for announcements",
-    "Verified workspace badge",
+  const features = [
+    { icon: Activity, title: "Activity tracking", desc: "Live heartbeats every 30 seconds with idle detection. Know exactly who's in-game and for how long." },
+    { icon: Shield, title: "Group ranking", desc: "Promote and demote straight from the dashboard. Synced with your Roblox group via Open Cloud." },
+    { icon: Calendar, title: "Sessions & shifts", desc: "Schedule trainings, raids, patrols. Automatic Discord reminders. Staff claim slots themselves." },
+    { icon: FileSignature, title: "Policies & signatures", desc: "Write policies once. Require digital sign-off. Auto-assign to every new member with deadlines." },
+    { icon: Users, title: "Roles & permissions", desc: "Import roles from Roblox. Granular per-page permissions. Split promote and demote rights." },
+    { icon: Target, title: "Per-role quotas", desc: "Weekly session and time targets. Reset weekly, monthly, or never — your call." },
+    { icon: MessageSquare, title: "Message logs", desc: "Search every staff chat in-game. Audit, moderate, never lose context again." },
+    { icon: Plane, title: "Leave of absence", desc: "Staff request time off. Leadership approves in one click. Quotas adjust automatically." },
+    { icon: Megaphone, title: "Staff wall", desc: "Pin announcements, post updates. Skip the seventh Discord channel nobody reads." },
+    { icon: Bot, title: "AI support", desc: "Built-in tickets with an AI that handles common questions before they hit you." },
+    { icon: KeyRound, title: "Open Cloud API", desc: "Auto-rank syncs straight to Roblox via your group's API key. No bots required." },
+    { icon: Zap, title: "Discord webhooks", desc: "Session reminders, role changes, alerts — all routed where your team already lives." },
   ];
 
   return (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30 selection:text-foreground">
-      {/* Soft ambient — kept subtle */}
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
+      {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-40 left-1/3 w-[700px] h-[700px] rounded-full bg-primary/[0.06] blur-[140px]" />
-        <div className="absolute top-1/2 -right-40 w-[500px] h-[500px] rounded-full bg-violet-500/[0.04] blur-[120px]" />
+        <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[1100px] h-[800px] rounded-full bg-primary/[0.10] blur-[160px]" />
+        <div className="absolute top-[40%] -right-40 w-[500px] h-[500px] rounded-full bg-violet-500/[0.06] blur-[120px]" />
       </div>
 
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 border-b border-border/10 bg-background/70 backdrop-blur-2xl">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-[15px] font-black tracking-tight">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span><span className="text-primary">flux</span>core</span>
+      <nav className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center shadow-lg shadow-primary/30 group-hover:scale-105 transition-transform">
+              <span className="text-primary-foreground font-black text-sm">F</span>
+            </div>
+            <span className="text-[17px] font-bold tracking-tight">Fluxcore</span>
           </button>
 
-          <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
-            <a href="#why" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">Why</a>
-            <a href="#everything" className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">Features</a>
-            <button onClick={() => navigate("/pricing")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
-            <button onClick={() => navigate("/feedback")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">Feedback</button>
+          <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
+            <a href="#features" className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Product</a>
+            <button onClick={() => navigate("/pricing")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
+            <button onClick={() => navigate("/feedback")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Changelog</button>
+            <button onClick={() => navigate("/support")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Support</button>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <button onClick={() => navigate("/support")} className="p-2 text-muted-foreground hover:text-foreground rounded-md transition-colors" title="Support">
-              <Headphones className="w-4 h-4" />
-            </button>
+          <div className="flex items-center gap-2">
             <button onClick={toggleTheme} className="p-2 text-muted-foreground hover:text-foreground rounded-md transition-colors">
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             {isLoggedIn ? (
-              <Button size="sm" onClick={() => navigate("/workspaces")} className="bg-foreground text-background hover:bg-foreground/90 font-semibold h-8 px-3 ml-1">
-                Dashboard <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+              <Button size="sm" onClick={() => navigate("/workspaces")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4 rounded-lg shadow-lg shadow-primary/30">
+                Open dashboard
               </Button>
             ) : (
-              <Button size="sm" onClick={() => navigate("/login")} className="bg-foreground text-background hover:bg-foreground/90 font-semibold h-8 px-3 ml-1">
-                Sign in
-              </Button>
+              <>
+                <button onClick={() => navigate("/login")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block px-3 py-1.5">
+                  Sign in
+                </button>
+                <Button size="sm" onClick={() => navigate("/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4 rounded-lg shadow-lg shadow-primary/30">
+                  Sign up
+                </Button>
+              </>
             )}
           </div>
         </div>
       </nav>
 
-      {/* HERO — asymmetric, editorial */}
-      <section className="relative pt-28 pb-20">
-        <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-12 gap-10 items-end">
-          <div className="lg:col-span-8">
-            <div className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-7">
-              <span className="w-6 h-px bg-primary" />
-              For people who run Roblox groups
-            </div>
-
-            <h1 className="text-[44px] sm:text-6xl lg:text-[80px] font-black leading-[0.95] tracking-[-0.02em] mb-7">
-              Run your group{" "}
-              <span className="italic font-light text-muted-foreground">like</span>{" "}
-              you mean it.
-              <br />
-              <span className="text-gradient">Stop running it</span>{" "}
-              <span className="italic font-light text-muted-foreground">like</span>{" "}
-              homework.
-            </h1>
-
-            <p className="text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed mb-8">
-              Fluxcore is the dashboard a few of us wished existed when we were
-              co-owning groups at 1am. Activity, ranks, shifts, policies — one
-              place, fast, doesn't feel like a spreadsheet pretending to be software.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <Button
-                size="lg"
-                onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}
-                className="group bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 px-6 text-[15px] rounded-full shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5"
-              >
-                {isLoggedIn ? "Open dashboard" : "Start — it's free"}
-                <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-              </Button>
-              <a
-                href="#why"
-                className="text-sm font-semibold text-foreground/80 hover:text-foreground underline underline-offset-4 decoration-primary/40 hover:decoration-primary px-3 py-2"
-              >
-                or scroll, see what's inside ↓
-              </a>
-            </div>
-
-            <div className="mt-10 flex items-center gap-5 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                Free forever for the basics
-              </div>
-              <div className="hidden sm:flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                One-time Robux unlock for Premium
-              </div>
-            </div>
+      {/* HERO */}
+      <section className="relative pt-40 pb-16">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-border/40 bg-card/40 backdrop-blur-sm text-[12px] font-medium text-muted-foreground mb-9 animate-fade-in">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            New · In-game message logs are live
+            <ArrowRight className="w-3 h-3 opacity-60" />
           </div>
 
-          {/* Right side: a quiet "card" that feels handwritten */}
-          <div className="lg:col-span-4">
-            <div className="relative rounded-2xl border border-border/30 bg-card/40 backdrop-blur-md p-6 shadow-2xl shadow-primary/5 -rotate-1 hover:rotate-0 transition-transform duration-500">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-2 h-2 rounded-full bg-rose-400/70" />
-                <div className="w-2 h-2 rounded-full bg-amber-400/70" />
-                <div className="w-2 h-2 rounded-full bg-emerald-400/70" />
-                <span className="ml-2 text-[10px] font-mono text-muted-foreground">~/groups/fluxcore</span>
-              </div>
-              <p className="text-[11px] font-mono text-muted-foreground mb-3">
-                <span className="text-primary">$</span> staff active right now
-              </p>
-              <div className="text-5xl font-black tracking-tight mb-1">24<span className="text-muted-foreground/40">/31</span></div>
-              <p className="text-[11px] text-emerald-400 font-mono mb-5">▲ 3 since last hour</p>
+          <h1 className="text-[44px] sm:text-[68px] lg:text-[84px] font-black leading-[0.98] tracking-[-0.035em] mb-7 max-w-5xl mx-auto">
+            The all-in-one tool to run
+            <br className="hidden sm:block" />{" "}
+            your <span className="bg-gradient-to-br from-primary via-violet-400 to-primary bg-clip-text text-transparent">Roblox community.</span>
+          </h1>
 
-              <div className="space-y-1.5">
+          <p className="text-[17px] sm:text-[19px] text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
+            Activity tracking, ranking, scheduling, policies — everything your
+            staff team needs in one place. Built for groups that take it seriously.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 justify-center items-center mb-6">
+            <Button
+              size="lg"
+              onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}
+              className="group bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-12 px-7 text-[15px] rounded-xl shadow-[0_0_40px_-8px_hsl(var(--primary)/0.6)] transition-all hover:-translate-y-0.5"
+            >
+              {isLoggedIn ? "Open dashboard" : "Get started — free"}
+              <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="lg"
+              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+              className="h-12 px-6 text-[15px] font-semibold text-foreground/90 hover:bg-card/60 rounded-xl"
+            >
+              <Play className="w-4 h-4 mr-2 text-primary fill-primary" />
+              See it in action
+            </Button>
+          </div>
+
+          <p className="text-[12px] text-muted-foreground">
+            Free forever for the basics · No credit card · Sign in with Roblox
+          </p>
+        </div>
+
+        {/* Dashboard mockup — 3D tilted */}
+        <div className="relative mt-20 mx-auto max-w-6xl px-6" style={{ perspective: "2000px" }}>
+          <div
+            className="relative rounded-2xl border border-border/30 bg-card/80 backdrop-blur-xl shadow-[0_50px_120px_-20px_hsl(var(--primary)/0.35)] overflow-hidden"
+            style={{ transform: "rotateX(8deg)", transformStyle: "preserve-3d" }}
+          >
+            {/* Window chrome */}
+            <div className="flex items-center gap-1.5 px-4 py-3 border-b border-border/30 bg-card/60">
+              <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
+              <div className="flex-1 flex justify-center">
+                <div className="px-3 py-1 rounded-md bg-background/40 text-[11px] text-muted-foreground font-mono">fluxcore.app/w/staff/dashboard</div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-12 gap-0">
+              {/* Sidebar */}
+              <div className="col-span-2 border-r border-border/30 p-4 space-y-1 bg-background/20">
+                <div className="px-2 py-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Workspace</div>
                 {[
-                  ["synt", "in-game · 2h 14m"],
-                  ["kai", "in-game · 47m"],
-                  ["devs", "idle · 3m"],
-                  ["mira", "in-game · 1h 02m"],
-                ].map(([name, status], i) => (
-                  <div key={name} className="flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-foreground">@{name}</span>
-                    <span className={i === 2 ? "text-amber-400/80" : "text-muted-foreground"}>{status}</span>
+                  ["Dashboard", true],
+                  ["Members", false],
+                  ["Activity", false],
+                  ["Sessions", false],
+                  ["Roles", false],
+                  ["Wall", false],
+                  ["Policies", false],
+                  ["Quotas", false],
+                ].map(([name, active]) => (
+                  <div
+                    key={name as string}
+                    className={`px-2.5 py-1.5 rounded-md text-[11px] font-medium ${active ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}
+                  >
+                    {name}
                   </div>
                 ))}
               </div>
 
-              <div className="mt-5 pt-4 border-t border-border/20 flex items-end gap-1 h-12">
-                {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95, 70, 88].map((h, i) => (
-                  <div key={i} className="flex-1 rounded-sm bg-gradient-to-t from-primary/30 to-primary/80" style={{ height: `${h}%` }} />
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground/70 mt-2 font-mono">last 14 days</p>
+              {/* Main */}
+              <div className="col-span-10 p-5 space-y-4">
+                {/* Stat row */}
+                <div className="grid grid-cols-4 gap-3">
+                  {[
+                    { label: "Active staff", val: "24", change: "+3", up: true },
+                    { label: "Sessions today", val: "18", change: "+5", up: true },
+                    { label: "Hours tracked", val: "142h", change: "+12h", up: true },
+                    { label: "Online now", val: "8", change: "live", up: true },
+                  ].map((s) => (
+                    <div key={s.label} className="rounded-xl border border-border/30 bg-background/30 p-3.5">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1.5">{s.label}</p>
+                      <p className="text-2xl font-black tracking-tight">{s.val}</p>
+                      <p className="text-[10px] text-emerald-400 font-mono mt-0.5">▲ {s.change}</p>
+                    </div>
+                  ))}
+                </div>
 
-              <div className="absolute -bottom-3 -right-3 px-2 py-1 rounded-md bg-primary text-primary-foreground text-[9px] font-black uppercase tracking-widest rotate-3">
-                live
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-2 rounded-xl border border-border/30 bg-background/30 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-[11px] font-semibold text-foreground">Activity · last 14 days</p>
+                      <div className="flex gap-1">
+                        <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-mono">Day</span>
+                        <span className="px-1.5 py-0.5 rounded text-muted-foreground text-[9px] font-mono">Week</span>
+                      </div>
+                    </div>
+                    <div className="flex items-end gap-1.5 h-24">
+                      {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95, 70, 88].map((h, i) => (
+                        <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-primary/20 to-primary/80" style={{ height: `${h}%` }} />
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-border/30 bg-background/30 p-4">
+                    <p className="text-[11px] font-semibold text-foreground mb-3">Online now</p>
+                    <div className="space-y-2">
+                      {[
+                        ["synt", "2h 14m"],
+                        ["kai", "47m"],
+                        ["mira", "1h 02m"],
+                        ["devs", "idle"],
+                      ].map(([n, t], i) => (
+                        <div key={n} className="flex items-center gap-2">
+                          <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary/60 to-violet-500/60" />
+                          <span className="text-[11px] font-medium flex-1">@{n}</span>
+                          <span className={`text-[10px] font-mono ${i === 3 ? "text-amber-400" : "text-muted-foreground"}`}>{t}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Bottom fade */}
+            <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none" />
           </div>
         </div>
       </section>
 
-      {/* Trusted strip — small, honest */}
-      <section className="border-y border-border/10 py-6">
-        <div className="max-w-6xl mx-auto px-6 flex items-center justify-between flex-wrap gap-4">
-          <span className="text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
-            Already running on
-          </span>
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2.5 opacity-80 hover:opacity-100 transition-opacity">
+      {/* Trusted */}
+      <section className="py-16 relative">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground mb-6">
+            Trusted by Roblox communities
+          </p>
+          <div className="flex items-center justify-center gap-10 flex-wrap opacity-80">
+            <div className="flex items-center gap-2.5 grayscale hover:grayscale-0 transition-all">
               <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-7 h-7 rounded-md object-cover" />
               <span className="text-sm font-bold">Bloxy Bargains</span>
             </div>
-            <span className="text-xs text-muted-foreground/60 italic">+ a handful of groups we owe shoutouts to</span>
+            <span className="text-sm font-bold text-muted-foreground/40">+ a growing list of groups</span>
           </div>
         </div>
       </section>
 
-      {/* WHY — numbered, magazine-style */}
-      <section id="why" className="py-28 relative">
+      {/* FEATURES */}
+      <section id="features" className="py-28 relative">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="max-w-2xl mb-16">
-            <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-primary mb-3">— What it actually does</p>
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.05]">
-              Four things you stop doing manually{" "}
-              <span className="italic font-light text-muted-foreground">the day you switch.</span>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-3">Features</p>
+            <h2 className="text-4xl sm:text-5xl font-black tracking-[-0.025em] leading-[1.05] mb-4">
+              Everything your staff team needs.
             </h2>
-          </div>
-
-          <div className="space-y-px">
-            {pillars.map((p, i) => (
-              <div
-                key={p.kicker}
-                className="group grid grid-cols-12 gap-6 py-8 border-t border-border/15 hover:bg-primary/[0.02] transition-colors"
-              >
-                <div className="col-span-12 md:col-span-2">
-                  <div className="text-5xl font-black text-primary/40 group-hover:text-primary transition-colors font-mono">
-                    {p.kicker}
-                  </div>
-                </div>
-                <h3 className="col-span-12 md:col-span-4 text-2xl font-bold tracking-tight leading-tight">
-                  {p.title}
-                </h3>
-                <p className="col-span-12 md:col-span-6 text-base text-muted-foreground leading-relaxed">
-                  {p.body}
-                </p>
-              </div>
-            ))}
-            <div className="border-t border-border/15" />
-          </div>
-        </div>
-      </section>
-
-      {/* Quote block — gives it a person */}
-      <section className="py-20 relative">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <p className="text-2xl sm:text-3xl font-medium leading-snug text-foreground/90">
-            <span className="text-primary text-4xl leading-none align-top mr-1">“</span>
-            We built this because every group manager I knew had four tabs open,
-            two Discord bots, and a Google Sheet they hated. So we made the thing.
-            <span className="text-primary text-4xl leading-none align-top ml-1">”</span>
-          </p>
-          <div className="mt-6 inline-flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-xs font-black text-primary-foreground">
-              N
-            </div>
-            <div className="text-left">
-              <p className="text-sm font-bold">Novavoff</p>
-              <p className="text-xs text-muted-foreground">Built Fluxcore · Roblox group owner</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* EVERYTHING ELSE — quiet text list, not 12 sparkly cards */}
-      <section id="everything" className="py-28 relative">
-        <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-12 gap-12">
-          <div className="lg:col-span-4">
-            <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-primary mb-3">— Everything else</p>
-            <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight mb-4">
-              The boring list{" "}
-              <span className="italic font-light text-muted-foreground">that took two years to get right.</span>
-            </h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Most of these are the kind of thing you don't think about until you
-              don't have it. Then you can't go back.
+            <p className="text-[16px] text-muted-foreground">
+              Stop juggling spreadsheets, Discord bots, and seven open tabs. Fluxcore replaces all of it.
             </p>
           </div>
 
-          <div className="lg:col-span-8">
-            <ul className="grid sm:grid-cols-2 gap-x-8">
-              {everythingElse.map((item, i) => (
-                <li
-                  key={item}
-                  className="group flex items-center gap-3 py-4 border-b border-border/15 text-[15px] hover:text-primary transition-colors"
-                >
-                  <span className="text-[10px] font-mono text-muted-foreground/50 w-6">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="font-medium">{item}</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-auto opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                </li>
-              ))}
-            </ul>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {features.map((f) => (
+              <div
+                key={f.title}
+                className="group rounded-2xl border border-border/30 bg-card/40 backdrop-blur-sm p-6 hover:border-primary/40 hover:bg-card/70 transition-all duration-300"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/20 group-hover:scale-105 transition-all">
+                  <f.icon className="w-4.5 h-4.5 text-primary" strokeWidth={2.2} />
+                </div>
+                <h3 className="text-[15px] font-bold mb-1.5">{f.title}</h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* PRICING — kept, but quieter */}
+      {/* PRICING */}
       <section className="py-28 relative">
         <div className="max-w-5xl mx-auto px-6">
-          <div className="max-w-xl mb-14">
-            <p className="text-[11px] font-mono uppercase tracking-[0.18em] text-primary mb-3">— Pricing</p>
-            <h2 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.05]">
-              Free until you outgrow it.{" "}
-              <span className="italic font-light text-muted-foreground">No card. Ever.</span>
+          <div className="text-center max-w-xl mx-auto mb-14">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-3">Pricing</p>
+            <h2 className="text-4xl sm:text-5xl font-black tracking-[-0.025em] leading-[1.05] mb-4">
+              Free to start. Premium when you grow.
             </h2>
+            <p className="text-[16px] text-muted-foreground">
+              No credit card. No subscriptions. Premium is a one-time Robux unlock.
+            </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-5">
-            {/* Free */}
-            <div className="rounded-2xl border border-border/20 bg-card/30 p-7 flex flex-col">
-              <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mb-3">Free</p>
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="rounded-2xl border border-border/30 bg-card/40 p-7 flex flex-col">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Free</p>
               <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-6xl font-black tracking-tight">$0</span>
+                <span className="text-5xl font-black tracking-tight">$0</span>
                 <span className="text-muted-foreground text-sm">forever</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-7">Everything most groups will ever need.</p>
+              <p className="text-sm text-muted-foreground mb-7">For groups getting started.</p>
               <ul className="space-y-2.5 mb-8 flex-1">
                 {[
                   "Unlimited workspaces & members",
                   "Real-time activity tracking",
                   "Group ranking & role sync",
-                  "Shift & event scheduling",
+                  "Sessions, shifts & scheduling",
                   "Discord webhook reminders",
                   "Policies with digital signatures",
                 ].map((item) => (
@@ -345,27 +320,26 @@ export default function Index() {
                   </li>
                 ))}
               </ul>
-              <Button variant="outline" className="w-full h-11 font-semibold border-border/40 rounded-full" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
+              <Button variant="outline" className="w-full h-11 font-semibold border-border/50 rounded-xl" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
                 {isLoggedIn ? "Open dashboard" : "Get started"} <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
 
-            {/* Premium */}
-            <div className="relative rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/[0.10] via-card/40 to-violet-500/[0.06] p-7 flex flex-col">
-              <div className="absolute -top-2.5 left-6 px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
+            <div className="relative rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/[0.10] via-card/40 to-violet-500/[0.06] p-7 flex flex-col shadow-[0_0_60px_-20px_hsl(var(--primary)/0.5)]">
+              <div className="absolute -top-2.5 left-7 px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
                 Premium
               </div>
-              <p className="text-[11px] font-mono uppercase tracking-widest text-primary mb-3">One-time</p>
+              <p className="text-[11px] font-bold uppercase tracking-widest text-primary mb-3">One-time</p>
               <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-6xl font-black tracking-tight">400</span>
+                <span className="text-5xl font-black tracking-tight">400</span>
                 <span className="text-muted-foreground text-sm">Robux</span>
               </div>
-              <p className="text-sm text-muted-foreground mb-7">For groups that want the full toolkit.</p>
+              <p className="text-sm text-muted-foreground mb-7">For groups going pro.</p>
               <ul className="space-y-2.5 mb-8 flex-1">
                 {[
                   "Everything in Free",
                   "In-game message logging",
-                  "Auto-rank sync with Roblox",
+                  "Auto-rank sync over Open Cloud",
                   "Verified workspace badge",
                   "Full custom branding",
                   "Per-role quotas & analytics",
@@ -376,7 +350,7 @@ export default function Index() {
                   </li>
                 ))}
               </ul>
-              <Button className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-full shadow-lg shadow-primary/30" onClick={() => navigate("/pricing")}>
+              <Button className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/30" onClick={() => navigate("/pricing")}>
                 See Premium <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </div>
@@ -384,34 +358,38 @@ export default function Index() {
         </div>
       </section>
 
-      {/* CTA strip */}
-      <section className="py-24 relative">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.02] mb-6">
-            Stop spreadsheet-managing your group.{" "}
-            <span className="text-gradient">Start running it.</span>
-          </h2>
-          <Button
-            size="lg"
-            onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-13 px-8 rounded-full shadow-lg shadow-primary/30 transition-all hover:-translate-y-0.5"
-          >
-            {isLoggedIn ? "Open dashboard" : "Get started — free"} <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-          <p className="text-xs text-muted-foreground mt-4">
-            Sign in with Roblox · takes about 30 seconds
-          </p>
+      {/* CTA */}
+      <section className="py-28 relative">
+        <div className="max-w-4xl mx-auto px-6">
+          <div className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/[0.12] via-card/60 to-violet-500/[0.08] p-12 sm:p-16 text-center overflow-hidden">
+            <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-[500px] h-[300px] rounded-full bg-primary/20 blur-[100px]" />
+            <div className="relative">
+              <h2 className="text-4xl sm:text-5xl font-black tracking-[-0.025em] leading-[1.05] mb-4">
+                Ready to run your group properly?
+              </h2>
+              <p className="text-[16px] text-muted-foreground mb-8 max-w-lg mx-auto">
+                Set up a workspace in under a minute. Free forever for the essentials.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-12 px-7 rounded-xl shadow-[0_0_40px_-8px_hsl(var(--primary)/0.6)] transition-all hover:-translate-y-0.5"
+              >
+                {isLoggedIn ? "Open dashboard" : "Get started — it's free"} <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-border/10 py-10">
+      <footer className="border-t border-border/20 py-10">
         <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-            <span className="text-base font-black tracking-tight">
-              <span className="text-primary">flux</span>core
-            </span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center">
+              <span className="text-primary-foreground font-black text-[11px]">F</span>
+            </div>
+            <span className="text-[15px] font-bold tracking-tight">Fluxcore</span>
           </div>
           <div className="flex items-center gap-5 text-sm text-muted-foreground flex-wrap justify-center">
             <button onClick={() => navigate("/support")} className="hover:text-foreground transition-colors flex items-center gap-1.5">
@@ -422,7 +400,7 @@ export default function Index() {
             <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>
             <LanguageSelector />
           </div>
-          <p className="text-xs text-muted-foreground font-mono">© 2026 · made by humans</p>
+          <p className="text-xs text-muted-foreground">© 2026 Fluxcore</p>
         </div>
       </footer>
     </div>
