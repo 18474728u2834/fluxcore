@@ -106,7 +106,7 @@ function AppRoutes() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Almore />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<AlmoreLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/workspaces" element={<Workspaces />} />
           <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
@@ -149,7 +149,7 @@ function AppRoutes() {
       </Suspense>
     );
   }
-
+const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 
   return (
     <Suspense fallback={<PageLoader />}>
