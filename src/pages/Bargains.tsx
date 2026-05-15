@@ -59,7 +59,7 @@ export default function Bargains() {
     <div className="min-h-screen bg-[#100808] text-white relative overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute inset-0 bg-grid opacity-[0.05] pointer-events-none" />
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-red-500/15 blur-[180px] pointer-events-none" />
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-sky-500/15 blur-[180px] pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-amber-400/10 blur-[160px] pointer-events-none" />
 
       {/* Top nav */}
@@ -68,7 +68,7 @@ export default function Bargains() {
           {groupIcon ? (
             <img src={groupIcon} alt="" className="w-9 h-9 rounded-lg ring-1 ring-white/15" />
           ) : (
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-400 to-red-700 ring-1 ring-white/15" />
+            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-sky-400 to-sky-700 ring-1 ring-white/15" />
           )}
           <span className="text-sm font-semibold tracking-wide">BLOXY BARGAINS</span>
         </div>
@@ -90,7 +90,7 @@ export default function Bargains() {
       <div className="relative max-w-6xl mx-auto px-6 pt-12 pb-24">
         {/* Hero */}
         <header className="text-center space-y-6 mb-24">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-400/10 border border-red-400/20 text-[11px] uppercase tracking-[0.18em] text-red-300 font-medium">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/10 border border-sky-400/20 text-[11px] uppercase tracking-[0.18em] text-sky-300 font-medium">
             <Sparkles className="w-3 h-3" /> Official Staff Portal
           </div>
 
@@ -98,17 +98,17 @@ export default function Bargains() {
             <img
               src={groupIcon}
               alt="Bloxy Bargains PLC"
-              className="w-28 h-28 mx-auto rounded-3xl ring-1 ring-white/10 shadow-[0_20px_80px_-20px_rgba(239,68,68,0.5)]"
+              className="w-28 h-28 mx-auto rounded-3xl ring-1 ring-white/10 shadow-[0_20px_80px_-20px_rgba(56,189,248,0.5)]"
             />
           )}
 
           <div className="space-y-3">
             <h1 className="text-6xl md:text-7xl font-bold tracking-tight">
-              <span className="bg-gradient-to-br from-white via-red-100 to-red-300 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-br from-white via-sky-100 to-sky-300 bg-clip-text text-transparent">
                 Bloxy Bargains
               </span>
             </h1>
-            <p className="text-base md:text-lg text-red-200/70 font-medium tracking-wide">
+            <p className="text-base md:text-lg text-sky-200/70 font-medium tracking-wide">
               PLC · Est. 2023 · Oxford, UK
             </p>
           </div>
@@ -124,7 +124,7 @@ export default function Bargains() {
               size="lg"
               onClick={handleContinue}
               disabled={loading}
-              className="min-w-[220px] bg-red-500 hover:bg-red-400 text-red-950 font-semibold shadow-[0_10px_40px_-10px_rgba(239,68,68,0.6)]"
+              className="min-w-[220px] bg-sky-500 hover:bg-sky-400 text-sky-950 font-semibold shadow-[0_10px_40px_-10px_rgba(56,189,248,0.6)]"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -156,9 +156,9 @@ export default function Bargains() {
           ].map((s, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 backdrop-blur-sm hover:border-red-400/30 hover:bg-white/[0.05] transition-all"
+              className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 backdrop-blur-sm hover:border-sky-400/30 hover:bg-white/[0.05] transition-all"
             >
-              <s.icon className="w-5 h-5 text-red-400 mb-3" />
+              <s.icon className="w-5 h-5 text-sky-400 mb-3" />
               <p className="text-[10px] text-white/40 uppercase tracking-[0.15em] mb-1">{s.label}</p>
               <p className="text-base font-semibold truncate">{s.value}</p>
             </div>
@@ -167,8 +167,8 @@ export default function Bargains() {
 
         {/* About */}
         <section id="about" className="grid md:grid-cols-5 gap-4 mb-24">
-          <div className="md:col-span-3 rounded-3xl bg-gradient-to-br from-red-500/10 via-white/[0.02] to-transparent border border-white/10 p-8 md:p-10">
-            <div className="flex items-center gap-2 mb-4 text-red-300 text-xs uppercase tracking-[0.15em] font-medium">
+          <div className="md:col-span-3 rounded-3xl bg-gradient-to-br from-sky-500/10 via-white/[0.02] to-transparent border border-white/10 p-8 md:p-10">
+            <div className="flex items-center gap-2 mb-4 text-sky-300 text-xs uppercase tracking-[0.15em] font-medium">
               <ShoppingBag className="w-4 h-4" /> About Bloxy Bargains
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-5 leading-[1.15]">
@@ -191,7 +191,7 @@ export default function Bargains() {
                 (t) => (
                   <span
                     key={t}
-                    className="text-[11px] px-2.5 py-1 rounded-full bg-red-400/10 border border-red-400/20 text-red-200/80"
+                    className="text-[11px] px-2.5 py-1 rounded-full bg-sky-400/10 border border-sky-400/20 text-sky-200/80"
                   >
                     {t}
                   </span>
@@ -202,7 +202,7 @@ export default function Bargains() {
 
           <div className="md:col-span-2 rounded-3xl bg-white/[0.03] border border-white/10 p-8 flex flex-col justify-between">
             <div>
-              <ShoppingBag className="w-6 h-6 text-red-400 mb-4" />
+              <ShoppingBag className="w-6 h-6 text-sky-400 mb-4" />
               <h3 className="text-lg font-semibold mb-3">Built for the team</h3>
               <ul className="space-y-3 text-sm text-white/60">
                 {[
@@ -214,7 +214,7 @@ export default function Bargains() {
                   "Discord integration",
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-red-400 shrink-0" />
+                    <CheckCircle2 className="w-4 h-4 text-sky-400 shrink-0" />
                     {f}
                   </li>
                 ))}
@@ -222,7 +222,7 @@ export default function Bargains() {
             </div>
             <div className="mt-6 pt-6 border-t border-white/10 text-[11px] text-white/40">
               Powered by{" "}
-              <a href="https://fluxcore.works" className="text-red-300 hover:text-red-200">
+              <a href="https://fluxcore.works" className="text-sky-300 hover:text-sky-200">
                 Fluxcore
               </a>
             </div>
@@ -231,8 +231,8 @@ export default function Bargains() {
 
         {/* Quote */}
         <section className="mb-24">
-          <div className="relative rounded-3xl border border-white/10 bg-gradient-to-r from-red-500/[0.07] via-white/[0.02] to-amber-400/[0.05] p-10 md:p-14 overflow-hidden">
-            <Quote className="absolute -top-4 left-8 w-24 h-24 text-red-400/10 rotate-180" />
+          <div className="relative rounded-3xl border border-white/10 bg-gradient-to-r from-sky-500/[0.07] via-white/[0.02] to-amber-400/[0.05] p-10 md:p-14 overflow-hidden">
+            <Quote className="absolute -top-4 left-8 w-24 h-24 text-sky-400/10 rotate-180" />
             <p className="relative text-2xl md:text-3xl font-semibold leading-snug max-w-3xl">
               "Bloxy Bargains has always been about the people behind the tills — a friendly
               shop, a tight team, and somewhere everyone feels welcome to clock in."
@@ -245,7 +245,7 @@ export default function Bargains() {
         <section id="departments" className="mb-24">
           <div className="flex items-end justify-between mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-2 text-red-300 text-xs uppercase tracking-[0.15em] font-medium">
+              <div className="flex items-center gap-2 mb-2 text-sky-300 text-xs uppercase tracking-[0.15em] font-medium">
                 <Briefcase className="w-4 h-4" /> Inside the store
               </div>
               <h2 className="text-3xl md:text-4xl font-bold leading-tight">Departments that keep Bargains running</h2>
@@ -287,10 +287,10 @@ export default function Bargains() {
             ].map((d) => (
               <div
                 key={d.name}
-                className="group rounded-2xl bg-white/[0.03] border border-white/10 p-6 hover:border-red-400/30 hover:bg-white/[0.05] transition-all"
+                className="group rounded-2xl bg-white/[0.03] border border-white/10 p-6 hover:border-sky-400/30 hover:bg-white/[0.05] transition-all"
               >
-                <div className="w-10 h-10 rounded-xl bg-red-400/10 border border-red-400/20 flex items-center justify-center mb-4 group-hover:bg-red-400/20 transition-colors">
-                  <d.icon className="w-5 h-5 text-red-300" />
+                <div className="w-10 h-10 rounded-xl bg-sky-400/10 border border-sky-400/20 flex items-center justify-center mb-4 group-hover:bg-sky-400/20 transition-colors">
+                  <d.icon className="w-5 h-5 text-sky-300" />
                 </div>
                 <h3 className="text-base font-semibold mb-1.5">{d.name}</h3>
                 <p className="text-sm text-white/55 leading-relaxed">{d.desc}</p>
@@ -302,7 +302,7 @@ export default function Bargains() {
         {/* Values */}
         <section id="values" className="mb-24">
           <div className="rounded-3xl border border-white/10 bg-white/[0.02] p-8 md:p-12">
-            <div className="flex items-center gap-2 mb-3 text-red-300 text-xs uppercase tracking-[0.15em] font-medium">
+            <div className="flex items-center gap-2 mb-3 text-sky-300 text-xs uppercase tracking-[0.15em] font-medium">
               <Heart className="w-4 h-4" /> What we stand for
             </div>
             <h2 className="text-3xl md:text-4xl font-bold mb-10 leading-tight max-w-2xl">
@@ -328,7 +328,7 @@ export default function Bargains() {
                 },
               ].map((v) => (
                 <div key={v.n} className="space-y-3">
-                  <span className="text-xs font-mono text-red-300/70 tracking-widest">{v.n}</span>
+                  <span className="text-xs font-mono text-sky-300/70 tracking-widest">{v.n}</span>
                   <h3 className="text-xl font-semibold">{v.t}</h3>
                   <p className="text-sm text-white/55 leading-relaxed">{v.d}</p>
                 </div>
@@ -339,8 +339,8 @@ export default function Bargains() {
 
         {/* CTA */}
         <section className="mb-16">
-          <div className="relative rounded-3xl overflow-hidden border border-red-400/20 bg-gradient-to-br from-red-500/15 via-red-500/[0.04] to-transparent p-10 md:p-14 text-center">
-            <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-red-400/15 blur-[140px] pointer-events-none" />
+          <div className="relative rounded-3xl overflow-hidden border border-sky-400/20 bg-gradient-to-br from-sky-500/15 via-sky-500/[0.04] to-transparent p-10 md:p-14 text-center">
+            <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[500px] h-[500px] rounded-full bg-sky-400/15 blur-[140px] pointer-events-none" />
             <div className="relative space-y-5 max-w-2xl mx-auto">
               <h2 className="text-3xl md:text-4xl font-bold leading-tight">
                 Ready to clock in?
@@ -354,7 +354,7 @@ export default function Bargains() {
                   size="lg"
                   onClick={handleContinue}
                   disabled={loading}
-                  className="min-w-[220px] bg-red-500 hover:bg-red-400 text-red-950 font-semibold"
+                  className="min-w-[220px] bg-sky-500 hover:bg-sky-400 text-sky-950 font-semibold"
                 >
                   {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
