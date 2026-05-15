@@ -89,7 +89,7 @@ export default function Bargains() {
 
       <div className="relative max-w-6xl mx-auto px-6 pt-12 pb-24">
         {/* Hero */}
-        <header className="text-center space-y-6 mb-24">
+        <header className="text-center space-y-6 mb-24 stagger-fade">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-400/10 border border-sky-400/20 text-[11px] uppercase tracking-[0.18em] text-sky-300 font-medium">
             <Sparkles className="w-3 h-3" /> Official Staff Portal
           </div>
@@ -98,7 +98,7 @@ export default function Bargains() {
             <img
               src={groupIcon}
               alt="Bloxy Bargains PLC"
-              className="w-28 h-28 mx-auto rounded-3xl ring-1 ring-white/10 shadow-[0_20px_80px_-20px_rgba(56,189,248,0.5)]"
+              className="w-28 h-28 mx-auto rounded-3xl ring-1 ring-white/10 shadow-[0_20px_80px_-20px_rgba(56,189,248,0.5)] hover:scale-105 hover:rotate-3 transition-transform duration-500"
             />
           )}
 
@@ -124,7 +124,7 @@ export default function Bargains() {
               size="lg"
               onClick={handleContinue}
               disabled={loading}
-              className="min-w-[220px] bg-sky-500 hover:bg-sky-400 text-sky-950 font-semibold shadow-[0_10px_40px_-10px_rgba(56,189,248,0.6)]"
+              className="min-w-[220px] bg-sky-500 hover:bg-sky-400 text-sky-950 font-semibold shadow-[0_10px_40px_-10px_rgba(56,189,248,0.6)] hover:shadow-[0_15px_50px_-10px_rgba(56,189,248,0.8)] hover:scale-[1.03] transition-all duration-200 active:scale-[0.98]"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -147,7 +147,7 @@ export default function Bargains() {
         </header>
 
         {/* Stat strip */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-24">
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-24 stagger-fade">
           {[
             { icon: Users, label: "Members", value: "581+" },
             { icon: Crown, label: "Owner", value: "Archie" },
@@ -156,7 +156,7 @@ export default function Bargains() {
           ].map((s, i) => (
             <div
               key={i}
-              className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 backdrop-blur-sm hover:border-sky-400/30 hover:bg-white/[0.05] transition-all"
+              className="rounded-2xl bg-white/[0.03] border border-white/10 p-5 backdrop-blur-sm hover:border-sky-400/40 hover:bg-white/[0.06] hover:-translate-y-1 transition-all duration-300"
             >
               <s.icon className="w-5 h-5 text-sky-400 mb-3" />
               <p className="text-[10px] text-white/40 uppercase tracking-[0.15em] mb-1">{s.label}</p>
@@ -252,7 +252,7 @@ export default function Bargains() {
             </div>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-fade">
             {[
               {
                 icon: ShoppingCart,
