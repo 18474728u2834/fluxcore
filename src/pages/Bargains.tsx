@@ -287,9 +287,9 @@ export default function Bargains() {
             ].map((d) => (
               <div
                 key={d.name}
-                className="group rounded-2xl bg-white/[0.03] border border-white/10 p-6 hover:border-sky-400/30 hover:bg-white/[0.05] transition-all"
+                className="group rounded-2xl bg-white/[0.03] border border-white/10 p-6 hover:border-sky-400/40 hover:bg-white/[0.06] hover:-translate-y-1 transition-all duration-300"
               >
-                <div className="w-10 h-10 rounded-xl bg-sky-400/10 border border-sky-400/20 flex items-center justify-center mb-4 group-hover:bg-sky-400/20 transition-colors">
+                <div className="w-10 h-10 rounded-xl bg-sky-400/10 border border-sky-400/20 flex items-center justify-center mb-4 group-hover:bg-sky-400/25 group-hover:scale-110 transition-all duration-300">
                   <d.icon className="w-5 h-5 text-sky-300" />
                 </div>
                 <h3 className="text-base font-semibold mb-1.5">{d.name}</h3>
