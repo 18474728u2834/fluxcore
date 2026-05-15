@@ -59,8 +59,8 @@ export default function Bargains() {
     <div className="min-h-screen bg-[#06121f] text-white relative overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute inset-0 bg-grid opacity-[0.05] pointer-events-none" />
-      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-sky-500/15 blur-[180px] pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-amber-400/10 blur-[160px] pointer-events-none" />
+      <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-sky-500/15 blur-[180px] pointer-events-none animate-pulse" style={{ animationDuration: "6s" }} />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] rounded-full bg-cyan-400/10 blur-[160px] pointer-events-none animate-pulse" style={{ animationDuration: "8s" }} />
 
       {/* Top nav */}
       <nav className="relative z-10 max-w-6xl mx-auto px-6 py-6 flex items-center justify-between">
