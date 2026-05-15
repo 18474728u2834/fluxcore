@@ -56,7 +56,7 @@ export default function Bargains() {
   };
 
   return (
-    <div className="min-h-screen bg-[#100808] text-white relative overflow-hidden">
+    <div className="min-h-screen bg-[#06121f] text-white relative overflow-hidden">
       {/* Ambient glow */}
       <div className="absolute inset-0 bg-grid opacity-[0.05] pointer-events-none" />
       <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-sky-500/15 blur-[180px] pointer-events-none" />
