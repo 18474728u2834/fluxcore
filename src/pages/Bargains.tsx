@@ -23,7 +23,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 
-const WORKSPACE_ID = "81bd37c3-fb0a-465a-86b5-de4cfed43a09";
+const WORKSPACE_ID = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
 const ROBLOX_GROUP_ID = "11877226";
 const ROBLOX_GROUP_URL =
   "https://www.roblox.com/communities/11877226/Bloxy-Bargains-PLC";

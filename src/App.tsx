@@ -120,7 +120,7 @@ function AppRoutes() {
   }
 
   if (hostname.startsWith("bargains.fluxcore")) {
-    const BARGAINS_WS = "81bd37c3-fb0a-465a-86b5-de4cfed43a09";
+    const BARGAINS_WS = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
