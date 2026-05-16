@@ -255,3 +255,106 @@
   height: 1.25rem;
   opacity: 1;
 }
+
+/* ============================================================
+   Bloxy Bargains workspace — bespoke Hyra-inspired theme
+   Applied via .theme-bargains on the dashboard root.
+   ============================================================ */
+.theme-bargains {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 8%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 8%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 0 84% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 0 0% 11%;
+  --secondary-foreground: 0 0% 90%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 0 84% 65%;
+  --accent-foreground: 0 0% 100%;
+  --border: 0 0% 14%;
+  --input: 0 0% 14%;
+  --ring: 0 84% 65%;
+  --sidebar-background: 0 0% 3%;
+  --sidebar-foreground: 0 0% 55%;
+  --sidebar-primary: 0 84% 65%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent-foreground: 0 0% 98%;
+  --sidebar-border: 0 0% 10%;
+  --sidebar-ring: 0 84% 65%;
+  --radius: 0.875rem;
+  background-color: hsl(0 0% 4%) !important;
+}
+
+/* Slim icon-only sidebar — Hyra-style narrow rail */
+.theme-bargains [data-sidebar="sidebar"] {
+  background-color: hsl(0 0% 3%);
+}
+.theme-bargains [data-sidebar="sidebar"]:not([data-mobile="true"]) {
+  width: 3.75rem !important;
+  min-width: 3.75rem !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"] {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0.125rem auto;
+  border-radius: 0.625rem;
+  color: hsl(0 0% 55%);
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"]:hover {
+  background-color: hsl(0 0% 10%);
+  color: hsl(0 0% 95%);
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"] svg {
+  margin: 0 !important;
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"] > span {
+  display: none !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="group-label"] {
+  display: none !important;
+}
+.theme-bargains [data-sidebar="sidebar"] .text-gradient,
+.theme-bargains [data-sidebar="sidebar"] [class*="px-4 py-5"] p {
+  display: none !important;
+}
+.theme-bargains [data-sidebar="sidebar"] [class*="px-4 py-5"] {
+  padding: 1rem 0.5rem;
+  text-align: center;
+}
+
+/* Cards — soft elevated black panels */
+.theme-bargains main {
+  background-color: hsl(0 0% 4%);
+}
+.theme-bargains .bg-card,
+.theme-bargains [class*="bg-card"] {
+  background-color: hsl(0 0% 8%);
+  border-color: hsl(0 0% 14%);
+}
+.theme-bargains .glass {
+  background-color: hsl(0 0% 8%) !important;
+  backdrop-filter: none !important;
+  border: 1px solid hsl(0 0% 14%);
+}
+
+/* Header */
+.theme-bargains header {
+  background-color: hsl(0 0% 4% / 0.9) !important;
+  border-color: hsl(0 0% 12%) !important;
+}
+
+/* Primary buttons get the coral glow */
+.theme-bargains .bg-primary {
+  box-shadow: 0 8px 24px -10px hsl(0 84% 65% / 0.45);
+}
+
