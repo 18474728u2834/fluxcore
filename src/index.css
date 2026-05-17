@@ -260,35 +260,36 @@
    Bloxy Bargains workspace — bespoke Hyra-inspired theme
    ============================================================ */
 .theme-bargains {
-  --background: 0 0% 4%;
+  /* Hyra palette: very dark canvas, slightly elevated graphite cards, coral accent */
+  --background: 240 3% 6%;          /* #0e0f10 canvas */
   --foreground: 0 0% 98%;
-  --card: 0 0% 7%;
+  --card: 240 3% 11%;               /* #1c1c1e card surface */
   --card-foreground: 0 0% 98%;
-  --popover: 0 0% 8%;
+  --popover: 240 3% 9%;
   --popover-foreground: 0 0% 98%;
-  --primary: 4 90% 68%;
+  --primary: 4 88% 68%;             /* coral */
   --primary-foreground: 0 0% 100%;
-  --secondary: 0 0% 11%;
-  --secondary-foreground: 0 0% 90%;
-  --muted: 0 0% 10%;
-  --muted-foreground: 0 0% 50%;
-  --accent: 4 90% 68%;
+  --secondary: 240 3% 14%;
+  --secondary-foreground: 0 0% 92%;
+  --muted: 240 3% 13%;
+  --muted-foreground: 240 3% 55%;
+  --accent: 4 88% 68%;
   --accent-foreground: 0 0% 100%;
-  --border: 0 0% 13%;
-  --input: 0 0% 13%;
-  --ring: 4 90% 68%;
-  --sidebar-background: 0 0% 5%;
-  --sidebar-foreground: 0 0% 55%;
-  --sidebar-primary: 4 90% 68%;
+  --border: 240 3% 16%;
+  --input: 240 3% 14%;
+  --ring: 4 88% 68%;
+  --sidebar-background: 240 3% 7%;
+  --sidebar-foreground: 240 3% 55%;
+  --sidebar-primary: 4 88% 68%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent: 240 3% 12%;
   --sidebar-accent-foreground: 0 0% 98%;
-  --sidebar-border: 0 0% 9%;
-  --sidebar-ring: 4 90% 68%;
-  --radius: 0.875rem;
-  background-color: hsl(0 0% 4%) !important;
-  font-family: 'Inter', 'Outfit', system-ui, -apple-system, sans-serif !important;
-  letter-spacing: -0.005em;
+  --sidebar-border: 240 3% 10%;
+  --sidebar-ring: 4 88% 68%;
+  --radius: 0.75rem;
+  background-color: hsl(240 3% 6%) !important;
+  font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif !important;
+  letter-spacing: -0.011em;
 }
 .theme-bargains * {
   font-family: inherit !important;
@@ -587,3 +588,158 @@
   background-color: hsl(0 0% 10%) !important;
 }
 
+
+/* ===========================================================
+   Hyra-grade typography & cards across ALL Bargains pages
+   =========================================================== */
+
+/* Page H1 — large, very bold, white */
+.theme-bargains main h1 {
+  font-size: 2.25rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.05 !important;
+  color: hsl(0 0% 100%) !important;
+}
+.theme-bargains main h2 {
+  font-size: 1.5rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+  color: hsl(0 0% 100%) !important;
+}
+.theme-bargains main h3 {
+  font-weight: 700 !important;
+  letter-spacing: -0.015em !important;
+  color: hsl(0 0% 98%) !important;
+}
+
+/* Cards — elevated graphite, soft border, generous radius */
+.theme-bargains .bg-card,
+.theme-bargains .glass,
+.theme-bargains .glass-hover,
+.theme-bargains [class*="bg-card"] {
+  background-color: hsl(240 3% 11%) !important;
+  border: 1px solid hsl(240 3% 16%) !important;
+  border-radius: 0.875rem !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 1px 0 hsl(240 3% 20% / 0.4) inset !important;
+}
+.theme-bargains .glass-hover:hover {
+  background-color: hsl(240 3% 13%) !important;
+  border-color: hsl(240 3% 20%) !important;
+  transform: translateY(-1px);
+}
+
+/* Toolbar buttons (Filter / Sort / Edit View etc.) — flat icon buttons */
+.theme-bargains main button[class*="ghost"],
+.theme-bargains main button[class*="outline"] {
+  border-radius: 0.5rem !important;
+  font-weight: 500 !important;
+  color: hsl(0 0% 75%) !important;
+}
+.theme-bargains main button[class*="outline"] {
+  background-color: hsl(240 3% 11%) !important;
+  border: 1px solid hsl(240 3% 17%) !important;
+}
+.theme-bargains main button[class*="outline"]:hover {
+  background-color: hsl(240 3% 14%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Primary CTA — coral */
+.theme-bargains .bg-primary,
+.theme-bargains button[class*="bg-primary"] {
+  background-color: hsl(4 88% 68%) !important;
+  color: hsl(0 0% 100%) !important;
+  font-weight: 600 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: none !important;
+}
+.theme-bargains .bg-primary:hover {
+  background-color: hsl(4 88% 62%) !important;
+}
+
+/* Calendar / day pills (Sessions page) — small squared chips */
+.theme-bargains [class*="rounded"][class*="grid"] > button,
+.theme-bargains .grid > button[class*="rounded"] {
+  border-radius: 0.625rem !important;
+}
+.theme-bargains button[data-state="active"][class*="rounded"],
+.theme-bargains button[class*="bg-primary"][class*="rounded"] {
+  background-color: hsl(4 88% 68%) !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Tables and table-like rows */
+.theme-bargains table,
+.theme-bargains [role="table"] {
+  background-color: hsl(240 3% 11%) !important;
+  border-radius: 0.75rem !important;
+  overflow: hidden;
+}
+.theme-bargains th {
+  background-color: hsl(240 3% 9%) !important;
+  color: hsl(0 0% 60%) !important;
+  font-size: 0.72rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* Progress bars — coral solid (no gradient) on Quotas */
+.theme-bargains [role="progressbar"] {
+  background-color: hsl(240 3% 16%) !important;
+  border-radius: 9999px !important;
+  height: 0.5rem !important;
+}
+.theme-bargains [role="progressbar"] > div {
+  background-image: none !important;
+  background-color: hsl(4 88% 68%) !important;
+}
+
+/* Quota & session "stat" tiles inside cards — darker nested boxes */
+.theme-bargains .bg-card .bg-card,
+.theme-bargains .glass .bg-secondary,
+.theme-bargains .glass-hover .bg-secondary,
+.theme-bargains [class*="bg-muted"] {
+  background-color: hsl(240 3% 8%) !important;
+  border: 1px solid hsl(240 3% 14%) !important;
+  border-radius: 0.625rem !important;
+}
+
+/* Number-heavy stats — bold, tabular */
+.theme-bargains .text-2xl,
+.theme-bargains .text-3xl,
+.theme-bargains .text-4xl {
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+  font-variant-numeric: tabular-nums;
+  color: hsl(0 0% 100%) !important;
+}
+
+/* Labels under stat numbers */
+.theme-bargains label,
+.theme-bargains .text-xs.text-muted-foreground,
+.theme-bargains .text-sm.text-muted-foreground {
+  color: hsl(0 0% 55%) !important;
+  font-weight: 500 !important;
+}
+
+/* Search/header input polish */
+.theme-bargains header input {
+  background-color: hsl(240 3% 11%) !important;
+  border: 1px solid hsl(240 3% 16%) !important;
+  border-radius: 0.625rem !important;
+}
+
+/* Sidebar active item — coral text only, no bg fill change beyond subtle */
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"][data-active="true"] svg,
+.theme-bargains [data-sidebar="sidebar"] [data-sidebar="menu-button"].bg-primary\/10 svg {
+  color: hsl(4 88% 70%) !important;
+}
+
+/* Selection */
+.theme-bargains ::selection {
+  background-color: hsl(4 88% 68% / 0.35);
+  color: hsl(0 0% 100%);
+}
