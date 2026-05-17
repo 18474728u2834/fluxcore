@@ -504,4 +504,86 @@
   background-color: hsl(0 0% 10%) !important;
 }
 
+/* ===========================================================
+   Site-wide Hyra polish — applies to every page in Bargains
+   =========================================================== */
+
+/* Tabs — pill style */
+.theme-bargains [role="tablist"] {
+  background-color: hsl(0 0% 7%) !important;
+  border: 1px solid hsl(0 0% 12%) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.25rem !important;
+}
+.theme-bargains [role="tab"] {
+  border-radius: 0.5rem !important;
+  color: hsl(0 0% 60%) !important;
+  font-weight: 500 !important;
+}
+.theme-bargains [role="tab"][data-state="active"] {
+  background-color: hsl(0 0% 12%) !important;
+  color: hsl(0 0% 98%) !important;
+  box-shadow: none !important;
+}
+
+/* Badges — flatter, coral accent */
+.theme-bargains [class*="bg-primary/10"] {
+  background-color: hsl(4 90% 68% / 0.12) !important;
+  color: hsl(4 90% 75%) !important;
+}
+.theme-bargains [class*="bg-success/10"] {
+  background-color: hsl(160 70% 45% / 0.12) !important;
+}
+.theme-bargains [class*="bg-destructive/10"] {
+  background-color: hsl(0 80% 60% / 0.12) !important;
+}
+
+/* Outline buttons / inputs */
+.theme-bargains .border-input {
+  border-color: hsl(0 0% 14%) !important;
+  background-color: hsl(0 0% 8%) !important;
+}
+
+/* Tables */
+.theme-bargains table { border-collapse: separate; border-spacing: 0; }
+.theme-bargains thead { background-color: hsl(0 0% 6%) !important; }
+.theme-bargains th {
+  color: hsl(0 0% 55%) !important;
+  font-weight: 500 !important;
+  font-size: 0.72rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid hsl(0 0% 11%) !important;
+}
+.theme-bargains tbody tr {
+  border-bottom: 1px solid hsl(0 0% 9%) !important;
+  transition: background-color 180ms ease;
+}
+.theme-bargains tbody tr:hover { background-color: hsl(0 0% 7%) !important; }
+
+/* Dialogs, popovers, dropdowns */
+.theme-bargains [role="dialog"],
+.theme-bargains [data-radix-popper-content-wrapper] > * {
+  background-color: hsl(0 0% 6%) !important;
+  border: 1px solid hsl(0 0% 13%) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 30px 80px -20px hsl(0 0% 0% / 0.7) !important;
+}
+
+/* Avatar ring */
+.theme-bargains .ring-primary { --tw-ring-color: hsl(4 90% 68%) !important; }
+
+/* Links */
+.theme-bargains a:hover { color: hsl(4 90% 75%); }
+
+/* Muted copy */
+.theme-bargains p.text-muted-foreground,
+.theme-bargains .text-muted-foreground {
+  color: hsl(0 0% 55%) !important;
+}
+
+/* Skeletons */
+.theme-bargains [class*="animate-pulse"][class*="bg-muted"] {
+  background-color: hsl(0 0% 10%) !important;
+}
 
