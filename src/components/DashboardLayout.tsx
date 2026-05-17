@@ -26,7 +26,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
   const BARGAINS_WS = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
   const isBargains = workspace?.id === BARGAINS_WS;
 
-  const bgColor = isBargains ? "#0a0a0a" : (workspace?.background_color || "#0f0f11");
+  const bgColor = isBargains ? "#0e0f10" : (workspace?.background_color || "#0f0f11");
   const showGrid = isBargains ? false : (workspace?.show_grid ?? true);
   const primaryColor = workspace?.primary_color || "#7c3aed";
 
