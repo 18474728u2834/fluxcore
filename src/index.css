@@ -411,4 +411,97 @@
   background-image: linear-gradient(90deg, hsl(28 95% 55%), hsl(18 95% 60%)) !important;
 }
 
+/* ===========================================================
+   Hyra-style card refinements (stats, panels, headers, lists)
+   =========================================================== */
+
+/* Card hover lift */
+.theme-bargains .glass-hover,
+.theme-bargains .glass {
+  transition: transform 220ms ease, border-color 220ms ease, background-color 220ms ease !important;
+}
+.theme-bargains .glass-hover:hover {
+  background-color: hsl(0 0% 8.5%) !important;
+  border-color: hsl(0 0% 16%) !important;
+  transform: translateY(-2px);
+}
+
+/* Stat card icon tile — flat coral chip, no glow halo */
+.theme-bargains .glass-hover > div > div:first-child > div:first-child,
+.theme-bargains [class*="rounded-xl"][class*="border-primary/30"] {
+  background: hsl(4 90% 68% / 0.12) !important;
+  border: 1px solid hsl(4 90% 68% / 0.22) !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  border-radius: 0.625rem !important;
+}
+.theme-bargains [class*="rounded-xl"][class*="border-primary/30"] svg {
+  filter: none !important;
+  color: hsl(4 90% 70%) !important;
+}
+
+/* Bigger stat numbers, lighter labels */
+.theme-bargains .glass-hover p.text-2xl {
+  font-size: 2rem !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.025em !important;
+}
+.theme-bargains .glass-hover p.text-xs {
+  font-size: 0.75rem !important;
+  color: hsl(0 0% 55%) !important;
+  margin-top: 0.25rem !important;
+}
+
+/* Stat card padding + spacing */
+.theme-bargains .glass-hover.rounded-xl {
+  padding: 1.25rem 1.25rem 1.1rem !important;
+}
+
+/* Panel headers (Top Performer, Recent Activity, Members, Recent Sessions) */
+.theme-bargains .glass h3,
+.theme-bargains .glass-hover h3 {
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.01em;
+  color: hsl(0 0% 96%) !important;
+}
+
+/* Kill the soft warning/primary glow blobs inside panels */
+.theme-bargains .glass .blur-3xl,
+.theme-bargains .glass-hover .blur-3xl {
+  display: none !important;
+}
+
+/* Warning accent (crown, clock icons) — reuse coral so it matches */
+.theme-bargains .text-warning {
+  color: hsl(4 90% 70%) !important;
+}
+.theme-bargains .bg-warning {
+  background-color: hsl(4 90% 68%) !important;
+}
+.theme-bargains .bg-warning\/10 {
+  background-color: hsl(4 90% 68% / 0.12) !important;
+}
+
+/* Replace purple text gradient with clean white inside Bargains */
+.theme-bargains .text-gradient {
+  background-image: linear-gradient(135deg, hsl(0 0% 100%), hsl(4 90% 75%)) !important;
+}
+
+/* Overview page heading */
+.theme-bargains main h1 {
+  font-size: 1.75rem !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.03em;
+}
+
+/* Member row hover */
+.theme-bargains .glass [class*="hover:bg-"]:hover,
+.theme-bargains .glass-hover [class*="hover:bg-"]:hover {
+  background-color: hsl(0 0% 10%) !important;
+}
+
 
