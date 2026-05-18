@@ -11,9 +11,8 @@ interface Session {
   id: string;
   title: string;
   scheduled_at: string;
-  host_username: string | null;
-  host_user_id: string | null;
-  multi_server?: boolean;
+  host_name: string | null;
+  host_id: string | null;
 }
 
 export default function BSessions() {
@@ -27,7 +26,7 @@ export default function BSessions() {
   useEffect(() => {
     const from = new Date(selected); const to = new Date(selected); to.setDate(to.getDate()+2);
     supabase.from("scheduled_sessions")
-      .select("id, title, scheduled_at, host_username, host_user_id")
+      .select("id, title, scheduled_at, host_name, host_id")
       .eq("workspace_id", workspaceId)
       .gte("scheduled_at", from.toISOString())
       .lt("scheduled_at", to.toISOString())
