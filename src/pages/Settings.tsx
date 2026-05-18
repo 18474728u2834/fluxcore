@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck } from "lucide-react";
+import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { InviteSection } from "@/components/InviteSection";
 
 export default function SettingsPage() {
-  const { workspace, isOwner, workspaceId } = useWorkspace();
+  const { workspace, isOwner, workspaceId, loading } = useWorkspace();
   const [apiKey, setApiKey] = useState("");
   const [copied, setCopied] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -109,6 +109,20 @@ export default function SettingsPage() {
     else toast.success("Settings saved!");
     setSaving(false);
   };
+
+  if (!loading && !isOwner) {
+    return (
+      <DashboardLayout title="Settings">
+        <div className="max-w-md mx-auto mt-20 text-center space-y-3">
+          <div className="w-12 h-12 rounded-full bg-muted/40 flex items-center justify-center mx-auto">
+            <Lock className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <h1 className="text-xl font-bold text-foreground">Owner only</h1>
+          <p className="text-sm text-muted-foreground">Only the workspace owner can access settings.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout title="Settings">
