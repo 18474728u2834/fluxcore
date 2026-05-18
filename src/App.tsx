@@ -58,6 +58,7 @@ const BDashboard = lazy(() => import("./bargains/Dashboard"));
 const BSessions  = lazy(() => import("./bargains/Sessions"));
 const BQuotas    = lazy(() => import("./bargains/Quotas"));
 const BMembers   = lazy(() => import("./bargains/Members"));
+const BActivity  = lazy(() => import("./bargains/Activity"));
 
 const queryClient = new QueryClient();
 
@@ -111,7 +112,7 @@ function BargainsWorkspaceRoutes() {
           <Route path="quotas"    element={<BQuotas />}    />
           <Route path="members"   element={<BMembers />}   />
           <Route path="members/:memberId" element={<MemberProfile />} />
-          <Route path="activity"  element={<Activity />} />
+          <Route path="activity"  element={<BActivity />} />
           <Route path="wall"      element={<Wall />} />
           <Route path="ranks"     element={<Ranks />} />
           <Route path="setup-tracking" element={<SetupTracking />} />
