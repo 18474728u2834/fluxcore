@@ -52,7 +52,7 @@ export default function BSessions() {
         {/* Week strip */}
         <div className="flex items-center justify-center gap-2">
           <button onClick={() => { const d = new Date(weekStart); d.setDate(d.getDate()-7); setWeekStart(d); }}
-            className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#1f1f22]" style={{ color: bx.textDim }}>
+            className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-[#1f1f22]" style={{ color: bx.textDim }}>
             <ChevronLeft className="w-4 h-4" />
           </button>
           {week.map((d, i) => {
@@ -60,7 +60,7 @@ export default function BSessions() {
             return (
               <button key={i} onClick={() => setSelected(d)} className="flex flex-col items-center gap-1.5">
                 <span className="text-[11px] font-semibold uppercase" style={{ color: bx.textMuted }}>{DAYS[d.getDay()]}</span>
-                <span className="w-9 h-9 rounded-lg flex items-center justify-center text-sm font-bold transition-colors"
+                <span className="w-9 h-9 rounded-md flex items-center justify-center text-sm font-bold transition-colors"
                   style={{
                     background: isSel ? bx.coral : "#1a1a1c",
                     color: isSel ? "#fff" : bx.text,
@@ -72,21 +72,21 @@ export default function BSessions() {
             );
           })}
           <button onClick={() => { const d = new Date(weekStart); d.setDate(d.getDate()+7); setWeekStart(d); }}
-            className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#1f1f22]" style={{ color: bx.textDim }}>
+            className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-[#1f1f22]" style={{ color: bx.textDim }}>
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
         <div className="flex items-center justify-between">
           <h1 className="text-[2.25rem] font-bold tracking-[-0.035em]" style={{ color: bx.text }}>{groupLabel(selected)}</h1>
-          <button className="inline-flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold"
+          <button className="inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold"
             style={{ background: bx.coral, color: "#fff" }}>
             <Plus className="w-4 h-4" /> Schedule
           </button>
         </div>
 
         {sessions.length === 0 ? (
-          <div className="rounded-xl border p-16 text-center" style={bx.cardStyle}>
+          <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
             <CalIcon className="w-10 h-10 mx-auto mb-3" style={{ color: bx.textMuted }} />
             <p className="text-sm" style={{ color: bx.textDim }}>No sessions scheduled for this day.</p>
           </div>
@@ -96,7 +96,7 @@ export default function BSessions() {
               const d = new Date(s.scheduled_at);
               const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
               return (
-                <div key={s.id} className="rounded-xl border p-5 transition-transform hover:-translate-y-0.5"
+                <div key={s.id} className="rounded-md border p-5 transition-transform hover:-translate-y-0.5"
                   style={bx.cardStyle}>
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
                     {groupLabel(d)} at {time}
@@ -104,9 +104,9 @@ export default function BSessions() {
                   <div className="text-lg font-bold mb-5" style={{ color: bx.text }}>{s.title}</div>
                   <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "#22222a" }}>
                     {s.host_id ? (
-                      <RobloxAvatar username={s.host_name || ""} userId={s.host_id} className="w-8 h-8 rounded-full" />
+                      <RobloxAvatar username={s.host_name || ""} userId={s.host_id} className="w-8 h-8 rounded-md" />
                     ) : (
-                      <div className="w-8 h-8 rounded-full" style={{ background: "#22222a" }} />
+                      <div className="w-8 h-8 rounded-md" style={{ background: "#22222a" }} />
                     )}
                     {s.host_name && <span className="text-xs font-medium" style={{ color: bx.textDim }}>{s.host_name}</span>}
                   </div>

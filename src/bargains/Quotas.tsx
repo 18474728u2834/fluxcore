@@ -89,13 +89,13 @@ export default function BQuotas() {
         {/* Cards grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {sorted.map((r) => (
-            <div key={r.user_id} className="rounded-xl border overflow-hidden" style={bx.cardStyle}>
+            <div key={r.user_id} className="rounded-md border overflow-hidden" style={bx.cardStyle}>
               <div className="px-5 pt-3 pb-1">
                 <button className="inline-flex items-center justify-center w-5 h-5 rounded text-[11px]"
                   style={{ background: "#22222a", color: bx.textDim }}>+</button>
               </div>
               <div className="px-5 pb-3 flex items-center gap-3">
-                <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className="w-9 h-9 rounded-full" />
+                <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className="w-9 h-9 rounded-md" />
                 <div className="font-semibold text-[15px]" style={{ color: bx.text }}>
                   {r.roblox_username} <span style={{ color: bx.textMuted }}>•</span>{" "}
                   <span style={{ color: bx.textDim }}>{r.role}</span>
@@ -107,7 +107,7 @@ export default function BQuotas() {
                   { v: r.sessionsHosted, l: "Sessions Hosted" },
                   { v: 0,                l: "Last Week's Sessions" },
                 ].map((s, i) => (
-                  <div key={i} className="rounded-lg p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
+                  <div key={i} className="rounded-md p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
                     <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: bx.text }}>{s.v}</div>
                     <div className="text-[11px] mt-1.5 font-medium" style={{ color: bx.textDim }}>{s.l}</div>
                   </div>
@@ -123,7 +123,7 @@ export default function BQuotas() {
         </div>
 
         {sorted.length === 0 && (
-          <div className="rounded-xl border p-16 text-center" style={bx.cardStyle}>
+          <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
             <p className="text-sm" style={{ color: bx.textDim }}>No members yet.</p>
           </div>
         )}

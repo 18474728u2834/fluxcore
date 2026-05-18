@@ -28,15 +28,15 @@ export default function BMembers() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: bx.textMuted }} />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search members..."
-            className="w-full h-10 pl-9 pr-3 rounded-lg text-sm outline-none border"
+            className="w-full h-10 pl-9 pr-3 rounded-md text-sm outline-none border"
             style={{ background: "#1a1a1c", borderColor: "#26262a", color: bx.text }} />
         </div>
 
-        <div className="rounded-xl border overflow-hidden" style={bx.cardStyle}>
+        <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
           {filtered.map((m, i) => (
             <div key={m.user_id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#1f1f22] transition-colors"
               style={{ borderTop: i === 0 ? "none" : "1px solid #22222a" }}>
-              <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-10 h-10 rounded-lg" />
+              <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-10 h-10 rounded-md" />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-semibold" style={{ color: bx.text }}>{m.roblox_username || "Unknown"}</div>
                 <div className="text-xs" style={{ color: bx.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>

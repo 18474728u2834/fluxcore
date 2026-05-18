@@ -7,7 +7,6 @@ import {
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
-import { RobloxAvatar } from "@/components/RobloxAvatar";
 
 interface ShellProps {
   children: ReactNode;
@@ -32,7 +31,6 @@ export function BargainsShell({ children }: ShellProps) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [groupIcon, setGroupIcon] = useState<string | null>(null);
-  const [robloxUser, setRobloxUser] = useState<{ username: string; userId: string } | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -42,16 +40,6 @@ export function BargainsShell({ children }: ShellProps) {
       .then(j => { const img = j?.data?.[0]?.imageUrl; if (img) setGroupIcon(img); })
       .catch(() => {});
   }, [workspace?.roblox_group_id]);
-
-  useEffect(() => {
-    if (!user || !workspaceId) return;
-    supabase.from("workspace_members")
-      .select("roblox_username, roblox_user_id")
-      .eq("user_id", user.id).eq("workspace_id", workspaceId).maybeSingle()
-      .then(({ data }: any) => {
-        if (data?.roblox_username) setRobloxUser({ username: data.roblox_username, userId: data.roblox_user_id });
-      });
-  }, [user, workspaceId]);
 
   const base = `/w/${workspaceId}`;
 
@@ -63,20 +51,20 @@ export function BargainsShell({ children }: ShellProps) {
           letter-spacing: -0.011em;
         }
         .font-bargains *::-webkit-scrollbar { width: 8px; height: 8px; }
-        .font-bargains *::-webkit-scrollbar-thumb { background: #2a2a2c; border-radius: 9999px; }
+        .font-bargains *::-webkit-scrollbar-thumb { background: #2a2a2c; border-radius: 2px; }
       `}</style>
 
       {/* Slim icon rail */}
       <aside className="w-[60px] shrink-0 flex flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-        <NavLink to={base + "/dashboard"} className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ background: "#f55a4a" }}>
-          {groupIcon ? <img src={groupIcon} className="w-7 h-7 rounded-md" /> : <span className="text-white font-bold text-sm">BB</span>}
+        <NavLink to={base + "/dashboard"} className="w-9 h-9 rounded-md flex items-center justify-center mb-3 overflow-hidden" style={{ background: "#f55a4a" }}>
+          {groupIcon ? <img src={groupIcon} className="w-9 h-9 object-cover" /> : <span className="text-white font-bold text-sm">BB</span>}
         </NavLink>
         <nav className="flex flex-col gap-1 flex-1">
           {NAV.map(({ to, icon: Icon, label }) => {
             const active = pathname.startsWith(`${base}/${to}`);
             return (
               <NavLink key={to} to={`${base}/${to}`} title={label}
-                className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+                className="w-9 h-9 rounded-md flex items-center justify-center transition-colors"
                 style={{
                   background: active ? "#1f1f22" : "transparent",
                   color: active ? "#fff" : "#7a7a7e",
@@ -86,57 +74,53 @@ export function BargainsShell({ children }: ShellProps) {
             );
           })}
         </nav>
-        <NavLink to={base + "/settings"} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#1a1a1c]" style={{ color: "#7a7a7e" }}>
+        <NavLink to={base + "/settings"} className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-[#1a1a1c]" style={{ color: "#7a7a7e" }}>
           <Settings className="w-[18px] h-[18px]" strokeWidth={1.8} />
         </NavLink>
       </aside>
 
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <header className="h-14 flex items-center px-4 gap-4 border-b shrink-0" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-          {/* Workspace switcher */}
-          <button
-            onClick={() => setMenuOpen(m => !m)}
-            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#1a1a1c] transition-colors"
-          >
-            {groupIcon ? (
-              <img src={groupIcon} className="w-6 h-6 rounded-md" />
-            ) : (
-              <div className="w-6 h-6 rounded-md bg-[#f55a4a]" />
+        {/* Top bar — only workspace pill + centered search */}
+        <header className="h-14 flex items-center px-4 gap-4 border-b shrink-0 relative" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen(m => !m)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[#1a1a1c] transition-colors"
+            >
+              {groupIcon ? (
+                <img src={groupIcon} className="w-7 h-7 rounded-md object-cover" />
+              ) : (
+                <div className="w-7 h-7 rounded-md bg-[#f55a4a]" />
+              )}
+              <span className="text-sm font-semibold">{workspace?.name || "Bloxy Bargains"}</span>
+              <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+            </button>
+            {menuOpen && (
+              <div className="absolute left-0 top-12 w-56 rounded-md border py-1 z-50" style={{ background: "#141416", borderColor: "#26262a" }}>
+                <button onClick={() => { navigate("/workspaces"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Switch workspace</button>
+                <button onClick={() => { navigate(`${base}/settings`); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Workspace settings</button>
+                <div className="my-1 border-t" style={{ borderColor: "#22222a" }} />
+                <button onClick={async () => { await signOut(); navigate("/login"); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22] text-[#f55a4a] flex items-center gap-2">
+                  <LogOut className="w-3.5 h-3.5" /> Sign out
+                </button>
+              </div>
             )}
-            <span className="text-sm font-semibold">{workspace?.name || "Bloxy Bargains"}</span>
-            <ChevronDown className="w-3.5 h-3.5 opacity-60" />
-          </button>
+          </div>
 
-          {/* Centred search */}
           <div className="flex-1 flex justify-center">
             <div className="relative w-full max-w-xl">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6a6a6e]" />
               <input
                 placeholder="Search anything..."
-                className="w-full h-9 pl-9 pr-3 rounded-lg text-[13px] outline-none border"
+                className="w-full h-9 pl-9 pr-3 rounded-md text-[13px] outline-none border"
                 style={{ background: "#161618", borderColor: "#1f1f22", color: "#e5e5e7" }}
               />
             </div>
           </div>
 
-          {/* User avatar */}
-          <button onClick={() => setMenuOpen(m => !m)} className="relative">
-            {robloxUser ? (
-              <RobloxAvatar username={robloxUser.username} userId={robloxUser.userId} className="w-8 h-8 rounded-lg" />
-            ) : (
-              <div className="w-8 h-8 rounded-lg bg-[#1f1f22]" />
-            )}
-          </button>
-          {menuOpen && (
-            <div className="absolute right-4 top-12 w-48 rounded-lg border py-1 z-50" style={{ background: "#141416", borderColor: "#26262a" }}>
-              <button onClick={() => { navigate("/workspaces"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Switch workspace</button>
-              <button onClick={async () => { await signOut(); navigate("/login"); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22] text-[#f55a4a] flex items-center gap-2">
-                <LogOut className="w-3.5 h-3.5" /> Sign out
-              </button>
-            </div>
-          )}
+          {/* spacer to balance layout */}
+          <div className="w-[140px]" />
         </header>
 
         <main className="flex-1 overflow-auto p-8">{children}</main>
@@ -145,9 +129,9 @@ export function BargainsShell({ children }: ShellProps) {
   );
 }
 
-/* Shared design primitives */
+/* Shared design primitives — Hyra: square-ish corners, no pills */
 export const bx = {
-  card: "rounded-xl border" ,
+  card: "rounded-md border",
   cardStyle: { background: "#1a1a1c", borderColor: "#26262a" } as const,
   cardInner: { background: "#141416", borderColor: "#22222a" } as const,
   coral: "#f55a4a",
