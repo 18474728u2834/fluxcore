@@ -64,9 +64,9 @@ export default function BDashboard() {
         {/* Stat tiles */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {items.map(({ icon: Icon, label, value }) => (
-            <div key={label} className="rounded-xl border p-5 transition-transform hover:-translate-y-0.5"
+            <div key={label} className="rounded-md border p-5 transition-transform hover:-translate-y-0.5"
               style={bx.cardStyle}>
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center mb-4"
+              <div className="w-9 h-9 rounded-md flex items-center justify-center mb-4"
                 style={{ background: "rgba(245,90,74,0.14)" }}>
                 <Icon className="w-4 h-4" style={{ color: bx.coral }} strokeWidth={2} />
               </div>
@@ -78,7 +78,7 @@ export default function BDashboard() {
 
         {/* Top performers + members */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-          <div className="rounded-xl border p-5" style={bx.cardStyle}>
+          <div className="rounded-md border p-5" style={bx.cardStyle}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-base" style={{ color: bx.text }}>Top Performers</h3>
               <span className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: bx.coral }}>This Week</span>
@@ -88,9 +88,9 @@ export default function BDashboard() {
             ) : (
               <div className="space-y-3">
                 {top.map((t, i) => (
-                  <div key={t.userId} className="flex items-center gap-3 p-2 rounded-lg" style={{ background: i===0 ? "rgba(245,90,74,0.06)" : "transparent" }}>
+                  <div key={t.userId} className="flex items-center gap-3 p-2 rounded-md" style={{ background: i===0 ? "rgba(245,90,74,0.06)" : "transparent" }}>
                     <span className="w-5 text-center text-xs font-bold" style={{ color: i===0 ? bx.coral : bx.textMuted }}>#{i+1}</span>
-                    <RobloxAvatar username={t.username} userId={t.userId} className="w-9 h-9 rounded-lg" />
+                    <RobloxAvatar username={t.username} userId={t.userId} className="w-9 h-9 rounded-md" />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{t.username}</div>
                       <div className="text-xs flex items-center gap-1" style={{ color: bx.textDim }}>
@@ -106,7 +106,7 @@ export default function BDashboard() {
             )}
           </div>
 
-          <div className="rounded-xl border p-5" style={bx.cardStyle}>
+          <div className="rounded-md border p-5" style={bx.cardStyle}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-base" style={{ color: bx.text }}>Recent Members</h3>
               <span className="text-xs" style={{ color: bx.textMuted }}>{stats.members} total</span>
@@ -116,8 +116,8 @@ export default function BDashboard() {
             ) : (
               <div className="space-y-1">
                 {members.map((m) => (
-                  <div key={m.user_id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#1f1f22] transition-colors">
-                    <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-8 h-8 rounded-lg" />
+                  <div key={m.user_id} className="flex items-center gap-3 p-2 rounded-md hover:bg-[#1f1f22] transition-colors">
+                    <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-8 h-8 rounded-md" />
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium truncate" style={{ color: bx.text }}>{m.roblox_username || "Unknown"}</div>
                       <div className="text-[11px]" style={{ color: bx.textMuted }}>{new Date(m.created_at).toLocaleDateString()}</div>
