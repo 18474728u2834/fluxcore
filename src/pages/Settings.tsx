@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck } from "lucide-react";
+import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { InviteSection } from "@/components/InviteSection";
 
 export default function SettingsPage() {
-  const { workspace, isOwner, workspaceId } = useWorkspace();
+  const { workspace, isOwner, workspaceId, loading } = useWorkspace();
   const [apiKey, setApiKey] = useState("");
   const [copied, setCopied] = useState(false);
   const [resetting, setResetting] = useState(false);
