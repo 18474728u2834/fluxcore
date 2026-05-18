@@ -28,7 +28,7 @@ export default function BQuotas() {
       const [mem, act, hosted] = await Promise.all([
         supabase.from("workspace_members").select("user_id, role, roblox_username, roblox_user_id").eq("workspace_id", workspaceId),
         supabase.from("activity_sessions").select("roblox_user_id, duration_seconds, idle_seconds, joined_at, left_at").eq("workspace_id", workspaceId).eq("discarded", false).gte("joined_at", weekStart.toISOString()),
-        supabase.from("scheduled_sessions").select("host_user_id").eq("workspace_id", workspaceId).eq("status", "completed").gte("scheduled_at", weekStart.toISOString()),
+        supabase.from("scheduled_sessions").select("host_id").eq("workspace_id", workspaceId).eq("status", "completed").gte("scheduled_at", weekStart.toISOString()),
       ]);
 
       const minutesMap = new Map<string, number>();
@@ -44,7 +44,7 @@ export default function BQuotas() {
       }
       const hostedMap = new Map<string, number>();
       for (const h of (hosted.data || []) as any[]) {
-        if (h.host_user_id) hostedMap.set(h.host_user_id, (hostedMap.get(h.host_user_id) || 0) + 1);
+        if (h.host_id) hostedMap.set(h.host_id, (hostedMap.get(h.host_id) || 0) + 1);
       }
 
       const out: MemberRow[] = (mem.data || []).map((m: any) => ({
