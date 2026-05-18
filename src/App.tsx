@@ -54,6 +54,10 @@ const Admin = lazy(() => import("./pages/Admin"));
 const Almore = lazy(() => import("./pages/Almore"));
 const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 const BargainsLogin = lazy(() => import("./pages/BargainsLogin"));
+const BDashboard = lazy(() => import("./bargains/Dashboard"));
+const BSessions  = lazy(() => import("./bargains/Sessions"));
+const BQuotas    = lazy(() => import("./bargains/Quotas"));
+const BMembers   = lazy(() => import("./bargains/Members"));
 
 const queryClient = new QueryClient();
 
@@ -93,12 +97,41 @@ function WorkspaceRoutes() {
   );
 }
 
+function BargainsWorkspaceRoutes() {
+  return (
+    <WorkspaceProvider>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="dashboard" element={<BDashboard />} />
+          <Route path="sessions"  element={<BSessions />}  />
+          <Route path="quotas"    element={<BQuotas />}    />
+          <Route path="members"   element={<BMembers />}   />
+          <Route path="members/:memberId" element={<MemberProfile />} />
+          <Route path="activity"  element={<Activity />} />
+          <Route path="wall"      element={<Wall />} />
+          <Route path="ranks"     element={<Ranks />} />
+          <Route path="setup-tracking" element={<SetupTracking />} />
+          <Route path="settings"  element={<SettingsPage />} />
+          <Route path="documents" element={<Documents />} />
+          <Route path="documents/:docId" element={<DocumentView />} />
+          <Route path="loa"       element={<LOA />} />
+          <Route path="staff"     element={<Staff />} />
+          <Route path="roles"     element={<Roles />} />
+          <Route path="message-logs" element={<MessageLogs />} />
+          <Route path="join"      element={<JoinWorkspace />} />
+          <Route path="*" element={<Navigate to="dashboard" replace />} />
+        </Routes>
+      </Suspense>
+    </WorkspaceProvider>
+  );
+}
+
 function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
   const { workspaceId } = useParams();
   if (workspaceId !== allowedId) {
     return <Navigate to="/" replace />;
   }
-  return <WorkspaceRoutes />;
+  return <BargainsWorkspaceRoutes />;
 }
 
 function AppRoutes() {
