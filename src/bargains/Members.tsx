@@ -11,11 +11,36 @@ export default function BMembers() {
   const [q, setQ] = useState("");
 
   useEffect(() => {
-    supabase.from("workspace_members")
-      .select("user_id, role, created_at, roblox_username, roblox_user_id")
-      .eq("workspace_id", workspaceId)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => setMembers(data || []));
+    (async () => {
+      const [memRes, wsRes] = await Promise.all([
+        supabase.from("workspace_members")
+          .select("user_id, role, created_at, roblox_username, roblox_user_id")
+          .eq("workspace_id", workspaceId)
+          .order("created_at", { ascending: false }),
+        supabase.from("workspaces").select("owner_id, created_at").eq("id", workspaceId).maybeSingle(),
+      ]);
+      const list = (memRes.data || []) as any[];
+      const ownerId = (wsRes.data as any)?.owner_id;
+      if (ownerId && !list.some(m => m.user_id === ownerId)) {
+        const { data: vu } = await supabase
+          .from("verified_users")
+          .select("roblox_username, roblox_user_id")
+          .eq("user_id", ownerId)
+          .maybeSingle();
+        list.unshift({
+          user_id: ownerId,
+          role: "Owner",
+          created_at: (wsRes.data as any)?.created_at || new Date().toISOString(),
+          roblox_username: (vu as any)?.roblox_username || "Owner",
+          roblox_user_id: (vu as any)?.roblox_user_id || "",
+        });
+      } else if (ownerId) {
+        // Promote owner row to top and re-label
+        const idx = list.findIndex(m => m.user_id === ownerId);
+        if (idx >= 0) { list[idx].role = "Owner"; const [o] = list.splice(idx, 1); list.unshift(o); }
+      }
+      setMembers(list);
+    })();
   }, [workspaceId]);
 
   const filtered = members.filter(m => (m.roblox_username || "").toLowerCase().includes(q.toLowerCase()));
