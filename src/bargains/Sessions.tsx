@@ -103,14 +103,12 @@ export default function BSessions() {
                   </div>
                   <div className="text-lg font-bold mb-5" style={{ color: bx.text }}>{s.title}</div>
                   <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "#22222a" }}>
-                    {s.host_user_id ? (
-                      <RobloxAvatar username={s.host_username || ""} userId={s.host_user_id} className="w-8 h-8 rounded-full" />
+                    {s.host_id ? (
+                      <RobloxAvatar username={s.host_name || ""} userId={s.host_id} className="w-8 h-8 rounded-full" />
                     ) : (
                       <div className="w-8 h-8 rounded-full" style={{ background: "#22222a" }} />
                     )}
-                    {s.multi_server && (
-                      <span className="text-[11px] px-2.5 py-1 rounded-md font-medium" style={{ background: "#22222a", color: bx.textDim }}>Multi Server</span>
-                    )}
+                    {s.host_name && <span className="text-xs font-medium" style={{ color: bx.textDim }}>{s.host_name}</span>}
                   </div>
                 </div>
               );
