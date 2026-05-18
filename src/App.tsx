@@ -70,6 +70,10 @@ function PageLoader() {
 }
 
 function WorkspaceRoutes() {
+  const { workspaceId } = useParams();
+  if (workspaceId === "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630") {
+    return <BargainsWorkspaceRoutes />;
+  }
   return (
     <WorkspaceProvider>
       <Suspense fallback={<PageLoader />}>
