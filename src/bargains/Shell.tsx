@@ -1,0 +1,156 @@
+import { ReactNode, useState, useEffect } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import {
+  Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
+  Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone,
+} from "lucide-react";
+import { useWorkspace } from "@/hooks/useWorkspace";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
+
+interface ShellProps {
+  children: ReactNode;
+}
+
+const NAV = [
+  { to: "dashboard",  icon: Home,        label: "Dashboard" },
+  { to: "activity",   icon: Clock,       label: "Activity"  },
+  { to: "documents",  icon: FileText,    label: "Documents" },
+  { to: "loa",        icon: Briefcase,   label: "LOA"       },
+  { to: "members",    icon: Users,       label: "Members"   },
+  { to: "sessions",   icon: Calendar,    label: "Sessions"  },
+  { to: "quotas",     icon: Target,      label: "Quotas"    },
+  { to: "wall",       icon: Megaphone,   label: "Wall"      },
+  { to: "roles",      icon: ShieldCheck, label: "Roles"     },
+  { to: "staff",      icon: Grid3x3,     label: "Staff"     },
+];
+
+export function BargainsShell({ children }: ShellProps) {
+  const { workspace, workspaceId } = useWorkspace();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const [groupIcon, setGroupIcon] = useState<string | null>(null);
+  const [robloxUser, setRobloxUser] = useState<{ username: string; userId: string } | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!workspace?.roblox_group_id) return;
+    fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/roblox-group-icon?groupIds=${workspace.roblox_group_id}`)
+      .then(r => r.json())
+      .then(j => { const img = j?.data?.[0]?.imageUrl; if (img) setGroupIcon(img); })
+      .catch(() => {});
+  }, [workspace?.roblox_group_id]);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("roblox_username, roblox_user_id").eq("id", user.id).maybeSingle()
+      .then(({ data }) => {
+        if (data?.roblox_username) setRobloxUser({ username: data.roblox_username, userId: data.roblox_user_id });
+      });
+  }, [user]);
+
+  const base = `/w/${workspaceId}`;
+
+  return (
+    <div className="min-h-screen w-full flex font-bargains" style={{ background: "#0f0f10", color: "#fafafa" }}>
+      <style>{`
+        .font-bargains, .font-bargains * {
+          font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif;
+          letter-spacing: -0.011em;
+        }
+        .font-bargains *::-webkit-scrollbar { width: 8px; height: 8px; }
+        .font-bargains *::-webkit-scrollbar-thumb { background: #2a2a2c; border-radius: 9999px; }
+      `}</style>
+
+      {/* Slim icon rail */}
+      <aside className="w-[60px] shrink-0 flex flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+        <NavLink to={base + "/dashboard"} className="w-9 h-9 rounded-lg flex items-center justify-center mb-3" style={{ background: "#f55a4a" }}>
+          {groupIcon ? <img src={groupIcon} className="w-7 h-7 rounded-md" /> : <span className="text-white font-bold text-sm">BB</span>}
+        </NavLink>
+        <nav className="flex flex-col gap-1 flex-1">
+          {NAV.map(({ to, icon: Icon, label }) => {
+            const active = pathname.startsWith(`${base}/${to}`);
+            return (
+              <NavLink key={to} to={`${base}/${to}`} title={label}
+                className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+                style={{
+                  background: active ? "#1f1f22" : "transparent",
+                  color: active ? "#fff" : "#7a7a7e",
+                }}>
+                <Icon className="w-[18px] h-[18px]" strokeWidth={1.8} />
+              </NavLink>
+            );
+          })}
+        </nav>
+        <NavLink to={base + "/settings"} className="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-[#1a1a1c]" style={{ color: "#7a7a7e" }}>
+          <Settings className="w-[18px] h-[18px]" strokeWidth={1.8} />
+        </NavLink>
+      </aside>
+
+      {/* Main column */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="h-14 flex items-center px-4 gap-4 border-b shrink-0" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+          {/* Workspace switcher */}
+          <button
+            onClick={() => setMenuOpen(m => !m)}
+            className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-[#1a1a1c] transition-colors"
+          >
+            {groupIcon ? (
+              <img src={groupIcon} className="w-6 h-6 rounded-md" />
+            ) : (
+              <div className="w-6 h-6 rounded-md bg-[#f55a4a]" />
+            )}
+            <span className="text-sm font-semibold">{workspace?.name || "Bloxy Bargains"}</span>
+            <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+          </button>
+
+          {/* Centred search */}
+          <div className="flex-1 flex justify-center">
+            <div className="relative w-full max-w-xl">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#6a6a6e]" />
+              <input
+                placeholder="Search anything..."
+                className="w-full h-9 pl-9 pr-3 rounded-lg text-[13px] outline-none border"
+                style={{ background: "#161618", borderColor: "#1f1f22", color: "#e5e5e7" }}
+              />
+            </div>
+          </div>
+
+          {/* User avatar */}
+          <button onClick={() => setMenuOpen(m => !m)} className="relative">
+            {robloxUser ? (
+              <RobloxAvatar username={robloxUser.username} userId={robloxUser.userId} className="w-8 h-8 rounded-lg" />
+            ) : (
+              <div className="w-8 h-8 rounded-lg bg-[#1f1f22]" />
+            )}
+          </button>
+          {menuOpen && (
+            <div className="absolute right-4 top-12 w-48 rounded-lg border py-1 z-50" style={{ background: "#141416", borderColor: "#26262a" }}>
+              <button onClick={() => { navigate("/workspaces"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Switch workspace</button>
+              <button onClick={async () => { await signOut(); navigate("/login"); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22] text-[#f55a4a] flex items-center gap-2">
+                <LogOut className="w-3.5 h-3.5" /> Sign out
+              </button>
+            </div>
+          )}
+        </header>
+
+        <main className="flex-1 overflow-auto p-8">{children}</main>
+      </div>
+    </div>
+  );
+}
+
+/* Shared design primitives */
+export const bx = {
+  card: "rounded-xl border" ,
+  cardStyle: { background: "#1a1a1c", borderColor: "#26262a" } as const,
+  cardInner: { background: "#141416", borderColor: "#22222a" } as const,
+  coral: "#f55a4a",
+  text: "#fafafa",
+  textDim: "#8a8a8e",
+  textMuted: "#6a6a6e",
+  borderColor: "#26262a",
+};
