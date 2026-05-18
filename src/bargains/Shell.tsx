@@ -44,12 +44,14 @@ export function BargainsShell({ children }: ShellProps) {
   }, [workspace?.roblox_group_id]);
 
   useEffect(() => {
-    if (!user) return;
-    supabase.from("profiles").select("roblox_username, roblox_user_id").eq("id", user.id).maybeSingle()
-      .then(({ data }) => {
+    if (!user || !workspaceId) return;
+    supabase.from("workspace_members")
+      .select("roblox_username, roblox_user_id")
+      .eq("user_id", user.id).eq("workspace_id", workspaceId).maybeSingle()
+      .then(({ data }: any) => {
         if (data?.roblox_username) setRobloxUser({ username: data.roblox_username, userId: data.roblox_user_id });
       });
-  }, [user]);
+  }, [user, workspaceId]);
 
   const base = `/w/${workspaceId}`;
 
