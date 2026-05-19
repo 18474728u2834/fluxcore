@@ -1072,6 +1072,8 @@ export type Database = {
       workspace_members: {
         Row: {
           access_key: string
+          birthday_day: number | null
+          birthday_month: number | null
           id: string
           joined_at: string
           roblox_group_rank: number | null
@@ -1086,6 +1088,8 @@ export type Database = {
         }
         Insert: {
           access_key?: string
+          birthday_day?: number | null
+          birthday_month?: number | null
           id?: string
           joined_at?: string
           roblox_group_rank?: number | null
@@ -1100,6 +1104,8 @@ export type Database = {
         }
         Update: {
           access_key?: string
+          birthday_day?: number | null
+          birthday_month?: number | null
           id?: string
           joined_at?: string
           roblox_group_rank?: number | null
