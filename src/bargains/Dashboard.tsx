@@ -91,13 +91,13 @@ export default function BDashboard() {
         {/* Quick play tiles */}
         {workspace?.game_url && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
-            <a href={workspace.game_url} target="_blank" rel="noreferrer"
+            <a href={(workspace as any)?.game_url} target="_blank" rel="noreferrer"
               className="rounded-md border overflow-hidden relative h-[140px] group hover:-translate-y-0.5 transition-transform"
               style={bx.cardStyle}>
               {gameThumb && <img src={gameThumb} className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 transition-opacity" />}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
               <div className="absolute bottom-3 left-3 right-3">
-                <div className="text-white font-bold text-base mb-2">{workspace.name}</div>
+                <div className="text-white font-bold text-base mb-2">{(workspace as any).name}</div>
                 <button className="inline-flex items-center gap-1.5 h-7 px-3 rounded-md text-xs font-semibold bg-white/15 text-white backdrop-blur hover:bg-white/25">
                   <Play className="w-3 h-3 fill-current" /> Play
                 </button>
