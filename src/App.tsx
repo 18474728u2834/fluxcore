@@ -59,6 +59,9 @@ const BSessions  = lazy(() => import("./bargains/Sessions"));
 const BQuotas    = lazy(() => import("./bargains/Quotas"));
 const BMembers   = lazy(() => import("./bargains/Members"));
 const BActivity  = lazy(() => import("./bargains/Activity"));
+const BLOA       = lazy(() => import("./bargains/LOA"));
+const BDocuments = lazy(() => import("./bargains/Documents"));
+const BMemberProfile = lazy(() => import("./bargains/MemberProfile"));
 
 const queryClient = new QueryClient();
 
@@ -111,15 +114,15 @@ function BargainsWorkspaceRoutes() {
           <Route path="sessions"  element={<BSessions />}  />
           <Route path="quotas"    element={<BQuotas />}    />
           <Route path="members"   element={<BMembers />}   />
-          <Route path="members/:memberId" element={<MemberProfile />} />
+          <Route path="members/:memberId" element={<BMemberProfile />} />
           <Route path="activity"  element={<BActivity />} />
           <Route path="wall"      element={<Wall />} />
           <Route path="ranks"     element={<Ranks />} />
           <Route path="setup-tracking" element={<SetupTracking />} />
           <Route path="settings"  element={<SettingsPage />} />
-          <Route path="documents" element={<Documents />} />
+          <Route path="documents" element={<BDocuments />} />
           <Route path="documents/:docId" element={<DocumentView />} />
-          <Route path="loa"       element={<LOA />} />
+          <Route path="loa"       element={<BLOA />} />
           <Route path="staff"     element={<Staff />} />
           <Route path="roles"     element={<Roles />} />
           <Route path="message-logs" element={<MessageLogs />} />
