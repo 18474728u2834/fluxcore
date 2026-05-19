@@ -62,7 +62,7 @@ export default function BDashboard() {
 
   // Try to fetch a game thumbnail
   useEffect(() => {
-    const url = workspace?.game_url;
+    const url = (workspace as any)?.game_url;
     if (!url) return;
     const match = url.match(/games\/(\d+)/);
     if (!match) return;
@@ -71,7 +71,7 @@ export default function BDashboard() {
       .then(r => r.json())
       .then(j => { const img = j?.data?.[0]?.imageUrl; if (img) setGameThumb(img); })
       .catch(() => {});
-  }, [workspace?.game_url]);
+  }, [(workspace as any)?.game_url]);
 
   return (
     <BargainsShell>
@@ -89,7 +89,7 @@ export default function BDashboard() {
         </div>
 
         {/* Quick play tiles */}
-        {workspace?.game_url && (
+        {(workspace as any)?.game_url && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
             <a href={(workspace as any)?.game_url} target="_blank" rel="noreferrer"
               className="rounded-md border overflow-hidden relative h-[140px] group hover:-translate-y-0.5 transition-transform"
