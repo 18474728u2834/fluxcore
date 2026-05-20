@@ -924,6 +924,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_birthdays: {
+        Row: {
+          birthday_day: number
+          birthday_month: number
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthday_day: number
+          birthday_month: number
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthday_day?: number
+          birthday_month?: number
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
