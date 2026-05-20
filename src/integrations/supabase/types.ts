@@ -924,6 +924,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_birthdays: {
+        Row: {
+          birthday_day: number
+          birthday_month: number
+          created_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          birthday_day: number
+          birthday_month: number
+          created_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          birthday_day?: number
+          birthday_month?: number
+          created_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -1412,6 +1436,14 @@ export type Database = {
           text_color: string
           tutorial_completed: boolean
           verified_official: boolean
+        }[]
+      }
+      get_workspace_owner_info: {
+        Args: { _workspace_id: string }
+        Returns: {
+          owner_id: string
+          roblox_user_id: string
+          roblox_username: string
         }[]
       }
       has_staff_permission: { Args: { _perm: string }; Returns: boolean }

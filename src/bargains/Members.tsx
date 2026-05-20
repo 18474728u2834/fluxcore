@@ -11,33 +11,33 @@ export default function BMembers() {
   const [q, setQ] = useState("");
 
   useEffect(() => {
+    if (!workspaceId) return;
     (async () => {
-      const [memRes, wsRes] = await Promise.all([
+      const [memRes, ownerRes] = await Promise.all([
         supabase.from("workspace_members")
-          .select("user_id, role, created_at, roblox_username, roblox_user_id")
+          .select("user_id, role, joined_at, roblox_username, roblox_user_id")
           .eq("workspace_id", workspaceId)
-          .order("created_at", { ascending: false }),
-        supabase.from("workspaces").select("owner_id, created_at").eq("id", workspaceId).maybeSingle(),
+          .order("joined_at", { ascending: false }),
+        supabase.rpc("get_workspace_owner_info" as any, { _workspace_id: workspaceId }),
       ]);
-      const list = (memRes.data || []) as any[];
-      const ownerId = (wsRes.data as any)?.owner_id;
-      if (ownerId && !list.some(m => m.user_id === ownerId)) {
-        const { data: vu } = await supabase
-          .from("verified_users")
-          .select("roblox_username, roblox_user_id")
-          .eq("user_id", ownerId)
-          .maybeSingle();
-        list.unshift({
-          user_id: ownerId,
-          role: "Owner",
-          created_at: (wsRes.data as any)?.created_at || new Date().toISOString(),
-          roblox_username: (vu as any)?.roblox_username || "Owner",
-          roblox_user_id: (vu as any)?.roblox_user_id || "",
-        });
-      } else if (ownerId) {
-        // Promote owner row to top and re-label
+      const list = ((memRes.data as any[]) || []).map((m: any) => ({ ...m, created_at: m.joined_at }));
+      const ownerInfo: any = (ownerRes.data as any)?.[0];
+      const ownerId = ownerInfo?.owner_id;
+      if (ownerId) {
         const idx = list.findIndex(m => m.user_id === ownerId);
-        if (idx >= 0) { list[idx].role = "Owner"; const [o] = list.splice(idx, 1); list.unshift(o); }
+        if (idx >= 0) {
+          list[idx].role = "Owner";
+          const [o] = list.splice(idx, 1);
+          list.unshift(o);
+        } else {
+          list.unshift({
+            user_id: ownerId,
+            role: "Owner",
+            created_at: new Date().toISOString(),
+            roblox_username: ownerInfo.roblox_username || "Owner",
+            roblox_user_id: ownerInfo.roblox_user_id || "",
+          });
+        }
       }
       setMembers(list);
     })();

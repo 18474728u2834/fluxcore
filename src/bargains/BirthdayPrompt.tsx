@@ -1,41 +1,43 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { bx } from "./Shell";
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 
 export function BirthdayPrompt() {
-  const { workspaceId } = useWorkspace();
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const [memberId, setMemberId] = useState<string | null>(null);
   const [month, setMonth] = useState<number>(1);
   const [day, setDay] = useState<number>(1);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!user || !workspaceId) return;
+    if (!user) return;
+    const skipKey = `bargains_bday_skip_${user.id}`;
+    if (localStorage.getItem(skipKey)) return;
     (async () => {
       const { data } = await supabase
-        .from("workspace_members")
-        .select("id, birthday_month")
-        .eq("workspace_id", workspaceId)
+        .from("user_birthdays")
+        .select("birthday_month")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (data && !data.birthday_month) {
-        setMemberId(data.id);
-        setOpen(true);
-      }
+      if (!data) setOpen(true);
     })();
-  }, [user, workspaceId]);
+  }, [user]);
 
   const save = async () => {
-    if (!memberId) return;
+    if (!user) return;
     setSaving(true);
-    await supabase.from("workspace_members").update({ birthday_month: month, birthday_day: day }).eq("id", memberId);
+    const { error } = await supabase
+      .from("user_birthdays")
+      .upsert({ user_id: user.id, birthday_month: month, birthday_day: day }, { onConflict: "user_id" });
     setSaving(false);
+    if (!error) setOpen(false);
+  };
+
+  const skip = () => {
+    if (user) localStorage.setItem(`bargains_bday_skip_${user.id}`, "1");
     setOpen(false);
   };
 
@@ -68,7 +70,7 @@ export function BirthdayPrompt() {
         </div>
 
         <div className="flex justify-end gap-2 mt-6">
-          <button onClick={() => setOpen(false)} className="h-9 px-4 rounded-md text-sm font-medium hover:bg-[#1f1f22]" style={{ color: bx.textDim }}>Skip</button>
+          <button onClick={skip} className="h-9 px-4 rounded-md text-sm font-medium hover:bg-[#1f1f22]" style={{ color: bx.textDim }}>Skip</button>
           <button onClick={save} disabled={saving}
             className="h-9 px-4 rounded-md text-sm font-semibold text-white disabled:opacity-60"
             style={{ background: bx.coral }}>{saving ? "Saving..." : "Save"}</button>
