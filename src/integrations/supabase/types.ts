@@ -1438,6 +1438,14 @@ export type Database = {
           verified_official: boolean
         }[]
       }
+      get_workspace_owner_info: {
+        Args: { _workspace_id: string }
+        Returns: {
+          owner_id: string
+          roblox_user_id: string
+          roblox_username: string
+        }[]
+      }
       has_staff_permission: { Args: { _perm: string }; Returns: boolean }
       has_workspace_permission: {
         Args: { _permission: string; _workspace_id: string }
