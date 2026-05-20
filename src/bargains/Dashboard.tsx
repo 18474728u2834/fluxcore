@@ -42,12 +42,11 @@ export default function BDashboard() {
       const d = today.getDate();
       const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
 
-      const [bd, nm] = await Promise.all([
+      const [memRes, nm] = await Promise.all([
         supabase.from("workspace_members")
-          .select("user_id, roblox_username, roblox_user_id, birthday_month, birthday_day")
+          .select("user_id, roblox_username, roblox_user_id")
           .eq("workspace_id", workspaceId)
-          .eq("birthday_month", m)
-          .eq("birthday_day", d),
+          .not("user_id", "is", null),
         supabase.from("workspace_members")
           .select("user_id, roblox_username, roblox_user_id, joined_at")
           .eq("workspace_id", workspaceId)
@@ -55,7 +54,26 @@ export default function BDashboard() {
           .order("joined_at", { ascending: false })
           .limit(12),
       ]);
-      setBirthdays((bd.data || []) as any);
+      const userIds = (memRes.data || []).map((m: any) => m.user_id).filter(Boolean);
+      let bdays: Birthday[] = [];
+      if (userIds.length) {
+        const { data: bd } = await supabase
+          .from("user_birthdays")
+          .select("user_id, birthday_month, birthday_day")
+          .in("user_id", userIds)
+          .eq("birthday_month", m)
+          .eq("birthday_day", d);
+        const byId: Record<string, any> = {};
+        (memRes.data || []).forEach((mm: any) => { byId[mm.user_id] = mm; });
+        bdays = (bd || []).map((b: any) => ({
+          user_id: b.user_id,
+          roblox_username: byId[b.user_id]?.roblox_username || "Member",
+          roblox_user_id: byId[b.user_id]?.roblox_user_id || "",
+          birthday_month: b.birthday_month,
+          birthday_day: b.birthday_day,
+        }));
+      }
+      setBirthdays(bdays);
       setNewMembers((nm.data || []) as any);
     })();
   }, [workspaceId]);
