@@ -127,7 +127,7 @@ function BargainsWorkspaceRoutes() {
           <Route path="documents/:docId" element={<DocumentView />} />
           <Route path="loa"       element={<BLOA />} />
           <Route path="staff"     element={<BStaff />} />
-          <Route path="roles"     element={<Roles />} />
+          <Route path="roles"     element={<BRoles />} />
           <Route path="message-logs" element={<MessageLogs />} />
           <Route path="join"      element={<JoinWorkspace />} />
           <Route path="*" element={<Navigate to="dashboard" replace />} />
