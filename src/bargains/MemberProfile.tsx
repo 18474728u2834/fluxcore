@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 
-interface MemberData { id: string; roblox_username: string; roblox_user_id: string; role: string; verified: boolean; joined_at: string; birthday_month: number | null; birthday_day: number | null; }
+interface MemberData { id: string; user_id: string | null; roblox_username: string; roblox_user_id: string; role: string; verified: boolean; joined_at: string; birthday_month: number | null; birthday_day: number | null; }
 interface MemberLog { id: string; log_type: string; content: string; author_name: string; created_at: string; }
 interface ActivityEvent { id: string; event_type: string; created_at: string; event_data: any; }
 
