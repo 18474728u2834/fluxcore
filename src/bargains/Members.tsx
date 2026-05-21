@@ -59,18 +59,27 @@ export default function BMembers() {
         </div>
 
         <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
-          {filtered.map((m, i) => (
-            <div key={m.user_id} className="flex items-center gap-4 px-5 py-3.5 hover:bg-[#1f1f22] transition-colors"
-              style={{ borderTop: i === 0 ? "none" : "1px solid #22222a" }}>
-              <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-10 h-10 rounded-md" />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold" style={{ color: bx.text }}>{m.roblox_username || "Unknown"}</div>
-                <div className="text-xs" style={{ color: bx.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
-              </div>
-              <span className="text-[10px] px-2.5 py-1 rounded-md font-semibold uppercase tracking-wider"
-                style={{ background: "rgba(245,90,74,0.12)", color: bx.coral }}>{m.role}</span>
-            </div>
-          ))}
+          {filtered.map((m, i) => {
+            const target = m.id ? `/w/${workspaceId}/members/${m.id}` : null;
+            const inner = (
+              <>
+                <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-10 h-10 rounded-md" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold" style={{ color: bx.text }}>{m.roblox_username || "Unknown"}</div>
+                  <div className="text-xs" style={{ color: bx.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
+                </div>
+                <span className="text-[10px] px-2.5 py-1 rounded-md font-semibold uppercase tracking-wider"
+                  style={{ background: "rgba(245,90,74,0.12)", color: bx.coral }}>{m.role}</span>
+              </>
+            );
+            const className = "flex items-center gap-4 px-5 py-3.5 hover:bg-[#1f1f22] transition-colors cursor-pointer";
+            const style = { borderTop: i === 0 ? "none" : "1px solid #22222a" };
+            return target ? (
+              <Link key={m.user_id || m.roblox_user_id || i} to={target} className={className} style={style as any}>{inner}</Link>
+            ) : (
+              <div key={m.roblox_user_id || i} className={className} style={style as any}>{inner}</div>
+            );
+          })}
           {filtered.length === 0 && <div className="p-12 text-center text-sm" style={{ color: bx.textDim }}>No members found.</div>}
         </div>
       </div>
