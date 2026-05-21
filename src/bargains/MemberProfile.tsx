@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 
-interface MemberData { id: string; roblox_username: string; roblox_user_id: string; role: string; verified: boolean; joined_at: string; birthday_month: number | null; birthday_day: number | null; }
+interface MemberData { id: string; user_id: string | null; roblox_username: string; roblox_user_id: string; role: string; verified: boolean; joined_at: string; birthday_month: number | null; birthday_day: number | null; }
 interface MemberLog { id: string; log_type: string; content: string; author_name: string; created_at: string; }
 interface ActivityEvent { id: string; event_type: string; created_at: string; event_data: any; }
 
@@ -40,7 +40,13 @@ export default function BMemberProfile() {
     (async () => {
       const { data: m } = await supabase.from("workspace_members").select("*").eq("id", memberId).maybeSingle();
       if (!m) { navigate(`/w/${workspaceId}/members`); return; }
-      setMember(m as any);
+      let merged: any = { ...m };
+      if ((m as any).user_id) {
+        const { data: bd } = await supabase.from("user_birthdays")
+          .select("birthday_month, birthday_day").eq("user_id", (m as any).user_id).maybeSingle();
+        if (bd) merged.birthday_month = bd.birthday_month, merged.birthday_day = bd.birthday_day;
+      }
+      setMember(merged as any);
       const [{ data: l }, { data: ev }] = await Promise.all([
         supabase.from("member_logs").select("*").eq("member_id", memberId).order("created_at", { ascending: false }),
         supabase.from("activity_events").select("*").eq("workspace_id", workspaceId).eq("roblox_user_id", (m as any).roblox_user_id).order("created_at", { ascending: false }).limit(50),
@@ -121,6 +127,7 @@ export default function BMemberProfile() {
                   ["Username", member.roblox_username],
                   ["Role", member.role],
                   ["Birthday", birthday],
+                  ["Location", "Manchester, UK"],
                   ["Joined", new Date(member.joined_at).toLocaleDateString()],
                   ["Status", member.verified ? "Verified" : "Unverified"],
                 ].map(([k, v]) => (
