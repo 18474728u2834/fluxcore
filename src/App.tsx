@@ -64,6 +64,7 @@ const BDocuments = lazy(() => import("./bargains/Documents"));
 const BMemberProfile = lazy(() => import("./bargains/MemberProfile"));
 const BWall      = lazy(() => import("./bargains/Wall"));
 const BStaff     = lazy(() => import("./bargains/Staff"));
+const BRoles     = lazy(() => import("./bargains/Roles"));
 
 const queryClient = new QueryClient();
 
