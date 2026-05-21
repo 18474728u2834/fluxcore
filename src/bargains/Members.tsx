@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { BargainsShell, bx } from "./Shell";
 import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
