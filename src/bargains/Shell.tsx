@@ -7,6 +7,8 @@ import {
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
+import bargainsLogo from "@/assets/bargains-logo.png";
+
 
 interface ShellProps {
   children: ReactNode;
@@ -33,13 +35,16 @@ export function BargainsShell({ children }: ShellProps) {
   const [groupIcon, setGroupIcon] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const isBargains = (workspace?.name || "").toLowerCase().includes("bargain");
+
   useEffect(() => {
+    if (isBargains) { setGroupIcon(bargainsLogo); return; }
     if (!workspace?.roblox_group_id) return;
     fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/roblox-group-icon?groupIds=${workspace.roblox_group_id}`)
       .then(r => r.json())
       .then(j => { const img = j?.data?.[0]?.imageUrl; if (img) setGroupIcon(img); })
       .catch(() => {});
-  }, [workspace?.roblox_group_id]);
+  }, [workspace?.roblox_group_id, isBargains]);
 
   const base = `/w/${workspaceId}`;
 
