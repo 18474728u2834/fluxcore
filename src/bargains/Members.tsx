@@ -16,7 +16,7 @@ export default function BMembers() {
     (async () => {
       const [memRes, ownerRes] = await Promise.all([
         supabase.from("workspace_members")
-          .select("user_id, role, joined_at, roblox_username, roblox_user_id")
+          .select("id, user_id, role, joined_at, roblox_username, roblox_user_id")
           .eq("workspace_id", workspaceId)
           .order("joined_at", { ascending: false }),
         supabase.rpc("get_workspace_owner_info" as any, { _workspace_id: workspaceId }),
