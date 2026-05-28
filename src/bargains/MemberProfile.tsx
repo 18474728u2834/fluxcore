@@ -127,7 +127,7 @@ export default function BMemberProfile() {
                   ["Username", member.roblox_username],
                   ["Role", member.role],
                   ["Birthday", birthday],
-                  ["Location", "Manchester, UK"],
+                  
                   ["Joined", new Date(member.joined_at).toLocaleDateString()],
                   ["Status", member.verified ? "Verified" : "Unverified"],
                 ].map(([k, v]) => (
