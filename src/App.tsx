@@ -51,7 +51,10 @@ const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Admin = lazy(() => import("./pages/Admin"));
-const ApiDocs = lazy(() => import("./pages/ApiDocs"));
+const ApiIndex = lazy(() => import("./pages/api/ApiIndex"));
+const ApiSessions = lazy(() => import("./pages/api/SessionsApi"));
+const ApiActivity = lazy(() => import("./pages/api/ActivityApi"));
+const ApiWorkspaces = lazy(() => import("./pages/api/WorkspacesApi"));
 const Almore = lazy(() => import("./pages/Almore"));
 const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 const BargainsLogin = lazy(() => import("./pages/BargainsLogin"));
@@ -217,7 +220,10 @@ function AppRoutes() {
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/staff-dashboard" element={<Admin />} />
-        <Route path="/api" element={<ApiDocs />} />
+        <Route path="/api" element={<ApiIndex />} />
+        <Route path="/api/sessions" element={<ApiSessions />} />
+        <Route path="/api/activity" element={<ApiActivity />} />
+        <Route path="/api/workspaces" element={<ApiWorkspaces />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
