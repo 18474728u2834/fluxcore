@@ -51,6 +51,7 @@ const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const Admin = lazy(() => import("./pages/Admin"));
+const ApiDocs = lazy(() => import("./pages/ApiDocs"));
 const Almore = lazy(() => import("./pages/Almore"));
 const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 const BargainsLogin = lazy(() => import("./pages/BargainsLogin"));
@@ -216,6 +217,7 @@ function AppRoutes() {
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/staff-dashboard" element={<Admin />} />
+        <Route path="/api" element={<ApiDocs />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
