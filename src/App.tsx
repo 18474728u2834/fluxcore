@@ -220,7 +220,10 @@ function AppRoutes() {
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/staff-dashboard" element={<Admin />} />
-        <Route path="/api" element={<ApiDocs />} />
+        <Route path="/api" element={<ApiIndex />} />
+        <Route path="/api/sessions" element={<ApiSessions />} />
+        <Route path="/api/activity" element={<ApiActivity />} />
+        <Route path="/api/workspaces" element={<ApiWorkspaces />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
