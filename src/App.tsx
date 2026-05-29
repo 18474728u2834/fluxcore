@@ -87,11 +87,11 @@ function PageLoader() {
   );
 }
 
-// Workspaces that use the Hyra-style Bargains UI
-export const HYRA_UI_WORKSPACE_IDS = new Set<string>([
-  "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630", // Bloxy Bargains
-  "9f2c9234-c02f-492b-8121-74324e0df624", // Shoply Shopping
-]);
+// Workspaces that use the Hyra-style Bargains UI.
+// Populated at app boot from partner_portals where use_hyra_ui = true,
+// plus any portal subdomain that opts in. Admins control this from the
+// Staff Dashboard → Partner Portals tab.
+export const HYRA_UI_WORKSPACE_IDS = new Set<string>();
 
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
