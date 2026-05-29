@@ -312,8 +312,9 @@ export default function PartnerPortalsTab() {
                   title="Landing / login theme"
                 >
                   <option value="classic">Classic</option>
-                  <option value="bargains">Bargains</option>
                   <option value="almore">Almore</option>
+                  <option value="bargains">Bloxy Bargains</option>
+                  <option value="shoply">Shoply</option>
                 </select>
                 <label className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
                   <Sparkles className="w-3 h-3" /> Hyra
