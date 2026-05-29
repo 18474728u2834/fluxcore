@@ -258,6 +258,24 @@ export default function BSessions() {
                   style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text, colorScheme: "dark" }} />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Repeat</label>
+                  <select value={recurring} onChange={(e) => setRecurring(e.target.value as any)}
+                    className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                    style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
+                    <option value="none">Doesn't repeat</option>
+                    <option value="daily">Every day</option>
+                    <option value="weekly">Weekly on this day</option>
+                  </select>
+                </div>
+                <label className="flex items-end pb-2 gap-2 cursor-pointer select-none">
+                  <input type="checkbox" checked={hostMe} onChange={(e) => setHostMe(e.target.checked)}
+                    className="w-4 h-4 accent-current" style={{ accentColor: bx.coral }} />
+                  <span className="text-sm" style={{ color: bx.text }}>I'll host this</span>
+                </label>
+              </div>
+
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Description (optional)</label>
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)}
