@@ -118,6 +118,15 @@ export default function PartnerPortalsTab() {
     load();
   };
 
+  const toggleHyra = async (p: Portal) => {
+    const next = !p.use_hyra_ui;
+    const { error } = await supabase.from("partner_portals").update({ use_hyra_ui: next }).eq("id", p.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Hyra UI enabled — reload affected sessions" : "Hyra UI disabled");
+    load();
+  };
+
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
