@@ -58,6 +58,8 @@ const ApiRanking = lazy(() => import("./pages/api/RankingApi"));
 const Almore = lazy(() => import("./pages/Almore"));
 const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 const BargainsLogin = lazy(() => import("./pages/BargainsLogin"));
+const Shoply = lazy(() => import("./pages/Shoply"));
+const ShoplyLogin = lazy(() => import("./pages/ShoplyLogin"));
 const BDashboard = lazy(() => import("./bargains/Dashboard"));
 const BSessions  = lazy(() => import("./bargains/Sessions"));
 const BQuotas    = lazy(() => import("./bargains/Quotas"));
