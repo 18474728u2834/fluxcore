@@ -43,6 +43,8 @@ export default function BSessions() {
   });
   const [duration, setDuration] = useState("60");
   const [description, setDescription] = useState("");
+  const [hostMe, setHostMe] = useState(false);
+  const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
