@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2, Sparkles } from "lucide-react";
 
-type PortalTheme = "classic" | "bargains" | "almore";
+type PortalTheme = "classic" | "bargains" | "almore" | "shoply";
 
 interface Portal {
   id: string;
