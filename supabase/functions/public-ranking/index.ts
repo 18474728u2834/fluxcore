@@ -153,20 +153,28 @@ serve(async (req) => {
     const currentRole = ladder[currentIdx];
     const newRole = ladder[newIdx];
 
-    // Rank protection: requester must outrank the new rank (unless owner)
-    if (reqVerified?.user_id !== ws.owner_id) {
-      const reqMembRes = await fetch(
-        `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=user=='users/${requesterUserId}'&maxPageSize=1`,
-        { headers: { "x-api-key": robloxKey } },
-      );
-      if (reqMembRes.ok) {
-        const reqMembData = await reqMembRes.json();
-        const reqMembership = reqMembData.groupMemberships?.[0];
-        const reqRoleId = String(reqMembership?.role || "").split("/").pop();
-        const reqRole = ladder.find((r: any) => String(r.id || "").split("/").pop() === reqRoleId);
-        if (!reqRole || (newRole.rank ?? 0) >= (reqRole.rank ?? 0)) {
-          return json({ error: "You cannot rank a user to a position equal to or above your own" }, 403);
-        }
+    // Rank protection: requester must strictly outrank both target's current AND new rank (even owner — can't rank above self)
+    const reqMembRes = await fetch(
+      `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=user=='users/${requesterUserId}'&maxPageSize=1`,
+      { headers: { "x-api-key": robloxKey } },
+    );
+    let reqRole: any = null;
+    if (reqMembRes.ok) {
+      const reqMembData = await reqMembRes.json();
+      const reqMembership = reqMembData.groupMemberships?.[0];
+      const reqRoleId = String(reqMembership?.role || "").split("/").pop();
+      reqRole = ladder.find((r: any) => String(r.id || "").split("/").pop() === reqRoleId);
+    }
+    const isOwner = reqVerified?.user_id === ws.owner_id;
+    if (!isOwner) {
+      if (!reqRole) {
+        return json({ error: "You must be in the Roblox group to rank others" }, 403);
+      }
+      if ((currentRole.rank ?? 0) >= (reqRole.rank ?? 0)) {
+        return json({ error: "You can't rank someone at or above your own rank" }, 403);
+      }
+      if ((newRole.rank ?? 0) >= (reqRole.rank ?? 0)) {
+        return json({ error: "You can't rank a user to a position equal to or above your own" }, 403);
       }
     }
 
@@ -179,6 +187,36 @@ serve(async (req) => {
     if (!patchRes.ok) {
       const t = await patchRes.text();
       return json({ error: "Roblox rejected the rank change", details: t }, 502);
+    }
+
+    // Log to member_logs against the target's workspace_member (if they're in the workspace)
+    try {
+      const { data: targetMember } = await supabase
+        .from("workspace_members")
+        .select("id, roblox_username")
+        .eq("workspace_id", ws.id)
+        .eq("roblox_user_id", targetUserId)
+        .maybeSingle();
+
+      const { data: reqVu } = await supabase
+        .from("verified_users")
+        .select("roblox_username")
+        .eq("roblox_user_id", requesterUserId)
+        .maybeSingle();
+      const authorName = reqVu?.roblox_username || `Roblox#${requesterUserId}`;
+
+      if (targetMember) {
+        await supabase.from("member_logs").insert({
+          workspace_id: ws.id,
+          member_id: targetMember.id,
+          author_id: reqVerified?.user_id ?? ws.owner_id,
+          author_name: authorName,
+          log_type: action === "promote" ? "promotion" : "demotion",
+          content: `${action === "promote" ? "Promoted" : "Demoted"} from ${currentRole.displayName || currentRole.name} to ${newRole.displayName || newRole.name} via in-game !${action}`,
+        });
+      }
+    } catch (logErr) {
+      console.error("public-ranking log error:", logErr);
     }
 
     return json({
