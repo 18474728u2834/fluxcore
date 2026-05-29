@@ -61,7 +61,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const isPremiumActive = !!wsData.premium && (!wsData.premium_until || new Date(wsData.premium_until) > new Date());
+      // Fluxcore is now free for everyone — Premium is always on.
+      const isPremiumActive = true;
 
       setWorkspace({
         id: wsData.id,
@@ -103,21 +104,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       setLoading(false);
 
-      // Owner-only: re-check Roblox gamepass ownership for Premium (max once per 5 min)
-      if (ownerCheck) {
-        const cacheKey = `fluxcore_premium_check_${workspaceId}`;
-        const last = parseInt(localStorage.getItem(cacheKey) || "0", 10);
-        if (Date.now() - last > 5 * 60 * 1000) {
-          localStorage.setItem(cacheKey, String(Date.now()));
-          supabase.functions.invoke("check-premium", { body: { workspace_id: workspaceId } })
-            .then(({ data }) => {
-              if (cancelled || !data) return;
-              const newPremium = !!(data as any).premium;
-              setWorkspace((prev) => prev && prev.premium !== newPremium ? { ...prev, premium: newPremium } : prev);
-            })
-            .catch(() => {});
-        }
-      }
+      // Premium gamepass check disabled — Fluxcore is free for everyone.
     };
 
     fetchWorkspace();
@@ -129,7 +116,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const { data: wsRows } = await supabase.rpc("get_workspace_context", { _workspace_id: workspaceId });
     const wsData: any = wsRows?.[0];
     if (!wsData) return;
-    const isPremiumActive = !!wsData.premium && (!wsData.premium_until || new Date(wsData.premium_until) > new Date());
+    const isPremiumActive = true;
     setWorkspace((prev) => prev ? {
       ...prev,
       premium: isPremiumActive,
