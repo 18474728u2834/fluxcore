@@ -17,7 +17,17 @@ interface Workspace {
   role: string;
   roblox_group_id: string | null;
   verified_official: boolean;
+  subdomain?: string | null;
+  portal_status?: string | null;
+  grace_days_left?: number | null;
 }
+
+const HARDCODED_HOSTS = ["fluxcore.works", "www.fluxcore.works"];
+const onMainDomain = () => {
+  const h = window.location.hostname;
+  return HARDCODED_HOSTS.includes(h) || h.endsWith(".lovable.app") || h.endsWith(".lovableproject.com") || h === "localhost" || h.startsWith("127.0.0.1");
+};
+
 
 export default function Workspaces() {
   const navigate = useNavigate();
@@ -138,12 +148,32 @@ export default function Workspaces() {
       }
 
       setWorkspaces(ws);
+
+      // Load subdomain + grace info per workspace (non-blocking)
+      if (ws.length > 0) {
+        const ids = ws.map(w => w.id);
+        const [{ data: portals }, { data: wsRows }] = await Promise.all([
+          supabase.from("partner_portals").select("workspace_id,subdomain,status,auto_created").in("workspace_id", ids),
+          supabase.from("workspaces").select("id, subdomain_grace_until").in("id", ids),
+        ]);
+        const pMap = new Map<string, any>();
+        for (const p of (portals as any[]) || []) pMap.set(p.workspace_id, p);
+        const gMap = new Map<string, string>();
+        for (const w of (wsRows as any[]) || []) gMap.set(w.id, w.subdomain_grace_until);
+        setWorkspaces(prev => prev.map(w => {
+          const p = pMap.get(w.id);
+          const grace = gMap.get(w.id);
+          const daysLeft = grace ? Math.max(0, Math.ceil((new Date(grace).getTime() - Date.now()) / 86_400_000)) : null;
+          return { ...w, subdomain: p?.subdomain || null, portal_status: p?.status || null, grace_days_left: daysLeft };
+        }));
+      }
     } catch (e) {
       console.error("Failed to load workspaces:", e);
       toast.error("Couldn't load workspaces. Please refresh.");
     } finally {
       setLoading(false);
     }
+
 
     // Fetch group icons separately (non-blocking, never affects loading state)
     const groupIds = ws.filter(w => w.roblox_group_id).map(w => w.roblox_group_id);
@@ -222,6 +252,27 @@ export default function Workspaces() {
     return "text-muted-foreground";
   };
 
+  const openWorkspace = (ws: Workspace) => {
+    // If a subdomain exists, redirect there (works whether portal is active or dormant —
+    // dormant auto-wakes on load via heartbeat). Only redirect when we're on the main domain.
+    if (ws.subdomain && onMainDomain() && ws.portal_status !== "closed") {
+      window.location.href = `https://${ws.subdomain}.fluxcore.works/#/w/${ws.id}/dashboard`;
+      return;
+    }
+    // Grace expired and no subdomain — owner must claim before continuing
+    if (!ws.subdomain && ws.grace_days_left === 0) {
+      if (ws.role === "Owner") {
+        toast.error("Grace period ended. Claim a subdomain in Settings to continue.");
+        navigate(`/w/${ws.id}/settings`);
+      } else {
+        toast.error("The owner of this workspace must claim a subdomain before it can be used.");
+      }
+      return;
+    }
+    navigate(`/w/${ws.id}/dashboard`);
+  };
+
+
   return (
     <div className="min-h-screen bg-background relative">
       <div className="fixed inset-0 pointer-events-none bg-grid opacity-50 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent_80%)]" />
@@ -279,7 +330,7 @@ export default function Workspaces() {
                   className="group rounded-xl border border-border/20 bg-card/30 hover:bg-card/60 hover:border-border/40 p-5 text-left transition-all duration-200 flex flex-col"
                 >
                   <button
-                    onClick={() => navigate(`/w/${ws.id}/dashboard`)}
+                    onClick={() => openWorkspace(ws)}
                     className="text-left flex-1"
                   >
                     <div className="flex items-start justify-between mb-4">
@@ -297,7 +348,20 @@ export default function Workspaces() {
                       {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
                     </h3>
                     <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
+                    {ws.subdomain ? (
+                      <div className="mt-2 text-[11px] text-muted-foreground inline-flex items-center gap-1 truncate">
+                        <Sparkles className="w-3 h-3 text-primary" />
+                        {ws.subdomain}.fluxcore.works
+                      </div>
+                    ) : ws.role === "Owner" && ws.grace_days_left !== null && ws.grace_days_left !== undefined ? (
+                      <div className={`mt-2 text-[11px] inline-flex items-center gap-1 ${ws.grace_days_left <= 3 ? "text-destructive" : "text-muted-foreground"}`}>
+                        {ws.grace_days_left > 0
+                          ? `Claim subdomain — ${ws.grace_days_left}d left`
+                          : "Subdomain required — open Settings"}
+                      </div>
+                    ) : null}
                   </button>
+
                   {canApply && (
                     <button
                       onClick={() => applyGrant(ws.id)}

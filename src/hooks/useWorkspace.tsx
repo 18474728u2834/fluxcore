@@ -104,8 +104,13 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
 
       setLoading(false);
 
+      // Heartbeat: keep the workspace subdomain alive (auto-wakes dormant portals).
+      // Fire-and-forget; ignored if workspace has no auto-created portal.
+      supabase.rpc("heartbeat_portal", { _workspace_id: workspaceId }).then(() => {}, () => {});
+
       // Premium gamepass check disabled — Fluxcore is free for everyone.
     };
+
 
     fetchWorkspace();
     return () => { cancelled = true; };
