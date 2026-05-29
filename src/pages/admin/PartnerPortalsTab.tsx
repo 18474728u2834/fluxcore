@@ -87,6 +87,7 @@ export default function PartnerPortalsTab() {
       roblox_group_url: form.roblox_group_url.trim() || null,
       links,
       use_hyra_ui: form.use_hyra_ui,
+      portal_theme: form.portal_theme,
       created_by: user?.id,
     });
     if (error) { setSaving(false); toast.error(error.message); return; }
