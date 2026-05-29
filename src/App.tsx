@@ -94,35 +94,72 @@ function PageLoader() {
 // Staff Dashboard → Partner Portals tab.
 export const HYRA_UI_WORKSPACE_IDS = new Set<string>();
 
+function WorkspacePages() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="members" element={<Members />} />
+        <Route path="members/:memberId" element={<MemberProfile />} />
+        <Route path="activity" element={<Activity />} />
+        <Route path="sessions" element={<Sessions />} />
+        <Route path="wall" element={<Wall />} />
+        <Route path="ranks" element={<Ranks />} />
+        <Route path="setup-tracking" element={<SetupTracking />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="documents" element={<Documents />} />
+        <Route path="documents/:docId" element={<DocumentView />} />
+        <Route path="loa" element={<LOA />} />
+        <Route path="staff" element={<Staff />} />
+        <Route path="roles" element={<Roles />} />
+        <Route path="quotas" element={<Quotas />} />
+        <Route path="message-logs" element={<MessageLogs />} />
+        <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="join" element={<JoinWorkspace />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
+function BargainsWorkspacePages() {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
+        <Route path="dashboard" element={<BDashboard />} />
+        <Route path="sessions"  element={<BSessions />}  />
+        <Route path="quotas"    element={<BQuotas />}    />
+        <Route path="members"   element={<BMembers />}   />
+        <Route path="members/:memberId" element={<BMemberProfile />} />
+        <Route path="activity"  element={<BActivity />} />
+        <Route path="wall"      element={<BWall />} />
+        <Route path="ranks"     element={<Ranks />} />
+        <Route path="setup-tracking" element={<SetupTracking />} />
+        <Route path="settings"  element={<SettingsPage />} />
+        <Route path="documents" element={<BDocuments />} />
+        <Route path="documents/:docId" element={<DocumentView />} />
+        <Route path="loa"       element={<BLOA />} />
+        <Route path="staff"     element={<BStaff />} />
+        <Route path="roles"     element={<BRoles />} />
+        <Route path="message-logs" element={<MessageLogs />} />
+        <Route path="join"      element={<JoinWorkspace />} />
+        <Route path="*" element={<Navigate to="dashboard" replace />} />
+      </Routes>
+    </Suspense>
+  );
+}
+
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
   if (workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId)) {
-    return <BargainsWorkspaceRoutes />;
+    return (
+      <WorkspaceProvider>
+        <BargainsWorkspacePages />
+      </WorkspaceProvider>
+    );
   }
   return (
     <WorkspaceProvider>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="members" element={<Members />} />
-          <Route path="members/:memberId" element={<MemberProfile />} />
-          <Route path="activity" element={<Activity />} />
-          <Route path="sessions" element={<Sessions />} />
-          <Route path="wall" element={<Wall />} />
-          <Route path="ranks" element={<Ranks />} />
-          <Route path="setup-tracking" element={<SetupTracking />} />
-          <Route path="settings" element={<SettingsPage />} />
-          <Route path="documents" element={<Documents />} />
-          <Route path="documents/:docId" element={<DocumentView />} />
-          <Route path="loa" element={<LOA />} />
-          <Route path="staff" element={<Staff />} />
-          <Route path="roles" element={<Roles />} />
-          <Route path="quotas" element={<Quotas />} />
-          <Route path="message-logs" element={<MessageLogs />} />
-          <Route path="leaderboard" element={<Leaderboard />} />
-          <Route path="join" element={<JoinWorkspace />} />
-        </Routes>
-      </Suspense>
+      <WorkspacePages />
     </WorkspaceProvider>
   );
 }
@@ -130,28 +167,17 @@ function WorkspaceRoutes() {
 function BargainsWorkspaceRoutes() {
   return (
     <WorkspaceProvider>
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="dashboard" element={<BDashboard />} />
-          <Route path="sessions"  element={<BSessions />}  />
-          <Route path="quotas"    element={<BQuotas />}    />
-          <Route path="members"   element={<BMembers />}   />
-          <Route path="members/:memberId" element={<BMemberProfile />} />
-          <Route path="activity"  element={<BActivity />} />
-          <Route path="wall"      element={<BWall />} />
-          <Route path="ranks"     element={<Ranks />} />
-          <Route path="setup-tracking" element={<SetupTracking />} />
-          <Route path="settings"  element={<SettingsPage />} />
-          <Route path="documents" element={<BDocuments />} />
-          <Route path="documents/:docId" element={<DocumentView />} />
-          <Route path="loa"       element={<BLOA />} />
-          <Route path="staff"     element={<BStaff />} />
-          <Route path="roles"     element={<BRoles />} />
-          <Route path="message-logs" element={<MessageLogs />} />
-          <Route path="join"      element={<JoinWorkspace />} />
-          <Route path="*" element={<Navigate to="dashboard" replace />} />
-        </Routes>
-      </Suspense>
+      <BargainsWorkspacePages />
+    </WorkspaceProvider>
+  );
+}
+
+// Routes mounted at the root of a partner subdomain — no /w/:id prefix.
+// e.g. shoply.fluxcore.works/sessions instead of /w/<uuid>/sessions.
+function PartnerCleanRoutes({ workspaceId, useHyra }: { workspaceId: string; useHyra: boolean }) {
+  return (
+    <WorkspaceProvider workspaceId={workspaceId}>
+      {useHyra ? <BargainsWorkspacePages /> : <WorkspacePages />}
     </WorkspaceProvider>
   );
 }
