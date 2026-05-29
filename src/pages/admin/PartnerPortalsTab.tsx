@@ -245,7 +245,11 @@ export default function PartnerPortalsTab() {
                   )}
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                <label className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
+                  <Sparkles className="w-3 h-3" /> Hyra
+                  <Switch checked={p.use_hyra_ui} onCheckedChange={() => toggleHyra(p)} />
+                </label>
                 {p.status === "closed" ? (
                   <Button size="sm" variant="outline" onClick={() => reopen(p.id)}>
                     <Unlock className="w-3 h-3 mr-1" /> Re-open
