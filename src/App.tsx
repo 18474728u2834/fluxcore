@@ -72,6 +72,10 @@ const BMemberProfile = lazy(() => import("./bargains/MemberProfile"));
 const BWall      = lazy(() => import("./bargains/Wall"));
 const BStaff     = lazy(() => import("./bargains/Staff"));
 const BRoles     = lazy(() => import("./bargains/Roles"));
+const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
+const PartnerLogin = lazy(() => import("./pages/PartnerLogin"));
+const PartnerClosed = lazy(() => import("./pages/PartnerClosed"));
+
 
 const queryClient = new QueryClient();
 
