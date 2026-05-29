@@ -105,6 +105,7 @@ export default function Admin() {
             {has("delete_workspaces") && <TabsTrigger value="workspaces">Workspaces</TabsTrigger>}
             {has("moderate_chats") && <TabsTrigger value="chats">Wall Moderation</TabsTrigger>}
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
+            <TabsTrigger value="portals">Partner Portals</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
