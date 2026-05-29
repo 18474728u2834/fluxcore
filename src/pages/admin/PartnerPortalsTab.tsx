@@ -303,6 +303,16 @@ export default function PartnerPortalsTab() {
                 </div>
               </div>
               <div className="flex gap-2 items-center">
+                <select
+                  value={p.portal_theme || "classic"}
+                  onChange={(e) => setTheme(p, e.target.value as PortalTheme)}
+                  className="text-xs bg-background border border-border rounded-md px-2 py-1"
+                  title="Landing / login theme"
+                >
+                  <option value="classic">Classic</option>
+                  <option value="bargains">Bargains</option>
+                  <option value="almore">Almore</option>
+                </select>
                 <label className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
                   <Sparkles className="w-3 h-3" /> Hyra
                   <Switch checked={p.use_hyra_ui} onCheckedChange={() => toggleHyra(p)} />
