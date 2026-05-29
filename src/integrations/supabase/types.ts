@@ -580,6 +580,57 @@ export type Database = {
           },
         ]
       }
+      partner_portals: {
+        Row: {
+          accent_color: string | null
+          closed_reason: string | null
+          created_at: string
+          created_by: string
+          id: string
+          links: Json
+          logo_url: string | null
+          name: string
+          roblox_group_url: string | null
+          status: string
+          subdomain: string
+          tagline: string | null
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          accent_color?: string | null
+          closed_reason?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          links?: Json
+          logo_url?: string | null
+          name: string
+          roblox_group_url?: string | null
+          status?: string
+          subdomain: string
+          tagline?: string | null
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          accent_color?: string | null
+          closed_reason?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          links?: Json
+          logo_url?: string | null
+          name?: string
+          roblox_group_url?: string | null
+          status?: string
+          subdomain?: string
+          tagline?: string | null
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       premium_grant_claims: {
         Row: {
           claimed_at: string
