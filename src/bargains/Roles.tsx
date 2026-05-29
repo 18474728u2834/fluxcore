@@ -67,8 +67,10 @@ export default function BRoles() {
   }, [workspaceId]);
 
   useEffect(() => {
-    setAutoSync(!!(workspace as any)?.auto_rank_enabled);
-  }, [workspace]);
+    if (!workspaceId) return;
+    supabase.from("workspaces").select("auto_rank_enabled").eq("id", workspaceId).maybeSingle()
+      .then(({ data }) => setAutoSync(!!(data as any)?.auto_rank_enabled));
+  }, [workspaceId]);
 
   const createRole = async () => {
     const { data, error } = await supabase.from("workspace_roles").insert({
