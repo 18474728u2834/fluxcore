@@ -39,7 +39,7 @@ function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 export default function BRoles() {
-  const { workspaceId, isOwner, workspace, refreshWorkspace } = useWorkspace();
+  const { workspaceId, isOwner } = useWorkspace();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,8 +67,10 @@ export default function BRoles() {
   }, [workspaceId]);
 
   useEffect(() => {
-    setAutoSync(!!(workspace as any)?.auto_rank_enabled);
-  }, [workspace]);
+    if (!workspaceId) return;
+    supabase.from("workspaces").select("auto_rank_enabled").eq("id", workspaceId).maybeSingle()
+      .then(({ data }) => setAutoSync(!!(data as any)?.auto_rank_enabled));
+  }, [workspaceId]);
 
   const createRole = async () => {
     const { data, error } = await supabase.from("workspace_roles").insert({
@@ -121,7 +123,6 @@ export default function BRoles() {
     const { error } = await supabase.from("workspaces").update({ auto_rank_enabled: next }).eq("id", workspaceId);
     if (error) { toast.error(error.message); setAutoSync(!next); return; }
     toast.success(next ? "Auto-add members enabled" : "Auto-add disabled");
-    refreshWorkspace();
   };
 
   if (!isOwner) {
