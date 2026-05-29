@@ -383,7 +383,7 @@ export default function Index() {
             Trusted by Roblox communities
           </p>
           <div className="flex items-center justify-center gap-10 flex-wrap opacity-80 mb-8">
-            <div className="flex items-center gap-2.5 grayscale hover:grayscale-0 transition-all">
+            <div className="flex items-center gap-2.5 transition-all">
               <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-7 h-7 rounded-md object-cover" />
               <span className="text-sm font-bold">Bloxy Bargains</span>
             </div>
