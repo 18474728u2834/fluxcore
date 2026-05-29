@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Gamepad2 } from "lucide-react";
+import { DiscordSignInButton } from "@/components/DiscordSignInButton";
 import type { PartnerConfig } from "./PartnerPortal";
 
 const SUPABASE_URL = (import.meta as any).env.VITE_SUPABASE_URL as string;
