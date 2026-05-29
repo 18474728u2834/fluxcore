@@ -82,6 +82,7 @@ export default function PartnerPortalsTab() {
       accent_color: form.accent_color || "#10b981",
       roblox_group_url: form.roblox_group_url.trim() || null,
       links,
+      use_hyra_ui: form.use_hyra_ui,
       created_by: user?.id,
     });
     setSaving(false);
