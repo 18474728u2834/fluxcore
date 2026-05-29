@@ -13,8 +13,9 @@ import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
 import { BlacklistGate } from "@/components/BlacklistGate";
 import { AccountRemovalGate } from "@/components/AccountRemovalGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 // Lazy load every route — each gets its own JS chunk so devtools
 // only ever sees code for the page that's currently rendered.
