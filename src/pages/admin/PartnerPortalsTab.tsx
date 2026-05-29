@@ -233,6 +233,9 @@ export default function PartnerPortalsTab() {
                     ) : (
                       <Badge>Active</Badge>
                     )}
+                    {p.use_hyra_ui && (
+                      <Badge variant="outline" className="gap-1"><Sparkles className="w-3 h-3" /> Hyra UI</Badge>
+                    )}
                   </div>
                   <a href={`https://${p.subdomain}.fluxcore.works`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
                     {p.subdomain}.fluxcore.works <ExternalLink className="w-3 h-3" />
