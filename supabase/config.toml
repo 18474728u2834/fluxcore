@@ -18,6 +18,9 @@ verify_jwt = false
 [functions.roblox-avatar]
 verify_jwt = false
 
+[functions.public-ranking]
+verify_jwt = false
+
 [functions.staff-actions]
 verify_jwt = true
 
