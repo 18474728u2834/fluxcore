@@ -224,6 +224,30 @@ export type Database = {
         }
         Relationships: []
       }
+      discord_pending_links: {
+        Row: {
+          created_at: string
+          discord_user_id: string
+          discord_username: string
+          expires_at: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          discord_user_id: string
+          discord_username: string
+          expires_at?: string
+          token: string
+        }
+        Update: {
+          created_at?: string
+          discord_user_id?: string
+          discord_username?: string
+          expires_at?: string
+          token?: string
+        }
+        Relationships: []
+      }
       dismissed_announcements: {
         Row: {
           announcement_id: string
@@ -1058,6 +1082,8 @@ export type Database = {
       }
       verified_users: {
         Row: {
+          discord_user_id: string | null
+          discord_username: string | null
           has_gamepass: boolean
           id: string
           roblox_user_id: string
@@ -1066,6 +1092,8 @@ export type Database = {
           verified_at: string
         }
         Insert: {
+          discord_user_id?: string | null
+          discord_username?: string | null
           has_gamepass?: boolean
           id?: string
           roblox_user_id: string
@@ -1074,6 +1102,8 @@ export type Database = {
           verified_at?: string
         }
         Update: {
+          discord_user_id?: string | null
+          discord_username?: string | null
           has_gamepass?: boolean
           id?: string
           roblox_user_id?: string
