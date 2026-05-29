@@ -236,6 +236,45 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Leaderboard */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Leaderboard</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Pick which leaderboards appear in the sidebar for everyone in this workspace. Uncheck all to hide the page entirely.
+          </p>
+          <div className="space-y-2">
+            {[
+              { key: "time_in_game",    label: "Time In-Game",    desc: "Total minutes tracked by the activity logger." },
+              { key: "sessions_hosted", label: "Sessions Hosted", desc: "Counts scheduled sessions hosted." },
+              { key: "messages_sent",   label: "Messages Sent",   desc: "In-game chat messages logged per session." },
+              { key: "quotas_met",      label: "Quotas Met",      desc: "How many active quotas each member is meeting." },
+            ].map((opt) => {
+              const checked = leaderboardCategories.includes(opt.key);
+              return (
+                <label key={opt.key} className="flex items-start gap-3 p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/70 transition-colors">
+                  <Switch
+                    checked={checked}
+                    onCheckedChange={(v) => {
+                      setLeaderboardCategories((prev) =>
+                        v ? [...prev, opt.key] : prev.filter((k) => k !== opt.key)
+                      );
+                    }}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+
+
         {/* Feature Toggles */}
         <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
