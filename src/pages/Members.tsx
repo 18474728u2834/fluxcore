@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Search, Crown, ChevronLeft, ChevronRight, Copy, Users as UsersIcon, ArrowUpDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BulkActionBar, type BulkAction } from "@/components/BulkActionBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -22,6 +24,7 @@ interface Member {
   verified: boolean;
   joined_at: string;
   user_id: string | null;
+  roblox_group_rank?: number | null;
 }
 
 interface RobloxGroupRole {
@@ -53,6 +56,9 @@ export default function Members() {
   const [selectedRobloxRole, setSelectedRobloxRole] = useState("");
   const [rankLoading, setRankLoading] = useState(false);
   const [rankFetchLoading, setRankFetchLoading] = useState(false);
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const canManage = isOwner || hasPermission("manage_members");
 
@@ -198,6 +204,97 @@ export default function Members() {
     return role?.color;
   };
 
+  const selectableMembers = members.filter(m => m.id !== "owner-virtual" && m.role !== "Owner");
+  const pageSelectable = paged.filter(m => m.id !== "owner-virtual" && m.role !== "Owner");
+  const allPageSelected = pageSelectable.length > 0 && pageSelectable.every(m => selected.has(m.id));
+
+  const toggleOne = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAllOnPage = () => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (allPageSelected) pageSelectable.forEach(m => next.delete(m.id));
+      else pageSelectable.forEach(m => next.add(m.id));
+      return next;
+    });
+  };
+
+  const runBulk = async (action: BulkAction, payload?: { roleId?: string; reason?: string }) => {
+    const ids = [...selected];
+    const targets = members.filter(m => ids.includes(m.id));
+    if (targets.length === 0) return;
+    const authorName = robloxUsername || "Unknown";
+    const authorId = (await supabase.auth.getUser()).data.user?.id || "";
+
+    let ok = 0, fail = 0;
+
+    if (action === "remove") {
+      for (const m of targets) {
+        const { error } = await supabase.from("workspace_members").delete().eq("id", m.id);
+        if (error) fail++; else ok++;
+      }
+    } else if (action === "assign_role") {
+      for (const m of targets) {
+        const { error } = await supabase.from("workspace_members").update({ role_id: payload?.roleId || null }).eq("id", m.id);
+        if (error) { fail++; continue; }
+        await supabase.from("member_logs").insert({
+          workspace_id: workspaceId, member_id: m.id, author_id: authorId, author_name: authorName,
+          log_type: "role_change",
+          content: `Assigned role ${roles.find(r => r.id === payload?.roleId)?.name || "(unknown)"} via bulk action`,
+        });
+        ok++;
+      }
+    } else if (action === "warn") {
+      for (const m of targets) {
+        const { error } = await supabase.from("member_logs").insert({
+          workspace_id: workspaceId, member_id: m.id, author_id: authorId, author_name: authorName,
+          log_type: "warning", content: payload?.reason || "Bulk warning",
+        });
+        if (error) fail++; else ok++;
+      }
+    } else if (action === "promote" || action === "demote") {
+      // Rank one step in the Roblox group: fetch group roles once, find each member's current rank, move ±1.
+      const res = await supabase.functions.invoke("roblox-rank", {
+        body: { action: "get_roles", workspace_id: workspaceId },
+      });
+      const groupRoles = ((res.data?.roles || []) as any[])
+        .map(r => ({ id: (r.id?.split("/").pop() || r.id) as string, rank: r.rank || 0, name: r.displayName || r.name || "" }))
+        .sort((a, b) => a.rank - b.rank);
+      if (groupRoles.length === 0) {
+        toast.error("Couldn't load Roblox group roles");
+        return;
+      }
+      for (const m of targets) {
+        const currentRank = m.roblox_group_rank ?? null;
+        const idx = currentRank == null ? -1 : groupRoles.findIndex(r => r.rank === currentRank);
+        const targetIdx = action === "promote" ? idx + 1 : idx - 1;
+        if (idx < 0 || targetIdx < 0 || targetIdx >= groupRoles.length) { fail++; continue; }
+        const targetRole = groupRoles[targetIdx];
+        const rankRes = await supabase.functions.invoke("roblox-rank", {
+          body: { action: "set_rank", workspace_id: workspaceId, roblox_user_id: m.roblox_user_id, role_id: targetRole.id },
+        });
+        if (rankRes.data?.success) {
+          ok++;
+          await supabase.from("member_logs").insert({
+            workspace_id: workspaceId, member_id: m.id, author_id: authorId, author_name: authorName,
+            log_type: "rank_change", content: `${action === "promote" ? "Promoted" : "Demoted"} to ${targetRole.name} via bulk action`,
+          });
+        } else fail++;
+      }
+    }
+
+    if (ok > 0) toast.success(`${ok} member${ok === 1 ? "" : "s"} updated${fail ? ` — ${fail} failed` : ""}`);
+    else toast.error(`Bulk action failed (${fail} errors)`);
+    setSelected(new Set());
+    fetchMembers();
+  };
+
   if (loading) {
     return <DashboardLayout title="Members"><div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div></DashboardLayout>;
   }
@@ -244,6 +341,15 @@ export default function Members() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border/50">
+                  {canManage && (
+                    <th className="w-10 px-3 py-3">
+                      <Checkbox
+                        checked={allPageSelected}
+                        onCheckedChange={toggleAllOnPage}
+                        aria-label="Select all on page"
+                      />
+                    </th>
+                  )}
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rank</th>
                   <th className="text-center px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Warnings</th>
@@ -252,8 +358,21 @@ export default function Members() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {paged.map(member => (
+                {paged.map(member => {
+                  const selectable = member.id !== "owner-virtual" && member.role !== "Owner";
+                  return (
                   <tr key={member.id} onClick={() => { if (member.id !== "owner-virtual") navigate(`/w/${workspaceId}/members/${member.id}`); }} className="hover:bg-secondary/30 transition-colors cursor-pointer">
+                    {canManage && (
+                      <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                        {selectable && (
+                          <Checkbox
+                            checked={selected.has(member.id)}
+                            onCheckedChange={() => toggleOne(member.id)}
+                            aria-label={`Select ${member.roblox_username}`}
+                          />
+                        )}
+                      </td>
+                    )}
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <RobloxAvatar
@@ -297,7 +416,8 @@ export default function Members() {
                       </td>
                     )}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -312,6 +432,14 @@ export default function Members() {
             </div>
           )}
         </div>
+
+        <BulkActionBar
+          selectedCount={selected.size}
+          roles={roles}
+          canManage={canManage}
+          onClear={() => setSelected(new Set())}
+          onRun={runBulk}
+        />
       </div>
 
       {/* Rank Dialog */}

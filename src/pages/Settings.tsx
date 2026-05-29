@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock } from "lucide-react";
+import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +32,7 @@ export default function SettingsPage() {
   const [afkConfirmSeconds, setAfkConfirmSeconds] = useState<number>(0);
   const [saving, setSaving] = useState(false);
   const [testingDiscord, setTestingDiscord] = useState(false);
+  const [leaderboardCategories, setLeaderboardCategories] = useState<string[]>([]);
 
   useEffect(() => {
     if (workspace) {
@@ -39,7 +40,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
@@ -57,6 +58,7 @@ export default function SettingsPage() {
           setHostLabel(labels.host || "Host");
           setCoHostLabel(labels.co_host || "Co-Host");
           setTrainerLabel(labels.trainer || "Trainer");
+          setLeaderboardCategories(((data as any).leaderboard_categories || []) as string[]);
         }
       };
       fetchExtras();
@@ -104,6 +106,7 @@ export default function SettingsPage() {
         co_host: coHostLabel.trim() || "Co-Host",
         trainer: trainerLabel.trim() || "Trainer",
       },
+      leaderboard_categories: leaderboardCategories,
     } as any).eq("id", workspaceId);
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
@@ -232,6 +235,45 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Leaderboard */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Leaderboard</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Pick which leaderboards appear in the sidebar for everyone in this workspace. Uncheck all to hide the page entirely.
+          </p>
+          <div className="space-y-2">
+            {[
+              { key: "time_in_game",    label: "Time In-Game",    desc: "Total minutes tracked by the activity logger." },
+              { key: "sessions_hosted", label: "Sessions Hosted", desc: "Counts scheduled sessions hosted." },
+              { key: "messages_sent",   label: "Messages Sent",   desc: "In-game chat messages logged per session." },
+              { key: "quotas_met",      label: "Quotas Met",      desc: "How many active quotas each member is meeting." },
+            ].map((opt) => {
+              const checked = leaderboardCategories.includes(opt.key);
+              return (
+                <label key={opt.key} className="flex items-start gap-3 p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/70 transition-colors">
+                  <Switch
+                    checked={checked}
+                    onCheckedChange={(v) => {
+                      setLeaderboardCategories((prev) =>
+                        v ? [...prev, opt.key] : prev.filter((k) => k !== opt.key)
+                      );
+                    }}
+                  />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+
 
         {/* Feature Toggles */}
         <div className="glass rounded-xl p-5 space-y-4">
