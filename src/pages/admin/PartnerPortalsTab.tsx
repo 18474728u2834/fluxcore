@@ -85,13 +85,25 @@ export default function PartnerPortalsTab() {
       use_hyra_ui: form.use_hyra_ui,
       created_by: user?.id,
     });
+    if (error) { setSaving(false); toast.error(error.message); return; }
+
+    // Auto-create the subdomain on Vercel
+    const { data: vData, error: vErr } = await supabase.functions.invoke("vercel-domain", {
+      body: { action: "add", subdomain: sub },
+    });
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success(`Portal ${sub}.fluxcore.works created`);
+    if (vErr || (vData as any)?.error) {
+      toast.warning(`Portal saved, but Vercel attach failed: ${(vData as any)?.error || vErr?.message}. Add ${sub}.fluxcore.works manually in Vercel.`);
+    } else if ((vData as any)?.alreadyExists) {
+      toast.success(`Portal ${sub}.fluxcore.works created (subdomain already on Vercel)`);
+    } else {
+      toast.success(`Portal ${sub}.fluxcore.works created & subdomain wired up on Vercel`);
+    }
     setOpen(false);
     setForm(empty);
     load();
   };
+
 
   const reopen = async (id: string) => {
     const { error } = await supabase.from("partner_portals").update({ status: "active", closed_reason: null }).eq("id", id);
@@ -110,13 +122,22 @@ export default function PartnerPortalsTab() {
     load();
   };
 
-  const remove = async (id: string, name: string) => {
-    if (!confirm(`Permanently delete ${name} portal?`)) return;
+  const remove = async (id: string, name: string, subdomain: string) => {
+    if (!confirm(`Permanently delete ${name} portal and remove ${subdomain}.fluxcore.works from Vercel?`)) return;
     const { error } = await supabase.from("partner_portals").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Portal deleted");
+    // Remove subdomain from Vercel
+    const { data: vData, error: vErr } = await supabase.functions.invoke("vercel-domain", {
+      body: { action: "remove", subdomain },
+    });
+    if (vErr || (vData as any)?.error) {
+      toast.warning(`Portal deleted, but Vercel removal failed: ${(vData as any)?.error || vErr?.message}`);
+    } else {
+      toast.success("Portal & subdomain deleted");
+    }
     load();
   };
+
 
   const toggleHyra = async (p: Portal) => {
     const next = !p.use_hyra_ui;
@@ -259,7 +280,7 @@ export default function PartnerPortalsTab() {
                     <Lock className="w-3 h-3 mr-1" /> Close
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" onClick={() => remove(p.id, p.name)}>
+                <Button size="sm" variant="ghost" onClick={() => remove(p.id, p.name, p.subdomain)}>
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
