@@ -223,11 +223,13 @@ export default function PartnerPortalsTab() {
               </div>
               <div>
                 <Label>Landing / login theme</Label>
-                <div className="grid grid-cols-3 gap-2 mt-1">
+                <p className="text-[10px] text-muted-foreground mb-1">All themes use the workspace's own logo, name & tagline — only the layout/colors change.</p>
+                <div className="grid grid-cols-2 gap-2 mt-1">
                   {([
-                    { v: "classic", label: "Classic", hint: "Workspace's own branding & text" },
-                    { v: "bargains", label: "Bargains", hint: "Bloxy Bargains styled" },
-                    { v: "almore", label: "Almore", hint: "Almore styled" },
+                    { v: "classic", label: "Classic", hint: "Default Fluxcore portal" },
+                    { v: "almore", label: "Almore", hint: "Emerald / amber layout" },
+                    { v: "bargains", label: "Bloxy Bargains", hint: "Sky-blue layout" },
+                    { v: "shoply", label: "Shoply", hint: "Violet / fuchsia layout" },
                   ] as { v: PortalTheme; label: string; hint: string }[]).map(opt => (
                     <button
                       key={opt.v}
