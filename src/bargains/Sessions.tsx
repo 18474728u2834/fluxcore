@@ -79,6 +79,8 @@ export default function BSessions() {
     setCategory("Shift");
     setDuration("60");
     setDescription("");
+    setHostMe(false);
+    setRecurring("none");
     setOpen(true);
   };
 
@@ -87,23 +89,29 @@ export default function BSessions() {
     if (!when) { toast.error("Pick a date & time"); return; }
     if (!user) { toast.error("You must be signed in"); return; }
     setSaving(true);
-    const { error } = await supabase.from("scheduled_sessions").insert({
+    const dt = new Date(when);
+    const payload: any = {
       workspace_id: workspaceId,
       title: title.trim(),
       category,
-      scheduled_at: new Date(when).toISOString(),
+      scheduled_at: dt.toISOString(),
       duration_minutes: parseInt(duration) || 60,
-      host_id: user.id,
-      host_name: robloxUsername || "Host",
+      host_id: hostMe ? user.id : null,
+      host_name: hostMe ? (robloxUsername || "Host") : "Unassigned",
       description: description.trim() || null,
       slots: [],
       tag_ids: [],
-    });
+    };
+    if (recurring !== "none") {
+      payload.recurring = recurring;
+      payload.recurring_time = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      payload.recurring_days = recurring === "weekly" ? [dt.getDay()] : [0,1,2,3,4,5,6];
+    }
+    const { error } = await supabase.from("scheduled_sessions").insert(payload);
     setSaving(false);
     if (error) { toast.error("Failed: " + error.message); return; }
     toast.success("Session scheduled");
     setOpen(false);
-    // jump the calendar to the day of the new session
     const newDay = new Date(when); newDay.setHours(0,0,0,0);
     setSelected(newDay);
     setRefreshKey(k => k + 1);
