@@ -61,7 +61,8 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      const isPremiumActive = !!wsData.premium && (!wsData.premium_until || new Date(wsData.premium_until) > new Date());
+      // Fluxcore is now free for everyone — Premium is always on.
+      const isPremiumActive = true;
 
       setWorkspace({
         id: wsData.id,
