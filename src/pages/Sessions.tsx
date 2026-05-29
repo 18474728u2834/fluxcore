@@ -313,20 +313,8 @@ export default function Sessions() {
 
     toast.success("Session scheduled!");
 
-    supabase.functions.invoke("discord-notify", {
-      body: {
-        action: "session_created",
-        workspace_id: workspaceId,
-        session_title: title.trim(),
-        session_time: firstOccurrence.toISOString(),
-        host_name: firstAssignee,
-        category,
-        recurring: insertPayload.recurring,
-        recurring_days: insertPayload.recurring_days,
-        recurring_time: insertPayload.recurring_time,
-        description: description.trim() || undefined,
-      },
-    }).catch(() => {});
+    // Discord announcement is sent when the shift actually starts, not at
+    // creation time — see checkAndSendReminders above.
 
     setDialogOpen(false);
     resetForm();
