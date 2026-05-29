@@ -116,7 +116,7 @@ export function WorkspaceProvider({ children }: { children: ReactNode }) {
     const { data: wsRows } = await supabase.rpc("get_workspace_context", { _workspace_id: workspaceId });
     const wsData: any = wsRows?.[0];
     if (!wsData) return;
-    const isPremiumActive = !!wsData.premium && (!wsData.premium_until || new Date(wsData.premium_until) > new Date());
+    const isPremiumActive = true;
     setWorkspace((prev) => prev ? {
       ...prev,
       premium: isPremiumActive,
