@@ -13,7 +13,7 @@ export default function Privacy() {
         </Button>
 
         <h1 className="text-3xl font-extrabold text-foreground mb-2">Privacy Policy</h1>
-        <p className="text-sm text-muted-foreground mb-8">Last updated: April 29, 2026 (multi-language support, owner document signing, and reliability improvements)</p>
+        <p className="text-sm text-muted-foreground mb-8">Last updated: May 29, 2026 (translation provider update and wall moderation disclosure)</p>
 
         <div className="prose prose-sm prose-invert max-w-none space-y-6 text-muted-foreground">
           <section>
@@ -73,14 +73,19 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-lg font-bold text-foreground">8. Language & AI Translations</h2>
-            <p>Fluxcore's interface is offered in many languages. To make this possible, the text you read in non-English languages is generated <strong>automatically by an AI translation service</strong>. When you switch language, the strings you view are sent to our translation provider (Lovable AI Gateway) so they can be translated; results are cached in your browser to minimize repeat requests.</p>
+            <p>Fluxcore's interface is offered in many languages. To make this possible, the text you read in non-English languages is generated <strong>automatically by an AI translation service</strong>. When you switch language, the strings you view are sent to our translation provider (Fluxcore & partners AI gateway) so they can be translated; results are cached in your browser to minimize repeat requests.</p>
             <p>The text we send is <strong>UI copy only</strong> — labels, buttons, page content. We do <strong>not</strong> send your personal data, ticket contents, member names, messages, or workspace data to the translation service.</p>
             <p>Translations may be inaccurate. The <strong>English version of the Service and these policies is the authoritative version</strong> for legal purposes.</p>
             <p>Our <strong>Support Center is English-only</strong>: tickets, messages, and AI assistance there are not translated, so the support team can respond accurately and quickly.</p>
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-foreground">9. Contact</h2>
+            <h2 className="text-lg font-bold text-foreground">9. Wall Announcements & Moderation</h2>
+            <p>Wall announcements and messages posted in your workspace are visible to all members of that workspace with the appropriate permissions. Additionally, <strong>selected staff members of Fluxcore</strong> may review wall content for moderation, safety, and support purposes. This access is limited to what is necessary to enforce our Terms of Service, respond to reports, and maintain a safe environment across all workspaces.</p>
+          </section>
+
+          <section>
+            <h2 className="text-lg font-bold text-foreground">10. Contact</h2>
             <p>For privacy-related questions, use the <button onClick={() => navigate("/feedback")} className="text-primary hover:underline">Feedback page</button> or contact us through the support center.</p>
           </section>
         </div>
