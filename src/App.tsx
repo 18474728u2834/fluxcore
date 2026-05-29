@@ -80,9 +80,15 @@ function PageLoader() {
   );
 }
 
+// Workspaces that use the Hyra-style Bargains UI
+const HYRA_UI_WORKSPACE_IDS = new Set<string>([
+  "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630", // Bloxy Bargains
+  "9f2c9234-c02f-492b-8121-74324e0df624", // Shoply Shopping
+]);
+
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
-  if (workspaceId === "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630") {
+  if (workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId)) {
     return <BargainsWorkspaceRoutes />;
   }
   return (
