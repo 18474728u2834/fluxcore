@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const LinkDiscord = lazy(() => import("./pages/LinkDiscord"));
 
 // Lazy load everything else
 const Workspaces = lazy(() => import("./pages/Workspaces"));
@@ -277,6 +278,7 @@ function AppRoutes() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/link-discord" element={<LinkDiscord />} />
             <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
             {/* Legacy /w/:id/* links redirect to clean URLs */}
             <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
@@ -297,6 +299,7 @@ function AppRoutes() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<PartnerLogin config={partner} />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
@@ -383,6 +386,7 @@ function AppRoutes() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/link-discord" element={<LinkDiscord />} />
         <Route path="/workspaces" element={<Workspaces />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/pricing" element={<Pricing />} />
