@@ -74,6 +74,7 @@ const BStaff     = lazy(() => import("./bargains/Staff"));
 const BRoles     = lazy(() => import("./bargains/Roles"));
 const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
 const PartnerLogin = lazy(() => import("./pages/PartnerLogin"));
+const ThemedPortal = lazy(() => import("./pages/ThemedPortal"));
 const PartnerClosed = lazy(() => import("./pages/PartnerClosed"));
 
 
@@ -251,17 +252,19 @@ function AppRoutes() {
       );
     }
     const theme = (partner as any).portal_theme || "classic";
-    const Landing = theme === "bargains" ? Bargains : theme === "almore" ? Almore : null;
-    const LoginC  = theme === "bargains" ? BargainsLogin : theme === "almore" ? AlmoreLogin : null;
+    const themed = theme === "bargains" || theme === "almore" || theme === "shoply";
+    const Landing = themed
+      ? () => <ThemedPortal theme={theme as any} config={partner} />
+      : () => <PartnerPortal config={partner} />;
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
-          <Route path="/" element={Landing ? <Landing /> : <PartnerPortal config={partner} />} />
-          <Route path="/login" element={LoginC ? <LoginC /> : <PartnerLogin config={partner} />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<PartnerLogin config={partner} />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/workspaces" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
           <Route path="/w/:workspaceId/*" element={partner.use_hyra_ui ? <BargainsWorkspaceGuard allowedId={partner.workspace_id} /> : <WorkspaceRoutes />} />
-          <Route path="*" element={Landing ? <Landing /> : <PartnerPortal config={partner} />} />
+          <Route path="*" element={<Landing />} />
         </Routes>
       </Suspense>
     );

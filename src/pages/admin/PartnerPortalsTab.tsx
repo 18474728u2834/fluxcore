@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2, Sparkles } from "lucide-react";
 
-type PortalTheme = "classic" | "bargains" | "almore";
+type PortalTheme = "classic" | "bargains" | "almore" | "shoply";
 
 interface Portal {
   id: string;
@@ -223,11 +223,13 @@ export default function PartnerPortalsTab() {
               </div>
               <div>
                 <Label>Landing / login theme</Label>
-                <div className="grid grid-cols-3 gap-2 mt-1">
+                <p className="text-[10px] text-muted-foreground mb-1">All themes use the workspace's own logo, name & tagline — only the layout/colors change.</p>
+                <div className="grid grid-cols-2 gap-2 mt-1">
                   {([
-                    { v: "classic", label: "Classic", hint: "Workspace's own branding & text" },
-                    { v: "bargains", label: "Bargains", hint: "Bloxy Bargains styled" },
-                    { v: "almore", label: "Almore", hint: "Almore styled" },
+                    { v: "classic", label: "Classic", hint: "Default Fluxcore portal" },
+                    { v: "almore", label: "Almore", hint: "Emerald / amber layout" },
+                    { v: "bargains", label: "Bloxy Bargains", hint: "Sky-blue layout" },
+                    { v: "shoply", label: "Shoply", hint: "Violet / fuchsia layout" },
                   ] as { v: PortalTheme; label: string; hint: string }[]).map(opt => (
                     <button
                       key={opt.v}
@@ -310,8 +312,9 @@ export default function PartnerPortalsTab() {
                   title="Landing / login theme"
                 >
                   <option value="classic">Classic</option>
-                  <option value="bargains">Bargains</option>
                   <option value="almore">Almore</option>
+                  <option value="bargains">Bloxy Bargains</option>
+                  <option value="shoply">Shoply</option>
                 </select>
                 <label className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
                   <Sparkles className="w-3 h-3" /> Hyra
