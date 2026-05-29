@@ -123,7 +123,6 @@ export default function BRoles() {
     const { error } = await supabase.from("workspaces").update({ auto_rank_enabled: next }).eq("id", workspaceId);
     if (error) { toast.error(error.message); setAutoSync(!next); return; }
     toast.success(next ? "Auto-add members enabled" : "Auto-add disabled");
-    refreshWorkspace();
   };
 
   if (!isOwner) {
