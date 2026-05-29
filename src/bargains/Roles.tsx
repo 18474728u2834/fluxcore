@@ -39,7 +39,7 @@ function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 export default function BRoles() {
-  const { workspaceId, isOwner, workspace, refreshWorkspace } = useWorkspace();
+  const { workspaceId, isOwner } = useWorkspace();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
