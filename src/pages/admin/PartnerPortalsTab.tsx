@@ -22,6 +22,7 @@ interface Portal {
   links: { label: string; url: string }[];
   status: string;
   closed_reason: string | null;
+  use_hyra_ui: boolean;
   created_at: string;
 }
 
@@ -34,6 +35,7 @@ const empty = {
   accent_color: "#10b981",
   roblox_group_url: "",
   links_text: "",
+  use_hyra_ui: true,
 };
 
 export default function PartnerPortalsTab() {
