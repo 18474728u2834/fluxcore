@@ -143,19 +143,23 @@ export default function DocumentView() {
     setSigned(true); setSignCount(c => c + 1);
   };
 
+  const useHyra = HYRA_UI_WORKSPACE_IDS.has(workspaceId);
+  const Layout = ({ title, children }: { title: string; children: any }) =>
+    useHyra ? <BargainsShell>{children}</BargainsShell> : <DashboardLayout title={title}>{children}</DashboardLayout>;
+
   if (loading) {
-    return <DashboardLayout title="Document"><div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div></DashboardLayout>;
+    return <Layout title="Document"><div className="flex justify-center py-20"><Loader2 className="w-6 h-6 text-primary animate-spin" /></div></Layout>;
   }
   if (!doc) {
-    return <DashboardLayout title="Document">
+    return <Layout title="Document">
       <div className="text-center py-20 text-muted-foreground">Document not found.</div>
-    </DashboardLayout>;
+    </Layout>;
   }
 
   const isOverdue = doc.deadline && new Date(doc.deadline) < new Date() && !signed;
 
   return (
-    <DashboardLayout title={doc.title}>
+    <Layout title={doc.title}>
       <div className="max-w-4xl mx-auto space-y-6">
         <button onClick={() => navigate(`/w/${workspaceId}/documents`)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="w-4 h-4" /> Back to Documents
