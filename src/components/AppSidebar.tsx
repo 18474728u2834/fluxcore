@@ -28,6 +28,23 @@ export function AppSidebar() {
   const { hasPermission } = usePermissions();
   const { theme, toggleTheme } = useTheme();
   const { setVersion } = useUIVersion();
+  const [leaderboardOn, setLeaderboardOn] = useState(false);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    let cancelled = false;
+    supabase
+      .from("workspaces")
+      .select("leaderboard_categories")
+      .eq("id", workspaceId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        const cats = ((data as any)?.leaderboard_categories || []) as string[];
+        setLeaderboardOn(cats.length > 0);
+      });
+    return () => { cancelled = true; };
+  }, [workspaceId]);
 
   const base = `/w/${workspaceId}`;
 
@@ -36,6 +53,7 @@ export function AppSidebar() {
     { title: "Members", url: `${base}/members`, icon: Users, show: true },
     { title: "Activity", url: `${base}/activity`, icon: Clock, show: hasPermission("view_activity") },
     { title: "Sessions", url: `${base}/sessions`, icon: CalendarDays, show: true },
+    { title: "Leaderboard", url: `${base}/leaderboard`, icon: Trophy, show: leaderboardOn },
     { title: "Wall", url: `${base}/wall`, icon: Megaphone, show: true },
     { title: "Documents", url: `${base}/documents`, icon: FileText, show: true },
     { title: "LOA", url: `${base}/loa`, icon: CalendarOff, show: true },

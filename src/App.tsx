@@ -47,6 +47,7 @@ const Staff = lazy(() => import("./pages/Staff"));
 const Roles = lazy(() => import("./pages/Roles"));
 const Quotas = lazy(() => import("./pages/Quotas"));
 const MessageLogs = lazy(() => import("./pages/MessageLogs"));
+const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -104,6 +105,7 @@ function WorkspaceRoutes() {
           <Route path="roles" element={<Roles />} />
           <Route path="quotas" element={<Quotas />} />
           <Route path="message-logs" element={<MessageLogs />} />
+          <Route path="leaderboard" element={<Leaderboard />} />
           <Route path="join" element={<JoinWorkspace />} />
         </Routes>
       </Suspense>
