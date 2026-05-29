@@ -24,6 +24,7 @@ interface Member {
   verified: boolean;
   joined_at: string;
   user_id: string | null;
+  roblox_group_rank?: number | null;
 }
 
 interface RobloxGroupRole {
