@@ -235,6 +235,21 @@ function AppRoutes() {
         </Suspense>
       );
     }
+    // Auto-created (owner-claimed) portals skip the marketing landing —
+    // visiting the subdomain takes you straight into the workspace dashboard.
+    if (partner.auto_created) {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/workspaces" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
+            <Route path="/w/:workspaceId/*" element={partner.use_hyra_ui ? <BargainsWorkspaceGuard allowedId={partner.workspace_id} /> : <WorkspaceRoutes />} />
+            <Route path="*" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
+          </Routes>
+        </Suspense>
+      );
+    }
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -248,6 +263,7 @@ function AppRoutes() {
       </Suspense>
     );
   }
+
 
 
   if (hostname.startsWith("almore.fluxcore") || hostname.startsWith("almore.")) {
