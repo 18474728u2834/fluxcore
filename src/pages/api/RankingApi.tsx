@@ -1,55 +1,81 @@
-import { ApiShell, CodeBlock, EndpointBadge, ParamsTable } from "./ApiLayout";
+import { ApiShell, CodeBlock, EndpointBadge } from "./ApiLayout";
 
 const ENDPOINT = "https://fluxcore.works/api/v1/ranking";
 
-const curlExample = `curl -X POST "${ENDPOINT}" \\
-  -H "x-api-key: YOUR_WORKSPACE_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "action": "promote",
-    "requester_user_id": 12345678,
-    "target_user_id": 87654321
-  }'`;
+const luaScript = `--!strict
+-- Fluxcore Ranking — drop into ServerScriptService
+-- Handles !promote "Username" and !demote "Username" in chat.
+-- Permission is checked server-side: only players with the
+-- "manage_members" permission in your Fluxcore workspace succeed.
 
-const luaExample = `local HttpService = game:GetService("HttpService")
+local Players      = game:GetService("Players")
+local HttpService  = game:GetService("HttpService")
 
--- Wire this up to your in-game chat command !promote "Username"
-local function rank(action, requesterId, targetId)
-  local res = HttpService:RequestAsync({
-    Url = "${ENDPOINT}",
-    Method = "POST",
-    Headers = {
-      ["x-api-key"] = "YOUR_WORKSPACE_API_KEY",
-      ["Content-Type"] = "application/json",
-    },
-    Body = HttpService:JSONEncode({
-      action = action,            -- "promote" or "demote"
-      requester_user_id = requesterId,
-      target_user_id = targetId,
-    }),
-  })
-  return HttpService:JSONDecode(res.Body)
+local WORKSPACE_API_KEY = "PASTE_YOUR_WORKSPACE_API_KEY"
+local ENDPOINT          = "${ENDPOINT}"
+
+local function resolveUserId(name: string): number?
+	local ok, id = pcall(function() return Players:GetUserIdFromNameAsync(name) end)
+	if ok then return id end
+	return nil
 end
 
-print(rank("promote", 12345678, 87654321))`;
+local function rank(action: string, requesterId: number, targetId: number, notify: (msg: string) -> ())
+	local ok, res = pcall(function()
+		return HttpService:RequestAsync({
+			Url     = ENDPOINT,
+			Method  = "POST",
+			Headers = {
+				["x-api-key"]    = WORKSPACE_API_KEY,
+				["Content-Type"] = "application/json",
+			},
+			Body = HttpService:JSONEncode({
+				action            = action,
+				requester_user_id = requesterId,
+				target_user_id    = targetId,
+			}),
+		})
+	end)
 
-const jsExample = `await fetch("${ENDPOINT}", {
-  method: "POST",
-  headers: {
-    "x-api-key": "YOUR_WORKSPACE_API_KEY",
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    action: "demote",
-    requester_user_id: 12345678,
-    target_user_id: 87654321,
-  }),
-});`;
+	if not ok or not res then notify("Fluxcore: request failed") return end
+	local data = HttpService:JSONDecode(res.Body)
+	if data.success then
+		notify(("%sd to %s"):format(action:sub(1,1):upper()..action:sub(2), data.to.name))
+	else
+		notify("Fluxcore: " .. (data.error or "rejected"))
+	end
+end
+
+local function parse(msg: string): (string?, string?)
+	local cmd, name = msg:match("^!(%a+)%s+\\"?([%w_]+)\\"?")
+	return cmd, name
+end
+
+Players.PlayerAdded:Connect(function(player)
+	player.Chatted:Connect(function(msg)
+		local cmd, targetName = parse(msg)
+		if not cmd or not targetName then return end
+		cmd = cmd:lower()
+		if cmd ~= "promote" and cmd ~= "demote" then return end
+
+		local targetId = resolveUserId(targetName)
+		if not targetId then
+			player:Kick("") -- silent
+			return
+		end
+
+		rank(cmd, player.UserId, targetId, function(msg)
+			-- Send result back to the requester via PM/system
+			pcall(function() player:Kick() end) -- replace with your chat system
+			print("[Fluxcore]", player.Name, "->", msg)
+		end)
+	end)
+end)`;
 
 const responseExample = `{
   "success": true,
   "action": "promote",
-  "target": { "userId": 87654321, "username": "TargetUser" },
+  "target": { "userId": 87654321 },
   "from": { "rank": 50, "name": "Member" },
   "to":   { "rank": 100, "name": "Trusted Member" }
 }`;
@@ -59,51 +85,47 @@ export default function RankingApi() {
     <ApiShell>
       <section className="space-y-3">
         <div className="text-[11px] uppercase tracking-wider text-primary font-semibold">Ranking API</div>
-        <h1 className="text-4xl font-bold tracking-tight">In-game !promote & !demote</h1>
+        <h1 className="text-4xl font-bold tracking-tight">!promote & !demote in your game</h1>
         <p className="text-lg text-muted-foreground max-w-2xl">
-          Move a Roblox group member up or down one rank. Fluxcore validates that the requester has the <code>manage_members</code> permission in your workspace before talking to the Roblox Open Cloud API — so an unauthorized player just gets rejected.
+          Drop one Lua script into your Roblox game and your staff can run <code>!promote "User"</code> or <code>!demote "User"</code> in chat. Fluxcore validates the requester's <code>manage_members</code> permission and then talks to the Roblox Open Cloud API using the key you've already configured in your workspace.
         </p>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-2xl font-bold tracking-tight">Before you start</h2>
+        <ul className="space-y-2 text-sm text-muted-foreground list-disc pl-5">
+          <li>Open your workspace → <span className="text-foreground font-medium">Settings</span> and copy your <span className="text-foreground font-medium">Workspace API key</span>.</li>
+          <li>In the same Settings page, make sure your <span className="text-foreground font-medium">Roblox Open Cloud API key</span> and <span className="text-foreground font-medium">Group ID</span> are filled in — the ranking call uses these on your behalf.</li>
+          <li>In Roblox Studio, enable <span className="text-foreground font-medium">HTTP Requests</span> under Game Settings → Security.</li>
+        </ul>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-2xl font-bold tracking-tight">Drop-in Lua script</h2>
+        <p className="text-sm text-muted-foreground">
+          Paste this into a <code>Script</code> inside <code>ServerScriptService</code>. Replace <code>PASTE_YOUR_WORKSPACE_API_KEY</code> and you're done.
+        </p>
+        <CodeBlock code={luaScript} lang="Roblox Lua" />
       </section>
 
       <section className="space-y-3">
         <h2 className="text-2xl font-bold tracking-tight">Endpoint</h2>
         <EndpointBadge method="POST" url={ENDPOINT} />
         <p className="text-sm text-muted-foreground">
-          Authenticate with <code className="px-1.5 py-0.5 rounded bg-card border border-border text-xs">x-api-key: YOUR_KEY</code>. Your workspace must have a Roblox Open Cloud API key and group ID configured under Settings.
+          The script above already calls this — you only need it if you want to wire ranking into a custom admin panel or Discord bot.
         </p>
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-2xl font-bold tracking-tight">Body</h2>
-        <ParamsTable rows={[
-          { param: "action", desc: <>Either <code>promote</code> or <code>demote</code>.</> },
-          { param: "requester_user_id", desc: "Roblox user ID of the player running the command. Checked for manage_members permission." },
-          { param: "target_user_id", desc: "Roblox user ID of the player being ranked." },
-        ]} />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-2xl font-bold tracking-tight">Examples</h2>
-        <div className="space-y-3">
-          <CodeBlock code={curlExample} lang="cURL" />
-          <CodeBlock code={luaExample} lang="Roblox Lua" />
-          <CodeBlock code={jsExample} lang="JavaScript" />
-        </div>
+        <h2 className="text-2xl font-bold tracking-tight">How permissions work</h2>
+        <p className="text-sm text-muted-foreground">
+          The server looks up the requester's Roblox user ID inside your Fluxcore workspace. If they're the workspace owner, or their Fluxcore role has <code>manage_members</code>, the rank change goes through. Otherwise the request is rejected with <code>403</code> and nothing happens in your Roblox group. You can also never rank someone to a role equal to or above your own.
+        </p>
       </section>
 
       <section className="space-y-3">
         <h2 className="text-2xl font-bold tracking-tight">Response</h2>
         <CodeBlock code={responseExample} lang="JSON" />
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-2xl font-bold tracking-tight">Errors</h2>
-        <ParamsTable rows={[
-          { param: "401", desc: "Missing or invalid API key." },
-          { param: "403", desc: "Requester does not have manage_members permission, or target is at/above requester's rank." },
-          { param: "404", desc: "Target not in group, or no rank above/below to move to." },
-          { param: "400", desc: "Roblox Open Cloud key or group ID not configured." },
-        ]} />
       </section>
     </ApiShell>
   );
