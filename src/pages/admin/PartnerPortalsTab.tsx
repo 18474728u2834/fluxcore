@@ -214,6 +214,30 @@ export default function PartnerPortalsTab() {
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">One link per line: <code>Label | URL</code></p>
               </div>
+              <div>
+                <Label>Landing / login theme</Label>
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  {([
+                    { v: "classic", label: "Classic", hint: "Workspace's own branding & text" },
+                    { v: "bargains", label: "Bargains", hint: "Bloxy Bargains styled" },
+                    { v: "almore", label: "Almore", hint: "Almore styled" },
+                  ] as { v: PortalTheme; label: string; hint: string }[]).map(opt => (
+                    <button
+                      key={opt.v}
+                      type="button"
+                      onClick={() => setForm({ ...form, portal_theme: opt.v })}
+                      className={`rounded-lg border p-2 text-left text-xs transition ${
+                        form.portal_theme === opt.v
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-muted-foreground"
+                      }`}
+                    >
+                      <div className="font-medium">{opt.label}</div>
+                      <div className="text-[10px] text-muted-foreground">{opt.hint}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
                 <div className="flex items-start gap-2">
                   <Sparkles className="w-4 h-4 text-primary mt-0.5" />
