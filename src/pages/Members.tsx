@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Loader2, Search, Crown, ChevronLeft, ChevronRight, Copy, Users as UsersIcon, ArrowUpDown } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BulkActionBar, type BulkAction } from "@/components/BulkActionBar";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -53,6 +55,9 @@ export default function Members() {
   const [selectedRobloxRole, setSelectedRobloxRole] = useState("");
   const [rankLoading, setRankLoading] = useState(false);
   const [rankFetchLoading, setRankFetchLoading] = useState(false);
+
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const canManage = isOwner || hasPermission("manage_members");
 
