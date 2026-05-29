@@ -9,6 +9,8 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { InviteSection } from "@/components/InviteSection";
+import SubdomainCard from "@/components/SubdomainCard";
+
 
 export default function SettingsPage() {
   const { workspace, isOwner, workspaceId, loading } = useWorkspace();
