@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2, Sparkles } from "lucide-react";
 
 interface Portal {
   id: string;
