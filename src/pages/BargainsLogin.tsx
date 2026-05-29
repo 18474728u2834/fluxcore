@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
+import { DiscordSignInButton } from "@/components/DiscordSignInButton";
 import {
   Loader2,
   User,
