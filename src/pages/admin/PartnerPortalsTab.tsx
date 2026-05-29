@@ -152,6 +152,13 @@ export default function PartnerPortalsTab() {
     load();
   };
 
+  const setTheme = async (p: Portal, theme: PortalTheme) => {
+    const { error } = await supabase.from("partner_portals").update({ portal_theme: theme }).eq("id", p.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Theme set to ${theme}`);
+    load();
+  };
+
 
   return (
     <div className="space-y-4">
