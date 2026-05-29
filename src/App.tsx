@@ -242,7 +242,7 @@ function AppRoutes() {
           <Route path="/login" element={<PartnerLogin config={partner} />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/workspaces" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
-          <Route path="/w/:workspaceId/*" element={<BargainsWorkspaceGuard allowedId={partner.workspace_id} />} />
+          <Route path="/w/:workspaceId/*" element={partner.use_hyra_ui ? <BargainsWorkspaceGuard allowedId={partner.workspace_id} /> : <WorkspaceRoutes />} />
           <Route path="*" element={<PartnerPortal config={partner} />} />
         </Routes>
       </Suspense>
