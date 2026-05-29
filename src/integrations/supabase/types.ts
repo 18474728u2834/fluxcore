@@ -595,6 +595,7 @@ export type Database = {
           subdomain: string
           tagline: string | null
           updated_at: string
+          use_hyra_ui: boolean
           workspace_id: string
         }
         Insert: {
@@ -611,6 +612,7 @@ export type Database = {
           subdomain: string
           tagline?: string | null
           updated_at?: string
+          use_hyra_ui?: boolean
           workspace_id: string
         }
         Update: {
@@ -627,6 +629,7 @@ export type Database = {
           subdomain?: string
           tagline?: string | null
           updated_at?: string
+          use_hyra_ui?: boolean
           workspace_id?: string
         }
         Relationships: []
