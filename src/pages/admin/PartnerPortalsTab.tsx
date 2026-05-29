@@ -280,7 +280,7 @@ export default function PartnerPortalsTab() {
                     <Lock className="w-3 h-3 mr-1" /> Close
                   </Button>
                 )}
-                <Button size="sm" variant="ghost" onClick={() => remove(p.id, p.name)}>
+                <Button size="sm" variant="ghost" onClick={() => remove(p.id, p.name, p.subdomain)}>
                   <Trash2 className="w-3 h-3" />
                 </Button>
               </div>
