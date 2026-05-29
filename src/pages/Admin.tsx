@@ -121,6 +121,7 @@ export default function Admin() {
           {has("delete_workspaces") && <TabsContent value="workspaces"><WorkspacesTab /></TabsContent>}
           {has("moderate_chats") && <TabsContent value="chats"><ChatsTab /></TabsContent>}
           {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
+          <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
