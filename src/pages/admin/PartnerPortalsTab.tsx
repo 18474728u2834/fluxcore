@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2, Sparkles } from "lucide-react";
 
+type PortalTheme = "classic" | "bargains" | "almore";
+
 interface Portal {
   id: string;
   subdomain: string;
@@ -23,6 +25,7 @@ interface Portal {
   status: string;
   closed_reason: string | null;
   use_hyra_ui: boolean;
+  portal_theme: PortalTheme;
   created_at: string;
 }
 
@@ -36,6 +39,7 @@ const empty = {
   roblox_group_url: "",
   links_text: "",
   use_hyra_ui: true,
+  portal_theme: "classic" as PortalTheme,
 };
 
 export default function PartnerPortalsTab() {
