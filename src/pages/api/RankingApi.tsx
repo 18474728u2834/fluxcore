@@ -20,6 +20,13 @@ local function resolveUserId(name: string): number?
 	return nil
 end
 
+local function refresh(userId: number)
+	local target = Players:GetPlayerByUserId(userId)
+	if not target then return end
+	-- Reload the character so the new group rank takes effect in-game.
+	pcall(function() target:LoadCharacter() end)
+end
+
 local function rank(action: string, requesterId: number, targetId: number, notify: (msg: string) -> ())
 	local ok, res = pcall(function()
 		return HttpService:RequestAsync({
@@ -41,6 +48,7 @@ local function rank(action: string, requesterId: number, targetId: number, notif
 	local data = HttpService:JSONDecode(res.Body)
 	if data.success then
 		notify(("%sd to %s"):format(action:sub(1,1):upper()..action:sub(2), data.to.name))
+		refresh(targetId)
 	else
 		notify("Fluxcore: " .. (data.error or "rejected"))
 	end
@@ -59,14 +67,9 @@ Players.PlayerAdded:Connect(function(player)
 		if cmd ~= "promote" and cmd ~= "demote" then return end
 
 		local targetId = resolveUserId(targetName)
-		if not targetId then
-			player:Kick("") -- silent
-			return
-		end
+		if not targetId then return end
 
 		rank(cmd, player.UserId, targetId, function(msg)
-			-- Send result back to the requester via PM/system
-			pcall(function() player:Kick() end) -- replace with your chat system
 			print("[Fluxcore]", player.Name, "->", msg)
 		end)
 	end)
