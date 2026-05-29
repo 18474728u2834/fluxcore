@@ -341,6 +341,15 @@ export default function Members() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border/50">
+                  {canManage && (
+                    <th className="w-10 px-3 py-3">
+                      <Checkbox
+                        checked={allPageSelected}
+                        onCheckedChange={toggleAllOnPage}
+                        aria-label="Select all on page"
+                      />
+                    </th>
+                  )}
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
                   <th className="text-left px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rank</th>
                   <th className="text-center px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Warnings</th>
@@ -349,8 +358,21 @@ export default function Members() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/40">
-                {paged.map(member => (
+                {paged.map(member => {
+                  const selectable = member.id !== "owner-virtual" && member.role !== "Owner";
+                  return (
                   <tr key={member.id} onClick={() => { if (member.id !== "owner-virtual") navigate(`/w/${workspaceId}/members/${member.id}`); }} className="hover:bg-secondary/30 transition-colors cursor-pointer">
+                    {canManage && (
+                      <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                        {selectable && (
+                          <Checkbox
+                            checked={selected.has(member.id)}
+                            onCheckedChange={() => toggleOne(member.id)}
+                            aria-label={`Select ${member.roblox_username}`}
+                          />
+                        )}
+                      </td>
+                    )}
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <RobloxAvatar
