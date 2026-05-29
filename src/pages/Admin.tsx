@@ -13,6 +13,7 @@ import { Loader2, Shield, Trash2, UserPlus, Sparkles, Download, MessageSquare, S
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PremiumGrantManager } from "@/components/PremiumGrantManager";
+import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
 
 type WhoAmI = {
   user_id: string;
