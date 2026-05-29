@@ -270,9 +270,11 @@ function AppRoutes() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/workspaces" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
-            <Route path="/w/:workspaceId/*" element={partner.use_hyra_ui ? <BargainsWorkspaceGuard allowedId={partner.workspace_id} /> : <WorkspaceRoutes />} />
-            <Route path="*" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
+            <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+            {/* Legacy /w/:id/* links redirect to clean URLs */}
+            <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/*" element={<PartnerCleanRoutes workspaceId={partner.workspace_id} useHyra={!!partner.use_hyra_ui} />} />
           </Routes>
         </Suspense>
       );
@@ -288,9 +290,10 @@ function AppRoutes() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<PartnerLogin config={partner} />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/workspaces" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
-          <Route path="/w/:workspaceId/*" element={partner.use_hyra_ui ? <BargainsWorkspaceGuard allowedId={partner.workspace_id} /> : <WorkspaceRoutes />} />
-          <Route path="*" element={<Landing />} />
+          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+          {/* Legacy /w/:id/* links redirect to clean URLs */}
+          <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={partner.workspace_id} useHyra={!!partner.use_hyra_ui} />} />
         </Routes>
       </Suspense>
     );
