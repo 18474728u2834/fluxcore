@@ -567,13 +567,22 @@ function WorkspacesTab() {
 
 function ChatsTab() {
   const [wsId, setWsId] = useState("");
+  const [workspaces, setWorkspaces] = useState<{ id: string; name: string }[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
 
-  const load = async () => {
-    if (!wsId.trim()) return;
+  useEffect(() => {
+    (async () => {
+      try { const r = await callStaff<{ workspaces: { id: string; name: string }[] }>("list_chat_workspaces", {}); setWorkspaces(r.workspaces); }
+      catch (e: any) { toast.error(e.message); }
+    })();
+  }, []);
+
+  const load = async (id: string) => {
+    setWsId(id);
     setBusy(true);
-    try { const r = await callStaff<{ events: any[] }>("list_chats", { workspace_id: wsId.trim() }); setEvents(r.events); }
+    try { const r = await callStaff<{ events: any[] }>("list_chats", { workspace_id: id }); setEvents(r.events); }
     catch (e: any) { toast.error(e.message); }
     finally { setBusy(false); }
   };
@@ -584,14 +593,39 @@ function ChatsTab() {
     catch (e: any) { toast.error(e.message); }
   };
 
+  const filteredWs = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return workspaces;
+    return workspaces.filter((w) => w.name.toLowerCase().includes(q));
+  }, [workspaces, query]);
+
   return (
     <div className="space-y-4">
       <Card>
-        <Label>Workspace ID</Label>
-        <p className="text-xs text-muted-foreground mt-0.5 mb-1">Loads Fluxcore Wall announcements for moderation.</p>
-        <div className="flex gap-2 mt-1">
-          <Input value={wsId} onChange={(e) => setWsId(e.target.value)} placeholder="UUID of the workspace" />
-          <Button onClick={load} disabled={busy}>Load Wall</Button>
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <div className="text-sm font-semibold">Wall Moderation</div>
+            <p className="text-xs text-muted-foreground mt-0.5">Pick a workspace, or load all to see who posted what.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant={wsId === "" && events.length ? "default" : "outline"} onClick={() => load("")} disabled={busy}>Load all workspaces</Button>
+          </div>
+        </div>
+        <div className="mt-3">
+          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search workspaces…" />
+        </div>
+        <div className="mt-2 max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1">
+          {filteredWs.map((w) => (
+            <button
+              key={w.id}
+              onClick={() => load(w.id)}
+              disabled={busy}
+              className={`text-left text-xs px-2 py-1.5 rounded border truncate transition ${wsId === w.id ? "border-primary bg-primary/10" : "border-border hover:bg-muted/40"}`}
+            >
+              {w.name}
+            </button>
+          ))}
+          {!filteredWs.length && <div className="text-xs text-muted-foreground col-span-full py-2">No workspaces.</div>}
         </div>
       </Card>
       <div className="space-y-2">
@@ -599,9 +633,10 @@ function ChatsTab() {
           <Card key={e.id}>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <div className="text-sm font-semibold truncate">{e.title}</div>
                   {e.pinned && <Badge variant="outline" className="text-[10px]">Pinned</Badge>}
+                  {!wsId && e.workspace_name && <Badge variant="secondary" className="text-[10px]">{e.workspace_name}</Badge>}
                 </div>
                 <div className="text-xs text-muted-foreground">{e.author_name} · {new Date(e.created_at).toLocaleString()}</div>
                 <div className="text-sm break-words whitespace-pre-wrap mt-1">{e.content}</div>
