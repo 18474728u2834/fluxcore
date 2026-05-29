@@ -253,6 +253,10 @@ export default function Workspaces() {
   };
 
   const openWorkspace = (ws: Workspace) => {
+    if ((ws as any).closed_at) {
+      toast.error(`This workspace has been closed by Fluxcore staff${(ws as any).closed_reason ? `: ${(ws as any).closed_reason}` : "."}`);
+      return;
+    }
     // If a subdomain exists, redirect there (works whether portal is active or dormant —
     // dormant auto-wakes on load via heartbeat). Only redirect when we're on the main domain.
     if (ws.subdomain && onMainDomain() && ws.portal_status !== "closed") {
