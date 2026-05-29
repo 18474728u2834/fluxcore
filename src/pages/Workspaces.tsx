@@ -330,7 +330,7 @@ export default function Workspaces() {
                   className="group rounded-xl border border-border/20 bg-card/30 hover:bg-card/60 hover:border-border/40 p-5 text-left transition-all duration-200 flex flex-col"
                 >
                   <button
-                    onClick={() => navigate(`/w/${ws.id}/dashboard`)}
+                    onClick={() => openWorkspace(ws)}
                     className="text-left flex-1"
                   >
                     <div className="flex items-start justify-between mb-4">
@@ -348,7 +348,20 @@ export default function Workspaces() {
                       {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
                     </h3>
                     <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
+                    {ws.subdomain ? (
+                      <div className="mt-2 text-[11px] text-muted-foreground inline-flex items-center gap-1 truncate">
+                        <Sparkles className="w-3 h-3 text-primary" />
+                        {ws.subdomain}.fluxcore.works
+                      </div>
+                    ) : ws.role === "Owner" && ws.grace_days_left !== null && ws.grace_days_left !== undefined ? (
+                      <div className={`mt-2 text-[11px] inline-flex items-center gap-1 ${ws.grace_days_left <= 3 ? "text-destructive" : "text-muted-foreground"}`}>
+                        {ws.grace_days_left > 0
+                          ? `Claim subdomain — ${ws.grace_days_left}d left`
+                          : "Subdomain required — open Settings"}
+                      </div>
+                    ) : null}
                   </button>
+
                   {canApply && (
                     <button
                       onClick={() => applyGrant(ws.id)}
