@@ -394,17 +394,33 @@ Deno.serve(async (req) => {
       }
 
       case "list_chats": {
-        // Now lists Fluxcore Wall announcements for moderation
+        // Lists Fluxcore Wall announcements for moderation; empty workspace_id = all
         if (!caller.has("moderate_chats")) return json({ error: "forbidden" }, 403);
         const workspace_id = String(body.workspace_id || "");
-        if (!workspace_id) return json({ error: "missing_workspace_id" }, 400);
-        const { data } = await sb
+        let qb = sb
           .from("announcements")
-          .select("id, title, content, author_name, pinned, created_at")
-          .eq("workspace_id", workspace_id)
+          .select("id, title, content, author_name, pinned, created_at, workspace_id")
           .order("created_at", { ascending: false })
           .limit(200);
-        return json({ events: data || [] });
+        if (workspace_id) qb = qb.eq("workspace_id", workspace_id);
+        const { data } = await qb;
+        const events = data || [];
+        const ids = Array.from(new Set(events.map((e: any) => e.workspace_id).filter(Boolean)));
+        let nameMap: Record<string, string> = {};
+        if (ids.length) {
+          const { data: ws } = await sb.from("workspaces").select("id, name").in("id", ids);
+          nameMap = Object.fromEntries((ws || []).map((w: any) => [w.id, w.name]));
+        }
+        return json({ events: events.map((e: any) => ({ ...e, workspace_name: nameMap[e.workspace_id] || null })) });
+      }
+
+      case "list_chat_workspaces": {
+        if (!caller.has("moderate_chats")) return json({ error: "forbidden" }, 403);
+        const q = String(body.query || "").trim();
+        let qb = sb.from("workspaces").select("id, name").order("name").limit(200);
+        if (q) qb = qb.ilike("name", `%${q}%`);
+        const { data } = await qb;
+        return json({ workspaces: data || [] });
       }
 
       case "delete_chat": {
