@@ -154,17 +154,17 @@ export default function Workspaces() {
         const ids = ws.map(w => w.id);
         const [{ data: portals }, { data: wsRows }] = await Promise.all([
           supabase.from("partner_portals").select("workspace_id,subdomain,status,auto_created").in("workspace_id", ids),
-          supabase.from("workspaces").select("id, subdomain_grace_until").in("id", ids),
+          supabase.from("workspaces").select("id, subdomain_grace_until, closed_at, closed_reason").in("id", ids),
         ]);
         const pMap = new Map<string, any>();
         for (const p of (portals as any[]) || []) pMap.set(p.workspace_id, p);
-        const gMap = new Map<string, string>();
-        for (const w of (wsRows as any[]) || []) gMap.set(w.id, w.subdomain_grace_until);
+        const gMap = new Map<string, any>();
+        for (const w of (wsRows as any[]) || []) gMap.set(w.id, w);
         setWorkspaces(prev => prev.map(w => {
           const p = pMap.get(w.id);
-          const grace = gMap.get(w.id);
-          const daysLeft = grace ? Math.max(0, Math.ceil((new Date(grace).getTime() - Date.now()) / 86_400_000)) : null;
-          return { ...w, subdomain: p?.subdomain || null, portal_status: p?.status || null, grace_days_left: daysLeft };
+          const row = gMap.get(w.id) || {};
+          const daysLeft = row.subdomain_grace_until ? Math.max(0, Math.ceil((new Date(row.subdomain_grace_until).getTime() - Date.now()) / 86_400_000)) : null;
+          return { ...w, subdomain: p?.subdomain || null, portal_status: p?.status || null, grace_days_left: daysLeft, closed_at: row.closed_at || null, closed_reason: row.closed_reason || null };
         }));
       }
     } catch (e) {
@@ -253,6 +253,10 @@ export default function Workspaces() {
   };
 
   const openWorkspace = (ws: Workspace) => {
+    if ((ws as any).closed_at) {
+      toast.error(`This workspace has been closed by Fluxcore staff${(ws as any).closed_reason ? `: ${(ws as any).closed_reason}` : "."}`);
+      return;
+    }
     // If a subdomain exists, redirect there (works whether portal is active or dormant —
     // dormant auto-wakes on load via heartbeat). Only redirect when we're on the main domain.
     if (ws.subdomain && onMainDomain() && ws.portal_status !== "closed") {
@@ -348,18 +352,9 @@ export default function Workspaces() {
                       {ws.verified_official && <BadgeCheck className="w-4 h-4 text-primary shrink-0" aria-label="Official verified group" />}
                     </h3>
                     <span className={`text-xs ${getRoleColor(ws.role)}`}>{ws.role}</span>
-                    {ws.subdomain ? (
-                      <div className="mt-2 text-[11px] text-muted-foreground inline-flex items-center gap-1 truncate">
-                        <Sparkles className="w-3 h-3 text-primary" />
-                        {ws.subdomain}.fluxcore.works
-                      </div>
-                    ) : ws.role === "Owner" && ws.grace_days_left !== null && ws.grace_days_left !== undefined ? (
-                      <div className={`mt-2 text-[11px] inline-flex items-center gap-1 ${ws.grace_days_left <= 3 ? "text-destructive" : "text-muted-foreground"}`}>
-                        {ws.grace_days_left > 0
-                          ? `Claim subdomain — ${ws.grace_days_left}d left`
-                          : "Subdomain required — open Settings"}
-                      </div>
-                    ) : null}
+                    {(ws as any).closed_at && (
+                      <div className="mt-2 text-[11px] text-destructive">Closed by Fluxcore staff</div>
+                    )}
                   </button>
 
                   {canApply && (

@@ -483,6 +483,8 @@ function WorkspacesTab() {
   const [q, setQ] = useState("");
   const [list, setList] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [closingId, setClosingId] = useState<string | null>(null);
+  const [closeReason, setCloseReason] = useState("");
 
   const load = async () => {
     setBusy(true);
@@ -498,6 +500,21 @@ function WorkspacesTab() {
     catch (e: any) { toast.error(e.message); }
   };
 
+  const close = async () => {
+    if (!closingId) return;
+    try {
+      await callStaff("close_workspace", { workspace_id: closingId, reason: closeReason });
+      toast.success("Workspace closed");
+      setClosingId(null); setCloseReason("");
+      load();
+    } catch (e: any) { toast.error(e.message); }
+  };
+
+  const reopen = async (w: any) => {
+    try { await callStaff("reopen_workspace", { workspace_id: w.id }); toast.success("Workspace re-opened"); load(); }
+    catch (e: any) { toast.error(e.message); }
+  };
+
   return (
     <div className="space-y-4">
       <Card>
@@ -509,16 +526,41 @@ function WorkspacesTab() {
       <div className="space-y-2">
         {list.map((w) => (
           <Card key={w.id}>
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="font-semibold">{w.name} {w.premium && <Badge className="ml-2">Premium</Badge>}</div>
-                <div className="text-xs text-muted-foreground">{w.id}</div>
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <div className="font-semibold flex items-center gap-2">
+                  {w.name}
+                  {w.premium && <Badge>Premium</Badge>}
+                  {w.closed_at && <Badge variant="destructive">Closed</Badge>}
+                </div>
+                <div className="text-xs text-muted-foreground truncate">{w.id}</div>
+                {w.closed_at && w.closed_reason && (
+                  <div className="text-xs text-destructive mt-1">Reason: {w.closed_reason}</div>
+                )}
               </div>
-              <Button variant="destructive" size="sm" onClick={() => del(w)}><Trash2 className="w-4 h-4 mr-1" />Delete</Button>
+              <div className="flex gap-2 shrink-0">
+                {w.closed_at ? (
+                  <Button size="sm" variant="outline" onClick={() => reopen(w)}>Re-open</Button>
+                ) : (
+                  <Button size="sm" variant="outline" onClick={() => { setClosingId(w.id); setCloseReason(""); }}>Close</Button>
+                )}
+                <Button variant="destructive" size="sm" onClick={() => del(w)}><Trash2 className="w-4 h-4 mr-1" />Delete</Button>
+              </div>
             </div>
           </Card>
         ))}
       </div>
+
+      <Dialog open={!!closingId} onOpenChange={(v) => !v && setClosingId(null)}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Close workspace</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <Label>Reason (shown to owner & members)</Label>
+            <Textarea value={closeReason} onChange={(e) => setCloseReason(e.target.value)} rows={3} placeholder="Breach of TOS" />
+            <Button onClick={close} variant="destructive" className="w-full">Close workspace</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

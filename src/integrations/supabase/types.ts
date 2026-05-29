@@ -1380,6 +1380,8 @@ export type Database = {
           api_key: string
           auto_rank_enabled: boolean | null
           background_color: string | null
+          closed_at: string | null
+          closed_reason: string | null
           created_at: string
           discord_webhook_url: string | null
           game_url: string | null
@@ -1409,6 +1411,8 @@ export type Database = {
           api_key?: string
           auto_rank_enabled?: boolean | null
           background_color?: string | null
+          closed_at?: string | null
+          closed_reason?: string | null
           created_at?: string
           discord_webhook_url?: string | null
           game_url?: string | null
@@ -1438,6 +1442,8 @@ export type Database = {
           api_key?: string
           auto_rank_enabled?: boolean | null
           background_color?: string | null
+          closed_at?: string | null
+          closed_reason?: string | null
           created_at?: string
           discord_webhook_url?: string | null
           game_url?: string | null

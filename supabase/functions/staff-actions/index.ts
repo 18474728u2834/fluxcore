@@ -362,7 +362,7 @@ Deno.serve(async (req) => {
       case "list_workspaces": {
         if (!caller.isOwnerAdmin && !caller.has("delete_workspaces")) return json({ error: "forbidden" }, 403);
         const q = String(body.query || "").trim();
-        let qb = sb.from("workspaces").select("id, name, owner_id, premium, premium_until, created_at").order("created_at", { ascending: false }).limit(50);
+        let qb = sb.from("workspaces").select("id, name, owner_id, premium, premium_until, created_at, closed_at, closed_reason").order("created_at", { ascending: false }).limit(50);
         if (q) qb = qb.ilike("name", `%${q}%`);
         const { data } = await qb;
         return json({ workspaces: data || [] });
@@ -373,6 +373,23 @@ Deno.serve(async (req) => {
         const id = String(body.workspace_id || "");
         await sb.from("workspaces").delete().eq("id", id);
         await audit(caller, "delete_workspace", "workspace", id);
+        return json({ ok: true });
+      }
+
+      case "close_workspace": {
+        if (!caller.has("delete_workspaces")) return json({ error: "forbidden" }, 403);
+        const id = String(body.workspace_id || "");
+        const reason = String(body.reason || "").trim() || "Closed by Fluxcore staff";
+        await sb.from("workspaces").update({ closed_at: new Date().toISOString(), closed_reason: reason }).eq("id", id);
+        await audit(caller, "close_workspace", "workspace", id, { reason });
+        return json({ ok: true });
+      }
+
+      case "reopen_workspace": {
+        if (!caller.has("delete_workspaces")) return json({ error: "forbidden" }, 403);
+        const id = String(body.workspace_id || "");
+        await sb.from("workspaces").update({ closed_at: null, closed_reason: null }).eq("id", id);
+        await audit(caller, "reopen_workspace", "workspace", id);
         return json({ ok: true });
       }
 
