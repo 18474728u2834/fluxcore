@@ -85,13 +85,25 @@ export default function PartnerPortalsTab() {
       use_hyra_ui: form.use_hyra_ui,
       created_by: user?.id,
     });
+    if (error) { setSaving(false); toast.error(error.message); return; }
+
+    // Auto-create the subdomain on Vercel
+    const { data: vData, error: vErr } = await supabase.functions.invoke("vercel-domain", {
+      body: { action: "add", subdomain: sub },
+    });
     setSaving(false);
-    if (error) { toast.error(error.message); return; }
-    toast.success(`Portal ${sub}.fluxcore.works created`);
+    if (vErr || (vData as any)?.error) {
+      toast.warning(`Portal saved, but Vercel attach failed: ${(vData as any)?.error || vErr?.message}. Add ${sub}.fluxcore.works manually in Vercel.`);
+    } else if ((vData as any)?.alreadyExists) {
+      toast.success(`Portal ${sub}.fluxcore.works created (subdomain already on Vercel)`);
+    } else {
+      toast.success(`Portal ${sub}.fluxcore.works created & subdomain wired up on Vercel`);
+    }
     setOpen(false);
     setForm(empty);
     load();
   };
+
 
   const reopen = async (id: string) => {
     const { error } = await supabase.from("partner_portals").update({ status: "active", closed_reason: null }).eq("id", id);
