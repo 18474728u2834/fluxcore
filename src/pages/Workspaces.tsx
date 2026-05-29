@@ -148,12 +148,32 @@ export default function Workspaces() {
       }
 
       setWorkspaces(ws);
+
+      // Load subdomain + grace info per workspace (non-blocking)
+      if (ws.length > 0) {
+        const ids = ws.map(w => w.id);
+        const [{ data: portals }, { data: wsRows }] = await Promise.all([
+          supabase.from("partner_portals").select("workspace_id,subdomain,status,auto_created").in("workspace_id", ids),
+          supabase.from("workspaces").select("id, subdomain_grace_until").in("id", ids),
+        ]);
+        const pMap = new Map<string, any>();
+        for (const p of (portals as any[]) || []) pMap.set(p.workspace_id, p);
+        const gMap = new Map<string, string>();
+        for (const w of (wsRows as any[]) || []) gMap.set(w.id, w.subdomain_grace_until);
+        setWorkspaces(prev => prev.map(w => {
+          const p = pMap.get(w.id);
+          const grace = gMap.get(w.id);
+          const daysLeft = grace ? Math.max(0, Math.ceil((new Date(grace).getTime() - Date.now()) / 86_400_000)) : null;
+          return { ...w, subdomain: p?.subdomain || null, portal_status: p?.status || null, grace_days_left: daysLeft };
+        }));
+      }
     } catch (e) {
       console.error("Failed to load workspaces:", e);
       toast.error("Couldn't load workspaces. Please refresh.");
     } finally {
       setLoading(false);
     }
+
 
     // Fetch group icons separately (non-blocking, never affects loading state)
     const groupIds = ws.filter(w => w.roblox_group_id).map(w => w.roblox_group_id);
