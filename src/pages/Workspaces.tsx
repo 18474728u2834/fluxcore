@@ -252,6 +252,27 @@ export default function Workspaces() {
     return "text-muted-foreground";
   };
 
+  const openWorkspace = (ws: Workspace) => {
+    // If a subdomain exists, redirect there (works whether portal is active or dormant —
+    // dormant auto-wakes on load via heartbeat). Only redirect when we're on the main domain.
+    if (ws.subdomain && onMainDomain() && ws.portal_status !== "closed") {
+      window.location.href = `https://${ws.subdomain}.fluxcore.works/#/w/${ws.id}/dashboard`;
+      return;
+    }
+    // Grace expired and no subdomain — owner must claim before continuing
+    if (!ws.subdomain && ws.grace_days_left === 0) {
+      if (ws.role === "Owner") {
+        toast.error("Grace period ended. Claim a subdomain in Settings to continue.");
+        navigate(`/w/${ws.id}/settings`);
+      } else {
+        toast.error("The owner of this workspace must claim a subdomain before it can be used.");
+      }
+      return;
+    }
+    navigate(`/w/${ws.id}/dashboard`);
+  };
+
+
   return (
     <div className="min-h-screen bg-background relative">
       <div className="fixed inset-0 pointer-events-none bg-grid opacity-50 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent_80%)]" />
