@@ -4,13 +4,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight, Sun, Moon, Headphones, ChevronRight, CheckCircle2,
-  Sparkles, MessageSquareText, BadgeCheck, Palette, Webhook, BarChart3, Bot,
-  Crown, ShieldCheck, FileSignature, Users
+  Sparkles, MessageSquareText, BadgeCheck, Palette, BarChart3, Bot,
+  ShieldCheck, FileSignature, Heart
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
-
-const PREMIUM_GAMEPASS_URL = "https://www.roblox.com/game-pass/1816876657/Fluxcore-Premium";
-const PREMIUM_PRICE_ROBUX = 400;
 
 export default function Pricing() {
   const navigate = useNavigate();
@@ -18,40 +15,42 @@ export default function Pricing() {
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = !authLoading && !!user;
 
-  const freeFeatures = [
-    "1 workspace",
+  const everything = [
+    "Unlimited workspaces",
     "Unlimited members",
     "Auto-rank sync with Roblox group",
     "Real-time activity tracking",
     "Shift, training & event scheduling",
-    "Discord webhook for session reminders",
-    "Policies with digital signatures",
+    "Discord webhooks & session reminders",
+    "Policies with digital signatures & auto-assign",
     "Leave of absence workflow",
-    "Basic primary color customization",
+    "In-game message logging",
+    "Per-role quotas & leaderboards",
+    "Full custom branding (colors, grid, badge)",
+    "Audit log of every staff action",
+    "Analytics dashboard with historical trends",
     "AI support assistant",
-    "Roblox OAuth sign-in",
+    "Priority support",
   ];
 
-  const premiumFeatures = [
-    { icon: Sparkles, title: "Unlimited Workspaces", desc: "Run multiple groups, projects or sub-divisions from a single Roblox account." },
-    { icon: MessageSquareText, title: "In-Game Message Logs", desc: "Searchable 30-day chat history of every staff message in your servers." },
-    { icon: BarChart3, title: "Per-Role Quotas", desc: "Set different session and time targets for every rank — Hyra-style accountability." },
-    { icon: Palette, title: "Full Custom Branding", desc: "Custom primary, text and background colors, hidden grid toggle, and verified badge." },
-    { icon: ShieldCheck, title: "Audit Log", desc: "Full timeline of every promotion, demotion, warning, and config change in the workspace." },
-    { icon: Bot, title: "Analytics Dashboard", desc: "Heatmaps, leaderboards, idle-time breakdowns and 90-day historical trends." },
+  const highlights = [
+    { icon: Sparkles, title: "Unlimited Workspaces", desc: "Run as many groups, projects or sub-divisions as you want from one account." },
+    { icon: MessageSquareText, title: "In-Game Message Logs", desc: "Searchable chat history of every staff message in your servers." },
+    { icon: BarChart3, title: "Per-Role Quotas", desc: "Set different session and time targets for every rank." },
+    { icon: Palette, title: "Full Custom Branding", desc: "Custom primary, text and background colors plus a verified badge." },
+    { icon: ShieldCheck, title: "Audit Log", desc: "Full timeline of every promotion, demotion, warning, and config change." },
+    { icon: Bot, title: "Analytics Dashboard", desc: "Heatmaps, leaderboards, idle-time breakdowns and historical trends." },
     { icon: FileSignature, title: "Document Auto-Assign", desc: "Push policies to new staff automatically and require signatures on rank-up." },
-    { icon: BadgeCheck, title: "Priority Support", desc: "Fast-tracked tickets, direct line to the team, and early access to beta features." },
+    { icon: BadgeCheck, title: "Priority Support", desc: "Fast-tracked tickets and direct line to the team." },
   ];
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
-      {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[50%] -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/[0.07] blur-[120px]" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-500/[0.05] blur-[100px]" />
       </div>
 
-      {/* Nav */}
       <nav className="fixed top-0 w-full z-50 border-b border-border/10 bg-background/70 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
@@ -85,110 +84,64 @@ export default function Pricing() {
         </div>
       </nav>
 
-      {/* Hero */}
       <section className="relative pt-36 pb-12">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs font-semibold text-primary mb-6">
-            <Sparkles className="w-3 h-3" />
-            One-time payment · No subscription · No credit card
+            <Heart className="w-3 h-3" />
+            Free forever · Every feature · No card, no Robux
           </div>
           <h1 className="text-5xl sm:text-6xl font-black leading-[1.05] tracking-tight mb-5">
-            Simple pricing.
+            Fluxcore is now
             <br />
             <span className="bg-gradient-to-r from-primary via-violet-400 to-primary bg-clip-text text-transparent">
-              Pay in Robux, once.
+              free for everyone.
             </span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Free forever for the essentials. Unlock Premium with a single Roblox gamepass — no recurring billing, no card required.
+            No more Premium tier. Every feature — unlimited workspaces, message logs, quotas, branding, analytics — is unlocked for every group, at no cost.
           </p>
         </div>
       </section>
 
-      {/* Plans */}
       <section className="relative pb-20">
-        <div className="max-w-5xl mx-auto px-6 grid md:grid-cols-2 gap-6">
-          {/* Free */}
-          <div className="rounded-2xl border border-border/20 bg-card/30 backdrop-blur-sm p-8 flex flex-col">
-            <div className="flex items-center gap-2 mb-2">
-              <Users className="w-4 h-4 text-muted-foreground" />
-              <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Free</h3>
+        <div className="max-w-2xl mx-auto px-6">
+          <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/[0.08] via-card/40 to-violet-500/[0.05] backdrop-blur-sm p-10 shadow-2xl shadow-primary/10">
+            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
+              Everything included
             </div>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-5xl font-black">$0</span>
-              <span className="text-muted-foreground font-medium">forever</span>
+            <div className="text-center mb-8">
+              <div className="flex items-baseline justify-center gap-1 mb-2">
+                <span className="text-6xl font-black">$0</span>
+                <span className="text-muted-foreground font-medium">forever</span>
+              </div>
+              <p className="text-sm text-muted-foreground">No plans, no upgrades, no gamepass. Just sign in and go.</p>
             </div>
-            <p className="text-sm text-muted-foreground mb-8">Everything most groups need to run their staff team.</p>
-            <ul className="space-y-3 mb-10 flex-1">
-              {freeFeatures.map((item) => (
+            <ul className="space-y-3 mb-10 grid sm:grid-cols-2 gap-x-6">
+              {everything.map((item) => (
                 <li key={item} className="flex items-center gap-3 text-sm">
                   <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
                   {item}
                 </li>
               ))}
             </ul>
-            <Button variant="outline" className="w-full h-12 font-semibold border-border/30" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
-              {isLoggedIn ? "Open Dashboard" : "Start free"} <ArrowRight className="w-4 h-4 ml-2" />
+            <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/30" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
+              {isLoggedIn ? "Open Dashboard" : "Get started — it's free"} <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
-          </div>
-
-          {/* Premium */}
-          <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/[0.08] via-card/40 to-violet-500/[0.05] backdrop-blur-sm p-8 flex flex-col shadow-2xl shadow-primary/10">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
-              Most Popular
-            </div>
-            <div className="flex items-center gap-2 mb-2">
-              <Crown className="w-4 h-4 text-primary" />
-              <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Premium</h3>
-            </div>
-            <div className="flex items-baseline gap-1 mb-2">
-              <span className="text-5xl font-black">{PREMIUM_PRICE_ROBUX}</span>
-              <span className="text-muted-foreground font-medium">Robux · one-time</span>
-            </div>
-            <p className="text-sm text-muted-foreground mb-8">Per workspace. Unlock everything below — forever, no renewal.</p>
-            <ul className="space-y-3 mb-10 flex-1">
-              {[
-                "Everything in Free, plus:",
-                "Unlimited workspaces",
-                "In-game message logging (30 days)",
-                "Per-role quotas & leaderboards",
-                "Full custom branding (colors, grid, badge)",
-                "Verified workspace badge",
-                "Audit log of every staff action",
-                "Analytics dashboard with 90-day trends",
-                "Document auto-assign on rank-up",
-                "Priority support",
-              ].map((item, i) => (
-                <li key={item} className={`flex items-center gap-3 text-sm ${i === 0 ? "font-semibold text-foreground" : ""}`}>
-                  <CheckCircle2 className={`w-4 h-4 shrink-0 ${i === 0 ? "text-muted-foreground" : "text-primary"}`} />
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <a href={PREMIUM_GAMEPASS_URL} target="_blank" rel="noreferrer">
-              <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/30">
-                Buy on Roblox <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </a>
-            <p className="text-[11px] text-muted-foreground text-center mt-3">
-              Premium activates automatically once you own the gamepass.
-            </p>
           </div>
         </div>
       </section>
 
-      {/* Premium feature grid */}
       <section className="relative py-20">
         <div className="max-w-6xl mx-auto px-6">
           <div className="text-center mb-14">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/20 bg-primary/5 text-xs font-semibold text-primary mb-4">
-              What you get with Premium
+              What's included
             </div>
             <h2 className="text-4xl font-black mb-3">Built for groups that take staffing seriously.</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Every feature here is rolled out and ready to use the second the gamepass goes through.</p>
+            <p className="text-muted-foreground max-w-xl mx-auto">Every feature, every workspace, every member — free.</p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {premiumFeatures.map((f) => (
+            {highlights.map((f) => (
               <div key={f.title} className="rounded-xl border border-border/15 bg-card/20 p-6 hover:bg-card/40 hover:border-primary/30 transition-all">
                 <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                   <f.icon className="w-5 h-5 text-primary" />
@@ -201,17 +154,15 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="relative py-20 border-t border-border/10">
         <div className="max-w-3xl mx-auto px-6">
           <h2 className="text-3xl font-black text-center mb-10">Common questions</h2>
           <div className="space-y-4">
             {[
-              { q: "Is it really a one-time payment?", a: "Yes. Premium is a Roblox gamepass — you pay 400 Robux once and Premium stays active on the workspace forever. No subscriptions, no surprise charges." },
-              { q: "Does Premium apply to one workspace or all?", a: "Per workspace. The gamepass unlocks Premium on the workspace owned by the Roblox account that purchased it." },
-              { q: "What happens to Premium features if I never buy it?", a: "You keep using Fluxcore for free with everything in the Free plan. Premium-only features show a soft upgrade prompt instead of erroring out." },
-              { q: "Can I refund the gamepass?", a: "Roblox handles all gamepass payments — refunds follow Roblox's standard policy. Reach out via Support if you need help." },
-              { q: "Will free features ever go away?", a: "No. The features listed under Free will stay free. New advanced features may launch as Premium add-ons." },
+              { q: "Is Fluxcore really free now?", a: "Yes. Every feature that used to be Premium — unlimited workspaces, message logs, quotas, full branding, analytics, audit logs — is now free for everyone, with no cap." },
+              { q: "Do I still need to buy the Roblox gamepass?", a: "No. Premium has been removed entirely. Anyone who bought the gamepass before keeps everything they had — there is just nothing extra to buy anymore." },
+              { q: "Are there usage limits?", a: "No artificial caps. Create as many workspaces, invite as many members, and run as many sessions as you need. Fair-use protections still apply against abuse." },
+              { q: "How do you sustain it?", a: "Fluxcore is run lean and supported by the community. If we ever need to introduce paid add-ons, current features will stay free." },
             ].map((f) => (
               <details key={f.q} className="group rounded-xl border border-border/15 bg-card/20 px-5 py-4 open:bg-card/40">
                 <summary className="cursor-pointer text-sm font-semibold list-none flex items-center justify-between">
@@ -225,21 +176,13 @@ export default function Pricing() {
         </div>
       </section>
 
-      {/* CTA */}
       <section className="relative py-24">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-black mb-4">Ready to upgrade your staff team?</h2>
-          <p className="text-muted-foreground mb-8">Start free in seconds. Unlock Premium when you're ready.</p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button size="lg" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-13 px-8">
-              {isLoggedIn ? "Open Dashboard" : "Start for free"} <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-            <a href={PREMIUM_GAMEPASS_URL} target="_blank" rel="noreferrer">
-              <Button size="lg" variant="outline" className="h-13 px-8 font-semibold border-primary/30 hover:bg-primary/10">
-                <Crown className="w-4 h-4 mr-2 text-primary" /> Get Premium
-              </Button>
-            </a>
-          </div>
+          <h2 className="text-4xl font-black mb-4">Ready to run your staff team?</h2>
+          <p className="text-muted-foreground mb-8">Sign in with Roblox and you're in. No paywalls, ever.</p>
+          <Button size="lg" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold h-13 px-8">
+            {isLoggedIn ? "Open Dashboard" : "Start for free"} <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         </div>
       </section>
 
