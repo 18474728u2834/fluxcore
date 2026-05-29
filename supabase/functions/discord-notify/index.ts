@@ -40,7 +40,7 @@ serve(async (req) => {
 
     const { data: ws, error: wsErr } = await supabase
       .from("workspaces")
-      .select("name, discord_webhook_url, game_url")
+      .select("name, discord_webhook_url, game_url, invite_code")
       .eq("id", workspace_id)
       .maybeSingle();
 
@@ -52,6 +52,22 @@ serve(async (req) => {
     if (!ws.discord_webhook_url) {
       return json({ error: "Discord webhook not configured" }, 400);
     }
+
+    // Look up the matching partner portal (if any) so we can use the branded
+    // subdomain for the invite link.
+    const { data: portal } = await supabase
+      .from("partner_portals")
+      .select("subdomain, status")
+      .eq("workspace_id", workspace_id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    const inviteBase = portal?.subdomain
+      ? `https://${portal.subdomain}.fluxcore.works`
+      : "https://fluxcore.works";
+    const inviteUrl = ws.invite_code
+      ? `${inviteBase}/#/join/${ws.invite_code}`
+      : null;
 
     const sendEmbed = async (embeds: unknown[]) => {
       const res = await fetch(ws.discord_webhook_url!, {
@@ -67,21 +83,22 @@ serve(async (req) => {
       return { ok: true };
     };
 
-    // Session reminder (5 min before)
-    if (action === "send_reminder") {
+    // Session starting now (fired by the front-end when occurrence is current)
+    if (action === "session_starting" || action === "send_reminder") {
       const { session_title, session_time, host_name, category, game_url } = body;
       const effectiveGameUrl = game_url || ws.game_url;
 
       const fields: any[] = [
-        { name: "🕐 Time", value: formatTime(session_time), inline: true },
+        { name: "🕐 Starts", value: formatTime(session_time), inline: true },
         { name: "👤 Host", value: host_name || "TBA", inline: true },
         { name: "📂 Type", value: category || "Shift", inline: true },
       ];
       if (effectiveGameUrl) fields.push({ name: "🎮 Game", value: `[Click to join](${effectiveGameUrl})`, inline: false });
+      if (inviteUrl) fields.push({ name: "🔗 Join staff portal", value: `[${inviteBase.replace("https://", "")}](${inviteUrl})`, inline: false });
 
       const result = await sendEmbed([{
-        title: `⏰ ${category || "Shift"} Starting Soon`,
-        description: `**${session_title}** starts in 5 minutes!`,
+        title: `🟢 ${category || "Shift"} Starting Now`,
+        description: `**${session_title}** is starting!`,
         color: categoryColor(category),
         fields,
         footer: { text: `${ws.name} · Fluxcore` },
@@ -92,37 +109,9 @@ serve(async (req) => {
       return json({ success: true });
     }
 
-    // Session created announcement
+    // Session created announcement — DISABLED. We now only announce on start.
     if (action === "session_created") {
-      const { session_title, session_time, host_name, category, recurring, recurring_days, recurring_time, description } = body;
-
-      const fields: any[] = [];
-      if (recurring_days && recurring_days.length) {
-        fields.push({
-          name: "🔁 Repeats",
-          value: `${recurring_days.join(", ")} at ${recurring_time || "scheduled time"}`,
-          inline: false,
-        });
-      } else if (recurring && recurring !== "none") {
-        fields.push({ name: "🔁 Repeats", value: recurring, inline: true });
-      } else {
-        fields.push({ name: "🕐 When", value: formatTime(session_time), inline: false });
-      }
-      fields.push({ name: "👤 Host", value: host_name || "TBA", inline: true });
-      fields.push({ name: "📂 Type", value: category || "Shift", inline: true });
-      if (ws.game_url) fields.push({ name: "🎮 Game", value: `[Click to join](${ws.game_url})`, inline: false });
-
-      const result = await sendEmbed([{
-        title: `📅 New ${category || "Session"} Scheduled`,
-        description: `**${session_title}**${description ? `\n\n${description}` : ""}`,
-        color: categoryColor(category),
-        fields,
-        footer: { text: `${ws.name} · Fluxcore` },
-        timestamp: new Date().toISOString(),
-      }]);
-
-      if (!result.ok) return json({ error: "Discord webhook failed", details: result.error }, 502);
-      return json({ success: true });
+      return json({ success: true, skipped: true });
     }
 
     // Test webhook
