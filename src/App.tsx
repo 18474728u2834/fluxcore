@@ -312,12 +312,14 @@ function AppRoutes() {
 
 
   if (hostname.startsWith("almore.fluxcore") || hostname.startsWith("almore.")) {
+    const ALMORE_WS = "ec5d2c5f-7d34-4d3a-9a3e-1f8c8b73e5e8"; // placeholder; real id comes from PartnerCleanRoutes only when configured
     return (
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Almore />} />
           <Route path="/login" element={<AlmoreLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/workspaces" element={<Workspaces />} />
           <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
           <Route path="*" element={<Almore />} />
@@ -334,12 +336,12 @@ function AppRoutes() {
           <Route path="/" element={<Bargains />} />
           <Route path="/login" element={<BargainsLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/workspaces" element={<Navigate to={`/w/${BARGAINS_WS}/dashboard`} replace />} />
-          <Route
-            path="/w/:workspaceId/*"
-            element={<BargainsWorkspaceGuard allowedId={BARGAINS_WS} />}
-          />
-          <Route path="*" element={<Bargains />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
+          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+          {/* Legacy /w/:id/* links redirect to clean URLs */}
+          <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
+          <Route path="/dashboard/*" element={<PartnerCleanRoutes workspaceId={BARGAINS_WS} useHyra={true} />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={BARGAINS_WS} useHyra={true} />} />
         </Routes>
       </Suspense>
     );
@@ -353,12 +355,11 @@ function AppRoutes() {
           <Route path="/" element={<Shoply />} />
           <Route path="/login" element={<ShoplyLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/workspaces" element={<Navigate to={`/w/${SHOPLY_WS}/dashboard`} replace />} />
-          <Route
-            path="/w/:workspaceId/*"
-            element={<BargainsWorkspaceGuard allowedId={SHOPLY_WS} />}
-          />
-          <Route path="*" element={<Shoply />} />
+          <Route path="/link-discord" element={<LinkDiscord />} />
+          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+          {/* Legacy /w/:id/* links redirect to clean URLs */}
+          <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={SHOPLY_WS} useHyra={true} />} />
         </Routes>
       </Suspense>
     );
