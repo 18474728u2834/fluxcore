@@ -15,6 +15,10 @@
     {
       "source": "/api/v1/track/:path*",
       "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker/:path*"
+    },
+    {
+      "source": "/api/v1/ranking",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-ranking"
     }
   ]
 }
