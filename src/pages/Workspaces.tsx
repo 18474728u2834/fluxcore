@@ -17,7 +17,17 @@ interface Workspace {
   role: string;
   roblox_group_id: string | null;
   verified_official: boolean;
+  subdomain?: string | null;
+  portal_status?: string | null;
+  grace_days_left?: number | null;
 }
+
+const HARDCODED_HOSTS = ["fluxcore.works", "www.fluxcore.works"];
+const onMainDomain = () => {
+  const h = window.location.hostname;
+  return HARDCODED_HOSTS.includes(h) || h.endsWith(".lovable.app") || h.endsWith(".lovableproject.com") || h === "localhost" || h.startsWith("127.0.0.1");
+};
+
 
 export default function Workspaces() {
   const navigate = useNavigate();
