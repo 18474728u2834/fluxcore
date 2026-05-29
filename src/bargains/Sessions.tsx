@@ -43,6 +43,8 @@ export default function BSessions() {
   });
   const [duration, setDuration] = useState("60");
   const [description, setDescription] = useState("");
+  const [hostMe, setHostMe] = useState(false);
+  const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -77,6 +79,8 @@ export default function BSessions() {
     setCategory("Shift");
     setDuration("60");
     setDescription("");
+    setHostMe(false);
+    setRecurring("none");
     setOpen(true);
   };
 
@@ -85,23 +89,29 @@ export default function BSessions() {
     if (!when) { toast.error("Pick a date & time"); return; }
     if (!user) { toast.error("You must be signed in"); return; }
     setSaving(true);
-    const { error } = await supabase.from("scheduled_sessions").insert({
+    const dt = new Date(when);
+    const payload: any = {
       workspace_id: workspaceId,
       title: title.trim(),
       category,
-      scheduled_at: new Date(when).toISOString(),
+      scheduled_at: dt.toISOString(),
       duration_minutes: parseInt(duration) || 60,
-      host_id: user.id,
-      host_name: robloxUsername || "Host",
+      host_id: hostMe ? user.id : null,
+      host_name: hostMe ? (robloxUsername || "Host") : "Unassigned",
       description: description.trim() || null,
       slots: [],
       tag_ids: [],
-    });
+    };
+    if (recurring !== "none") {
+      payload.recurring = recurring;
+      payload.recurring_time = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+      payload.recurring_days = recurring === "weekly" ? [dt.getDay()] : [0,1,2,3,4,5,6];
+    }
+    const { error } = await supabase.from("scheduled_sessions").insert(payload);
     setSaving(false);
     if (error) { toast.error("Failed: " + error.message); return; }
     toast.success("Session scheduled");
     setOpen(false);
-    // jump the calendar to the day of the new session
     const newDay = new Date(when); newDay.setHours(0,0,0,0);
     setSelected(newDay);
     setRefreshKey(k => k + 1);
@@ -183,13 +193,15 @@ export default function BSessions() {
                     {groupLabel(d)} at {time} · {s.duration_minutes}m · {s.category}
                   </div>
                   <div className="text-lg font-bold mb-5" style={{ color: bx.text }}>{s.title}</div>
-                  <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "#22222a" }}>
-                    {s.host_id ? (
-                      <RobloxAvatar username={s.host_name || ""} userId={s.host_id} className="w-8 h-8 rounded-md" />
+                  <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: "#22222a" }}>
+                    {s.host_id && s.host_name ? (
+                      <>
+                        <RobloxAvatar username={s.host_name} className="w-8 h-8 rounded-md" />
+                        <span className="text-xs font-medium" style={{ color: bx.textDim }}>{s.host_name}</span>
+                      </>
                     ) : (
-                      <div className="w-8 h-8 rounded-md" style={{ background: "#22222a" }} />
+                      <span className="text-xs font-medium" style={{ color: bx.textMuted }}>Unassigned</span>
                     )}
-                    {s.host_name && <span className="text-xs font-medium" style={{ color: bx.textDim }}>{s.host_name}</span>}
                   </div>
                 </div>
               );
@@ -208,7 +220,7 @@ export default function BSessions() {
               <X className="w-4 h-4" />
             </button>
             <h2 className="text-lg font-bold" style={{ color: bx.text }}>Schedule session</h2>
-            <p className="text-xs mt-1" style={{ color: bx.textDim }}>You'll be set as the host.</p>
+            <p className="text-xs mt-1" style={{ color: bx.textDim }}>Add a session to the calendar.</p>
 
             <div className="mt-5 space-y-4">
               <div>
@@ -244,6 +256,24 @@ export default function BSessions() {
                 <input type="datetime-local" value={when} onChange={(e) => setWhen(e.target.value)}
                   className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                   style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text, colorScheme: "dark" }} />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Repeat</label>
+                  <select value={recurring} onChange={(e) => setRecurring(e.target.value as any)}
+                    className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                    style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
+                    <option value="none">Doesn't repeat</option>
+                    <option value="daily">Every day</option>
+                    <option value="weekly">Weekly on this day</option>
+                  </select>
+                </div>
+                <label className="flex items-end pb-2 gap-2 cursor-pointer select-none">
+                  <input type="checkbox" checked={hostMe} onChange={(e) => setHostMe(e.target.checked)}
+                    className="w-4 h-4 accent-current" style={{ accentColor: bx.coral }} />
+                  <span className="text-sm" style={{ color: bx.text }}>I'll host this</span>
+                </label>
               </div>
 
               <div>
