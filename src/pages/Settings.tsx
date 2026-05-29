@@ -139,6 +139,9 @@ export default function SettingsPage() {
 
         <InviteSection />
 
+        <SubdomainCard workspaceId={workspaceId} workspaceName={workspace?.name || "My Workspace"} />
+
+
         {/* Workspace Settings */}
         <div className="glass rounded-xl p-5 space-y-4">
           <h2 className="font-semibold text-foreground text-sm">Workspace Settings</h2>
