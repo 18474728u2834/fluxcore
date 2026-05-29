@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
+import { DiscordSignInButton } from "@/components/DiscordSignInButton";
 import {
   Loader2,
   User,
@@ -178,6 +179,7 @@ export default function ShoplyLogin() {
                   <Gamepad2 className="w-5 h-5 mr-2" />
                   Sign in with Roblox
                 </Button>
+                <DiscordSignInButton />
 
                 <div className="relative py-1">
                   <div className="absolute inset-0 flex items-center">
