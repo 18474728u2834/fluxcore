@@ -1,6 +1,5 @@
 import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck, MessageSquare, Sparkles, Trophy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate } from "react-router-dom";
