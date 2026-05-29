@@ -122,13 +122,22 @@ export default function PartnerPortalsTab() {
     load();
   };
 
-  const remove = async (id: string, name: string) => {
-    if (!confirm(`Permanently delete ${name} portal?`)) return;
+  const remove = async (id: string, name: string, subdomain: string) => {
+    if (!confirm(`Permanently delete ${name} portal and remove ${subdomain}.fluxcore.works from Vercel?`)) return;
     const { error } = await supabase.from("partner_portals").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
-    toast.success("Portal deleted");
+    // Remove subdomain from Vercel
+    const { data: vData, error: vErr } = await supabase.functions.invoke("vercel-domain", {
+      body: { action: "remove", subdomain },
+    });
+    if (vErr || (vData as any)?.error) {
+      toast.warning(`Portal deleted, but Vercel removal failed: ${(vData as any)?.error || vErr?.message}`);
+    } else {
+      toast.success("Portal & subdomain deleted");
+    }
     load();
   };
+
 
   const toggleHyra = async (p: Portal) => {
     const next = !p.use_hyra_ui;
