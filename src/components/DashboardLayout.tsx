@@ -7,6 +7,7 @@ import { BadgeCheck, Loader2 } from "lucide-react";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { MinimalLayout } from "@/components/MinimalLayout";
 import { BargainsShell } from "@/bargains/Shell";
+import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 
 const BARGAINS_WS = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
 
@@ -58,7 +59,10 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
           </header>
           <main className="flex-1 p-6 overflow-auto relative">
             {showGrid && <div className="absolute inset-0 bg-grid opacity-[0.03] pointer-events-none" />}
-            <div className="relative">{children}</div>
+            <div className="relative">
+              <AnnouncementBanner />
+              {children}
+            </div>
           </main>
         </div>
       </div>
