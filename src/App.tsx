@@ -195,6 +195,25 @@ function AppRoutes() {
     );
   }
 
+  if (hostname.startsWith("shoply.fluxcore") || hostname.startsWith("shoply.")) {
+    const SHOPLY_WS = "9f2c9234-c02f-492b-8121-74324e0df624";
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Shoply />} />
+          <Route path="/login" element={<ShoplyLogin />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/workspaces" element={<Navigate to={`/w/${SHOPLY_WS}/dashboard`} replace />} />
+          <Route
+            path="/w/:workspaceId/*"
+            element={<BargainsWorkspaceGuard allowedId={SHOPLY_WS} />}
+          />
+          <Route path="*" element={<Shoply />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
   if (hostname.includes("bloxy-bargains") || hostname.includes("bargains.")) {
     return (
       <Suspense fallback={<PageLoader />}>
