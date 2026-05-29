@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowLeft, Code2, Calendar, Activity, Globe, ArrowRight } from "lucide-react";
+import { ArrowLeft, Code2, Calendar, ChevronsUp, ArrowRight } from "lucide-react";
 
 const APIS = [
   {
@@ -11,20 +11,12 @@ const APIS = [
     method: "GET",
   },
   {
-    href: "/api/activity",
-    icon: Activity,
-    name: "Activity Tracker API",
-    desc: "Send join, leave, chat, and heartbeat events from your Roblox game. Powers the activity dashboard.",
+    href: "/api/ranking",
+    icon: ChevronsUp,
+    name: "Ranking API",
+    desc: "Power in-game !promote and !demote commands. Fluxcore checks the requester's permission before ranking.",
     auth: "API key",
     method: "POST",
-  },
-  {
-    href: "/api/workspaces",
-    icon: Globe,
-    name: "Public Workspaces",
-    desc: "List verified Fluxcore workspaces for marquees, directories, or partner widgets. No auth required.",
-    auth: "Public",
-    method: "GET",
   },
 ];
 
