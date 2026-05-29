@@ -1,4 +1,6 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
+import { BargainsShell } from "@/bargains/Shell";
+import { HYRA_UI_WORKSPACE_IDS } from "@/App";
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
