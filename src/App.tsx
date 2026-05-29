@@ -190,6 +190,13 @@ function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
   return <BargainsWorkspaceRoutes />;
 }
 
+// On partner subdomains, rewrite legacy /w/:id/<rest> URLs to clean /<rest>.
+function LegacyWorkspaceRedirect() {
+  const params = useParams();
+  const rest = (params["*"] as string) || "dashboard";
+  return <Navigate to={`/${rest}`} replace />;
+}
+
 function AppRoutes() {
   const hostname = window.location.hostname;
   const subdomain = hostname.split(".")[0].toLowerCase();
