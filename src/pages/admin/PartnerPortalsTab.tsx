@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2, Sparkles } from "lucide-react";
 
+type PortalTheme = "classic" | "bargains" | "almore";
+
 interface Portal {
   id: string;
   subdomain: string;
@@ -23,6 +25,7 @@ interface Portal {
   status: string;
   closed_reason: string | null;
   use_hyra_ui: boolean;
+  portal_theme: PortalTheme;
   created_at: string;
 }
 
@@ -36,6 +39,7 @@ const empty = {
   roblox_group_url: "",
   links_text: "",
   use_hyra_ui: true,
+  portal_theme: "classic" as PortalTheme,
 };
 
 export default function PartnerPortalsTab() {
@@ -83,6 +87,7 @@ export default function PartnerPortalsTab() {
       roblox_group_url: form.roblox_group_url.trim() || null,
       links,
       use_hyra_ui: form.use_hyra_ui,
+      portal_theme: form.portal_theme,
       created_by: user?.id,
     });
     if (error) { setSaving(false); toast.error(error.message); return; }
@@ -144,6 +149,13 @@ export default function PartnerPortalsTab() {
     const { error } = await supabase.from("partner_portals").update({ use_hyra_ui: next }).eq("id", p.id);
     if (error) { toast.error(error.message); return; }
     toast.success(next ? "Hyra UI enabled — reload affected sessions" : "Hyra UI disabled");
+    load();
+  };
+
+  const setTheme = async (p: Portal, theme: PortalTheme) => {
+    const { error } = await supabase.from("partner_portals").update({ portal_theme: theme }).eq("id", p.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(`Theme set to ${theme}`);
     load();
   };
 
@@ -209,6 +221,30 @@ export default function PartnerPortalsTab() {
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">One link per line: <code>Label | URL</code></p>
               </div>
+              <div>
+                <Label>Landing / login theme</Label>
+                <div className="grid grid-cols-3 gap-2 mt-1">
+                  {([
+                    { v: "classic", label: "Classic", hint: "Workspace's own branding & text" },
+                    { v: "bargains", label: "Bargains", hint: "Bloxy Bargains styled" },
+                    { v: "almore", label: "Almore", hint: "Almore styled" },
+                  ] as { v: PortalTheme; label: string; hint: string }[]).map(opt => (
+                    <button
+                      key={opt.v}
+                      type="button"
+                      onClick={() => setForm({ ...form, portal_theme: opt.v })}
+                      className={`rounded-lg border p-2 text-left text-xs transition ${
+                        form.portal_theme === opt.v
+                          ? "border-primary bg-primary/10"
+                          : "border-border hover:border-muted-foreground"
+                      }`}
+                    >
+                      <div className="font-medium">{opt.label}</div>
+                      <div className="text-[10px] text-muted-foreground">{opt.hint}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
               <label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
                 <div className="flex items-start gap-2">
                   <Sparkles className="w-4 h-4 text-primary mt-0.5" />
@@ -267,6 +303,16 @@ export default function PartnerPortalsTab() {
                 </div>
               </div>
               <div className="flex gap-2 items-center">
+                <select
+                  value={p.portal_theme || "classic"}
+                  onChange={(e) => setTheme(p, e.target.value as PortalTheme)}
+                  className="text-xs bg-background border border-border rounded-md px-2 py-1"
+                  title="Landing / login theme"
+                >
+                  <option value="classic">Classic</option>
+                  <option value="bargains">Bargains</option>
+                  <option value="almore">Almore</option>
+                </select>
                 <label className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
                   <Sparkles className="w-3 h-3" /> Hyra
                   <Switch checked={p.use_hyra_ui} onCheckedChange={() => toggleHyra(p)} />

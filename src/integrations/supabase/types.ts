@@ -592,6 +592,7 @@ export type Database = {
           links: Json
           logo_url: string | null
           name: string
+          portal_theme: string
           roblox_group_url: string | null
           status: string
           subdomain: string
@@ -611,6 +612,7 @@ export type Database = {
           links?: Json
           logo_url?: string | null
           name: string
+          portal_theme?: string
           roblox_group_url?: string | null
           status?: string
           subdomain: string
@@ -630,6 +632,7 @@ export type Database = {
           links?: Json
           logo_url?: string | null
           name?: string
+          portal_theme?: string
           roblox_group_url?: string | null
           status?: string
           subdomain?: string
