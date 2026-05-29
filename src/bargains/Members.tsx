@@ -6,22 +6,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 
+const PAGE_SIZE = 50;
+
 export default function BMembers() {
   const { workspaceId } = useWorkspace();
   const [members, setMembers] = useState<any[]>([]);
   const [q, setQ] = useState("");
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     if (!workspaceId) return;
     (async () => {
-      const [memRes, ownerRes] = await Promise.all([
-        supabase.from("workspace_members")
+      // Page through Supabase's 1000-row cap so we get every member.
+      const all: any[] = [];
+      const CHUNK = 1000;
+      for (let from = 0; ; from += CHUNK) {
+        const { data, error } = await supabase.from("workspace_members")
           .select("id, user_id, role, joined_at, roblox_username, roblox_user_id")
           .eq("workspace_id", workspaceId)
-          .order("joined_at", { ascending: false }),
-        supabase.rpc("get_workspace_owner_info" as any, { _workspace_id: workspaceId }),
-      ]);
-      const list = ((memRes.data as any[]) || []).map((m: any) => ({ ...m, created_at: m.joined_at }));
+          .order("joined_at", { ascending: false })
+          .range(from, from + CHUNK - 1);
+        if (error || !data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < CHUNK) break;
+      }
+
+      const ownerRes = await supabase.rpc("get_workspace_owner_info" as any, { _workspace_id: workspaceId });
+      const list = all.map((m: any) => ({ ...m, created_at: m.joined_at }));
       const ownerInfo: any = (ownerRes.data as any)?.[0];
       const ownerId = ownerInfo?.owner_id;
       if (ownerId) {
@@ -44,12 +55,21 @@ export default function BMembers() {
     })();
   }, [workspaceId]);
 
+  useEffect(() => { setPage(1); }, [q]);
+
   const filtered = members.filter(m => (m.roblox_username || "").toLowerCase().includes(q.toLowerCase()));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const pageStart = (currentPage - 1) * PAGE_SIZE;
+  const paged = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 
   return (
     <BargainsShell>
       <div className="max-w-6xl mx-auto space-y-6">
-        <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: bx.text }}>Members</h1>
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: bx.text }}>Members</h1>
+          <span className="text-xs" style={{ color: bx.textMuted }}>{filtered.length} total</span>
+        </div>
 
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5" style={{ color: bx.textMuted }} />
@@ -59,7 +79,7 @@ export default function BMembers() {
         </div>
 
         <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
-          {filtered.map((m, i) => {
+          {paged.map((m, i) => {
             const target = m.id ? `/w/${workspaceId}/members/${m.id}` : null;
             const inner = (
               <>
@@ -82,6 +102,22 @@ export default function BMembers() {
           })}
           {filtered.length === 0 && <div className="p-12 text-center text-sm" style={{ color: bx.textDim }}>No members found.</div>}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between">
+            <span className="text-xs" style={{ color: bx.textMuted }}>
+              Page {currentPage} of {totalPages} · Showing {pageStart + 1}–{Math.min(pageStart + PAGE_SIZE, filtered.length)}
+            </span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}
+                className="h-9 px-3 rounded-md text-sm font-medium border disabled:opacity-40 hover:bg-[#1f1f22]"
+                style={{ color: bx.text, borderColor: "#26262a", background: "#1a1a1c" }}>Previous</button>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}
+                className="h-9 px-3 rounded-md text-sm font-medium border disabled:opacity-40 hover:bg-[#1f1f22]"
+                style={{ color: bx.text, borderColor: "#26262a", background: "#1a1a1c" }}>Next</button>
+            </div>
+          </div>
+        )}
       </div>
     </BargainsShell>
   );
