@@ -90,10 +90,8 @@ export default function BQuotas() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {sorted.map((r) => (
             <div key={r.user_id} className="rounded-md border overflow-hidden" style={bx.cardStyle}>
-              <div className="px-5 pt-3 pb-1">
-                <button className="inline-flex items-center justify-center w-5 h-5 rounded text-[11px]"
-                  style={{ background: "#22222a", color: bx.textDim }}>+</button>
-              </div>
+              <div className="px-5 pt-3 pb-1" />
+
               <div className="px-5 pb-3 flex items-center gap-3">
                 <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className="w-9 h-9 rounded-md" />
                 <div className="font-semibold text-[15px]" style={{ color: bx.text }}>
