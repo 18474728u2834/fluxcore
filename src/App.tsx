@@ -13,8 +13,9 @@ import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
 import { BlacklistGate } from "@/components/BlacklistGate";
 import { AccountRemovalGate } from "@/components/AccountRemovalGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 // Lazy load every route — each gets its own JS chunk so devtools
 // only ever sees code for the page that's currently rendered.
@@ -71,6 +72,10 @@ const BMemberProfile = lazy(() => import("./bargains/MemberProfile"));
 const BWall      = lazy(() => import("./bargains/Wall"));
 const BStaff     = lazy(() => import("./bargains/Staff"));
 const BRoles     = lazy(() => import("./bargains/Roles"));
+const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
+const PartnerLogin = lazy(() => import("./pages/PartnerLogin"));
+const PartnerClosed = lazy(() => import("./pages/PartnerClosed"));
+
 
 const queryClient = new QueryClient();
 
@@ -160,6 +165,77 @@ function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
 
 function AppRoutes() {
   const hostname = window.location.hostname;
+  const subdomain = hostname.split(".")[0].toLowerCase();
+  const isMainHost =
+    hostname === "fluxcore.works" ||
+    hostname.startsWith("www.") ||
+    hostname.startsWith("id-preview") ||
+    hostname.startsWith("preview--") ||
+    hostname === "localhost" ||
+    hostname.startsWith("127.0.0.1") ||
+    hostname.endsWith(".lovableproject.com") ||
+    hostname.endsWith(".lovable.app");
+  const isHardcoded =
+    hostname.startsWith("almore.") ||
+    hostname.startsWith("bargains.") ||
+    hostname.startsWith("shoply.") ||
+    hostname.includes("bloxy-bargains");
+
+  const [partner, setPartner] = useState<any | undefined>(
+    isMainHost || isHardcoded ? null : undefined
+  );
+
+  useEffect(() => {
+    if (isMainHost || isHardcoded) return;
+    let active = true;
+    supabase
+      .from("partner_portals")
+      .select("*")
+      .ilike("subdomain", subdomain)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!active) return;
+        if (data) {
+          HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
+          setPartner(data);
+        } else {
+          setPartner(null);
+        }
+      });
+    return () => { active = false; };
+  }, [subdomain, isMainHost, isHardcoded]);
+
+  if (partner === undefined) {
+    return <PageLoader />;
+  }
+
+  if (partner) {
+    if (partner.status === "closed") {
+      return (
+        <Suspense fallback={<PageLoader />}>
+          <PartnerClosed
+            name={partner.name}
+            reason={partner.closed_reason}
+            accentColor={partner.accent_color}
+            logoUrl={partner.logo_url}
+          />
+        </Suspense>
+      );
+    }
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<PartnerPortal config={partner} />} />
+          <Route path="/login" element={<PartnerLogin config={partner} />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/workspaces" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
+          <Route path="/w/:workspaceId/*" element={<BargainsWorkspaceGuard allowedId={partner.workspace_id} />} />
+          <Route path="*" element={<PartnerPortal config={partner} />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
 
   if (hostname.startsWith("almore.fluxcore") || hostname.startsWith("almore.")) {
     return (

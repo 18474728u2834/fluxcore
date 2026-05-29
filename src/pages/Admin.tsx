@@ -13,6 +13,7 @@ import { Loader2, Shield, Trash2, UserPlus, Sparkles, Download, MessageSquare, S
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PremiumGrantManager } from "@/components/PremiumGrantManager";
+import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
 
 type WhoAmI = {
   user_id: string;
@@ -104,6 +105,7 @@ export default function Admin() {
             {has("delete_workspaces") && <TabsTrigger value="workspaces">Workspaces</TabsTrigger>}
             {has("moderate_chats") && <TabsTrigger value="chats">Wall Moderation</TabsTrigger>}
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
+            <TabsTrigger value="portals">Partner Portals</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -119,6 +121,7 @@ export default function Admin() {
           {has("delete_workspaces") && <TabsContent value="workspaces"><WorkspacesTab /></TabsContent>}
           {has("moderate_chats") && <TabsContent value="chats"><ChatsTab /></TabsContent>}
           {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
+          <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
