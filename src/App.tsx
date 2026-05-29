@@ -186,8 +186,21 @@ function AppRoutes() {
   );
 
   useEffect(() => {
-    if (isMainHost || isHardcoded) return;
     let active = true;
+    // Always preload portals that opt into Hyra UI so workspaces on the main
+    // domain (no subdomain) also get the Bargains UI when admins enable it.
+    supabase
+      .from("partner_portals")
+      .select("workspace_id,use_hyra_ui")
+      .eq("use_hyra_ui", true)
+      .then(({ data }) => {
+        if (!active || !data) return;
+        for (const row of data) {
+          if (row.workspace_id) HYRA_UI_WORKSPACE_IDS.add(row.workspace_id);
+        }
+      });
+
+    if (isMainHost || isHardcoded) return;
     supabase
       .from("partner_portals")
       .select("*")
@@ -196,7 +209,7 @@ function AppRoutes() {
       .then(({ data }) => {
         if (!active) return;
         if (data) {
-          HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
+          if ((data as any).use_hyra_ui) HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
           setPartner(data);
         } else {
           setPartner(null);
