@@ -188,6 +188,16 @@ export default function PartnerPortalsTab() {
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">One link per line: <code>Label | URL</code></p>
               </div>
+              <label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                  <div>
+                    <div className="text-sm font-medium">Use Hyra-style UI</div>
+                    <p className="text-[11px] text-muted-foreground">Branded dashboard, sidebar and pages instead of the classic Fluxcore UI.</p>
+                  </div>
+                </div>
+                <Switch checked={form.use_hyra_ui} onCheckedChange={(v) => setForm({ ...form, use_hyra_ui: v })} />
+              </label>
               <Button onClick={create} disabled={saving} className="w-full">
                 {saving && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
                 Create portal
