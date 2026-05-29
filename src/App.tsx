@@ -87,11 +87,11 @@ function PageLoader() {
   );
 }
 
-// Workspaces that use the Hyra-style Bargains UI
-export const HYRA_UI_WORKSPACE_IDS = new Set<string>([
-  "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630", // Bloxy Bargains
-  "9f2c9234-c02f-492b-8121-74324e0df624", // Shoply Shopping
-]);
+// Workspaces that use the Hyra-style Bargains UI.
+// Populated at app boot from partner_portals where use_hyra_ui = true,
+// plus any portal subdomain that opts in. Admins control this from the
+// Staff Dashboard → Partner Portals tab.
+export const HYRA_UI_WORKSPACE_IDS = new Set<string>();
 
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
@@ -186,8 +186,21 @@ function AppRoutes() {
   );
 
   useEffect(() => {
-    if (isMainHost || isHardcoded) return;
     let active = true;
+    // Always preload portals that opt into Hyra UI so workspaces on the main
+    // domain (no subdomain) also get the Bargains UI when admins enable it.
+    supabase
+      .from("partner_portals")
+      .select("workspace_id,use_hyra_ui")
+      .eq("use_hyra_ui", true)
+      .then(({ data }) => {
+        if (!active || !data) return;
+        for (const row of data) {
+          if (row.workspace_id) HYRA_UI_WORKSPACE_IDS.add(row.workspace_id);
+        }
+      });
+
+    if (isMainHost || isHardcoded) return;
     supabase
       .from("partner_portals")
       .select("*")
@@ -196,7 +209,7 @@ function AppRoutes() {
       .then(({ data }) => {
         if (!active) return;
         if (data) {
-          HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
+          if ((data as any).use_hyra_ui) HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
           setPartner(data);
         } else {
           setPartner(null);
@@ -229,7 +242,7 @@ function AppRoutes() {
           <Route path="/login" element={<PartnerLogin config={partner} />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/workspaces" element={<Navigate to={`/w/${partner.workspace_id}/dashboard`} replace />} />
-          <Route path="/w/:workspaceId/*" element={<BargainsWorkspaceGuard allowedId={partner.workspace_id} />} />
+          <Route path="/w/:workspaceId/*" element={partner.use_hyra_ui ? <BargainsWorkspaceGuard allowedId={partner.workspace_id} /> : <WorkspaceRoutes />} />
           <Route path="*" element={<PartnerPortal config={partner} />} />
         </Routes>
       </Suspense>

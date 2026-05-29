@@ -155,11 +155,12 @@ export default function Sessions() {
   }, {});
   const lookupId = (name?: string | null) => (name ? memberIdByName[name.toLowerCase()] : undefined);
 
-  // Discord 5-minute reminder (per occurrence)
+  // Discord "starting now" announcement — fires when an occurrence is within
+  // the next 60s (or up to 90s after) so we catch it on the polling tick.
   const checkAndSendReminders = async (sessionList: ScheduledSession[]) => {
     const now = Date.now();
-    const fiveMinFromNow = now + 5 * 60 * 1000;
-    // Build today/tomorrow occurrences for recurring + one-time
+    const windowStart = now - 90 * 1000;
+    const windowEnd = now + 60 * 1000;
     const computeOccurrences = (s: ScheduledSession): Date[] => {
       const out: Date[] = [];
       const base = new Date(s.scheduled_at);
@@ -189,15 +190,15 @@ export default function Sessions() {
       if (s.status !== "scheduled") continue;
       for (const occ of computeOccurrences(s)) {
         const t = occ.getTime();
-        if (t <= now || t > fiveMinFromNow) continue;
-        const reminderKey = `discord_reminded_${s.id}_${occ.toISOString()}`;
+        if (t < windowStart || t > windowEnd) continue;
+        const reminderKey = `discord_started_${s.id}_${occ.toISOString()}`;
         if (sessionStorage.getItem(reminderKey)) continue;
         sessionStorage.setItem(reminderKey, "1");
         const slotsForOcc = effectiveSlots(s, occ);
         const firstAssignee = slotsForOcc.flatMap(sl => sl.assigned).find(n => n) || s.host_name;
         supabase.functions.invoke("discord-notify", {
           body: {
-            action: "send_reminder",
+            action: "session_starting",
             workspace_id: workspaceId,
             session_title: s.title,
             session_time: occ.toISOString(),
@@ -209,6 +210,7 @@ export default function Sessions() {
       }
     }
   };
+
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -311,20 +313,8 @@ export default function Sessions() {
 
     toast.success("Session scheduled!");
 
-    supabase.functions.invoke("discord-notify", {
-      body: {
-        action: "session_created",
-        workspace_id: workspaceId,
-        session_title: title.trim(),
-        session_time: firstOccurrence.toISOString(),
-        host_name: firstAssignee,
-        category,
-        recurring: insertPayload.recurring,
-        recurring_days: insertPayload.recurring_days,
-        recurring_time: insertPayload.recurring_time,
-        description: description.trim() || undefined,
-      },
-    }).catch(() => {});
+    // Discord announcement is sent when the shift actually starts, not at
+    // creation time — see checkAndSendReminders above.
 
     setDialogOpen(false);
     resetForm();

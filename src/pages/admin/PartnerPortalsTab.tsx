@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Plus, Trash2, ExternalLink, Lock, Unlock, Globe, Loader2, Sparkles } from "lucide-react";
 
 interface Portal {
   id: string;
@@ -21,6 +22,7 @@ interface Portal {
   links: { label: string; url: string }[];
   status: string;
   closed_reason: string | null;
+  use_hyra_ui: boolean;
   created_at: string;
 }
 
@@ -33,6 +35,7 @@ const empty = {
   accent_color: "#10b981",
   roblox_group_url: "",
   links_text: "",
+  use_hyra_ui: true,
 };
 
 export default function PartnerPortalsTab() {
@@ -79,6 +82,7 @@ export default function PartnerPortalsTab() {
       accent_color: form.accent_color || "#10b981",
       roblox_group_url: form.roblox_group_url.trim() || null,
       links,
+      use_hyra_ui: form.use_hyra_ui,
       created_by: user?.id,
     });
     setSaving(false);
@@ -113,6 +117,15 @@ export default function PartnerPortalsTab() {
     toast.success("Portal deleted");
     load();
   };
+
+  const toggleHyra = async (p: Portal) => {
+    const next = !p.use_hyra_ui;
+    const { error } = await supabase.from("partner_portals").update({ use_hyra_ui: next }).eq("id", p.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Hyra UI enabled — reload affected sessions" : "Hyra UI disabled");
+    load();
+  };
+
 
   return (
     <div className="space-y-4">
@@ -175,6 +188,16 @@ export default function PartnerPortalsTab() {
                 />
                 <p className="text-[10px] text-muted-foreground mt-1">One link per line: <code>Label | URL</code></p>
               </div>
+              <label className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+                <div className="flex items-start gap-2">
+                  <Sparkles className="w-4 h-4 text-primary mt-0.5" />
+                  <div>
+                    <div className="text-sm font-medium">Use Hyra-style UI</div>
+                    <p className="text-[11px] text-muted-foreground">Branded dashboard, sidebar and pages instead of the classic Fluxcore UI.</p>
+                  </div>
+                </div>
+                <Switch checked={form.use_hyra_ui} onCheckedChange={(v) => setForm({ ...form, use_hyra_ui: v })} />
+              </label>
               <Button onClick={create} disabled={saving} className="w-full">
                 {saving && <Loader2 className="w-4 h-4 mr-1 animate-spin" />}
                 Create portal
@@ -210,6 +233,9 @@ export default function PartnerPortalsTab() {
                     ) : (
                       <Badge>Active</Badge>
                     )}
+                    {p.use_hyra_ui && (
+                      <Badge variant="outline" className="gap-1"><Sparkles className="w-3 h-3" /> Hyra UI</Badge>
+                    )}
                   </div>
                   <a href={`https://${p.subdomain}.fluxcore.works`} target="_blank" rel="noopener noreferrer" className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1">
                     {p.subdomain}.fluxcore.works <ExternalLink className="w-3 h-3" />
@@ -219,7 +245,11 @@ export default function PartnerPortalsTab() {
                   )}
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 items-center">
+                <label className="flex items-center gap-2 text-xs text-muted-foreground mr-1">
+                  <Sparkles className="w-3 h-3" /> Hyra
+                  <Switch checked={p.use_hyra_ui} onCheckedChange={() => toggleHyra(p)} />
+                </label>
                 {p.status === "closed" ? (
                   <Button size="sm" variant="outline" onClick={() => reopen(p.id)}>
                     <Unlock className="w-3 h-3 mr-1" /> Re-open
