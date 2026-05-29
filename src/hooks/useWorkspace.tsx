@@ -31,8 +31,9 @@ interface WorkspaceContextType {
 
 const WorkspaceContext = createContext<WorkspaceContextType | undefined>(undefined);
 
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const { workspaceId } = useParams<{ workspaceId: string }>();
+export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }: { children: ReactNode; workspaceId?: string }) {
+  const params = useParams<{ workspaceId: string }>();
+  const workspaceId = workspaceIdOverride ?? params.workspaceId;
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [workspace, setWorkspace] = useState<WorkspaceData | null>(null);
