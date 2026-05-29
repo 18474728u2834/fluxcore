@@ -416,7 +416,8 @@ export default function Members() {
                       </td>
                     )}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -431,6 +432,14 @@ export default function Members() {
             </div>
           )}
         </div>
+
+        <BulkActionBar
+          selectedCount={selected.size}
+          roles={roles}
+          canManage={canManage}
+          onClear={() => setSelected(new Set())}
+          onRun={runBulk}
+        />
       </div>
 
       {/* Rank Dialog */}
