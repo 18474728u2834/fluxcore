@@ -224,6 +224,27 @@ export type Database = {
         }
         Relationships: []
       }
+      dismissed_announcements: {
+        Row: {
+          announcement_id: string
+          dismissed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          dismissed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          dismissed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       document_signatures: {
         Row: {
           document_id: string
@@ -1302,6 +1323,7 @@ export type Database = {
           gamepass_id: string | null
           id: string
           invite_code: string
+          leaderboard_categories: Json
           message_logger_enabled: boolean | null
           name: string
           owner_id: string
@@ -1329,6 +1351,7 @@ export type Database = {
           gamepass_id?: string | null
           id?: string
           invite_code?: string
+          leaderboard_categories?: Json
           message_logger_enabled?: boolean | null
           name: string
           owner_id: string
@@ -1356,6 +1379,7 @@ export type Database = {
           gamepass_id?: string | null
           id?: string
           invite_code?: string
+          leaderboard_categories?: Json
           message_logger_enabled?: boolean | null
           name?: string
           owner_id?: string
