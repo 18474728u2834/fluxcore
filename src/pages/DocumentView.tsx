@@ -267,6 +267,6 @@ export default function DocumentView() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </Layout>
   );
 }
