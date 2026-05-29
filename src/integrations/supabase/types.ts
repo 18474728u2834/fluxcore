@@ -583,10 +583,12 @@ export type Database = {
       partner_portals: {
         Row: {
           accent_color: string | null
+          auto_created: boolean
           closed_reason: string | null
           created_at: string
           created_by: string
           id: string
+          last_active_at: string
           links: Json
           logo_url: string | null
           name: string
@@ -600,10 +602,12 @@ export type Database = {
         }
         Insert: {
           accent_color?: string | null
+          auto_created?: boolean
           closed_reason?: string | null
           created_at?: string
           created_by: string
           id?: string
+          last_active_at?: string
           links?: Json
           logo_url?: string | null
           name: string
@@ -617,10 +621,12 @@ export type Database = {
         }
         Update: {
           accent_color?: string | null
+          auto_created?: boolean
           closed_reason?: string | null
           created_at?: string
           created_by?: string
           id?: string
+          last_active_at?: string
           links?: Json
           logo_url?: string | null
           name?: string
@@ -1389,6 +1395,7 @@ export type Database = {
           roblox_group_id: string | null
           session_role_labels: Json
           show_grid: boolean | null
+          subdomain_grace_until: string
           text_color: string | null
           tutorial_completed: boolean
           updated_at: string
@@ -1417,6 +1424,7 @@ export type Database = {
           roblox_group_id?: string | null
           session_role_labels?: Json
           show_grid?: boolean | null
+          subdomain_grace_until?: string
           text_color?: string | null
           tutorial_completed?: boolean
           updated_at?: string
@@ -1445,6 +1453,7 @@ export type Database = {
           roblox_group_id?: string | null
           session_role_labels?: Json
           show_grid?: boolean | null
+          subdomain_grace_until?: string
           text_color?: string | null
           tutorial_completed?: boolean
           updated_at?: string
@@ -1529,6 +1538,7 @@ export type Database = {
         Args: { _permission: string; _workspace_id: string }
         Returns: boolean
       }
+      heartbeat_portal: { Args: { _workspace_id: string }; Returns: undefined }
       is_fluxcore_staff: { Args: never; Returns: boolean }
       is_staff_admin: { Args: never; Returns: boolean }
       is_staff_owner_admin: { Args: never; Returns: boolean }
@@ -1558,6 +1568,7 @@ export type Database = {
           read_ct: number
         }[]
       }
+      sweep_dormant_portals: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
