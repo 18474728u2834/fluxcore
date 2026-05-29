@@ -1,66 +1,57 @@
-# Staff Dashboard Plan
+## Goal
 
-A new `/staff` area where Novavoff is the **Owner Admin** and can appoint other staff members with granular permissions. Built on top of the existing `is_fluxcore_staff()` model but extended to support multiple admins with per-feature permissions.
+The landing page reads like AI wrote it ("The all-in-one tool to run your Roblox community", "everything your staff team needs — Built for groups that take it seriously", "Stop juggling spreadsheets, Discord bots, and seven open tabs"). Rewrite it in a plainspoken founder voice and restructure to match the chosen "Founder-led hero" prototype. Keep the existing purple-on-dark palette and the existing nav/footer untouched.
 
-## 1. Database
+## Scope
 
-New tables:
-- **`staff_admins`** — `user_id`, `roblox_username`, `role` ('owner_admin' | 'admin'), `added_by`, `created_at`. Owner Admin is seeded as Novavoff.
-- **`staff_permissions`** — `admin_id` (FK staff_admins), `permission` text. Permissions: `manage_admins`, `create_premium_grants`, `claim_premium_self`, `support_reply`, `support_assign`, `export_user_data`, `delete_users`, `delete_workspaces`, `moderate_chats`.
-- **`staff_audit_log`** — `admin_id`, `action`, `target_type`, `target_id`, `details` jsonb, `created_at`. Records every privileged action.
-- **`data_export_requests`** — `user_id`, `requested_by`, `status`, `download_url`, `created_at`, `completed_at`. For GDPR exports.
+Only `src/pages/Index.tsx`. No backend, no routing, no nav/footer changes, no palette changes.
 
-New SECURITY DEFINER functions:
-- `is_staff_admin()` → bool (replaces direct username check, but keeps Novavoff as fallback owner_admin)
-- `is_staff_owner_admin()` → bool
-- `has_staff_permission(_perm text)` → bool (owner_admin has all)
+## Edits
 
-Update `is_fluxcore_staff()` to also return true for any row in `staff_admins` so existing RLS keeps working.
+### 1. Hero
+- Replace headline `The all-in-one tool to run your Roblox community.` with:
+  **`Managing staff doesn't have to be a mess.`** (second half "have to be a mess." in purple)
+- Replace sub: 
+  `Running a Roblox group shouldn't mean four hours a night in spreadsheets. Fluxcore handles ranking, activity logs, and quotas so your staff can focus on the game.`
+- Keep badge but change to: `Now syncing via Roblox Open Cloud`
+- Primary CTA label: `Set up your group` · Secondary: `View the demo`
+- Keep the existing dashboard mock component as-is (already strong, matches prototype anchor).
 
-RLS:
-- `staff_admins` — view: all staff_admins; manage: owner_admin only.
-- `staff_permissions` — view: all staff; manage: owner_admin only.
-- `staff_audit_log` — view: all staff; insert: any staff via SECURITY DEFINER.
-- `data_export_requests` — view/manage: staff with `export_user_data`.
+### 2. Trusted-by row
+- Keep, no copy change.
 
-Add policies for staff to **delete** workspaces, members, activity_events (chat moderation).
+### 3. Features section
+- Replace section eyebrow/heading/sub with:
+  - eyebrow: `What's inside`
+  - h2: `Built because nothing else did it right.`
+  - sub: `Every feature here exists because I needed it at 2am and Discord bots kept breaking.`
+- Keep the existing 12 feature tiles, but rewrite each blurb in first-person/plain voice. Examples:
+  - Activity tracking → `Heartbeats every 30 seconds with idle detection. You see exactly who's in-game and for how long — no guessing.`
+  - Group ranking → `Promote and demote from the dashboard. Hits the Roblox profile instantly via Open Cloud.`
+  - Sessions & shifts → `Schedule trainings and patrols. Staff claim slots themselves and Discord gets pinged automatically.`
+  - Policies & signatures → `Write a policy once. Every new member signs it before they can do anything.`
+  - Roles & permissions → `Import roles straight from your Roblox group. Lock down who can promote, demote, or warn.`
+  - Per-role quotas → `Set weekly session and time targets per rank. Misses show up in the audit feed.`
+  - Message logs → `Every staff chat message, searchable. When something happens in-game, you have the receipt.`
+  - Leave of absence → `Staff request time off, leadership approves in one click. Their quota pauses automatically.`
+  - Staff wall → `Pin announcements your team will actually see. Not buried in the seventh Discord channel.`
+  - AI support → `Tickets get triaged by an AI that knows your group's docs. Most never reach a human.`
+  - Open Cloud API → `Auto-rank syncs straight to Roblox using your group's API key. No bot accounts, no Selenium hacks.`
+  - Discord webhooks → `Session reminders, role changes, alerts — all routed to the channels your team already lives in.`
 
-## 2. Edge functions
+### 4. Pricing
+- Eyebrow: `Pricing`
+- h2: `Free forever. Premium when you outgrow it.`
+- sub: `No subscriptions. No card on file. Premium is a one-time Robux unlock.`
+- Card copy stays the same (Free $0, Premium 400 Robux).
 
-- **`staff-export-user-data`** — given a `user_id`, gathers all rows across tables (verified_users, workspaces owned, memberships, sessions, tickets, messages, etc.) and returns a JSON bundle. Logs to audit + data_export_requests.
-- **`staff-delete-user`** — fully removes a user's data (workspaces they own, memberships, sessions, tickets) then deletes auth user via service role. Audit logged.
-- **`staff-delete-workspace`** — cascades workspace deletion. Audit logged.
-- **`staff-moderate-chat`** — delete activity_events rows of `event_type = 'chat'` by id. Audit logged.
-- **`staff-grant-self-premium`** — for staff with `claim_premium_self`, applies premium days to a chosen workspace they own.
+### 5. Final CTA
+- h2: `Stop spreadsheeting your group.`
+- sub: `Takes about a minute. You'll wonder why you didn't switch sooner.`
+- Button label: `Get started — it's free`
 
-All check `has_staff_permission` server-side via service role + verifying the calling user.
+## Out of scope
+Nav, footer, dashboard mock layout, color tokens, fonts (already Outfit project-wide — leaving as-is since user said keep current look), routing.
 
-## 3. Frontend (`/staff` route)
-
-Layout: sidebar with sections, gated per permission.
-
-Sections:
-1. **Overview** — count of staff, open tickets, recent audit log entries.
-2. **Admins** (owner_admin only) — list staff_admins, add by Roblox username, edit per-admin permissions checklist, remove. Owner Admin row is locked.
-3. **Premium Grants** — existing grant manager moved here; create links, view claims; "Grant to my workspace" button (if `claim_premium_self`).
-4. **Support** — list all `support_tickets`, open ticket → reply, assign to another admin, change status. Reuses existing `support_messages`.
-5. **User Data (GDPR)** — search by Roblox username/user_id → view summary → buttons: **Export data** (downloads JSON), **Delete account**.
-6. **Workspaces** — search workspaces → view → **Delete workspace**.
-7. **Chat Moderation** — pick workspace → list recent chat events → delete individual messages.
-8. **Audit Log** — paginated view of staff_audit_log.
-
-Access: Route guarded by `is_staff_admin()`. Non-staff get 404.
-
-## 4. Seeding
-
-Migration inserts Novavoff as `owner_admin` (look up via verified_users by `lower(roblox_username)='novavoff'`). All permissions implicit for owner_admin.
-
-## 5. Out of scope
-
-- No UI changes outside `/staff`.
-- Existing `/support` page for end users keeps working unchanged.
-- No new auth providers.
-
----
-
-After you approve, I'll run the migration first, then build the edge functions and the `/staff` UI.
+## Verification
+Take a screenshot after the edit and visually confirm copy reads naturally + composition matches the chosen direction.
