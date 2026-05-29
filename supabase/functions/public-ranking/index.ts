@@ -38,6 +38,9 @@ serve(async (req) => {
     if (!requesterUserId || !targetUserId) {
       return json({ error: "requester_user_id and target_user_id are required" }, 400);
     }
+    if (requesterUserId === targetUserId) {
+      return json({ error: "You can't rank yourself" }, 403);
+    }
 
     // Look up workspace by API key
     const { data: ws } = await supabase
