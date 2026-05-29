@@ -193,13 +193,15 @@ export default function BSessions() {
                     {groupLabel(d)} at {time} · {s.duration_minutes}m · {s.category}
                   </div>
                   <div className="text-lg font-bold mb-5" style={{ color: bx.text }}>{s.title}</div>
-                  <div className="flex items-center justify-between pt-3 border-t" style={{ borderColor: "#22222a" }}>
-                    {s.host_id ? (
-                      <RobloxAvatar username={s.host_name || ""} userId={s.host_id} className="w-8 h-8 rounded-md" />
+                  <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: "#22222a" }}>
+                    {s.host_id && s.host_name ? (
+                      <>
+                        <RobloxAvatar username={s.host_name} className="w-8 h-8 rounded-md" />
+                        <span className="text-xs font-medium" style={{ color: bx.textDim }}>{s.host_name}</span>
+                      </>
                     ) : (
-                      <div className="w-8 h-8 rounded-md" style={{ background: "#22222a" }} />
+                      <span className="text-xs font-medium" style={{ color: bx.textMuted }}>Unassigned</span>
                     )}
-                    {s.host_name && <span className="text-xs font-medium" style={{ color: bx.textDim }}>{s.host_name}</span>}
                   </div>
                 </div>
               );
