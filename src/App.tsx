@@ -58,6 +58,8 @@ const ApiRanking = lazy(() => import("./pages/api/RankingApi"));
 const Almore = lazy(() => import("./pages/Almore"));
 const AlmoreLogin = lazy(() => import("./pages/AlmoreLogin"));
 const BargainsLogin = lazy(() => import("./pages/BargainsLogin"));
+const Shoply = lazy(() => import("./pages/Shoply"));
+const ShoplyLogin = lazy(() => import("./pages/ShoplyLogin"));
 const BDashboard = lazy(() => import("./bargains/Dashboard"));
 const BSessions  = lazy(() => import("./bargains/Sessions"));
 const BQuotas    = lazy(() => import("./bargains/Quotas"));
@@ -188,6 +190,25 @@ function AppRoutes() {
             element={<BargainsWorkspaceGuard allowedId={BARGAINS_WS} />}
           />
           <Route path="*" element={<Bargains />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+  if (hostname.startsWith("shoply.fluxcore") || hostname.startsWith("shoply.")) {
+    const SHOPLY_WS = "9f2c9234-c02f-492b-8121-74324e0df624";
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/" element={<Shoply />} />
+          <Route path="/login" element={<ShoplyLogin />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/workspaces" element={<Navigate to={`/w/${SHOPLY_WS}/dashboard`} replace />} />
+          <Route
+            path="/w/:workspaceId/*"
+            element={<BargainsWorkspaceGuard allowedId={SHOPLY_WS} />}
+          />
+          <Route path="*" element={<Shoply />} />
         </Routes>
       </Suspense>
     );
