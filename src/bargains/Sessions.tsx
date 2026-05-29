@@ -220,7 +220,7 @@ export default function BSessions() {
               <X className="w-4 h-4" />
             </button>
             <h2 className="text-lg font-bold" style={{ color: bx.text }}>Schedule session</h2>
-            <p className="text-xs mt-1" style={{ color: bx.textDim }}>You'll be set as the host.</p>
+            <p className="text-xs mt-1" style={{ color: bx.textDim }}>Add a session to the calendar.</p>
 
             <div className="mt-5 space-y-4">
               <div>
