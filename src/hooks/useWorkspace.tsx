@@ -109,8 +109,35 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
       // Fire-and-forget; ignored if workspace has no auto-created portal.
       supabase.rpc("heartbeat_portal", { _workspace_id: workspaceId }).then(() => {}, () => {});
 
+      // Force owners on the main domain (no subdomain context) to claim a subdomain.
+      // Staff/members can continue using legacy /w/<id> URLs.
+      if (ownerCheck && !workspaceIdOverride) {
+        const host = window.location.hostname;
+        const isMain = host === "fluxcore.works" || host === "www.fluxcore.works"
+          || host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com")
+          || host === "localhost" || host.startsWith("127.0.0.1");
+        if (isMain) {
+          const { data: portal } = await supabase
+            .from("partner_portals")
+            .select("subdomain,status")
+            .eq("workspace_id", workspaceId)
+            .maybeSingle();
+          const sub = (portal as any)?.subdomain;
+          const isClosed = (portal as any)?.status === "closed";
+          if (!sub && !window.location.pathname.endsWith("/settings")) {
+            navigate(`/w/${workspaceId}/settings?claim=1`);
+            return;
+          }
+          if (sub && !isClosed && host !== `${sub}.fluxcore.works`) {
+            window.location.href = `https://${sub}.fluxcore.works/#/w/${workspaceId}/dashboard`;
+            return;
+          }
+        }
+      }
+
       // Premium gamepass check disabled — Fluxcore is free for everyone.
     };
+
 
 
     fetchWorkspace();
