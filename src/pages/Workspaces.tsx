@@ -434,8 +434,9 @@ export default function Workspaces() {
 
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
-              if (!open) { setOnboardingStep(0); setNewName(""); setGroupId(""); }
+              if (!open) { setOnboardingStep(0); setNewName(""); setGroupId(""); setNewSubdomain(""); }
             }}>
+
               <DialogTrigger asChild>
                 <button className="group rounded-xl border-2 border-dashed border-border/30 hover:border-primary/30 p-5 flex flex-col items-center justify-center gap-3 min-h-[160px] transition-all">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
