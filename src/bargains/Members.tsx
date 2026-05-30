@@ -17,7 +17,7 @@ export default function BMembers() {
   useEffect(() => {
     if (!workspaceId) return;
     (async () => {
-      // Page through Supabase's 1000-row cap so we get every member.
+      // 1. Workspace members (Fluxcore-joined)
       const all: any[] = [];
       const CHUNK = 1000;
       for (let from = 0; ; from += CHUNK) {
@@ -32,7 +32,7 @@ export default function BMembers() {
       }
 
       const ownerRes = await supabase.rpc("get_workspace_owner_info" as any, { _workspace_id: workspaceId });
-      const list = all.map((m: any) => ({ ...m, created_at: m.joined_at }));
+      const list = all.map((m: any) => ({ ...m, created_at: m.joined_at, joined_fluxcore: true }));
       const ownerInfo: any = (ownerRes.data as any)?.[0];
       const ownerId = ownerInfo?.owner_id;
       if (ownerId) {
@@ -48,12 +48,50 @@ export default function BMembers() {
             created_at: new Date().toISOString(),
             roblox_username: ownerInfo.roblox_username || "Owner",
             roblox_user_id: ownerInfo.roblox_user_id || "",
+            joined_fluxcore: true,
           });
         }
       }
+
+      // 2. Roblox group roster — merge in members who haven't joined Fluxcore yet
+      const { data: ws } = await supabase.from("workspaces").select("roblox_group_id").eq("id", workspaceId).maybeSingle();
+      const groupId = (ws as any)?.roblox_group_id;
+      if (groupId) {
+        try {
+          const knownIds = new Set(list.map(m => String(m.roblox_user_id)));
+          let cursor: string | null = "";
+          let safety = 0;
+          while (cursor !== null && safety < 50) {
+            safety++;
+            const url = `https://groups.roblox.com/v1/groups/${groupId}/users?limit=100&sortOrder=Desc${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
+            const res = await fetch(url);
+            if (!res.ok) break;
+            const json: any = await res.json();
+            for (const row of (json?.data || [])) {
+              const uid = String(row?.user?.userId || "");
+              if (!uid || knownIds.has(uid)) continue;
+              // Skip lowest rank (typically "Guest" rank 0 / generic member)
+              if ((row?.role?.rank ?? 0) === 0) continue;
+              knownIds.add(uid);
+              list.push({
+                roblox_user_id: uid,
+                roblox_username: row?.user?.username || "Unknown",
+                role: row?.role?.name || "Member",
+                created_at: null,
+                joined_fluxcore: false,
+              });
+            }
+            cursor = json?.nextPageCursor || null;
+          }
+        } catch (e) {
+          console.error("Roblox group roster fetch failed:", e);
+        }
+      }
+
       setMembers(list);
     })();
   }, [workspaceId]);
+
 
   useEffect(() => { setPage(1); }, [q]);
 
