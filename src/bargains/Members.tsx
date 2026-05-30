@@ -123,14 +123,22 @@ export default function BMembers() {
               <>
                 <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-10 h-10 rounded-md" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold" style={{ color: bx.text }}>{m.roblox_username || "Unknown"}</div>
-                  <div className="text-xs" style={{ color: bx.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
+                  <div className="text-sm font-semibold flex items-center gap-2" style={{ color: bx.text }}>
+                    {m.roblox_username || "Unknown"}
+                    {!m.joined_fluxcore && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium uppercase tracking-wider"
+                        style={{ background: "#26262a", color: bx.textMuted }}>Not on Fluxcore</span>
+                    )}
+                  </div>
+                  <div className="text-xs" style={{ color: bx.textMuted }}>
+                    {m.created_at ? `Joined ${new Date(m.created_at).toLocaleDateString()}` : "From Roblox group"}
+                  </div>
                 </div>
                 <span className="text-[10px] px-2.5 py-1 rounded-md font-semibold uppercase tracking-wider"
                   style={{ background: "rgba(245,90,74,0.12)", color: bx.coral }}>{m.role}</span>
               </>
             );
-            const className = "flex items-center gap-4 px-5 py-3.5 hover:bg-[#1f1f22] transition-colors cursor-pointer";
+            const className = "flex items-center gap-4 px-5 py-3.5 hover:bg-[#1f1f22] transition-colors" + (target ? " cursor-pointer" : "");
             const style = { borderTop: i === 0 ? "none" : "1px solid #22222a" };
             return target ? (
               <Link key={m.user_id || m.roblox_user_id || i} to={target} className={className} style={style as any}>{inner}</Link>
@@ -138,6 +146,7 @@ export default function BMembers() {
               <div key={m.roblox_user_id || i} className={className} style={style as any}>{inner}</div>
             );
           })}
+
           {filtered.length === 0 && <div className="p-12 text-center text-sm" style={{ color: bx.textDim }}>No members found.</div>}
         </div>
 
