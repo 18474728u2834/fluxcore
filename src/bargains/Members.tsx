@@ -17,7 +17,7 @@ export default function BMembers() {
   useEffect(() => {
     if (!workspaceId) return;
     (async () => {
-      // Page through Supabase's 1000-row cap so we get every member.
+      // 1. Workspace members (Fluxcore-joined)
       const all: any[] = [];
       const CHUNK = 1000;
       for (let from = 0; ; from += CHUNK) {
@@ -32,7 +32,7 @@ export default function BMembers() {
       }
 
       const ownerRes = await supabase.rpc("get_workspace_owner_info" as any, { _workspace_id: workspaceId });
-      const list = all.map((m: any) => ({ ...m, created_at: m.joined_at }));
+      const list = all.map((m: any) => ({ ...m, created_at: m.joined_at, joined_fluxcore: true }));
       const ownerInfo: any = (ownerRes.data as any)?.[0];
       const ownerId = ownerInfo?.owner_id;
       if (ownerId) {
@@ -48,12 +48,50 @@ export default function BMembers() {
             created_at: new Date().toISOString(),
             roblox_username: ownerInfo.roblox_username || "Owner",
             roblox_user_id: ownerInfo.roblox_user_id || "",
+            joined_fluxcore: true,
           });
         }
       }
+
+      // 2. Roblox group roster — merge in members who haven't joined Fluxcore yet
+      const { data: ws } = await supabase.from("workspaces").select("roblox_group_id").eq("id", workspaceId).maybeSingle();
+      const groupId = (ws as any)?.roblox_group_id;
+      if (groupId) {
+        try {
+          const knownIds = new Set(list.map(m => String(m.roblox_user_id)));
+          let cursor: string | null = "";
+          let safety = 0;
+          while (cursor !== null && safety < 50) {
+            safety++;
+            const url = `https://groups.roblox.com/v1/groups/${groupId}/users?limit=100&sortOrder=Desc${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
+            const res = await fetch(url);
+            if (!res.ok) break;
+            const json: any = await res.json();
+            for (const row of (json?.data || [])) {
+              const uid = String(row?.user?.userId || "");
+              if (!uid || knownIds.has(uid)) continue;
+              // Skip lowest rank (typically "Guest" rank 0 / generic member)
+              if ((row?.role?.rank ?? 0) === 0) continue;
+              knownIds.add(uid);
+              list.push({
+                roblox_user_id: uid,
+                roblox_username: row?.user?.username || "Unknown",
+                role: row?.role?.name || "Member",
+                created_at: null,
+                joined_fluxcore: false,
+              });
+            }
+            cursor = json?.nextPageCursor || null;
+          }
+        } catch (e) {
+          console.error("Roblox group roster fetch failed:", e);
+        }
+      }
+
       setMembers(list);
     })();
   }, [workspaceId]);
+
 
   useEffect(() => { setPage(1); }, [q]);
 
@@ -85,14 +123,22 @@ export default function BMembers() {
               <>
                 <RobloxAvatar username={m.roblox_username || "?"} userId={m.roblox_user_id || ""} className="w-10 h-10 rounded-md" />
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm font-semibold" style={{ color: bx.text }}>{m.roblox_username || "Unknown"}</div>
-                  <div className="text-xs" style={{ color: bx.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
+                  <div className="text-sm font-semibold flex items-center gap-2" style={{ color: bx.text }}>
+                    {m.roblox_username || "Unknown"}
+                    {!m.joined_fluxcore && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded font-medium uppercase tracking-wider"
+                        style={{ background: "#26262a", color: bx.textMuted }}>Not on Fluxcore</span>
+                    )}
+                  </div>
+                  <div className="text-xs" style={{ color: bx.textMuted }}>
+                    {m.created_at ? `Joined ${new Date(m.created_at).toLocaleDateString()}` : "From Roblox group"}
+                  </div>
                 </div>
                 <span className="text-[10px] px-2.5 py-1 rounded-md font-semibold uppercase tracking-wider"
                   style={{ background: "rgba(245,90,74,0.12)", color: bx.coral }}>{m.role}</span>
               </>
             );
-            const className = "flex items-center gap-4 px-5 py-3.5 hover:bg-[#1f1f22] transition-colors cursor-pointer";
+            const className = "flex items-center gap-4 px-5 py-3.5 hover:bg-[#1f1f22] transition-colors" + (target ? " cursor-pointer" : "");
             const style = { borderTop: i === 0 ? "none" : "1px solid #22222a" };
             return target ? (
               <Link key={m.user_id || m.roblox_user_id || i} to={target} className={className} style={style as any}>{inner}</Link>
@@ -100,6 +146,7 @@ export default function BMembers() {
               <div key={m.roblox_user_id || i} className={className} style={style as any}>{inner}</div>
             );
           })}
+
           {filtered.length === 0 && <div className="p-12 text-center text-sm" style={{ color: bx.textDim }}>No members found.</div>}
         </div>
 
