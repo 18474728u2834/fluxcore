@@ -44,13 +44,16 @@ export default function Workspaces() {
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [groupId, setGroupId] = useState("");
+  const [newSubdomain, setNewSubdomain] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [createdWorkspaceId, setCreatedWorkspaceId] = useState<string | null>(null);
   const [createdInviteCode, setCreatedInviteCode] = useState<string | null>(null);
+  const [createdSubdomain, setCreatedSubdomain] = useState<string | null>(null);
   const [pendingGrant, setPendingGrant] = useState<{ grant_id: string; days: number } | null>(null);
   const [applyingGrantTo, setApplyingGrantTo] = useState<string | null>(null);
   const [isStaff, setIsStaff] = useState(false);
+
 
   useEffect(() => {
     if (authLoading) return;
@@ -206,11 +209,44 @@ export default function Workspaces() {
     }
   };
 
+  const RESERVED_SUBS = new Set([
+    "www","api","admin","staff","support","app","dashboard","login","auth",
+    "mail","blog","docs","help","shop","store","preview","fluxcore",
+  ]);
+
   const handleCreate = async () => {
     if (!newName.trim() || !groupId.trim() || !user) return;
+    const sub = newSubdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+    if (sub.length < 3 || sub.length > 40) { toast.error("Subdomain must be 3-40 chars (a-z, 0-9, -)"); return; }
+    if (sub.startsWith("-") || sub.endsWith("-")) { toast.error("Subdomain cannot start or end with a dash"); return; }
+    if (RESERVED_SUBS.has(sub)) { toast.error("That subdomain is reserved"); return; }
+
     setCreating(true);
 
-    // Fluxcore is free for everyone — no workspace limit.
+    // Verify subdomain availability
+    const { data: takenPortal } = await supabase.from("partner_portals").select("id").eq("subdomain", sub).maybeSingle();
+    if (takenPortal) { setCreating(false); toast.error(`${sub}.fluxcore.works is already taken`); return; }
+
+    // Verify the signed-in Roblox account owns the Roblox group
+    const { data: vu } = await supabase.from("verified_users").select("roblox_user_id").eq("user_id", user.id).maybeSingle();
+    const myRobloxId = (vu as any)?.roblox_user_id;
+    if (!myRobloxId) { setCreating(false); toast.error("Verify your Roblox account first."); return; }
+    try {
+      const res = await fetch(`https://groups.roblox.com/v1/groups/${encodeURIComponent(groupId.trim())}`);
+      if (!res.ok) { setCreating(false); toast.error("Couldn't find that Roblox group."); return; }
+      const json = await res.json();
+      const ownerId = json?.owner?.userId ? String(json.owner.userId) : null;
+      if (!ownerId) { setCreating(false); toast.error("That group has no owner on Roblox."); return; }
+      if (ownerId !== String(myRobloxId)) {
+        setCreating(false);
+        toast.error("You don't own this Roblox group. Only the group owner can create a workspace for it.");
+        return;
+      }
+    } catch {
+      setCreating(false);
+      toast.error("Couldn't verify group ownership. Try again.");
+      return;
+    }
 
     const { data, error } = await supabase
       .from("workspaces")
@@ -224,9 +260,28 @@ export default function Workspaces() {
       return;
     }
 
+    // Claim the subdomain
+    const { error: portalErr } = await supabase.from("partner_portals").insert({
+      workspace_id: data.id,
+      subdomain: sub,
+      name: newName.trim(),
+      auto_created: true,
+      use_hyra_ui: false,
+      status: "active",
+      created_by: user.id,
+      links: [],
+    });
+    if (portalErr) {
+      toast.warning("Workspace created but subdomain failed: " + portalErr.message);
+    } else {
+      // Best-effort attach to Vercel
+      supabase.functions.invoke("vercel-domain", { body: { action: "add", subdomain: sub } }).catch(() => {});
+    }
+
     toast.success("Workspace created!");
     setCreatedWorkspaceId(data.id);
     setCreatedInviteCode(data.invite_code);
+    setCreatedSubdomain(sub);
     setOnboardingStep(1);
     setCreating(false);
   };
@@ -241,10 +296,14 @@ export default function Workspaces() {
     setOnboardingStep(0);
     setNewName("");
     setGroupId("");
-    if (createdWorkspaceId) {
+    setNewSubdomain("");
+    if (createdSubdomain && createdWorkspaceId) {
+      window.location.href = `https://${createdSubdomain}.fluxcore.works/#/w/${createdWorkspaceId}/dashboard`;
+    } else if (createdWorkspaceId) {
       navigate(`/w/${createdWorkspaceId}/dashboard`);
     }
   };
+
 
   const getRoleColor = (role: string) => {
     if (role === "Owner") return "text-primary font-semibold";
@@ -375,8 +434,9 @@ export default function Workspaces() {
 
             <Dialog open={dialogOpen} onOpenChange={(open) => {
               setDialogOpen(open);
-              if (!open) { setOnboardingStep(0); setNewName(""); setGroupId(""); }
+              if (!open) { setOnboardingStep(0); setNewName(""); setGroupId(""); setNewSubdomain(""); }
             }}>
+
               <DialogTrigger asChild>
                 <button className="group rounded-xl border-2 border-dashed border-border/30 hover:border-primary/30 p-5 flex flex-col items-center justify-center gap-3 min-h-[160px] transition-all">
                   <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
@@ -404,13 +464,22 @@ export default function Workspaces() {
                     <div className="space-y-2">
                       <Label className="text-foreground text-sm font-medium">Roblox Group ID <span className="text-destructive">*</span></Label>
                       <Input placeholder="e.g. 12345678" value={groupId} onChange={(e) => setGroupId(e.target.value)} className="bg-muted border-border h-11" />
-                      <p className="text-xs text-muted-foreground">Required. Find it in your Roblox group URL.</p>
+                      <p className="text-xs text-muted-foreground">Required. You must be the Roblox group owner.</p>
                     </div>
-                    <Button onClick={handleCreate} disabled={creating || !newName.trim() || !groupId.trim()} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                    <div className="space-y-2">
+                      <Label className="text-foreground text-sm font-medium">Subdomain <span className="text-destructive">*</span></Label>
+                      <div className="flex gap-2 items-center">
+                        <Input placeholder="mywork" value={newSubdomain} onChange={(e) => setNewSubdomain(e.target.value.toLowerCase())} maxLength={40} className="bg-muted border-border h-11 lowercase" />
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">.fluxcore.works</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">3-40 chars. Lowercase letters, numbers, dashes.</p>
+                    </div>
+                    <Button onClick={handleCreate} disabled={creating || !newName.trim() || !groupId.trim() || !newSubdomain.trim()} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
                       {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create Workspace
                     </Button>
                   </div>
                 )}
+
 
                 {onboardingStep === 1 && (
                   <div className="space-y-4 pt-2">
