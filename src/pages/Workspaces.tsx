@@ -44,13 +44,16 @@ export default function Workspaces() {
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState("");
   const [groupId, setGroupId] = useState("");
+  const [newSubdomain, setNewSubdomain] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(0);
   const [createdWorkspaceId, setCreatedWorkspaceId] = useState<string | null>(null);
   const [createdInviteCode, setCreatedInviteCode] = useState<string | null>(null);
+  const [createdSubdomain, setCreatedSubdomain] = useState<string | null>(null);
   const [pendingGrant, setPendingGrant] = useState<{ grant_id: string; days: number } | null>(null);
   const [applyingGrantTo, setApplyingGrantTo] = useState<string | null>(null);
   const [isStaff, setIsStaff] = useState(false);
+
 
   useEffect(() => {
     if (authLoading) return;
