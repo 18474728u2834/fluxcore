@@ -24,7 +24,7 @@ const NAV = [
   { to: "quotas",     icon: Target,      label: "Quotas"    },
   { to: "wall",       icon: Megaphone,   label: "Wall"      },
   { to: "roles",      icon: ShieldCheck, label: "Roles"     },
-  { to: "staff",      icon: Grid3x3,     label: "Staff"     },
+  { to: "staff",      icon: Grid3x3,     label: "Blacklist" },
 ];
 
 export function BargainsShell({ children }: ShellProps) {
