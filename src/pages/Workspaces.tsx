@@ -209,11 +209,44 @@ export default function Workspaces() {
     }
   };
 
+  const RESERVED_SUBS = new Set([
+    "www","api","admin","staff","support","app","dashboard","login","auth",
+    "mail","blog","docs","help","shop","store","preview","fluxcore",
+  ]);
+
   const handleCreate = async () => {
     if (!newName.trim() || !groupId.trim() || !user) return;
+    const sub = newSubdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, "");
+    if (sub.length < 3 || sub.length > 40) { toast.error("Subdomain must be 3-40 chars (a-z, 0-9, -)"); return; }
+    if (sub.startsWith("-") || sub.endsWith("-")) { toast.error("Subdomain cannot start or end with a dash"); return; }
+    if (RESERVED_SUBS.has(sub)) { toast.error("That subdomain is reserved"); return; }
+
     setCreating(true);
 
-    // Fluxcore is free for everyone — no workspace limit.
+    // Verify subdomain availability
+    const { data: takenPortal } = await supabase.from("partner_portals").select("id").eq("subdomain", sub).maybeSingle();
+    if (takenPortal) { setCreating(false); toast.error(`${sub}.fluxcore.works is already taken`); return; }
+
+    // Verify the signed-in Roblox account owns the Roblox group
+    const { data: vu } = await supabase.from("verified_users").select("roblox_user_id").eq("user_id", user.id).maybeSingle();
+    const myRobloxId = (vu as any)?.roblox_user_id;
+    if (!myRobloxId) { setCreating(false); toast.error("Verify your Roblox account first."); return; }
+    try {
+      const res = await fetch(`https://groups.roblox.com/v1/groups/${encodeURIComponent(groupId.trim())}`);
+      if (!res.ok) { setCreating(false); toast.error("Couldn't find that Roblox group."); return; }
+      const json = await res.json();
+      const ownerId = json?.owner?.userId ? String(json.owner.userId) : null;
+      if (!ownerId) { setCreating(false); toast.error("That group has no owner on Roblox."); return; }
+      if (ownerId !== String(myRobloxId)) {
+        setCreating(false);
+        toast.error("You don't own this Roblox group. Only the group owner can create a workspace for it.");
+        return;
+      }
+    } catch {
+      setCreating(false);
+      toast.error("Couldn't verify group ownership. Try again.");
+      return;
+    }
 
     const { data, error } = await supabase
       .from("workspaces")
@@ -227,9 +260,28 @@ export default function Workspaces() {
       return;
     }
 
+    // Claim the subdomain
+    const { error: portalErr } = await supabase.from("partner_portals").insert({
+      workspace_id: data.id,
+      subdomain: sub,
+      name: newName.trim(),
+      auto_created: true,
+      use_hyra_ui: false,
+      status: "active",
+      created_by: user.id,
+      links: [],
+    });
+    if (portalErr) {
+      toast.warning("Workspace created but subdomain failed: " + portalErr.message);
+    } else {
+      // Best-effort attach to Vercel
+      supabase.functions.invoke("vercel-domain", { body: { action: "add", subdomain: sub } }).catch(() => {});
+    }
+
     toast.success("Workspace created!");
     setCreatedWorkspaceId(data.id);
     setCreatedInviteCode(data.invite_code);
+    setCreatedSubdomain(sub);
     setOnboardingStep(1);
     setCreating(false);
   };
@@ -244,10 +296,14 @@ export default function Workspaces() {
     setOnboardingStep(0);
     setNewName("");
     setGroupId("");
-    if (createdWorkspaceId) {
+    setNewSubdomain("");
+    if (createdSubdomain && createdWorkspaceId) {
+      window.location.href = `https://${createdSubdomain}.fluxcore.works/#/w/${createdWorkspaceId}/dashboard`;
+    } else if (createdWorkspaceId) {
       navigate(`/w/${createdWorkspaceId}/dashboard`);
     }
   };
+
 
   const getRoleColor = (role: string) => {
     if (role === "Owner") return "text-primary font-semibold";
