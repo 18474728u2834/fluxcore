@@ -464,13 +464,22 @@ export default function Workspaces() {
                     <div className="space-y-2">
                       <Label className="text-foreground text-sm font-medium">Roblox Group ID <span className="text-destructive">*</span></Label>
                       <Input placeholder="e.g. 12345678" value={groupId} onChange={(e) => setGroupId(e.target.value)} className="bg-muted border-border h-11" />
-                      <p className="text-xs text-muted-foreground">Required. Find it in your Roblox group URL.</p>
+                      <p className="text-xs text-muted-foreground">Required. You must be the Roblox group owner.</p>
                     </div>
-                    <Button onClick={handleCreate} disabled={creating || !newName.trim() || !groupId.trim()} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
+                    <div className="space-y-2">
+                      <Label className="text-foreground text-sm font-medium">Subdomain <span className="text-destructive">*</span></Label>
+                      <div className="flex gap-2 items-center">
+                        <Input placeholder="mywork" value={newSubdomain} onChange={(e) => setNewSubdomain(e.target.value.toLowerCase())} maxLength={40} className="bg-muted border-border h-11 lowercase" />
+                        <span className="text-sm text-muted-foreground whitespace-nowrap">.fluxcore.works</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">3-40 chars. Lowercase letters, numbers, dashes.</p>
+                    </div>
+                    <Button onClick={handleCreate} disabled={creating || !newName.trim() || !groupId.trim() || !newSubdomain.trim()} className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold">
                       {creating && <Loader2 className="w-4 h-4 mr-2 animate-spin" />} Create Workspace
                     </Button>
                   </div>
                 )}
+
 
                 {onboardingStep === 1 && (
                   <div className="space-y-4 pt-2">
