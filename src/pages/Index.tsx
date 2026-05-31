@@ -425,74 +425,48 @@ export default function Index() {
 
       {/* PRICING */}
       <section className="py-28 relative">
-        <div className="max-w-5xl mx-auto px-6">
+        <div className="max-w-3xl mx-auto px-6">
           <div className="text-center max-w-xl mx-auto mb-14">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-3">Pricing</p>
             <h2 className="text-4xl sm:text-5xl font-black tracking-[-0.025em] leading-[1.05] mb-4">
-              Free to start. Premium when you grow.
+              Free for everyone. Forever.
             </h2>
             <p className="text-[16px] text-muted-foreground">
-              No credit card. No subscriptions. Premium is a one-time Robux unlock.
+              No credit card. No subscriptions. No gamepass. Every feature is unlocked for every group.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="rounded-2xl border border-border/30 bg-card/40 p-7 flex flex-col">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Free</p>
-              <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-5xl font-black tracking-tight">$0</span>
-                <span className="text-muted-foreground text-sm">forever</span>
-              </div>
-              <p className="text-sm text-muted-foreground mb-7">For groups getting started.</p>
-              <ul className="space-y-2.5 mb-8 flex-1">
-                {[
-                  "Unlimited workspaces & members",
-                  "Real-time activity tracking",
-                  "Group ranking & role sync",
-                  "Sessions, shifts & scheduling",
-                  "Discord webhook reminders",
-                  "Policies with digital signatures",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2.5 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Button variant="outline" className="w-full h-11 font-semibold border-border/50 rounded-xl" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
-                {isLoggedIn ? "Open dashboard" : "Get started"} <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+          <div className="relative rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/[0.10] via-card/40 to-violet-500/[0.06] p-8 flex flex-col shadow-[0_0_60px_-20px_hsl(var(--primary)/0.5)]">
+            <div className="absolute -top-2.5 left-8 px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
+              Everything included
             </div>
-
-            <div className="relative rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/[0.10] via-card/40 to-violet-500/[0.06] p-7 flex flex-col shadow-[0_0_60px_-20px_hsl(var(--primary)/0.5)]">
-              <div className="absolute -top-2.5 left-7 px-2.5 py-0.5 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
-                Premium
-              </div>
-              <p className="text-[11px] font-bold uppercase tracking-widest text-primary mb-3">One-time</p>
-              <div className="flex items-baseline gap-1.5 mb-1">
-                <span className="text-5xl font-black tracking-tight">400</span>
-                <span className="text-muted-foreground text-sm">Robux</span>
-              </div>
-              <p className="text-sm text-muted-foreground mb-7">For groups going pro.</p>
-              <ul className="space-y-2.5 mb-8 flex-1">
-                {[
-                  "Everything in Free",
-                  "In-game message logging",
-                  "Auto-rank sync over Open Cloud",
-                  "Verified workspace badge",
-                  "Full custom branding",
-                  "Per-role quotas & analytics",
-                ].map((item) => (
-                  <li key={item} className="flex items-center gap-2.5 text-sm">
-                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <Button className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/30" onClick={() => navigate("/pricing")}>
-                See Premium <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+            <div className="flex items-baseline gap-1.5 mb-1">
+              <span className="text-5xl font-black tracking-tight">$0</span>
+              <span className="text-muted-foreground text-sm">forever</span>
             </div>
+            <p className="text-sm text-muted-foreground mb-7">For every Roblox group, of any size.</p>
+            <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5 mb-8">
+              {[
+                "Unlimited workspaces & members",
+                "Real-time activity tracking",
+                "Group ranking & role sync",
+                "Sessions, shifts & scheduling",
+                "Discord webhook reminders",
+                "Policies with digital signatures",
+                "In-game message logging",
+                "Auto-rank sync over Open Cloud",
+                "Full custom branding",
+                "Per-role quotas & analytics",
+              ].map((item) => (
+                <li key={item} className="flex items-center gap-2.5 text-sm">
+                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <Button className="w-full h-11 bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-lg shadow-primary/30" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
+              {isLoggedIn ? "Open dashboard" : "Get started — it's free"} <ArrowRight className="w-4 h-4 ml-2" />
+            </Button>
           </div>
         </div>
       </section>
