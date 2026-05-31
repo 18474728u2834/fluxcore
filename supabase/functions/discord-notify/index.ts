@@ -328,7 +328,9 @@ const sendSessionStarting = async (
     invite: invite.url ? `[${invite.base.replace("https://", "")}](${invite.url})` : "",
   };
 
-  const payload = buildPayloadFromTemplate(template, ctx);
+  const payload = template.advanced_mode
+    ? buildAdvancedPayload(template, ctx, occurrenceIso)
+    : buildPayloadFromTemplate(template, ctx);
   return sendDiscord(workspace.discord_webhook_url, payload);
 };
 
