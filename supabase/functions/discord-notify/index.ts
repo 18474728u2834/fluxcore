@@ -21,6 +21,19 @@ type SessionRow = {
 };
 type WorkspaceRow = { id: string; name: string; discord_webhook_url: string | null; game_url: string | null; invite_code: string | null };
 type PortalRow = { workspace_id: string; subdomain: string | null };
+type AdvancedField = { name?: string; value?: string; inline?: boolean };
+type AdvancedEmbed = {
+  author?: { name?: string; url?: string; icon_url?: string };
+  title?: string;
+  url?: string;
+  description?: string;
+  color?: string;
+  fields?: AdvancedField[];
+  image_url?: string;
+  thumbnail_url?: string;
+  footer?: { text?: string; icon_url?: string };
+  timestamp?: boolean;
+};
 type Template = {
   category: string;
   use_embed: boolean;
@@ -36,6 +49,11 @@ type Template = {
   show_host: boolean;
   show_time: boolean;
   plain_message: string | null;
+  advanced_mode?: boolean;
+  content?: string | null;
+  username?: string | null;
+  avatar_url?: string | null;
+  embeds?: AdvancedEmbed[] | null;
 };
 
 const FOOTER_TEXT = "Fluxcore Systems";
@@ -215,11 +233,64 @@ const buildPayloadFromTemplate = (
   return payload;
 };
 
+const buildAdvancedPayload = (
+  template: Template,
+  ctx: Record<string, string>,
+  occurrenceIso: string,
+): Record<string, unknown> => {
+  const fill = (s?: string | null) => (s ? fillTemplate(s, ctx) : "");
+  const embedsIn = Array.isArray(template.embeds) ? template.embeds : [];
+  const embedsOut: Record<string, unknown>[] = embedsIn.slice(0, 10).map((e) => {
+    const out: Record<string, unknown> = {};
+    const title = fill(e.title); if (title) out.title = title;
+    const url = fill(e.url); if (url) out.url = url;
+    const description = fill(e.description); if (description) out.description = description;
+    out.color = hexToInt(e.color, categoryColor(template.category));
+    const fields = (e.fields || [])
+      .map((f) => ({ name: fill(f.name), value: fill(f.value), inline: !!f.inline }))
+      .filter((f) => f.name && f.value).slice(0, 25);
+    if (fields.length) out.fields = fields;
+    if (e.image_url) out.image = { url: fill(e.image_url) || e.image_url };
+    if (e.thumbnail_url) out.thumbnail = { url: fill(e.thumbnail_url) || e.thumbnail_url };
+    if (e.footer?.text || e.footer?.icon_url) {
+      const f: Record<string, unknown> = {};
+      if (e.footer.text) f.text = fill(e.footer.text);
+      if (e.footer.icon_url) f.icon_url = e.footer.icon_url;
+      out.footer = f;
+    }
+    if (e.author?.name || e.author?.icon_url) {
+      const a: Record<string, unknown> = {};
+      if (e.author.name) a.name = fill(e.author.name);
+      if (e.author.url) a.url = fill(e.author.url);
+      if (e.author.icon_url) a.icon_url = e.author.icon_url;
+      out.author = a;
+    }
+    if (e.timestamp) out.timestamp = occurrenceIso;
+    return out;
+  });
+
+  // Always brand the LAST embed footer with "Fluxcore Systems"
+  if (embedsOut.length) {
+    const last = embedsOut[embedsOut.length - 1] as Record<string, unknown>;
+    const existing = (last.footer as Record<string, unknown> | undefined) || {};
+    last.footer = { ...existing, text: FOOTER_TEXT };
+  } else {
+    embedsOut.push({ footer: { text: FOOTER_TEXT }, color: hexToInt(template.color) });
+  }
+
+  const payload: Record<string, unknown> = { embeds: embedsOut };
+  const content = fill(template.content || "");
+  if (content) payload.content = content;
+  if (template.username) payload.username = template.username;
+  if (template.avatar_url) payload.avatar_url = template.avatar_url;
+  return payload;
+};
+
 const getTemplate = async (supabase: ReturnType<typeof createClient>, workspaceId: string, category: string): Promise<Template> => {
   const cat = ["Shift", "Training", "Event"].includes(category) ? category : "Shift";
   const { data } = await supabase
     .from("webhook_templates")
-    .select("category, use_embed, title, description, color, image_url, image_position, link_mode, link_label, link_position, show_claims, show_host, show_time, plain_message")
+    .select("category, use_embed, title, description, color, image_url, image_position, link_mode, link_label, link_position, show_claims, show_host, show_time, plain_message, advanced_mode, content, username, avatar_url, embeds")
     .eq("workspace_id", workspaceId)
     .eq("category", cat)
     .maybeSingle();
@@ -257,7 +328,9 @@ const sendSessionStarting = async (
     invite: invite.url ? `[${invite.base.replace("https://", "")}](${invite.url})` : "",
   };
 
-  const payload = buildPayloadFromTemplate(template, ctx);
+  const payload = template.advanced_mode
+    ? buildAdvancedPayload(template, ctx, occurrenceIso)
+    : buildPayloadFromTemplate(template, ctx);
   return sendDiscord(workspace.discord_webhook_url, payload);
 };
 
