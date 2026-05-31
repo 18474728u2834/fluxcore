@@ -232,11 +232,6 @@ export default function Workspaces() {
     const myRobloxId = (vu as any)?.roblox_user_id;
     if (!myRobloxId) { setCreating(false); toast.error("Verify your Roblox account first."); return; }
     try {
-      const { data: gi, error: giErr } = await supabase.functions.invoke("roblox-group-owner", {
-        body: null,
-        method: "GET" as any,
-      } as any).catch(() => ({ data: null, error: { message: "network" } } as any));
-      // supabase-js v2 doesn't pass query params via invoke; call directly:
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
       const url = `https://${projectId}.supabase.co/functions/v1/roblox-group-owner?group_id=${encodeURIComponent(groupId.trim())}`;
       const res = await fetch(url, {
@@ -251,8 +246,6 @@ export default function Workspaces() {
         toast.error("You don't own this Roblox group. Only the group owner can create a workspace for it.");
         return;
       }
-      // suppress unused
-      void gi; void giErr;
     } catch {
       setCreating(false);
       toast.error("Couldn't verify group ownership. Try again.");
