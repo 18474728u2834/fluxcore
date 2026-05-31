@@ -1158,6 +1158,69 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_templates: {
+        Row: {
+          category: string
+          color: string
+          created_at: string
+          description: string
+          id: string
+          image_position: string
+          image_url: string | null
+          link_label: string
+          link_mode: string
+          link_position: string
+          plain_message: string | null
+          show_claims: boolean
+          show_host: boolean
+          show_time: boolean
+          title: string
+          updated_at: string
+          use_embed: boolean
+          workspace_id: string
+        }
+        Insert: {
+          category: string
+          color?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_position?: string
+          image_url?: string | null
+          link_label?: string
+          link_mode?: string
+          link_position?: string
+          plain_message?: string | null
+          show_claims?: boolean
+          show_host?: boolean
+          show_time?: boolean
+          title?: string
+          updated_at?: string
+          use_embed?: boolean
+          workspace_id: string
+        }
+        Update: {
+          category?: string
+          color?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_position?: string
+          image_url?: string | null
+          link_label?: string
+          link_mode?: string
+          link_position?: string
+          plain_message?: string | null
+          show_claims?: boolean
+          show_host?: boolean
+          show_time?: boolean
+          title?: string
+          updated_at?: string
+          use_embed?: boolean
+          workspace_id?: string
+        }
+        Relationships: []
+      }
       workspace_blacklist: {
         Row: {
           blacklisted_at: string
