@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 const DAYS = ["S","M","T","W","T","F","S"];
 
+interface SessionSlot { label: string; count: number; assigned: (string | null)[]; }
 interface Session {
   id: string;
   title: string;
@@ -17,11 +18,21 @@ interface Session {
   host_id: string | null;
   duration_minutes: number;
   category: string;
+  recurring: string | null;
+  game_url: string | null;
+  slots: SessionSlot[] | null;
 }
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const toLocalInput = (d: Date) =>
   `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+const DEFAULT_SLOTS: Record<string, SessionSlot[]> = {
+  Shift:    [{ label: "Host", count: 1, assigned: [null] }, { label: "Co-host", count: 1, assigned: [null] }],
+  Training: [{ label: "Trainer", count: 1, assigned: [null] }, { label: "Co-trainer", count: 1, assigned: [null] }],
+  Event:    [{ label: "Host", count: 1, assigned: [null] }],
+  Meeting:  [{ label: "Host", count: 1, assigned: [null] }],
+};
 
 export default function BSessions() {
   const { workspaceId } = useWorkspace();
@@ -43,14 +54,15 @@ export default function BSessions() {
   });
   const [duration, setDuration] = useState("60");
   const [description, setDescription] = useState("");
-  const [hostMe, setHostMe] = useState(false);
+  const [gameUrl, setGameUrl] = useState("");
+  const [slots, setSlots] = useState<SessionSlot[]>(DEFAULT_SLOTS.Shift);
   const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     const from = new Date(selected); const to = new Date(selected); to.setDate(to.getDate()+1);
     supabase.from("scheduled_sessions")
-      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category")
+      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, game_url, slots")
       .eq("workspace_id", workspaceId)
       .gte("scheduled_at", from.toISOString())
       .lt("scheduled_at", to.toISOString())
@@ -79,9 +91,43 @@ export default function BSessions() {
     setCategory("Shift");
     setDuration("60");
     setDescription("");
-    setHostMe(false);
+    setGameUrl("");
+    setSlots(DEFAULT_SLOTS.Shift.map(s => ({ ...s, assigned: Array(s.count).fill(null) })));
     setRecurring("none");
     setOpen(true);
+  };
+
+  const onCategoryChange = (c: string) => {
+    setCategory(c);
+    setSlots((DEFAULT_SLOTS[c] || DEFAULT_SLOTS.Event).map(s => ({ ...s, assigned: Array(s.count).fill(null) })));
+  };
+
+  const updateSlot = (idx: number, patch: Partial<SessionSlot>) => {
+    setSlots(prev => prev.map((s, i) => {
+      if (i !== idx) return s;
+      const next = { ...s, ...patch };
+      if (patch.count !== undefined) {
+        const arr = [...s.assigned];
+        while (arr.length < next.count) arr.push(null);
+        arr.length = next.count;
+        next.assigned = arr;
+      }
+      return next;
+    }));
+  };
+  const addSlot = () => setSlots(prev => [...prev, { label: "Role", count: 1, assigned: [null] }]);
+  const removeSlot = (idx: number) => setSlots(prev => prev.filter((_, i) => i !== idx));
+
+  const claimFirstSelfSlot = () => {
+    if (!robloxUsername) return;
+    setSlots(prev => {
+      const copy = prev.map(s => ({ ...s, assigned: [...s.assigned] }));
+      for (const s of copy) {
+        const i = s.assigned.findIndex(a => !a);
+        if (i !== -1) { s.assigned[i] = robloxUsername; return copy; }
+      }
+      return copy;
+    });
   };
 
   const createSession = async () => {
@@ -90,16 +136,21 @@ export default function BSessions() {
     if (!user) { toast.error("You must be signed in"); return; }
     setSaving(true);
     const dt = new Date(when);
+    const cleanSlots = slots
+      .filter(s => s.label.trim())
+      .map(s => ({ label: s.label.trim(), count: Math.max(1, s.count), assigned: s.assigned.slice(0, s.count) }));
+    const firstAssignee = cleanSlots.flatMap(s => s.assigned).find(n => n && n.trim()) || "Unassigned";
     const payload: any = {
       workspace_id: workspaceId,
       title: title.trim(),
       category,
       scheduled_at: dt.toISOString(),
       duration_minutes: parseInt(duration) || 60,
-      host_id: hostMe ? user.id : null,
-      host_name: hostMe ? (robloxUsername || "Host") : "Unassigned",
+      host_id: user.id,
+      host_name: firstAssignee,
       description: description.trim() || null,
-      slots: [],
+      game_url: gameUrl.trim() || null,
+      slots: cleanSlots,
       tag_ids: [],
     };
     if (recurring !== "none") {
@@ -122,6 +173,21 @@ export default function BSessions() {
     const { error } = await supabase.from("scheduled_sessions").delete().eq("id", id);
     if (error) { toast.error(error.message); return; }
     toast.success("Deleted");
+    setRefreshKey(k => k + 1);
+  };
+
+  const toggleClaim = async (s: Session, slotIdx: number, seatIdx: number) => {
+    if (!robloxUsername) { toast.error("Verify your Roblox account first"); return; }
+    const base = (s.slots || []).map(sl => ({ ...sl, assigned: [...sl.assigned] }));
+    if (!base[slotIdx]) return;
+    const current = base[slotIdx].assigned[seatIdx];
+    if (current && current !== robloxUsername) { toast.error("That seat is taken"); return; }
+    base[slotIdx].assigned[seatIdx] = current ? null : robloxUsername;
+    const firstAssignee = base.flatMap(x => x.assigned).find(n => n && n.trim()) || "Unassigned";
+    const { error } = await supabase.from("scheduled_sessions")
+      .update({ slots: base, host_name: firstAssignee } as any)
+      .eq("id", s.id);
+    if (error) { toast.error(error.message); return; }
     setRefreshKey(k => k + 1);
   };
 
@@ -180,6 +246,7 @@ export default function BSessions() {
             {sessions.map((s) => {
               const d = new Date(s.scheduled_at);
               const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+              const sessionSlots = s.slots && s.slots.length ? s.slots : null;
               return (
                 <div key={s.id} className="rounded-md border p-5 transition-transform hover:-translate-y-0.5 group relative"
                   style={bx.cardStyle}>
@@ -192,17 +259,55 @@ export default function BSessions() {
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
                     {groupLabel(d)} at {time} · {s.duration_minutes}m · {s.category}
                   </div>
-                  <div className="text-lg font-bold mb-5" style={{ color: bx.text }}>{s.title}</div>
-                  <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: "#22222a" }}>
-                    {s.host_id && s.host_name ? (
-                      <>
-                        <RobloxAvatar username={s.host_name} className="w-8 h-8 rounded-md" />
-                        <span className="text-xs font-medium" style={{ color: bx.textDim }}>{s.host_name}</span>
-                      </>
-                    ) : (
+                  <div className="text-lg font-bold mb-4" style={{ color: bx.text }}>{s.title}</div>
+                  {s.game_url && (
+                    <a href={s.game_url} target="_blank" rel="noopener noreferrer"
+                      className="text-xs underline mb-3 inline-block" style={{ color: bx.coral }}>
+                      Open game link
+                    </a>
+                  )}
+
+                  {sessionSlots ? (
+                    <div className="space-y-2 pt-3 border-t" style={{ borderColor: "#22222a" }}>
+                      {sessionSlots.map((sl, slIdx) => (
+                        <div key={slIdx}>
+                          <div className="text-[10px] uppercase tracking-wider font-semibold mb-1.5" style={{ color: bx.textMuted }}>
+                            {sl.label}
+                          </div>
+                          <div className="space-y-1.5">
+                            {sl.assigned.map((name, seatIdx) => {
+                              const mine = name === robloxUsername;
+                              return (
+                                <div key={seatIdx} className="flex items-center justify-between gap-2">
+                                  <div className="flex items-center gap-2 min-w-0">
+                                    {name ? (
+                                      <>
+                                        <RobloxAvatar username={name} className="w-6 h-6 rounded-md flex-shrink-0" />
+                                        <span className="text-xs font-medium truncate" style={{ color: bx.text }}>{name}</span>
+                                      </>
+                                    ) : (
+                                      <span className="text-xs italic" style={{ color: bx.textMuted }}>Open</span>
+                                    )}
+                                  </div>
+                                  {(!name || mine) && (
+                                    <button onClick={() => toggleClaim(s, slIdx, seatIdx)}
+                                      className="text-[11px] font-semibold inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-[#2a2a2e] transition"
+                                      style={{ color: mine ? bx.textDim : bx.coral }}>
+                                      {mine ? (<><UserMinus className="w-3 h-3" /> Release</>) : (<><UserPlus className="w-3 h-3" /> Claim</>)}
+                                    </button>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 pt-3 border-t" style={{ borderColor: "#22222a" }}>
                       <span className="text-xs font-medium" style={{ color: bx.textMuted }}>Unassigned</span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -214,7 +319,7 @@ export default function BSessions() {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
-          <div className="w-full max-w-md rounded-md border p-6 relative" style={bx.cardStyle}>
+          <div className="w-full max-w-md rounded-md border p-6 relative max-h-[90vh] overflow-y-auto" style={bx.cardStyle}>
             <button onClick={() => setOpen(false)}
               className="absolute top-4 right-4 hover:text-white" style={{ color: bx.textDim }} aria-label="Close">
               <X className="w-4 h-4" />
@@ -234,7 +339,7 @@ export default function BSessions() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Type</label>
-                  <select value={category} onChange={(e) => setCategory(e.target.value)}
+                  <select value={category} onChange={(e) => onCategoryChange(e.target.value)}
                     className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                     style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
                     <option>Shift</option>
@@ -258,22 +363,64 @@ export default function BSessions() {
                   style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text, colorScheme: "dark" }} />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Repeat</label>
-                  <select value={recurring} onChange={(e) => setRecurring(e.target.value as any)}
-                    className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
-                    style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
-                    <option value="none">Doesn't repeat</option>
-                    <option value="daily">Every day</option>
-                    <option value="weekly">Weekly on this day</option>
-                  </select>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Game link</label>
+                <input value={gameUrl} onChange={(e) => setGameUrl(e.target.value)}
+                  placeholder="https://www.roblox.com/games/…"
+                  className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                  style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Repeat</label>
+                <select value={recurring} onChange={(e) => setRecurring(e.target.value as any)}
+                  className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                  style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
+                  <option value="none">Doesn't repeat</option>
+                  <option value="daily">Every day</option>
+                  <option value="weekly">Weekly on this day</option>
+                </select>
+              </div>
+
+              {/* Roles / slots */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Roles</label>
+                  <button onClick={addSlot} className="text-[11px] font-semibold inline-flex items-center gap-1" style={{ color: bx.coral }}>
+                    <Plus className="w-3 h-3" /> Add role
+                  </button>
                 </div>
-                <label className="flex items-end pb-2 gap-2 cursor-pointer select-none">
-                  <input type="checkbox" checked={hostMe} onChange={(e) => setHostMe(e.target.checked)}
-                    className="w-4 h-4 accent-current" style={{ accentColor: bx.coral }} />
-                  <span className="text-sm" style={{ color: bx.text }}>I'll host this</span>
-                </label>
+                <div className="space-y-2">
+                  {slots.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input value={s.label} onChange={(e) => updateSlot(i, { label: e.target.value })}
+                        placeholder="Role name"
+                        className="flex-1 h-9 px-2.5 rounded-md text-sm outline-none"
+                        style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+                      <input type="number" min={1} max={20} value={s.count}
+                        onChange={(e) => updateSlot(i, { count: Math.max(1, parseInt(e.target.value) || 1) })}
+                        className="w-16 h-9 px-2 rounded-md text-sm outline-none text-center"
+                        style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+                      {slots.length > 1 && (
+                        <button onClick={() => removeSlot(i)} className="h-9 w-9 rounded-md inline-flex items-center justify-center hover:bg-[#2a2a2e]"
+                          style={{ color: bx.textDim }} aria-label="Remove role">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                {recurring === "none" && robloxUsername && (
+                  <button onClick={claimFirstSelfSlot}
+                    className="mt-2 text-[11px] font-semibold inline-flex items-center gap-1" style={{ color: bx.coral }}>
+                    <UserPlus className="w-3 h-3" /> Claim first open seat for me
+                  </button>
+                )}
+                {recurring !== "none" && (
+                  <p className="mt-2 text-[11px]" style={{ color: bx.textMuted }}>
+                    Recurring sessions leave seats open — people claim per occurrence.
+                  </p>
+                )}
               </div>
 
               <div>
