@@ -232,16 +232,27 @@ export default function Workspaces() {
     const myRobloxId = (vu as any)?.roblox_user_id;
     if (!myRobloxId) { setCreating(false); toast.error("Verify your Roblox account first."); return; }
     try {
-      const res = await fetch(`https://groups.roblox.com/v1/groups/${encodeURIComponent(groupId.trim())}`);
+      const { data: gi, error: giErr } = await supabase.functions.invoke("roblox-group-owner", {
+        body: null,
+        method: "GET" as any,
+      } as any).catch(() => ({ data: null, error: { message: "network" } } as any));
+      // supabase-js v2 doesn't pass query params via invoke; call directly:
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const url = `https://${projectId}.supabase.co/functions/v1/roblox-group-owner?group_id=${encodeURIComponent(groupId.trim())}`;
+      const res = await fetch(url, {
+        headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string },
+      });
       if (!res.ok) { setCreating(false); toast.error("Couldn't find that Roblox group."); return; }
       const json = await res.json();
-      const ownerId = json?.owner?.userId ? String(json.owner.userId) : null;
+      const ownerId = json?.owner_user_id ? String(json.owner_user_id) : null;
       if (!ownerId) { setCreating(false); toast.error("That group has no owner on Roblox."); return; }
       if (ownerId !== String(myRobloxId)) {
         setCreating(false);
         toast.error("You don't own this Roblox group. Only the group owner can create a workspace for it.");
         return;
       }
+      // suppress unused
+      void gi; void giErr;
     } catch {
       setCreating(false);
       toast.error("Couldn't verify group ownership. Try again.");
