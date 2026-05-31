@@ -70,6 +70,66 @@ export default function BSessions() {
       .then(({ data }) => setSessions((data as any) || []));
   }, [workspaceId, selected, refreshKey]);
 
+  // Discord "starting now" announcement — polls every 60s and fires when an
+  // occurrence is within ±60s. Mirrors the classic UI behavior.
+  useEffect(() => {
+    if (!workspaceId) return;
+    const fire = async () => {
+      const now = Date.now();
+      const fromIso = new Date(now - 24*3600*1000).toISOString();
+      const toIso = new Date(now + 24*3600*1000).toISOString();
+      const { data } = await supabase.from("scheduled_sessions")
+        .select("id, title, scheduled_at, host_name, category, game_url, slots, status, recurring")
+        .eq("workspace_id", workspaceId)
+        .gte("scheduled_at", fromIso)
+        .lt("scheduled_at", toIso);
+      const list = (data as any[]) || [];
+      const windowStart = now - 90_000;
+      const windowEnd = now + 60_000;
+      for (const s of list) {
+        if (s.status && s.status !== "scheduled") continue;
+        const occurrences: Date[] = [];
+        const base = new Date(s.scheduled_at);
+        const today = new Date(); today.setHours(0,0,0,0);
+        const tomorrow = new Date(today); tomorrow.setDate(today.getDate()+1);
+        for (const day of [today, tomorrow]) {
+          if (s.recurring === "daily") {
+            const occ = new Date(day); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+            occurrences.push(occ);
+          } else if (s.recurring === "weekly") {
+            if (base.getDay() !== day.getDay()) continue;
+            const occ = new Date(day); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+            occurrences.push(occ);
+          } else {
+            if (base.toDateString() === day.toDateString()) occurrences.push(base);
+          }
+        }
+        for (const occ of occurrences) {
+          const t = occ.getTime();
+          if (t < windowStart || t > windowEnd) continue;
+          const key = `hx_discord_${s.id}_${occ.toISOString()}`;
+          if (sessionStorage.getItem(key)) continue;
+          sessionStorage.setItem(key, "1");
+          const firstAssignee = (s.slots || []).flatMap((sl: any) => sl.assigned || []).find((n: any) => n) || s.host_name;
+          supabase.functions.invoke("discord-notify", {
+            body: {
+              action: "session_starting",
+              workspace_id: workspaceId,
+              session_title: s.title,
+              session_time: occ.toISOString(),
+              host_name: firstAssignee,
+              category: s.category,
+              game_url: s.game_url,
+            },
+          }).catch(() => {});
+        }
+      }
+    };
+    fire();
+    const id = setInterval(fire, 60_000);
+    return () => clearInterval(id);
+  }, [workspaceId]);
+
   const week = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(weekStart); d.setDate(d.getDate()+i); return d;
   });
