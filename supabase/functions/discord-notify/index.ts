@@ -21,6 +21,19 @@ type SessionRow = {
 };
 type WorkspaceRow = { id: string; name: string; discord_webhook_url: string | null; game_url: string | null; invite_code: string | null };
 type PortalRow = { workspace_id: string; subdomain: string | null };
+type AdvancedField = { name?: string; value?: string; inline?: boolean };
+type AdvancedEmbed = {
+  author?: { name?: string; url?: string; icon_url?: string };
+  title?: string;
+  url?: string;
+  description?: string;
+  color?: string;
+  fields?: AdvancedField[];
+  image_url?: string;
+  thumbnail_url?: string;
+  footer?: { text?: string; icon_url?: string };
+  timestamp?: boolean;
+};
 type Template = {
   category: string;
   use_embed: boolean;
@@ -36,6 +49,11 @@ type Template = {
   show_host: boolean;
   show_time: boolean;
   plain_message: string | null;
+  advanced_mode?: boolean;
+  content?: string | null;
+  username?: string | null;
+  avatar_url?: string | null;
+  embeds?: AdvancedEmbed[] | null;
 };
 
 const FOOTER_TEXT = "Fluxcore Systems";
