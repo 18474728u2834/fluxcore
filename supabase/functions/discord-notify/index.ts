@@ -59,13 +59,10 @@ const occurrenceDates = (session: SessionRow, now = new Date()) => {
 
   if (session.recurring_days?.length) {
     const wanted = new Set(session.recurring_days.map(dayToken));
-    const [hour, minute] = (session.recurring_time || `${base.getUTCHours()}:${base.getUTCMinutes()}`)
-      .split(":")
-      .map((part) => Number(part));
     return days.flatMap((day) => {
       if (!wanted.has(dayKeys[day.getUTCDay()].toLowerCase())) return [];
       const occ = new Date(day);
-      occ.setUTCHours(Number.isFinite(hour) ? hour : base.getUTCHours(), Number.isFinite(minute) ? minute : base.getUTCMinutes(), 0, 0);
+      occ.setUTCHours(base.getUTCHours(), base.getUTCMinutes(), 0, 0);
       return occ >= base ? [occ] : [];
     });
   }
