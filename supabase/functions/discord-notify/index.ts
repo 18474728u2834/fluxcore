@@ -46,7 +46,11 @@ const formatTime = (iso: string) =>
   });
 
 const dayKeys = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const dayToken = (value: string) => value.trim().slice(0, 3).toLowerCase();
+const dayToken = (value: string) => {
+  const clean = String(value).trim().toLowerCase();
+  if (/^\d+$/.test(clean)) return dayKeys[Number(clean) % 7].toLowerCase();
+  return clean.slice(0, 3);
+};
 const isMeaningfulName = (value?: string | null) => Boolean(value && value.trim() && value !== "Unassigned");
 
 const occurrenceDates = (session: SessionRow, now = new Date()) => {
