@@ -217,6 +217,8 @@ export default function SettingsPage() {
           )}
         </div>
 
+        {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}
+
         {/* Session Role Labels */}
         <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
