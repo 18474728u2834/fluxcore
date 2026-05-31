@@ -1160,10 +1160,14 @@ export type Database = {
       }
       webhook_templates: {
         Row: {
+          advanced_mode: boolean
+          avatar_url: string | null
           category: string
           color: string
+          content: string | null
           created_at: string
           description: string
+          embeds: Json
           id: string
           image_position: string
           image_url: string | null
@@ -1177,13 +1181,18 @@ export type Database = {
           title: string
           updated_at: string
           use_embed: boolean
+          username: string | null
           workspace_id: string
         }
         Insert: {
+          advanced_mode?: boolean
+          avatar_url?: string | null
           category: string
           color?: string
+          content?: string | null
           created_at?: string
           description?: string
+          embeds?: Json
           id?: string
           image_position?: string
           image_url?: string | null
@@ -1197,13 +1206,18 @@ export type Database = {
           title?: string
           updated_at?: string
           use_embed?: boolean
+          username?: string | null
           workspace_id: string
         }
         Update: {
+          advanced_mode?: boolean
+          avatar_url?: string | null
           category?: string
           color?: string
+          content?: string | null
           created_at?: string
           description?: string
+          embeds?: Json
           id?: string
           image_position?: string
           image_url?: string | null
@@ -1217,6 +1231,7 @@ export type Database = {
           title?: string
           updated_at?: string
           use_embed?: boolean
+          username?: string | null
           workspace_id?: string
         }
         Relationships: []
