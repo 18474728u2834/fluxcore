@@ -21,6 +21,24 @@ type SessionRow = {
 };
 type WorkspaceRow = { id: string; name: string; discord_webhook_url: string | null; game_url: string | null; invite_code: string | null };
 type PortalRow = { workspace_id: string; subdomain: string | null };
+type Template = {
+  category: string;
+  use_embed: boolean;
+  title: string;
+  description: string;
+  color: string;
+  image_url: string | null;
+  image_position: "middle" | "bottom";
+  link_mode: "embedded" | "plain";
+  link_label: string;
+  link_position: "field" | "description" | "below";
+  show_claims: boolean;
+  show_host: boolean;
+  show_time: boolean;
+  plain_message: string | null;
+};
+
+const FOOTER_TEXT = "Fluxcore Systems";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -35,14 +53,17 @@ const safeJson = async (req: Request) => {
 const categoryColor = (category?: string | null) =>
   category === "Training" ? 0xf59e0b : category === "Event" ? 0x8b5cf6 : 0x22c55e;
 
+const hexToInt = (hex?: string | null, fallback = 0x22c55e) => {
+  if (!hex) return fallback;
+  const m = hex.replace("#", "").trim();
+  if (!/^[0-9a-fA-F]{6}$/.test(m)) return fallback;
+  return parseInt(m, 16);
+};
+
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZoneName: "short",
+    weekday: "short", month: "short", day: "numeric",
+    hour: "2-digit", minute: "2-digit", timeZoneName: "short",
   });
 
 const dayKeys = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -60,7 +81,6 @@ const occurrenceDates = (session: SessionRow, now = new Date()) => {
     d.setUTCDate(d.getUTCDate() + offset);
     return d;
   });
-
   if (session.recurring_days?.length) {
     const wanted = new Set(session.recurring_days.map(dayToken));
     return days.flatMap((day) => {
@@ -70,7 +90,6 @@ const occurrenceDates = (session: SessionRow, now = new Date()) => {
       return occ >= base ? [occ] : [];
     });
   }
-
   if (session.recurring === "weekly") {
     return days.flatMap((day) => {
       if (day.getUTCDay() !== base.getUTCDay()) return [];
@@ -79,7 +98,6 @@ const occurrenceDates = (session: SessionRow, now = new Date()) => {
       return occ >= base ? [occ] : [];
     });
   }
-
   if (session.recurring === "daily") {
     return days.flatMap((day) => {
       const occ = new Date(day);
@@ -87,7 +105,6 @@ const occurrenceDates = (session: SessionRow, now = new Date()) => {
       return occ >= base ? [occ] : [];
     });
   }
-
   return [base];
 };
 
@@ -121,52 +138,127 @@ const assignmentSummary = (slots: Slot[]) => {
   return lines.length ? lines.join("\n").slice(0, 1000) : "No claims yet";
 };
 
-const sendDiscord = async (webhookUrl: string, embeds: unknown[]) => {
+const sendDiscord = async (webhookUrl: string, payload: Record<string, unknown>) => {
   const res = await fetch(webhookUrl, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ embeds }),
+    body: JSON.stringify(payload),
   });
-  if (res.ok) return { ok: true };
-  return { ok: false, status: res.status, error: await res.text() };
+  if (res.ok) return { ok: true as const };
+  return { ok: false as const, status: res.status, error: await res.text() };
 };
 
 const inviteInfo = (workspace: WorkspaceRow, portal?: PortalRow) => {
   const base = portal?.subdomain ? `https://${portal.subdomain}.fluxcore.works` : "https://fluxcore.works";
-  return {
-    base,
-    url: workspace.invite_code ? `${base}/#/join/${workspace.invite_code}` : null,
+  return { base, url: workspace.invite_code ? `${base}/#/join/${workspace.invite_code}` : null };
+};
+
+const defaultTemplate = (category: string): Template => ({
+  category,
+  use_embed: true,
+  title: "🟢 {category} Starting Now",
+  description: "**{title}** is starting!",
+  color: category === "Training" ? "#f59e0b" : category === "Event" ? "#8b5cf6" : "#22c55e",
+  image_url: null,
+  image_position: "bottom",
+  link_mode: "embedded",
+  link_label: "Click to join",
+  link_position: "field",
+  show_claims: true,
+  show_host: true,
+  show_time: true,
+  plain_message: "🟢 **{title}** ({category}) is starting now! {link}",
+});
+
+const fillTemplate = (text: string, ctx: Record<string, string>) =>
+  text.replace(/\{(\w+)\}/g, (_, k) => (ctx[k] ?? ""));
+
+const buildPayloadFromTemplate = (
+  template: Template,
+  ctx: { title: string; category: string; host: string; time: string; claims: string; link: string; workspace: string; rawLink: string; invite: string },
+): Record<string, unknown> => {
+  const link = ctx.link;
+
+  if (!template.use_embed) {
+    const content = fillTemplate(template.plain_message || "{title} starting now {link}", ctx);
+    // Plain mode still attaches a tiny footer-only embed for "Fluxcore Systems"
+    return { content, embeds: [{ footer: { text: FOOTER_TEXT }, color: hexToInt(template.color) }] };
+  }
+
+  let description = fillTemplate(template.description, ctx);
+  if (template.link_position === "description" && link) description += `\n\n${link}`;
+
+  const fields: any[] = [];
+  if (template.show_time) fields.push({ name: "🕐 Starts", value: ctx.time, inline: true });
+  if (template.show_host) fields.push({ name: "👤 Host", value: ctx.host || "TBA", inline: true });
+  fields.push({ name: "📂 Type", value: ctx.category, inline: true });
+  if (template.show_claims) fields.push({ name: "✅ Claims", value: ctx.claims, inline: false });
+  if (template.link_position === "field" && link) fields.push({ name: "🎮 Game", value: link, inline: false });
+  if (ctx.invite) fields.push({ name: "🔗 Staff portal", value: ctx.invite, inline: false });
+
+  const embed: Record<string, unknown> = {
+    title: fillTemplate(template.title, ctx),
+    description,
+    color: hexToInt(template.color, categoryColor(template.category)),
+    fields,
+    footer: { text: FOOTER_TEXT },
+    timestamp: new Date().toISOString(),
   };
+
+  if (template.image_url) {
+    if (template.image_position === "middle") (embed as any).thumbnail = { url: template.image_url };
+    else (embed as any).image = { url: template.image_url };
+  }
+
+  const payload: Record<string, unknown> = { embeds: [embed] };
+  if (template.link_position === "below" && link) payload.content = link;
+  return payload;
+};
+
+const getTemplate = async (supabase: ReturnType<typeof createClient>, workspaceId: string, category: string): Promise<Template> => {
+  const cat = ["Shift", "Training", "Event"].includes(category) ? category : "Shift";
+  const { data } = await supabase
+    .from("webhook_templates")
+    .select("category, use_embed, title, description, color, image_url, image_position, link_mode, link_label, link_position, show_claims, show_host, show_time, plain_message")
+    .eq("workspace_id", workspaceId)
+    .eq("category", cat)
+    .maybeSingle();
+  if (data) return data as unknown as Template;
+  return defaultTemplate(cat);
 };
 
 const sendSessionStarting = async (
+  supabase: ReturnType<typeof createClient>,
   workspace: WorkspaceRow,
   portal: PortalRow | undefined,
   session: Pick<SessionRow, "title" | "category" | "host_name" | "game_url">,
   occurrenceIso: string,
   slots: Slot[],
 ) => {
-  if (!workspace.discord_webhook_url) return { ok: false, error: "Discord webhook not configured" };
+  if (!workspace.discord_webhook_url) return { ok: false as const, error: "Discord webhook not configured" };
+  const category = session.category || "Shift";
+  const template = await getTemplate(supabase, workspace.id, category);
   const invite = inviteInfo(workspace, portal);
-  const gameUrl = session.game_url || workspace.game_url;
+  const gameUrl = session.game_url || workspace.game_url || "";
   const host = firstAssignee(slots, session.host_name) || "TBA";
-  const fields: any[] = [
-    { name: "🕐 Starts", value: formatTime(occurrenceIso), inline: true },
-    { name: "👤 Host", value: host, inline: true },
-    { name: "📂 Type", value: session.category || "Shift", inline: true },
-    { name: "✅ Claims", value: assignmentSummary(slots), inline: false },
-  ];
-  if (gameUrl) fields.push({ name: "🎮 Game", value: `[Click to join](${gameUrl})`, inline: false });
-  if (invite.url) fields.push({ name: "🔗 Join staff portal", value: `[${invite.base.replace("https://", "")}](${invite.url})`, inline: false });
+  const link = gameUrl
+    ? (template.link_mode === "embedded" ? `[${template.link_label || "Click to join"}](${gameUrl})` : gameUrl)
+    : "";
 
-  return sendDiscord(workspace.discord_webhook_url, [{
-    title: `🟢 ${session.category || "Shift"} Starting Now`,
-    description: `**${session.title}** is starting!`,
-    color: categoryColor(session.category),
-    fields,
-    footer: { text: `${workspace.name} · Fluxcore` },
-    timestamp: new Date().toISOString(),
-  }]);
+  const ctx = {
+    title: session.title,
+    category,
+    host,
+    time: formatTime(occurrenceIso),
+    claims: assignmentSummary(slots),
+    link,
+    rawLink: gameUrl,
+    workspace: workspace.name,
+    invite: invite.url ? `[${invite.base.replace("https://", "")}](${invite.url})` : "",
+  };
+
+  const payload = buildPayloadFromTemplate(template, ctx);
+  return sendDiscord(workspace.discord_webhook_url, payload);
 };
 
 serve(async (req) => {
@@ -210,9 +302,7 @@ serve(async (req) => {
         .eq("status", "active");
       const portalMap = new Map((portals || []).map((p: PortalRow) => [p.workspace_id, p]));
 
-      let sent = 0;
-      let skipped = 0;
-      let failed = 0;
+      let sent = 0, skipped = 0, failed = 0;
       for (const session of (sessions || []) as SessionRow[]) {
         const workspace = workspaceMap.get(session.workspace_id);
         if (!workspace) { skipped++; continue; }
@@ -220,68 +310,58 @@ serve(async (req) => {
           if (occurrence < windowStart || occurrence > windowEnd) continue;
           const occurrenceIso = occurrence.toISOString();
           const { error: lockError } = await supabase.from("session_notifications").insert({
-            session_id: session.id,
-            workspace_id: session.workspace_id,
-            occurrence_at: occurrenceIso,
-            action: "session_starting",
+            session_id: session.id, workspace_id: session.workspace_id,
+            occurrence_at: occurrenceIso, action: "session_starting",
           });
           if (lockError?.code === "23505") { skipped++; continue; }
           if (lockError) { console.error("notification lock failed", lockError); failed++; continue; }
 
-          const result = await sendSessionStarting(workspace, portalMap.get(session.workspace_id), session, occurrenceIso, effectiveSlots(session, occurrenceIso));
+          const result = await sendSessionStarting(supabase, workspace, portalMap.get(session.workspace_id), session, occurrenceIso, effectiveSlots(session, occurrenceIso));
           if (result.ok) sent++;
           else {
             failed++;
             console.error("Discord webhook failed", session.id, result);
             await supabase.from("session_notifications").delete()
-              .eq("session_id", session.id)
-              .eq("occurrence_at", occurrenceIso)
-              .eq("action", "session_starting");
+              .eq("session_id", session.id).eq("occurrence_at", occurrenceIso).eq("action", "session_starting");
           }
         }
       }
-
-      return json({ success: true, checked: sessions?.length || 0, sent, skipped, failed, window_start: windowStart.toISOString(), window_end: windowEnd.toISOString() });
+      return json({ success: true, checked: sessions?.length || 0, sent, skipped, failed });
     }
 
     if (!workspaceId) return json({ error: "Missing workspace_id" }, 400);
     const { data: workspace, error: workspaceError } = await supabase
-      .from("workspaces")
-      .select("id, name, discord_webhook_url, game_url, invite_code")
-      .eq("id", workspaceId)
-      .maybeSingle();
+      .from("workspaces").select("id, name, discord_webhook_url, game_url, invite_code")
+      .eq("id", workspaceId).maybeSingle();
     if (workspaceError) throw workspaceError;
     if (!workspace) return json({ error: "Workspace not found" }, 404);
     if (!workspace.discord_webhook_url) return json({ error: "Discord webhook not configured" }, 400);
 
     const { data: portal } = await supabase
-      .from("partner_portals")
-      .select("workspace_id, subdomain")
-      .eq("workspace_id", workspaceId)
-      .eq("status", "active")
-      .maybeSingle();
+      .from("partner_portals").select("workspace_id, subdomain")
+      .eq("workspace_id", workspaceId).eq("status", "active").maybeSingle();
 
     if (action === "test") {
-      const result = await sendDiscord(workspace.discord_webhook_url, [{
-        title: "✅ Fluxcore Connected",
-        description: "Your Discord webhook is working. Session start alerts will be sent here automatically.",
-        color: 0x06b6d4,
-        footer: { text: `${workspace.name} · Fluxcore` },
-        timestamp: new Date().toISOString(),
-      }]);
-      if (!result.ok) return json({ error: "Test failed", details: result.error }, 502);
+      const category = body?.category || "Shift";
+      const result = await sendSessionStarting(supabase, workspace, portal || undefined, {
+        title: `Test ${category}`, category, host_name: "Test Host", game_url: workspace.game_url,
+      }, new Date().toISOString(), [
+        { label: "Host", count: 1, assigned: ["TestHost"] },
+        { label: "Co-Host", count: 1, assigned: [null] },
+      ]);
+      if (!result.ok) return json({ error: "Test failed", details: (result as any).error }, 502);
       return json({ success: true, message: "Test message sent!" });
     }
 
     if (action === "session_starting" || action === "send_reminder") {
       const occurrenceIso = body?.session_time || new Date().toISOString();
-      const result = await sendSessionStarting(workspace, portal || undefined, {
+      const result = await sendSessionStarting(supabase, workspace, portal || undefined, {
         title: body?.session_title || "Session",
         category: body?.category || "Shift",
         host_name: body?.host_name || null,
         game_url: body?.game_url || null,
       }, occurrenceIso, []);
-      if (!result.ok) return json({ error: "Discord webhook failed", details: result.error }, 502);
+      if (!result.ok) return json({ error: "Discord webhook failed", details: (result as any).error }, 502);
       return json({ success: true });
     }
 
