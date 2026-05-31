@@ -821,6 +821,51 @@ export type Database = {
           },
         ]
       }
+      session_notifications: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          occurrence_at: string
+          sent_at: string
+          session_id: string
+          workspace_id: string
+        }
+        Insert: {
+          action?: string
+          created_at?: string
+          id?: string
+          occurrence_at: string
+          sent_at?: string
+          session_id: string
+          workspace_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          occurrence_at?: string
+          sent_at?: string
+          session_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_notifications_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_notifications_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_tags: {
         Row: {
           category: string
