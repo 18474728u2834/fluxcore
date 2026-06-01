@@ -236,17 +236,29 @@ export default function BSessions() {
     setRefreshKey(k => k + 1);
   };
 
-  const toggleClaim = async (s: Session, slotIdx: number, seatIdx: number) => {
+  const toggleClaim = async (s: Session, occursAt: Date, slotIdx: number, seatIdx: number) => {
     if (!robloxUsername) { toast.error("Verify your Roblox account first"); return; }
-    const base = (s.slots || []).map(sl => ({ ...sl, assigned: [...sl.assigned] }));
-    if (!base[slotIdx]) return;
-    const current = base[slotIdx].assigned[seatIdx];
+    const isRecurring = !!(s.recurring || (s.recurring_days && s.recurring_days.length));
+    const eff = effectiveSlots(s, occursAt);
+    if (!eff[slotIdx]) return;
+    const current = eff[slotIdx].assigned[seatIdx];
     if (current && current !== robloxUsername) { toast.error("That seat is taken"); return; }
-    base[slotIdx].assigned[seatIdx] = current ? null : robloxUsername;
-    const firstAssignee = base.flatMap(x => x.assigned).find(n => n && n.trim()) || "Unassigned";
+    eff[slotIdx].assigned[seatIdx] = current ? null : robloxUsername;
+
+    let updatePayload: any;
+    if (isRecurring) {
+      const key = occurrenceKey(occursAt);
+      const nextAssignments = {
+        ...(s.occurrence_assignments || {}),
+        [key]: eff.map(sl => sl.assigned),
+      };
+      updatePayload = { occurrence_assignments: nextAssignments };
+    } else {
+      const firstAssignee = eff.flatMap(x => x.assigned).find(n => n && n.trim()) || "Unassigned";
+      updatePayload = { slots: eff, host_name: firstAssignee };
+    }
     const { error } = await supabase.from("scheduled_sessions")
-      .update({ slots: base, host_name: firstAssignee } as any)
-      .eq("id", s.id);
+      .update(updatePayload).eq("id", s.id);
     if (error) { toast.error(error.message); return; }
     setRefreshKey(k => k + 1);
   };
