@@ -78,15 +78,45 @@ export default function BSessions() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const from = new Date(selected); const to = new Date(selected); to.setDate(to.getDate()+1);
+    if (!workspaceId) return;
     supabase.from("scheduled_sessions")
-      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, game_url, slots")
+      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments")
       .eq("workspace_id", workspaceId)
-      .gte("scheduled_at", from.toISOString())
-      .lt("scheduled_at", to.toISOString())
       .order("scheduled_at", { ascending: true })
       .then(({ data }) => setSessions((data as any) || []));
-  }, [workspaceId, selected, refreshKey]);
+  }, [workspaceId, refreshKey]);
+
+  // Expand recurring sessions into occurrences on the selected day
+  const dayOccurrences = (() => {
+    const startOfDay = new Date(selected); startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date(selected); endOfDay.setHours(23,59,59,999);
+    const dayKey = DAY_KEYS[selected.getDay()];
+    const out: { session: Session; occursAt: Date }[] = [];
+    for (const s of sessions) {
+      if (s.recurring_days?.length && s.recurring_time) {
+        if (!s.recurring_days.includes(dayKey)) continue;
+        const [hh, mm] = s.recurring_time.split(":").map(Number);
+        const occ = new Date(selected); occ.setHours(hh || 0, mm || 0, 0, 0);
+        out.push({ session: s, occursAt: occ });
+      } else if (s.recurring === "weekly") {
+        const base = new Date(s.scheduled_at);
+        if (base.getDay() !== selected.getDay()) continue;
+        const occ = new Date(selected); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+        if (occ < base) continue;
+        out.push({ session: s, occursAt: occ });
+      } else if (s.recurring === "daily") {
+        const base = new Date(s.scheduled_at);
+        const occ = new Date(selected); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+        if (occ < base) continue;
+        out.push({ session: s, occursAt: occ });
+      } else {
+        const base = new Date(s.scheduled_at);
+        if (base >= startOfDay && base <= endOfDay) out.push({ session: s, occursAt: base });
+      }
+    }
+    out.sort((a, b) => a.occursAt.getTime() - b.occursAt.getTime());
+    return out;
+  })();
 
   // Ask the backend dispatcher to send due Discord alerts. The backend owns
   // recurrence math + duplicate prevention so alerts still work reliably.
