@@ -19,9 +19,27 @@ interface Session {
   duration_minutes: number;
   category: string;
   recurring: string | null;
+  recurring_days: string[] | null;
+  recurring_time: string | null;
   game_url: string | null;
   slots: SessionSlot[] | null;
+  occurrence_assignments: Record<string, (string | null)[][]> | null;
 }
+
+const DAY_KEYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const occurrenceKey = (d: Date) => d.toISOString();
+const effectiveSlots = (s: Session, occursAt: Date): SessionSlot[] => {
+  const base = s.slots && s.slots.length ? s.slots : [];
+  const isRecurring = !!(s.recurring || (s.recurring_days && s.recurring_days.length));
+  if (!isRecurring) return base.map(sl => ({ ...sl, assigned: [...sl.assigned] }));
+  const override = s.occurrence_assignments?.[occurrenceKey(occursAt)];
+  return base.map((sl, i) => {
+    const ov = override?.[i];
+    const arr = ov ? ov.slice(0, sl.count) : [];
+    while (arr.length < sl.count) arr.push(null);
+    return { ...sl, assigned: arr };
+  });
+};
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const toLocalInput = (d: Date) =>
@@ -60,15 +78,45 @@ export default function BSessions() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    const from = new Date(selected); const to = new Date(selected); to.setDate(to.getDate()+1);
+    if (!workspaceId) return;
     supabase.from("scheduled_sessions")
-      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, game_url, slots")
+      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments")
       .eq("workspace_id", workspaceId)
-      .gte("scheduled_at", from.toISOString())
-      .lt("scheduled_at", to.toISOString())
       .order("scheduled_at", { ascending: true })
       .then(({ data }) => setSessions((data as any) || []));
-  }, [workspaceId, selected, refreshKey]);
+  }, [workspaceId, refreshKey]);
+
+  // Expand recurring sessions into occurrences on the selected day
+  const dayOccurrences = (() => {
+    const startOfDay = new Date(selected); startOfDay.setHours(0,0,0,0);
+    const endOfDay = new Date(selected); endOfDay.setHours(23,59,59,999);
+    const dayKey = DAY_KEYS[selected.getDay()];
+    const out: { session: Session; occursAt: Date }[] = [];
+    for (const s of sessions) {
+      if (s.recurring_days?.length && s.recurring_time) {
+        if (!s.recurring_days.includes(dayKey)) continue;
+        const [hh, mm] = s.recurring_time.split(":").map(Number);
+        const occ = new Date(selected); occ.setHours(hh || 0, mm || 0, 0, 0);
+        out.push({ session: s, occursAt: occ });
+      } else if (s.recurring === "weekly") {
+        const base = new Date(s.scheduled_at);
+        if (base.getDay() !== selected.getDay()) continue;
+        const occ = new Date(selected); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+        if (occ < base) continue;
+        out.push({ session: s, occursAt: occ });
+      } else if (s.recurring === "daily") {
+        const base = new Date(s.scheduled_at);
+        const occ = new Date(selected); occ.setHours(base.getHours(), base.getMinutes(), 0, 0);
+        if (occ < base) continue;
+        out.push({ session: s, occursAt: occ });
+      } else {
+        const base = new Date(s.scheduled_at);
+        if (base >= startOfDay && base <= endOfDay) out.push({ session: s, occursAt: base });
+      }
+    }
+    out.sort((a, b) => a.occursAt.getTime() - b.occursAt.getTime());
+    return out;
+  })();
 
   // Ask the backend dispatcher to send due Discord alerts. The backend owns
   // recurrence math + duplicate prevention so alerts still work reliably.
@@ -188,17 +236,29 @@ export default function BSessions() {
     setRefreshKey(k => k + 1);
   };
 
-  const toggleClaim = async (s: Session, slotIdx: number, seatIdx: number) => {
+  const toggleClaim = async (s: Session, occursAt: Date, slotIdx: number, seatIdx: number) => {
     if (!robloxUsername) { toast.error("Verify your Roblox account first"); return; }
-    const base = (s.slots || []).map(sl => ({ ...sl, assigned: [...sl.assigned] }));
-    if (!base[slotIdx]) return;
-    const current = base[slotIdx].assigned[seatIdx];
+    const isRecurring = !!(s.recurring || (s.recurring_days && s.recurring_days.length));
+    const eff = effectiveSlots(s, occursAt);
+    if (!eff[slotIdx]) return;
+    const current = eff[slotIdx].assigned[seatIdx];
     if (current && current !== robloxUsername) { toast.error("That seat is taken"); return; }
-    base[slotIdx].assigned[seatIdx] = current ? null : robloxUsername;
-    const firstAssignee = base.flatMap(x => x.assigned).find(n => n && n.trim()) || "Unassigned";
+    eff[slotIdx].assigned[seatIdx] = current ? null : robloxUsername;
+
+    let updatePayload: any;
+    if (isRecurring) {
+      const key = occurrenceKey(occursAt);
+      const nextAssignments = {
+        ...(s.occurrence_assignments || {}),
+        [key]: eff.map(sl => sl.assigned),
+      };
+      updatePayload = { occurrence_assignments: nextAssignments };
+    } else {
+      const firstAssignee = eff.flatMap(x => x.assigned).find(n => n && n.trim()) || "Unassigned";
+      updatePayload = { slots: eff, host_name: firstAssignee };
+    }
     const { error } = await supabase.from("scheduled_sessions")
-      .update({ slots: base, host_name: firstAssignee } as any)
-      .eq("id", s.id);
+      .update(updatePayload).eq("id", s.id);
     if (error) { toast.error(error.message); return; }
     setRefreshKey(k => k + 1);
   };
@@ -243,7 +303,7 @@ export default function BSessions() {
           </button>
         </div>
 
-        {sessions.length === 0 ? (
+        {dayOccurrences.length === 0 ? (
           <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
             <CalIcon className="w-10 h-10 mx-auto mb-3" style={{ color: bx.textMuted }} />
             <p className="text-sm" style={{ color: bx.textDim }}>No sessions scheduled for this day.</p>
@@ -255,12 +315,12 @@ export default function BSessions() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sessions.map((s) => {
-              const d = new Date(s.scheduled_at);
+            {dayOccurrences.map(({ session: s, occursAt: d }) => {
               const time = d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-              const sessionSlots = s.slots && s.slots.length ? s.slots : null;
+              const sessionSlots = effectiveSlots(s, d);
+              const isRecurring = !!(s.recurring || (s.recurring_days && s.recurring_days.length));
               return (
-                <div key={s.id} className="rounded-md border p-5 transition-transform hover:-translate-y-0.5 group relative"
+                <div key={`${s.id}-${d.getTime()}`} className="rounded-md border p-5 transition-transform hover:-translate-y-0.5 group relative"
                   style={bx.cardStyle}>
                   <button onClick={() => deleteSession(s.id)}
                     className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-md inline-flex items-center justify-center hover:bg-[#2a2a2e]"
@@ -269,7 +329,7 @@ export default function BSessions() {
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
-                    {groupLabel(d)} at {time} · {s.duration_minutes}m · {s.category}
+                    {groupLabel(d)} at {time} · {s.duration_minutes}m · {s.category}{isRecurring ? " · Recurring" : ""}
                   </div>
                   <div className="text-lg font-bold mb-4" style={{ color: bx.text }}>{s.title}</div>
                   {s.game_url && (
@@ -279,7 +339,7 @@ export default function BSessions() {
                     </a>
                   )}
 
-                  {sessionSlots ? (
+                  {sessionSlots.length ? (
                     <div className="space-y-2 pt-3 border-t" style={{ borderColor: "#22222a" }}>
                       {sessionSlots.map((sl, slIdx) => (
                         <div key={slIdx}>
@@ -302,7 +362,7 @@ export default function BSessions() {
                                     )}
                                   </div>
                                   {(!name || mine) && (
-                                    <button onClick={() => toggleClaim(s, slIdx, seatIdx)}
+                                    <button onClick={() => toggleClaim(s, d, slIdx, seatIdx)}
                                       className="text-[11px] font-semibold inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-[#2a2a2e] transition"
                                       style={{ color: mine ? bx.textDim : bx.coral }}>
                                       {mine ? (<><UserMinus className="w-3 h-3" /> Release</>) : (<><UserPlus className="w-3 h-3" /> Claim</>)}
