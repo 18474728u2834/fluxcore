@@ -19,9 +19,27 @@ interface Session {
   duration_minutes: number;
   category: string;
   recurring: string | null;
+  recurring_days: string[] | null;
+  recurring_time: string | null;
   game_url: string | null;
   slots: SessionSlot[] | null;
+  occurrence_assignments: Record<string, (string | null)[][]> | null;
 }
+
+const DAY_KEYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const occurrenceKey = (d: Date) => d.toISOString();
+const effectiveSlots = (s: Session, occursAt: Date): SessionSlot[] => {
+  const base = s.slots && s.slots.length ? s.slots : [];
+  const isRecurring = !!(s.recurring || (s.recurring_days && s.recurring_days.length));
+  if (!isRecurring) return base.map(sl => ({ ...sl, assigned: [...sl.assigned] }));
+  const override = s.occurrence_assignments?.[occurrenceKey(occursAt)];
+  return base.map((sl, i) => {
+    const ov = override?.[i];
+    const arr = ov ? ov.slice(0, sl.count) : [];
+    while (arr.length < sl.count) arr.push(null);
+    return { ...sl, assigned: arr };
+  });
+};
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const toLocalInput = (d: Date) =>
