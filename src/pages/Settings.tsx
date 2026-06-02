@@ -3,7 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy } from "lucide-react";
+import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
@@ -36,6 +37,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [testingDiscord, setTestingDiscord] = useState(false);
   const [leaderboardCategories, setLeaderboardCategories] = useState<string[]>([]);
+  const [quotaLogMode, setQuotaLogMode] = useState<"none" | "webhook" | "warning">("none");
+  const [quotaLogWebhook, setQuotaLogWebhook] = useState("");
 
   useEffect(() => {
     if (workspace) {
@@ -43,7 +46,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, quota_log_webhook_url")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
@@ -62,6 +65,8 @@ export default function SettingsPage() {
           setCoHostLabel(labels.co_host || "Co-Host");
           setTrainerLabel(labels.trainer || "Trainer");
           setLeaderboardCategories(((data as any).leaderboard_categories || []) as string[]);
+          setQuotaLogMode(((data as any).quota_log_mode || "none") as any);
+          setQuotaLogWebhook((data as any).quota_log_webhook_url || "");
         }
       };
       fetchExtras();
@@ -110,6 +115,9 @@ export default function SettingsPage() {
         trainer: trainerLabel.trim() || "Trainer",
       },
       leaderboard_categories: leaderboardCategories,
+      quota_log_mode: quotaLogMode,
+      quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
+      quota_log_configured: true,
     } as any).eq("id", workspaceId);
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
@@ -218,6 +226,48 @@ export default function SettingsPage() {
         </div>
 
         {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}
+
+        {/* Quota Enforcement */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Quota Logging</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            How Fluxcore reports staff who don't meet their quota for the current period. Use the "Run quota check" button on the Quotas page to apply.
+          </p>
+          <RadioGroup value={quotaLogMode} onValueChange={(v) => setQuotaLogMode(v as any)} className="space-y-2">
+            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+              <RadioGroupItem value="warning" className="mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-foreground">Warning on profile</div>
+                <div className="text-xs text-muted-foreground">Adds a warning log to each member's profile.</div>
+              </div>
+            </label>
+            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+              <RadioGroupItem value="webhook" className="mt-0.5" />
+              <div className="w-full">
+                <div className="text-sm font-medium text-foreground">Post to Discord channel</div>
+                <div className="text-xs text-muted-foreground">Sends a report listing missed quotas to a webhook.</div>
+                {quotaLogMode === "webhook" && (
+                  <div className="pt-2 space-y-1">
+                    <Label className="text-xs">Webhook URL</Label>
+                    <Input value={quotaLogWebhook} onChange={(e) => setQuotaLogWebhook(e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="bg-muted border-border font-mono text-xs h-8" />
+                  </div>
+                )}
+              </div>
+            </label>
+            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+              <RadioGroupItem value="none" className="mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-foreground">Don't log</div>
+                <div className="text-xs text-muted-foreground">Track quotas without automatic action.</div>
+              </div>
+            </label>
+          </RadioGroup>
+        </div>
 
         {/* Session Role Labels */}
         <div className="glass rounded-xl p-5 space-y-4">

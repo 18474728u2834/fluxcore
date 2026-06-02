@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Target, Plus, Loader2, Trash2, Clock, Calendar, CheckCircle2, XCircle, Users, BarChart3 } from "lucide-react";
+import { Target, Plus, Loader2, Trash2, Clock, Calendar, CheckCircle2, XCircle, Users, BarChart3, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
@@ -82,6 +82,7 @@ export default function Quotas() {
 
   // My progress
   const [myProgress, setMyProgress] = useState<{ quota: Quota; current: number }[]>([]);
+  const [checking, setChecking] = useState(false);
 
   const fetchData = async () => {
     const [{ data: q }, { data: r }] = await Promise.all([
@@ -204,6 +205,105 @@ export default function Quotas() {
     return roles.find(r => r.id === roleId)?.name || "Unknown";
   };
 
+  const runQuotaCheck = async () => {
+    if (!isOwner) return;
+    setChecking(true);
+    try {
+      const { data: ws } = await supabase.from("workspaces")
+        .select("name, quota_log_mode, quota_log_webhook_url")
+        .eq("id", workspaceId).single();
+      const mode = (ws as any)?.quota_log_mode || "none";
+      if (mode === "none") {
+        toast.error("Quota logging is disabled. Enable it in Settings.");
+        setChecking(false);
+        return;
+      }
+      const webhookUrl = (ws as any)?.quota_log_webhook_url;
+      if (mode === "webhook" && !webhookUrl) {
+        toast.error("No Discord webhook configured. Set one in Settings.");
+        setChecking(false);
+        return;
+      }
+      if (quotas.length === 0) { toast.error("No quotas to check."); setChecking(false); return; }
+
+      const { data: members } = await supabase.from("workspace_members")
+        .select("id, user_id, roblox_username, roblox_user_id, role_id")
+        .eq("workspace_id", workspaceId);
+      if (!members) { setChecking(false); return; }
+
+      // member_id -> [{quota, current}]
+      const misses: Record<string, { member: any; entries: { quota: Quota; current: number }[] }> = {};
+
+      for (const q of quotas) {
+        const since = periodSince(q);
+        const filtered = q.role_id ? members.filter(m => m.role_id === q.role_id) : members;
+        for (const m of filtered) {
+          let current = 0;
+          if (q.quota_type === "sessions") {
+            const { count } = await supabase.from("scheduled_sessions")
+              .select("*", { count: "exact", head: true })
+              .eq("workspace_id", workspaceId)
+              .or(`host_name.eq.${m.roblox_username},co_host_name.eq.${m.roblox_username},trainer_name.eq.${m.roblox_username}`)
+              .gte("scheduled_at", since);
+            current = count || 0;
+          } else {
+            const { data: sessions } = await supabase.from("activity_sessions")
+              .select("duration_seconds")
+              .eq("workspace_id", workspaceId)
+              .eq("roblox_user_id", m.roblox_user_id)
+              .gte("joined_at", since);
+            current = Math.round((sessions || []).reduce((s, x) => s + (x.duration_seconds || 0), 0) / 60);
+          }
+          if (current < q.target_value) {
+            if (!misses[m.id]) misses[m.id] = { member: m, entries: [] };
+            misses[m.id].entries.push({ quota: q, current });
+          }
+        }
+      }
+
+      const missList = Object.values(misses);
+      if (missList.length === 0) {
+        toast.success("Everyone is meeting their quotas! 🎉");
+        setChecking(false);
+        return;
+      }
+
+      if (mode === "warning") {
+        const rows = missList.map(({ member, entries }) => ({
+          workspace_id: workspaceId,
+          member_id: member.id,
+          author_id: (member.user_id ?? workspace?.owner_id) as string,
+          author_name: "Quota Check",
+          log_type: "warning",
+          content: "Missed quota: " + entries.map(e => `${e.quota.title} (${e.current}/${e.quota.target_value})`).join(", "),
+        }));
+        const { error } = await supabase.from("member_logs").insert(rows);
+        if (error) toast.error("Failed to log warnings: " + error.message);
+        else toast.success(`Logged warnings for ${missList.length} member${missList.length === 1 ? "" : "s"}`);
+      } else if (mode === "webhook") {
+        const lines = missList.map(({ member, entries }) =>
+          `• **${member.roblox_username}** — ${entries.map(e => `${e.quota.title} (${e.current}/${e.quota.target_value})`).join(", ")}`,
+        );
+        const embed = {
+          title: `⚠️ Quota Report — ${(ws as any)?.name || "Workspace"}`,
+          description: lines.join("\n").slice(0, 4000),
+          color: 0xf59e0b,
+          footer: { text: "Fluxcore Systems" },
+          timestamp: new Date().toISOString(),
+        };
+        const res = await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ embeds: [embed] }),
+        });
+        if (!res.ok) toast.error("Failed to post to Discord webhook");
+        else toast.success(`Posted quota report (${missList.length} member${missList.length === 1 ? "" : "s"})`);
+      }
+    } finally {
+      setChecking(false);
+    }
+  };
+
   return (
     <DashboardLayout title="Quotas">
       <div className="space-y-5 max-w-4xl">
@@ -213,10 +313,17 @@ export default function Quotas() {
             <p className="text-sm text-muted-foreground mt-0.5">Activity requirements and progress tracking</p>
           </div>
           {canManage && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-1" /> Create Quota</Button>
-              </DialogTrigger>
+            <div className="flex items-center gap-2">
+              {isOwner && (
+                <Button variant="secondary" size="sm" onClick={runQuotaCheck} disabled={checking}>
+                  {checking ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <AlertTriangle className="w-4 h-4 mr-1" />}
+                  Run quota check
+                </Button>
+              )}
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-1" /> Create Quota</Button>
+                </DialogTrigger>
               <DialogContent className="glass border-border/40 max-w-sm">
                 <DialogHeader><DialogTitle className="text-foreground">Create Quota</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
@@ -274,6 +381,7 @@ export default function Quotas() {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           )}
         </div>
 
