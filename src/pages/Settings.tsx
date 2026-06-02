@@ -227,6 +227,48 @@ export default function SettingsPage() {
 
         {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}
 
+        {/* Quota Enforcement */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <Target className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Quota Logging</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            How Fluxcore reports staff who don't meet their quota for the current period. Use the "Run quota check" button on the Quotas page to apply.
+          </p>
+          <RadioGroup value={quotaLogMode} onValueChange={(v) => setQuotaLogMode(v as any)} className="space-y-2">
+            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+              <RadioGroupItem value="warning" className="mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-foreground">Warning on profile</div>
+                <div className="text-xs text-muted-foreground">Adds a warning log to each member's profile.</div>
+              </div>
+            </label>
+            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+              <RadioGroupItem value="webhook" className="mt-0.5" />
+              <div className="w-full">
+                <div className="text-sm font-medium text-foreground">Post to Discord channel</div>
+                <div className="text-xs text-muted-foreground">Sends a report listing missed quotas to a webhook.</div>
+                {quotaLogMode === "webhook" && (
+                  <div className="pt-2 space-y-1">
+                    <Label className="text-xs">Webhook URL</Label>
+                    <Input value={quotaLogWebhook} onChange={(e) => setQuotaLogWebhook(e.target.value)}
+                      placeholder="https://discord.com/api/webhooks/..."
+                      className="bg-muted border-border font-mono text-xs h-8" />
+                  </div>
+                )}
+              </div>
+            </label>
+            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+              <RadioGroupItem value="none" className="mt-0.5" />
+              <div>
+                <div className="text-sm font-medium text-foreground">Don't log</div>
+                <div className="text-xs text-muted-foreground">Track quotas without automatic action.</div>
+              </div>
+            </label>
+          </RadioGroup>
+        </div>
+
         {/* Session Role Labels */}
         <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
