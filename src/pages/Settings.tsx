@@ -65,6 +65,8 @@ export default function SettingsPage() {
           setCoHostLabel(labels.co_host || "Co-Host");
           setTrainerLabel(labels.trainer || "Trainer");
           setLeaderboardCategories(((data as any).leaderboard_categories || []) as string[]);
+          setQuotaLogMode(((data as any).quota_log_mode || "none") as any);
+          setQuotaLogWebhook((data as any).quota_log_webhook_url || "");
         }
       };
       fetchExtras();
