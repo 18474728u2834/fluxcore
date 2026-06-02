@@ -313,10 +313,17 @@ export default function Quotas() {
             <p className="text-sm text-muted-foreground mt-0.5">Activity requirements and progress tracking</p>
           </div>
           {canManage && (
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-1" /> Create Quota</Button>
-              </DialogTrigger>
+            <div className="flex items-center gap-2">
+              {isOwner && (
+                <Button variant="secondary" size="sm" onClick={runQuotaCheck} disabled={checking}>
+                  {checking ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <AlertTriangle className="w-4 h-4 mr-1" />}
+                  Run quota check
+                </Button>
+              )}
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="hero" size="sm"><Plus className="w-4 h-4 mr-1" /> Create Quota</Button>
+                </DialogTrigger>
               <DialogContent className="glass border-border/40 max-w-sm">
                 <DialogHeader><DialogTitle className="text-foreground">Create Quota</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
