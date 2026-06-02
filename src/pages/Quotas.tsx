@@ -82,6 +82,7 @@ export default function Quotas() {
 
   // My progress
   const [myProgress, setMyProgress] = useState<{ quota: Quota; current: number }[]>([]);
+  const [checking, setChecking] = useState(false);
 
   const fetchData = async () => {
     const [{ data: q }, { data: r }] = await Promise.all([
