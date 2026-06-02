@@ -37,6 +37,8 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [testingDiscord, setTestingDiscord] = useState(false);
   const [leaderboardCategories, setLeaderboardCategories] = useState<string[]>([]);
+  const [quotaLogMode, setQuotaLogMode] = useState<"none" | "webhook" | "warning">("none");
+  const [quotaLogWebhook, setQuotaLogWebhook] = useState("");
 
   useEffect(() => {
     if (workspace) {
