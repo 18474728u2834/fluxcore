@@ -1,23 +1,23 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Shield, Target, FileText, Users, Zap, Bot, MessageSquare, BarChart3, Globe, Palette, Award } from "lucide-react";
+import { Sparkles, Shield, Target, FileText, Users, Zap, Bot, MessageSquare, BarChart3, Globe, Palette, Award, Gift, Webhook, Image as ImageIcon, Calendar, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const CURRENT_VERSION = "3.1.0";
+const CURRENT_VERSION = "4.0.0";
 
 const features = [
-  { icon: MessageSquare, title: "Message Logger Viewer", desc: "New page to search staff in-game chat with timestamps. Gated by the new View Message Logs permission." },
-  { icon: Shield, title: "Roblox OAuth Fixed", desc: "Token exchange now works reliably — sign in with Roblox lands you straight in your dashboard." },
-  { icon: Users, title: "No Duplicate Members", desc: "Database constraint prevents the same Roblox user appearing twice in a workspace." },
-  { icon: Sparkles, title: "Staff Support Replies", desc: "Fluxcore staff can now view and reply to every support ticket and update its status." },
-  { icon: Palette, title: "Purple Scrollbars", desc: "No more ugly white bars — every scrollbar matches the workspace accent." },
-  { icon: Globe, title: "Full Roblox Group Integration", desc: "Import all group roles with pagination, two-way rank sync, and auto-join by mapped rank." },
-  { icon: Bot, title: "AI-Powered Support", desc: "Built-in AI answers common questions instantly. Type 'staff' to escalate to Novavoff." },
-  { icon: BarChart3, title: "Quota Admin View", desc: "Track who completed their quotas with progress bars and admin overview." },
-  { icon: FileText, title: "Documents & Policies", desc: "Digital signature policies with deadlines, auto-assignment, and multiple signature types." },
-  { icon: Award, title: "Verified Workspaces", desc: "Official partners now display a verified mark next to their workspace name." },
+  { icon: Gift, title: "Fluxcore is now free for everyone", desc: "No more Premium plan — every workspace gets the full feature set, including per-role quotas and unlimited members, at zero cost." },
+  { icon: Webhook, title: "Discohook-style webhook templates", desc: "Owners can now customise Shift, Training and Event alerts with multiple embeds, fields, custom username and avatar, and per-category branding." },
+  { icon: ImageIcon, title: "Custom images in alerts", desc: "Upload your own banners and pick whether they show in the middle or at the bottom of the embed — different for Shifts, Trainings and Events." },
+  { icon: MessageSquare, title: "Flexible link formatting", desc: "Choose between an embedded button-style link or a plain text URL, and every notification is signed off with Fluxcore Systems on the final embed." },
+  { icon: Calendar, title: "Reliable session reminders", desc: "The reminder pipeline was rewritten — recurring shifts now fire once per occurrence and never get stuck on stale ‘starting now’ checks." },
+  { icon: Shield, title: "Roblox group ownership check", desc: "Workspace creation now verifies that you actually own the Roblox group you're attaching, blocking impostor workspaces." },
+  { icon: Users, title: "Old-UI shifts in Hyra view", desc: "Recurring shifts created in the classic UI now show up on the right day in the Hyra-style Sessions page with per-occurrence claims." },
+  { icon: AlertTriangle, title: "Quota logging", desc: "Pick how missed quotas are recorded — automatic warnings on the member's profile, or a Discord webhook report. First-time owners get a quick setup prompt." },
+  { icon: Target, title: "Run quota check on demand", desc: "Owners can trigger a quota check from the Quotas page that posts to Discord or logs warnings instantly." },
+  { icon: Sparkles, title: "Lots of polish", desc: "Faster dashboard loads, better Roblox avatar handling, more reliable Discord webhook delivery, and small UI fixes throughout." },
 ];
 
 export function ReleaseModal() {
