@@ -381,6 +381,7 @@ export default function Quotas() {
                 </div>
               </DialogContent>
             </Dialog>
+            </div>
           )}
         </div>
 
