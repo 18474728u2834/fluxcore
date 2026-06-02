@@ -115,6 +115,9 @@ export default function SettingsPage() {
         trainer: trainerLabel.trim() || "Trainer",
       },
       leaderboard_categories: leaderboardCategories,
+      quota_log_mode: quotaLogMode,
+      quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
+      quota_log_configured: true,
     } as any).eq("id", workspaceId);
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
