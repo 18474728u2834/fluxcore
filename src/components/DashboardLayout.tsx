@@ -69,6 +69,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
       </div>
       <ReleaseModal />
       <SetupTutorial />
+      <QuotaSetupPrompt />
     </SidebarProvider>
   );
 }
