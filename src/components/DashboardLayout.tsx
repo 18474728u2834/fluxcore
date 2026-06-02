@@ -8,6 +8,7 @@ import { useUIVersion } from "@/hooks/useUIVersion";
 import { MinimalLayout } from "@/components/MinimalLayout";
 import { BargainsShell } from "@/bargains/Shell";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
+import { QuotaSetupPrompt } from "@/components/QuotaSetupPrompt";
 
 const BARGAINS_WS = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
 
