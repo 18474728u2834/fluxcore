@@ -1548,6 +1548,9 @@ export type Database = {
           premium: boolean
           premium_until: string | null
           primary_color: string | null
+          quota_log_configured: boolean
+          quota_log_mode: string
+          quota_log_webhook_url: string | null
           release_version: string | null
           roblox_api_key: string | null
           roblox_group_id: string | null
@@ -1579,6 +1582,9 @@ export type Database = {
           premium?: boolean
           premium_until?: string | null
           primary_color?: string | null
+          quota_log_configured?: boolean
+          quota_log_mode?: string
+          quota_log_webhook_url?: string | null
           release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
@@ -1610,6 +1616,9 @@ export type Database = {
           premium?: boolean
           premium_until?: string | null
           primary_color?: string | null
+          quota_log_configured?: boolean
+          quota_log_mode?: string
+          quota_log_webhook_url?: string | null
           release_version?: string | null
           roblox_api_key?: string | null
           roblox_group_id?: string | null
