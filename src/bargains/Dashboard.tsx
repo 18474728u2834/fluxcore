@@ -95,16 +95,24 @@ export default function BDashboard() {
     <BargainsShell>
       <BirthdayPrompt />
       <div className="max-w-7xl mx-auto -mt-2">
-        {/* Hero gradient banner */}
-        <div className="rounded-md overflow-hidden relative h-[280px] flex flex-col justify-end p-8"
-          style={{ background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" }}>
-          <div className="text-xs font-semibold uppercase tracking-wider text-white/80 flex items-center gap-1.5 mb-2">
-            <Hand className="w-3.5 h-3.5" /> {greeting}, {name}
-          </div>
-          <h1 className="text-white text-[2.5rem] leading-[1.05] font-bold tracking-[-0.025em] max-w-3xl">
-            {heroLine}
-          </h1>
-        </div>
+        {/* Hero banner — uses custom image if owner uploaded one, otherwise default blue gradient */}
+        {(() => {
+          const heroImg = (workspace as any)?.nexus_hero_image_url as string | undefined;
+          const heroStyle: React.CSSProperties = heroImg
+            ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center" }
+            : { background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" };
+          return (
+            <div className="rounded-md overflow-hidden relative h-[280px] flex flex-col justify-end p-8" style={heroStyle}>
+              <div className="text-xs font-semibold uppercase tracking-wider text-white/80 flex items-center gap-1.5 mb-2">
+                <Hand className="w-3.5 h-3.5" /> {greeting}, {name}
+              </div>
+              <h1 className="text-white text-[2.5rem] leading-[1.05] font-bold tracking-[-0.025em] max-w-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+                {heroLine}
+              </h1>
+            </div>
+          );
+        })()}
+
 
         {/* Quick play tiles */}
         {(workspace as any)?.game_url && (
