@@ -176,189 +176,115 @@ export default function Index() {
           </p>
         </div>
 
-        {/* Real-UI dashboard mockup — mirrors MinimalLayout */}
+        {/* Real-UI dashboard mockup — mirrors Nexus (BargainsShell) */}
         <div id="showcase" className="relative mt-20 mx-auto max-w-6xl px-6" style={{ perspective: "2400px" }}>
           <div
-            className="relative rounded-2xl border border-border/40 bg-background shadow-[0_50px_140px_-20px_hsl(var(--primary)/0.4)] overflow-hidden"
-            style={{ transform: "rotateX(6deg)", transformStyle: "preserve-3d" }}
+            className="relative rounded-2xl border border-border/40 shadow-[0_50px_140px_-20px_hsl(var(--primary)/0.4)] overflow-hidden"
+            style={{ transform: "rotateX(6deg)", transformStyle: "preserve-3d", background: "#0f0f10" }}
           >
             {/* Browser chrome */}
-            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b border-border/30 bg-card/40">
+            <div className="flex items-center gap-1.5 px-4 py-2.5 border-b" style={{ borderColor: "#1a1a1c", background: "#0a0a0b" }}>
               <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-amber-400/60" />
               <div className="w-2.5 h-2.5 rounded-full bg-emerald-400/60" />
               <div className="flex-1 flex justify-center">
-                <div className="px-3 py-1 rounded-md bg-background/60 border border-border/30 text-[11px] text-muted-foreground font-mono">
+                <div className="px-3 py-1 rounded-md border text-[11px] text-white/50 font-mono" style={{ background: "#161618", borderColor: "#1f1f22" }}>
                   fluxcore.works/w/staff-team/dashboard
                 </div>
               </div>
             </div>
 
-            {/* App body — recreates MinimalLayout */}
-            <div
-              className="relative min-h-[460px]"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 20% 0%, hsl(var(--primary) / 0.08), transparent 40%), radial-gradient(circle at 80% 100%, hsl(var(--primary) / 0.05), transparent 40%)",
-              }}
-            >
-              {/* dotted backdrop */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute inset-0 opacity-[0.18]"
-                style={{
-                  backgroundImage: "radial-gradient(hsl(var(--foreground) / 0.18) 1px, transparent 1px)",
-                  backgroundSize: "22px 22px",
-                  maskImage: "radial-gradient(ellipse 80% 60% at 50% 30%, black 40%, transparent 100%)",
-                }}
-              />
-
-              {/* Floating rail */}
-              <aside className="absolute left-3 top-3 bottom-3 w-[58px] rounded-2xl border border-border/50 bg-background/70 backdrop-blur-2xl shadow-[0_8px_40px_-12px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
-                <div className="h-12 flex items-center justify-center border-b border-border/40">
-                  <span className="text-[13px] font-black bg-gradient-to-br from-primary to-violet-400 bg-clip-text text-transparent">F</span>
+            {/* Nexus body */}
+            <div className="relative min-h-[520px] flex" style={{ background: "#0f0f10", color: "#fafafa" }}>
+              {/* Slim icon rail */}
+              <aside className="w-[56px] shrink-0 flex flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+                <div className="w-8 h-8 rounded-md mb-3 flex items-center justify-center" style={{ background: "#f55a4a" }}>
+                  <span className="text-white font-black text-[11px]">F</span>
                 </div>
-                <div className="px-1.5 pt-1.5 pb-1">
-                  <div className="h-7 rounded-lg bg-foreground/[0.04] border border-border/40 flex items-center justify-center">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_hsl(var(--primary))]" />
-                  </div>
-                </div>
-                <nav className="flex-1 overflow-hidden px-1.5 py-1.5 space-y-0.5">
+                <nav className="flex flex-col gap-1 flex-1">
                   {railNav.map((i, idx) => (
-                    <div
-                      key={i.label}
-                      className={`relative h-8 rounded-lg flex items-center justify-center ${i.active ? "bg-foreground/[0.06]" : ""}`}
-                    >
-                      {i.active && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-4 rounded-r-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
-                      )}
-                      <i.icon className={`w-[15px] h-[15px] ${i.active ? "text-foreground" : "text-muted-foreground/70"}`} />
-                    </div>
-                  ))}
-                  <div className="my-1.5 mx-2 border-t border-border/40" />
-                  {railConfig.map((i) => (
-                    <div key={i.label} className="h-8 rounded-lg flex items-center justify-center">
-                      <i.icon className="w-[15px] h-[15px] text-muted-foreground/70" />
+                    <div key={i.label} className="w-8 h-8 rounded-md flex items-center justify-center"
+                      style={{ background: idx === 0 ? "#1f1f22" : "transparent", color: idx === 0 ? "#fff" : "#7a7a7e" }}>
+                      <i.icon className="w-[15px] h-[15px]" strokeWidth={1.8} />
                     </div>
                   ))}
                 </nav>
-                <div className="border-t border-border/40 p-1.5">
-                  <div className="w-7 h-7 mx-auto rounded-full bg-gradient-to-br from-primary/60 to-violet-500/60 ring-2 ring-primary/30" />
+                <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ color: "#7a7a7e" }}>
+                  <Settings className="w-[15px] h-[15px]" strokeWidth={1.8} />
                 </div>
               </aside>
 
-              {/* Main content */}
-              <div className="pl-[78px] relative">
-                {/* App header */}
-                <header className="h-12 flex items-center justify-between px-6">
-                  <div className="flex items-center gap-1.5 text-[12px]">
-                    <span className="text-muted-foreground/60">Staff Team</span>
-                    <ArrowRight className="w-3 h-3 text-muted-foreground/30" />
-                    <span className="text-foreground font-semibold">Dashboard</span>
+              {/* Right column */}
+              <div className="flex-1 flex flex-col min-w-0">
+                {/* Top bar */}
+                <header className="h-12 flex items-center px-4 gap-4 border-b" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+                  <div className="flex items-center gap-2 px-2 py-1 rounded-md" style={{ background: "transparent" }}>
+                    <div className="w-5 h-5 rounded-[5px]" style={{ background: "#f55a4a" }} />
+                    <span className="text-[12px] font-semibold">Staff Team</span>
+                    <ArrowRight className="w-3 h-3 opacity-50 rotate-90" />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <kbd className="inline-flex items-center gap-1 text-[9px] font-mono px-1.5 h-5 rounded border border-border/50 bg-foreground/[0.03] text-muted-foreground">
-                      <Command className="w-2.5 h-2.5" /> K
-                    </kbd>
-                    <span className="flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/20">
-                      <BadgeCheck className="w-2.5 h-2.5" /> VERIFIED
-                    </span>
+                  <div className="flex-1 flex justify-center">
+                    <div className="w-full max-w-md h-7 rounded-md border flex items-center px-2.5 text-[11px] text-white/40" style={{ background: "#161618", borderColor: "#1f1f22" }}>
+                      Search anything...
+                    </div>
                   </div>
+                  <div className="w-[120px]" />
                 </header>
 
-                <div className="px-6 pb-6 pt-1 space-y-3">
-                  <div>
-                    <h2 className="text-[20px] font-black tracking-tight">Overview</h2>
-                    <p className="text-[11px] text-muted-foreground">Your workspace at a glance</p>
+                {/* Main */}
+                <div className="flex-1 p-6">
+                  {/* Blue hero banner — the customizable one */}
+                  <div className="rounded-md overflow-hidden relative h-[180px] flex flex-col justify-end p-6"
+                    style={{ background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" }}>
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-white/85 flex items-center gap-1.5 mb-1.5">
+                      <span className="inline-block w-2.5 h-2.5">👋</span> Welcome, Novavoff
+                    </div>
+                    <h2 className="text-white text-2xl leading-[1.05] font-bold tracking-[-0.02em]">
+                      Great to see you back, Novavoff
+                    </h2>
                   </div>
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-4 gap-2.5">
-                    {[
-                      { label: "Active staff", val: "24", change: "+3", glyph: Users },
-                      { label: "Sessions today", val: "18", change: "+5", glyph: CalendarDays },
-                      { label: "Hours tracked", val: "142h", change: "+12h", glyph: Clock },
-                      { label: "Online now", val: "8", change: "live", glyph: Activity },
-                    ].map((s) => (
-                      <div key={s.label} className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3">
-                        <div className="flex items-center justify-between mb-2">
-                          <s.glyph className="w-3.5 h-3.5 text-muted-foreground/70" />
-                          <span className="text-[9px] font-mono text-emerald-400">▲ {s.change}</span>
+                  {/* Quick play tile */}
+                  <div className="grid grid-cols-3 gap-3 mt-4">
+                    <div className="rounded-md border overflow-hidden relative h-[100px]" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                      <div className="absolute bottom-2.5 left-2.5 right-2.5">
+                        <div className="text-white font-bold text-[12px] mb-1">Staff Team</div>
+                        <div className="inline-flex items-center gap-1 h-5 px-2 rounded text-[9px] font-semibold bg-white/15 text-white">
+                          <Play className="w-2.5 h-2.5 fill-current" /> Play
                         </div>
-                        <p className="text-[9px] text-muted-foreground uppercase tracking-wider mb-0.5">{s.label}</p>
-                        <p className="text-[22px] font-black tracking-tight leading-none">{s.val}</p>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Two-col */}
-                  <div className="grid grid-cols-3 gap-2.5">
-                    {/* Top performer / chart */}
-                    <div className="col-span-2 rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3.5">
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <p className="text-[11px] font-semibold">Activity</p>
-                          <p className="text-[9px] text-muted-foreground">Last 14 days</p>
-                        </div>
-                        <div className="flex gap-1">
-                          <span className="px-1.5 py-0.5 rounded bg-primary/15 text-primary text-[9px] font-mono">Day</span>
-                          <span className="px-1.5 py-0.5 rounded text-muted-foreground text-[9px] font-mono">Week</span>
-                          <span className="px-1.5 py-0.5 rounded text-muted-foreground text-[9px] font-mono">Month</span>
-                        </div>
-                      </div>
-                      <div className="flex items-end gap-1.5 h-20">
-                        {[40, 65, 45, 80, 55, 70, 90, 60, 75, 85, 50, 95, 70, 88].map((h, i) => (
-                          <div key={i} className="flex-1 rounded-t bg-gradient-to-t from-primary/20 to-primary/80 hover:to-primary transition-colors" style={{ height: `${h}%` }} />
-                        ))}
-                      </div>
-                      <div className="flex justify-between mt-1.5 text-[8px] text-muted-foreground/60 font-mono">
-                        <span>Apr 30</span><span>May 7</span><span>May 13</span>
                       </div>
                     </div>
-
-                    {/* Online list */}
-                    <div className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3.5">
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-[11px] font-semibold">Online now</p>
-                        <span className="flex items-center gap-1 text-[9px] text-emerald-400 font-mono">
-                          <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
-                          live
-                        </span>
-                      </div>
-                      <div className="space-y-1.5">
-                        {[
-                          ["synt", "2h 14m", "in-game"],
-                          ["kai", "47m", "in-game"],
-                          ["mira", "1h 02m", "in-game"],
-                          ["devs", "3m", "idle"],
-                        ].map(([n, t, st], i) => (
-                          <div key={n} className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-full bg-gradient-to-br from-primary/60 to-violet-500/60 shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[10px] font-semibold leading-tight truncate">@{n}</p>
-                              <p className="text-[8px] text-muted-foreground leading-tight">{st}</p>
-                            </div>
-                            <span className={`text-[9px] font-mono ${i === 3 ? "text-amber-400" : "text-muted-foreground"}`}>{t}</span>
-                          </div>
-                        ))}
-                      </div>
+                    <div className="rounded-md border p-3" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                      <div className="text-[10px] text-white/50 uppercase tracking-wider">Online now</div>
+                      <div className="text-2xl font-bold mt-1">8</div>
+                      <div className="text-[10px] text-emerald-400 font-mono mt-0.5">live</div>
+                    </div>
+                    <div className="rounded-md border p-3" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                      <div className="text-[10px] text-white/50 uppercase tracking-wider">Hours today</div>
+                      <div className="text-2xl font-bold mt-1">142h</div>
+                      <div className="text-[10px] text-emerald-400 font-mono mt-0.5">▲ +12h</div>
                     </div>
                   </div>
 
-                  {/* Recent activity strip */}
-                  <div className="rounded-xl border border-border/40 bg-card/40 backdrop-blur-sm p-3.5">
-                    <p className="text-[11px] font-semibold mb-2.5">Recent activity</p>
-                    <div className="space-y-1.5">
+                  {/* This week section */}
+                  <div className="mt-6">
+                    <h3 className="text-base font-bold tracking-[-0.02em]">This week at Staff Team</h3>
+                    <div className="text-[11px] font-semibold text-white/85 mt-3 flex items-center gap-1.5">
+                      New to the team 👋
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-2">
                       {[
-                        ["@kai", "promoted to Senior Mod", "2m ago"],
-                        ["@synt", "completed 1h training session", "14m ago"],
-                        ["@devs", "submitted leave of absence", "1h ago"],
-                      ].map(([who, what, when]) => (
-                        <div key={who as string} className="flex items-center gap-2 text-[10px]">
-                          <div className="w-1 h-1 rounded-full bg-primary" />
-                          <span className="font-semibold">{who}</span>
-                          <span className="text-muted-foreground flex-1 truncate">{what}</span>
-                          <span className="text-muted-foreground/60 font-mono text-[9px]">{when}</span>
+                        ["synt", "Joined Mon"],
+                        ["kai", "Joined Tue"],
+                        ["mira", "Joined Wed"],
+                      ].map(([n, w]) => (
+                        <div key={n} className="rounded-md border p-2.5 flex items-center gap-2" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                          <div className="w-7 h-7 rounded-md bg-gradient-to-br from-primary/60 to-violet-500/60 shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="text-[11px] font-semibold truncate">{n}</div>
+                            <div className="text-[9px] text-white/50">{w}</div>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -367,7 +293,7 @@ export default function Index() {
               </div>
 
               {/* Bottom fade */}
-              <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-background to-transparent pointer-events-none" />
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#0f0f10] to-transparent pointer-events-none" />
             </div>
           </div>
 
@@ -375,6 +301,7 @@ export default function Index() {
           <div className="absolute inset-x-12 -bottom-10 h-40 bg-primary/30 blur-[80px] rounded-full opacity-60 pointer-events-none" />
         </div>
       </section>
+
 
       {/* Trusted */}
       <section className="py-20 relative">
