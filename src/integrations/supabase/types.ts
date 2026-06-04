@@ -1687,6 +1687,7 @@ export type Database = {
           gamepass_id: string
           id: string
           name: string
+          nexus_hero_image_url: string
           owner_id: string
           premium: boolean
           premium_until: string
