@@ -420,6 +420,47 @@ export default function SettingsPage() {
           </div>
         </div>
 
+        {/* Nexus Hero Image */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Nexus Dashboard Banner</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Replace the default blue gradient on the Nexus dashboard with your own image. Leave empty to use the default gradient.
+          </p>
+          <div
+            className="rounded-md overflow-hidden relative h-32 flex items-end p-4 border border-border"
+            style={nexusHeroUrl
+              ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${nexusHeroUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+              : { background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" }}
+          >
+            <span className="text-white font-bold drop-shadow text-base">Preview banner</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="inline-flex">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
+              />
+              <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} asChild>
+                <span>
+                  {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+                  {nexusHeroUrl ? "Replace image" : "Upload image"}
+                </span>
+              </Button>
+            </label>
+            {nexusHeroUrl && (
+              <Button type="button" variant="ghost" size="sm" onClick={clearHero}>
+                <X className="w-3 h-3 mr-1" /> Use default gradient
+              </Button>
+            )}
+          </div>
+        </div>
+
+
         {/* Branding */}
         <div className="glass rounded-xl p-5 space-y-4">
           <div className="flex items-center gap-2">
