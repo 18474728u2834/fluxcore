@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target } from "lucide-react";
+import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target, Image as ImageIcon, Upload, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
@@ -39,6 +39,9 @@ export default function SettingsPage() {
   const [leaderboardCategories, setLeaderboardCategories] = useState<string[]>([]);
   const [quotaLogMode, setQuotaLogMode] = useState<"none" | "webhook" | "warning">("none");
   const [quotaLogWebhook, setQuotaLogWebhook] = useState("");
+  const [nexusHeroUrl, setNexusHeroUrl] = useState<string>("");
+  const [uploadingHero, setUploadingHero] = useState(false);
+
 
   useEffect(() => {
     if (workspace) {
@@ -46,7 +49,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, quota_log_webhook_url")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, quota_log_webhook_url, nexus_hero_image_url")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
@@ -67,7 +70,9 @@ export default function SettingsPage() {
           setLeaderboardCategories(((data as any).leaderboard_categories || []) as string[]);
           setQuotaLogMode(((data as any).quota_log_mode || "none") as any);
           setQuotaLogWebhook((data as any).quota_log_webhook_url || "");
+          setNexusHeroUrl((data as any).nexus_hero_image_url || "");
         }
+
       };
       fetchExtras();
     }
@@ -118,7 +123,9 @@ export default function SettingsPage() {
       quota_log_mode: quotaLogMode,
       quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
       quota_log_configured: true,
+      nexus_hero_image_url: nexusHeroUrl.trim() || null,
     } as any).eq("id", workspaceId);
+
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
     setSaving(false);
