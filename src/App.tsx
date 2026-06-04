@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
-import { UIVersionProvider } from "@/hooks/useUIVersion";
+import { UIVersionProvider, useUIVersion } from "@/hooks/useUIVersion";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
 import { I18nProvider } from "@/hooks/useI18n";
 import { DOMTranslator } from "@/components/DOMTranslator";
@@ -151,19 +151,17 @@ function BargainsWorkspacePages() {
 
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
-  if (workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId)) {
-    return (
-      <WorkspaceProvider>
-        <BargainsWorkspacePages />
-      </WorkspaceProvider>
-    );
-  }
+  const { version } = useUIVersion();
+  // Forced Hyra (partner subdomains, bargains, etc) always get Nexus pages.
+  const forceNexus = !!workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId);
+  const useNexus = forceNexus || version === "nexus";
   return (
     <WorkspaceProvider>
-      <WorkspacePages />
+      {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
     </WorkspaceProvider>
   );
 }
+
 
 function BargainsWorkspaceRoutes() {
   return (

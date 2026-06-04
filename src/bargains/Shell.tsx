@@ -2,12 +2,14 @@ import { ReactNode, useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
-  Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone,
+  Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone, Sparkles,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
+import { useUIVersion } from "@/hooks/useUIVersion";
 import { supabase } from "@/integrations/supabase/client";
 import bargainsLogo from "@/assets/bargains-logo.png";
+
 
 
 interface ShellProps {
@@ -30,6 +32,8 @@ const NAV = [
 export function BargainsShell({ children }: ShellProps) {
   const { workspace, workspaceId } = useWorkspace();
   const { user, signOut } = useAuth();
+  const { setVersion } = useUIVersion();
+
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [groupIcon, setGroupIcon] = useState<string | null>(null);
@@ -102,14 +106,22 @@ export function BargainsShell({ children }: ShellProps) {
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
             {menuOpen && (
-              <div className="absolute left-0 top-12 w-56 rounded-md border py-1 z-50" style={{ background: "#141416", borderColor: "#26262a" }}>
+              <div className="absolute left-0 top-12 w-60 rounded-md border py-1 z-50" style={{ background: "#141416", borderColor: "#26262a" }}>
                 <button onClick={() => { navigate("/workspaces"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Switch workspace</button>
                 <button onClick={() => { navigate(`${base}/settings`); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Workspace settings</button>
+                <div className="my-1 border-t" style={{ borderColor: "#22222a" }} />
+                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-[#6a6a6e]">UI Style</div>
+                <button onClick={() => { setVersion("nexus"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22] flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5" /> Nexus UI <span className="ml-auto text-[10px] text-[#6a6a6e]">current</span>
+                </button>
+                <button onClick={() => { setVersion("classic"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Classic UI</button>
+                <button onClick={() => { setVersion("minimal"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Fluxcore New UI</button>
                 <div className="my-1 border-t" style={{ borderColor: "#22222a" }} />
                 <button onClick={async () => { await signOut(); navigate("/login"); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22] text-[#f55a4a] flex items-center gap-2">
                   <LogOut className="w-3.5 h-3.5" /> Sign out
                 </button>
               </div>
+
             )}
           </div>
 

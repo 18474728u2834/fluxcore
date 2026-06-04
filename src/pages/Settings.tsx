@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target } from "lucide-react";
+import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target, Image as ImageIcon, Upload, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useState, useEffect } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
@@ -39,6 +39,9 @@ export default function SettingsPage() {
   const [leaderboardCategories, setLeaderboardCategories] = useState<string[]>([]);
   const [quotaLogMode, setQuotaLogMode] = useState<"none" | "webhook" | "warning">("none");
   const [quotaLogWebhook, setQuotaLogWebhook] = useState("");
+  const [nexusHeroUrl, setNexusHeroUrl] = useState<string>("");
+  const [uploadingHero, setUploadingHero] = useState(false);
+
 
   useEffect(() => {
     if (workspace) {
@@ -46,7 +49,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, quota_log_webhook_url")
+          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, quota_log_webhook_url, nexus_hero_image_url")
           .eq("id", workspaceId).single();
         if (data) {
           setApiKey((data as any).api_key || "");
@@ -67,7 +70,9 @@ export default function SettingsPage() {
           setLeaderboardCategories(((data as any).leaderboard_categories || []) as string[]);
           setQuotaLogMode(((data as any).quota_log_mode || "none") as any);
           setQuotaLogWebhook((data as any).quota_log_webhook_url || "");
+          setNexusHeroUrl((data as any).nexus_hero_image_url || "");
         }
+
       };
       fetchExtras();
     }
@@ -118,11 +123,39 @@ export default function SettingsPage() {
       quota_log_mode: quotaLogMode,
       quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
       quota_log_configured: true,
+      nexus_hero_image_url: nexusHeroUrl.trim() || null,
     } as any).eq("id", workspaceId);
+
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
     setSaving(false);
   };
+
+  const uploadHero = async (file: File) => {
+    if (!workspaceId || !file) return;
+    setUploadingHero(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `nexus-hero/${workspaceId}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("webhook-images").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("webhook-images").getPublicUrl(path);
+      setNexusHeroUrl(pub.publicUrl);
+      await supabase.from("workspaces").update({ nexus_hero_image_url: pub.publicUrl } as any).eq("id", workspaceId);
+      toast.success("Hero image updated");
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e?.message || "unknown error"));
+    } finally {
+      setUploadingHero(false);
+    }
+  };
+
+  const clearHero = async () => {
+    setNexusHeroUrl("");
+    await supabase.from("workspaces").update({ nexus_hero_image_url: null } as any).eq("id", workspaceId);
+    toast.success("Reverted to default blue background");
+  };
+
 
   if (!loading && !isOwner) {
     return (
@@ -386,6 +419,47 @@ export default function SettingsPage() {
             </div>
           </div>
         </div>
+
+        {/* Nexus Hero Image */}
+        <div className="glass rounded-xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <ImageIcon className="w-4 h-4 text-primary" />
+            <h2 className="font-semibold text-foreground text-sm">Nexus Dashboard Banner</h2>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Replace the default blue gradient on the Nexus dashboard with your own image. Leave empty to use the default gradient.
+          </p>
+          <div
+            className="rounded-md overflow-hidden relative h-32 flex items-end p-4 border border-border"
+            style={nexusHeroUrl
+              ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${nexusHeroUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+              : { background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" }}
+          >
+            <span className="text-white font-bold drop-shadow text-base">Preview banner</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <label className="inline-flex">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
+              />
+              <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} asChild>
+                <span>
+                  {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+                  {nexusHeroUrl ? "Replace image" : "Upload image"}
+                </span>
+              </Button>
+            </label>
+            {nexusHeroUrl && (
+              <Button type="button" variant="ghost" size="sm" onClick={clearHero}>
+                <X className="w-3 h-3 mr-1" /> Use default gradient
+              </Button>
+            )}
+          </div>
+        </div>
+
 
         {/* Branding */}
         <div className="glass rounded-xl p-5 space-y-4">
