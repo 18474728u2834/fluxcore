@@ -186,6 +186,17 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
         {/* Footer */}
         <div className="border-t border-border/40 p-2 space-y-1 shrink-0">
           <button
+            onClick={() => setVersion("nexus")}
+            className="group w-full flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span className="ml-2 w-10 h-10 grid place-items-center rounded-xl shrink-0 group-hover:bg-foreground/[0.04]">
+              <Sparkles className="w-[18px] h-[18px]" />
+            </span>
+            <span className={cn("ml-3 text-[13px] font-medium whitespace-nowrap transition-all", expanded ? "opacity-100" : "opacity-0 pointer-events-none")}>
+              Nexus UI (default)
+            </span>
+          </button>
+          <button
             onClick={() => setVersion("classic")}
             className="group w-full flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"
           >
@@ -196,6 +207,7 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
               Classic UI
             </span>
           </button>
+
           <button
             onClick={toggleTheme}
             className="group w-full flex items-center h-10 rounded-xl text-muted-foreground hover:text-foreground transition-colors"

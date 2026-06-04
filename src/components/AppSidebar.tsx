@@ -153,11 +153,18 @@ export function AppSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => setVersion("minimal")} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
+            <SidebarMenuButton onClick={() => setVersion("nexus")} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
               <Sparkles className="mr-2 h-4 w-4" />
-              {!collapsed && <span>Try New UI</span>}
+              {!collapsed && <span>Switch to Nexus UI</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={() => setVersion("minimal")} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
+              <Sparkles className="mr-2 h-4 w-4" />
+              {!collapsed && <span>Try Fluxcore New UI</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+
           <SidebarMenuItem>
             <SidebarMenuButton onClick={toggleTheme} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
               {theme === "dark" ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
