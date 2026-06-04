@@ -2,12 +2,14 @@ import { ReactNode, useState, useEffect } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
-  Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone,
+  Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone, Sparkles,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
+import { useUIVersion } from "@/hooks/useUIVersion";
 import { supabase } from "@/integrations/supabase/client";
 import bargainsLogo from "@/assets/bargains-logo.png";
+
 
 
 interface ShellProps {
