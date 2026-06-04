@@ -151,19 +151,17 @@ function BargainsWorkspacePages() {
 
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
-  if (workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId)) {
-    return (
-      <WorkspaceProvider>
-        <BargainsWorkspacePages />
-      </WorkspaceProvider>
-    );
-  }
+  const { version } = useUIVersion();
+  // Forced Hyra (partner subdomains, bargains, etc) always get Nexus pages.
+  const forceNexus = !!workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId);
+  const useNexus = forceNexus || version === "nexus";
   return (
     <WorkspaceProvider>
-      <WorkspacePages />
+      {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
     </WorkspaceProvider>
   );
 }
+
 
 function BargainsWorkspaceRoutes() {
   return (
