@@ -1544,6 +1544,7 @@ export type Database = {
           leaderboard_categories: Json
           message_logger_enabled: boolean | null
           name: string
+          nexus_hero_image_url: string | null
           owner_id: string
           premium: boolean
           premium_until: string | null
@@ -1578,6 +1579,7 @@ export type Database = {
           leaderboard_categories?: Json
           message_logger_enabled?: boolean | null
           name: string
+          nexus_hero_image_url?: string | null
           owner_id: string
           premium?: boolean
           premium_until?: string | null
@@ -1612,6 +1614,7 @@ export type Database = {
           leaderboard_categories?: Json
           message_logger_enabled?: boolean | null
           name?: string
+          nexus_hero_image_url?: string | null
           owner_id?: string
           premium?: boolean
           premium_until?: string | null
