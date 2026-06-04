@@ -32,6 +32,8 @@ const NAV = [
 export function BargainsShell({ children }: ShellProps) {
   const { workspace, workspaceId } = useWorkspace();
   const { user, signOut } = useAuth();
+  const { setVersion } = useUIVersion();
+
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [groupIcon, setGroupIcon] = useState<string | null>(null);
