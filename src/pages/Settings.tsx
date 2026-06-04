@@ -131,6 +131,32 @@ export default function SettingsPage() {
     setSaving(false);
   };
 
+  const uploadHero = async (file: File) => {
+    if (!workspaceId || !file) return;
+    setUploadingHero(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `nexus-hero/${workspaceId}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("webhook-images").upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("webhook-images").getPublicUrl(path);
+      setNexusHeroUrl(pub.publicUrl);
+      await supabase.from("workspaces").update({ nexus_hero_image_url: pub.publicUrl } as any).eq("id", workspaceId);
+      toast.success("Hero image updated");
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e?.message || "unknown error"));
+    } finally {
+      setUploadingHero(false);
+    }
+  };
+
+  const clearHero = async () => {
+    setNexusHeroUrl("");
+    await supabase.from("workspaces").update({ nexus_hero_image_url: null } as any).eq("id", workspaceId);
+    toast.success("Reverted to default blue background");
+  };
+
+
   if (!loading && !isOwner) {
     return (
       <DashboardLayout title="Settings">
