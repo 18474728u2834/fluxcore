@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode, useCallback 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
-export type UIVersion = "classic" | "minimal";
+export type UIVersion = "classic" | "minimal" | "nexus";
 
 interface UIVersionContextType {
   version: UIVersion;
@@ -13,22 +13,26 @@ interface UIVersionContextType {
 const UIVersionContext = createContext<UIVersionContextType | undefined>(undefined);
 
 const LS_KEY = "fluxcore-ui-version";
+const DEFAULT_VERSION: UIVersion = "nexus";
+
+function isValid(v: any): v is UIVersion {
+  return v === "classic" || v === "minimal" || v === "nexus";
+}
 
 export function UIVersionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const [version, setVersionState] = useState<UIVersion>(() => {
-    if (typeof window === "undefined") return "classic";
-    return (localStorage.getItem(LS_KEY) as UIVersion) || "classic";
+    if (typeof window === "undefined") return DEFAULT_VERSION;
+    const stored = localStorage.getItem(LS_KEY);
+    return isValid(stored) ? stored : DEFAULT_VERSION;
   });
   const [loading, setLoading] = useState(false);
 
-  // Apply to <html> data attribute
   useEffect(() => {
     document.documentElement.setAttribute("data-ui", version);
     localStorage.setItem(LS_KEY, version);
   }, [version]);
 
-  // Load from DB when user logs in
   useEffect(() => {
     if (!user) return;
     let active = true;
@@ -40,8 +44,8 @@ export function UIVersionProvider({ children }: { children: ReactNode }) {
       .maybeSingle()
       .then(({ data }) => {
         if (!active) return;
-        if (data?.ui_version === "classic" || data?.ui_version === "minimal") {
-          setVersionState(data.ui_version);
+        if (isValid(data?.ui_version)) {
+          setVersionState(data!.ui_version as UIVersion);
         }
         setLoading(false);
       });

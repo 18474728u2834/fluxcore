@@ -24,14 +24,20 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
     );
   }
 
-  // Bargains workspace ALWAYS uses the Hyra-style shell — no exceptions.
+  // Bargains workspace ALWAYS uses the Hyra-style (Nexus) shell.
   if (workspace?.id === BARGAINS_WS) {
+    return <BargainsShell>{children}</BargainsShell>;
+  }
+
+  // Nexus UI is the new default for every workspace.
+  if (version === "nexus") {
     return <BargainsShell>{children}</BargainsShell>;
   }
 
   if (version === "minimal") {
     return <MinimalLayout title={title}>{children}</MinimalLayout>;
   }
+
 
   const bgColor = workspace?.background_color || "#0f0f11";
   const showGrid = workspace?.show_grid ?? true;
