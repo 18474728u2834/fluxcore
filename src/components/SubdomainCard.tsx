@@ -18,6 +18,42 @@ const RESERVED = new Set([
   "almore", "bargains", "shoply", "downtown", "bloxy-bargains", "fluxcore",
 ]);
 
+// Substring-matched profanity / slurs blocklist. Lowercased, with leet variants.
+// We match as a substring so things like "nigga-rp" or "f4ggot" still get blocked.
+const PROFANITY = [
+  "nigg", "n1gg", "nig9", "n1g9", "nigr", "nlgg",
+  "fag", "f4g", "fagg",
+  "retard", "ret4rd", "r3tard",
+  "kike", "k1ke",
+  "chink", "ch1nk",
+  "spic",
+  "tranny", "tr4nny",
+  "rape", "r4pe", "rapist",
+  "pedo", "p3do", "pedofile", "pedophile",
+  "cp", "cheese-pizza",
+  "kys", "killyourself", "killurself",
+  "cunt", "c0nt", "cvnt",
+  "whore", "wh0re",
+  "slut", "sl0t", "slvt",
+  "porn", "p0rn", "pron",
+  "sex", "s3x",
+  "nazi", "n4zi", "hitler", "h1tler",
+  "isis",
+  "fuck", "fck", "f0ck", "fuk", "phuck",
+  "shit", "sh1t", "sh!t",
+  "bitch", "b1tch", "b!tch",
+  "asshole", "a55hole",
+  "dick", "d1ck", "cock", "c0ck",
+  "pussy", "pu55y", "pvssy",
+];
+
+const containsProfanity = (s: string) => {
+  // Normalize: lowercase, strip dashes/numbers commonly used to bypass
+  const lower = s.toLowerCase();
+  const normalized = lower.replace(/-/g, "");
+  return PROFANITY.some((w) => lower.includes(w) || normalized.includes(w));
+};
+
 interface Portal {
   id: string;
   subdomain: string;
@@ -63,6 +99,10 @@ export default function SubdomainCard({ workspaceId, workspaceName }: Props) {
     }
     if (RESERVED.has(sub)) {
       toast.error("That subdomain is reserved");
+      return;
+    }
+    if (containsProfanity(sub)) {
+      toast.error("That subdomain isn't allowed. Pick something else.");
       return;
     }
 

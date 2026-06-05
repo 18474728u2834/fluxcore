@@ -135,8 +135,8 @@ export default function SettingsPage() {
     if (!workspaceId || !file) return;
     setUploadingHero(true);
     try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `nexus-hero/${workspaceId}-${Date.now()}.${ext}`;
+      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const path = `${workspaceId}/nexus-hero-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("webhook-images").upload(path, file, { upsert: true, contentType: file.type });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("webhook-images").getPublicUrl(path);
