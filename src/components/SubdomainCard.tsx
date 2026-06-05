@@ -101,6 +101,10 @@ export default function SubdomainCard({ workspaceId, workspaceName }: Props) {
       toast.error("That subdomain is reserved");
       return;
     }
+    if (containsProfanity(sub)) {
+      toast.error("That subdomain isn't allowed. Pick something else.");
+      return;
+    }
 
     setSaving(true);
 
