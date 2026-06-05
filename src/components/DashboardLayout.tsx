@@ -31,7 +31,26 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
 
   // Nexus UI is the new default for every workspace.
   if (version === "nexus") {
-    return <BargainsShell>{children}</BargainsShell>;
+    return (
+      <BargainsShell>
+        <div className="nexus-skin">
+          <style>{`
+            .nexus-skin .glass,
+            .nexus-skin [class*="bg-card"],
+            .nexus-skin .bg-background,
+            .nexus-skin .bg-muted { background: #141416 !important; border-color: #22222a !important; }
+            .nexus-skin .border, .nexus-skin .border-border, .nexus-skin .border-border\\/50 { border-color: #22222a !important; }
+            .nexus-skin .text-foreground { color: #fafafa !important; }
+            .nexus-skin .text-muted-foreground { color: #8a8a8e !important; }
+            .nexus-skin .rounded-xl, .nexus-skin .rounded-2xl { border-radius: 6px !important; }
+            .nexus-skin input, .nexus-skin textarea, .nexus-skin select {
+              background: #0f0f11 !important; border-color: #26262a !important; color: #fafafa !important;
+            }
+          `}</style>
+          {children}
+        </div>
+      </BargainsShell>
+    );
   }
 
   if (version === "minimal") {
