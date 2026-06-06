@@ -104,9 +104,9 @@ export function BargainsShell({ children }: ShellProps) {
               {groupIcon ? (
                 <img src={groupIcon} className="w-7 h-7 rounded-md object-cover" />
               ) : (
-                <div className="w-7 h-7 rounded-md bg-[#f55a4a]" />
+                <div className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-[10px]" style={{ background: accentColor }}>{wsInitials}</div>
               )}
-              <span className="text-sm font-semibold">{workspace?.name || "Bloxy Bargains"}</span>
+              <span className="text-sm font-semibold">{workspace?.name || "Workspace"}</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
             {menuOpen && (
