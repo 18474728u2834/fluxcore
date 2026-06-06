@@ -69,8 +69,8 @@ export function BargainsShell({ children }: ShellProps) {
 
       {/* Slim icon rail */}
       <aside className="w-[60px] shrink-0 flex flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-        <NavLink to={base + "/dashboard"} className="w-9 h-9 rounded-md flex items-center justify-center mb-3 overflow-hidden" style={{ background: "#f55a4a" }}>
-          {groupIcon ? <img src={groupIcon} className="w-9 h-9 object-cover" /> : <span className="text-white font-bold text-sm">BB</span>}
+        <NavLink to={base + "/dashboard"} className="w-9 h-9 rounded-md flex items-center justify-center mb-3 overflow-hidden" style={{ background: accentColor }}>
+          {groupIcon ? <img src={groupIcon} className="w-9 h-9 object-cover" /> : <span className="text-white font-bold text-sm">{wsInitials}</span>}
         </NavLink>
         <nav className="flex flex-col gap-1 flex-1">
           {NAV.map(({ to, icon: Icon, label }) => {
