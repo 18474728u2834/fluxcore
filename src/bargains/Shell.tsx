@@ -36,8 +36,8 @@ export function BargainsShell({ children }: ShellProps) {
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [groupIcon, setGroupIcon] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
 
   const BARGAINS_WS_ID = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
   const isBargains = workspace?.id === BARGAINS_WS_ID;
