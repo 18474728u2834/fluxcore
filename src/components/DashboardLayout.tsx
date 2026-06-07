@@ -10,8 +10,6 @@ import { BargainsShell } from "@/bargains/Shell";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { QuotaSetupPrompt } from "@/components/QuotaSetupPrompt";
 
-const BARGAINS_WS = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
-
 export function DashboardLayout({ children, title }: { children: React.ReactNode; title?: string }) {
   const { loading, workspace } = useWorkspace();
   const { version } = useUIVersion();
@@ -24,10 +22,6 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
     );
   }
 
-  // Bargains workspace ALWAYS uses the Hyra-style (Nexus) shell.
-  if (workspace?.id === BARGAINS_WS) {
-    return <BargainsShell>{children}</BargainsShell>;
-  }
 
   // Nexus UI is the new default for every workspace.
   if (version === "nexus") {
