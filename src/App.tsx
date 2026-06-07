@@ -341,7 +341,7 @@ function AppRoutes() {
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
-          <Route path="/*" element={<PartnerCleanRoutes workspaceId={BARGAINS_WS} useHyra={true} />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={BARGAINS_WS} useHyra={false} />} />
         </Routes>
       </Suspense>
     );
