@@ -174,12 +174,15 @@ function BargainsWorkspaceRoutes() {
 // Routes mounted at the root of a partner subdomain — no /w/:id prefix.
 // e.g. shoply.fluxcore.works/sessions instead of /w/<uuid>/sessions.
 function PartnerCleanRoutes({ workspaceId, useHyra }: { workspaceId: string; useHyra: boolean }) {
+  const { version } = useUIVersion();
+  const useNexus = useHyra || version === "nexus";
   return (
     <WorkspaceProvider workspaceId={workspaceId}>
-      {useHyra ? <BargainsWorkspacePages /> : <WorkspacePages />}
+      {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
     </WorkspaceProvider>
   );
 }
+
 
 function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
   const { workspaceId } = useParams();
@@ -338,7 +341,7 @@ function AppRoutes() {
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
-          <Route path="/*" element={<PartnerCleanRoutes workspaceId={BARGAINS_WS} useHyra={true} />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={BARGAINS_WS} useHyra={false} />} />
         </Routes>
       </Suspense>
     );
@@ -356,7 +359,7 @@ function AppRoutes() {
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
-          <Route path="/*" element={<PartnerCleanRoutes workspaceId={SHOPLY_WS} useHyra={true} />} />
+          <Route path="/*" element={<PartnerCleanRoutes workspaceId={SHOPLY_WS} useHyra={false} />} />
         </Routes>
       </Suspense>
     );

@@ -36,23 +36,36 @@ export function BargainsShell({ children }: ShellProps) {
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [groupIcon, setGroupIcon] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+
 
   const BARGAINS_WS_ID = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
   const isBargains = workspace?.id === BARGAINS_WS_ID;
   const accentColor = isBargains ? "#f55a4a" : (workspace?.primary_color || "#3b82f6");
   const wsInitials = (workspace?.name || "").trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "·";
 
+  const iconCacheKey = workspace?.roblox_group_id ? `fluxcore-group-icon-${workspace.roblox_group_id}` : null;
+  const [groupIcon, setGroupIcon] = useState<string | null>(() => {
+    if (isBargains) return bargainsLogo;
+    if (!iconCacheKey || typeof window === "undefined") return null;
+    return localStorage.getItem(iconCacheKey);
+  });
+
   useEffect(() => {
     if (isBargains) { setGroupIcon(bargainsLogo); return; }
-    setGroupIcon(null);
-    if (!workspace?.roblox_group_id) return;
+    if (!workspace?.roblox_group_id) { setGroupIcon(null); return; }
+    const key = `fluxcore-group-icon-${workspace.roblox_group_id}`;
+    const cached = localStorage.getItem(key);
+    if (cached) setGroupIcon(cached);
     fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/roblox-group-icon?groupIds=${workspace.roblox_group_id}`)
       .then(r => r.json())
-      .then(j => { const img = j?.data?.[0]?.imageUrl; if (img) setGroupIcon(img); })
+      .then(j => {
+        const img = j?.data?.[0]?.imageUrl;
+        if (img) { setGroupIcon(img); try { localStorage.setItem(key, img); } catch {} }
+      })
       .catch(() => {});
   }, [workspace?.roblox_group_id, isBargains]);
+
 
   const base = `/w/${workspaceId}`;
 
