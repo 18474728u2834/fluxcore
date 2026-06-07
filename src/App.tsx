@@ -174,12 +174,15 @@ function BargainsWorkspaceRoutes() {
 // Routes mounted at the root of a partner subdomain — no /w/:id prefix.
 // e.g. shoply.fluxcore.works/sessions instead of /w/<uuid>/sessions.
 function PartnerCleanRoutes({ workspaceId, useHyra }: { workspaceId: string; useHyra: boolean }) {
+  const { version } = useUIVersion();
+  const useNexus = useHyra || version === "nexus";
   return (
     <WorkspaceProvider workspaceId={workspaceId}>
-      {useHyra ? <BargainsWorkspacePages /> : <WorkspacePages />}
+      {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
     </WorkspaceProvider>
   );
 }
+
 
 function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
   const { workspaceId } = useParams();
