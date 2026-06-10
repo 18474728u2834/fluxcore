@@ -77,6 +77,7 @@ const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
 const PartnerLogin = lazy(() => import("./pages/PartnerLogin"));
 const ThemedPortal = lazy(() => import("./pages/ThemedPortal"));
 const PartnerClosed = lazy(() => import("./pages/PartnerClosed"));
+const Status = lazy(() => import("./pages/Status"));
 
 
 const queryClient = new QueryClient();
