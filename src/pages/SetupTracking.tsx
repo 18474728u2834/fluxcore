@@ -319,19 +319,12 @@ end
 print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
 `;
 
-  const [copiedClient, setCopiedClient] = useState(false);
   const [copiedRanking, setCopiedRanking] = useState(false);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(luaScript);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const copyClientToClipboard = () => {
-    navigator.clipboard.writeText(luaClientScript);
-    setCopiedClient(true);
-    setTimeout(() => setCopiedClient(false), 2000);
   };
 
   const copyRankingToClipboard = () => {
