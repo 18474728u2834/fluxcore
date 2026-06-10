@@ -278,8 +278,17 @@ export default function Workspaces() {
     if (portalErr) {
       toast.warning("Workspace created but subdomain failed: " + portalErr.message);
     } else {
-      // Best-effort attach to Vercel
-      supabase.functions.invoke("vercel-domain", { body: { action: "add", subdomain: sub } }).catch(() => {});
+      // Attach to Vercel — await so we can surface failures to the owner.
+      const { data: vd, error: vErr } = await supabase.functions.invoke("vercel-domain", {
+        body: { action: "add", subdomain: sub },
+      });
+      if (vErr || (vd as any)?.error) {
+        toast.warning(
+          "Subdomain registered, but Vercel attach failed: " +
+            ((vd as any)?.error || vErr?.message || "unknown") +
+            ". Staff have been notified — you can still use the main domain."
+        );
+      }
     }
 
     toast.success("Workspace created!");

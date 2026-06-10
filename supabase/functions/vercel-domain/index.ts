@@ -26,15 +26,31 @@ Deno.serve(async (req) => {
     const { data: claims, error: claimsErr } = await supabase.auth.getClaims(token);
     if (claimsErr || !claims?.claims) return json({ error: 'Unauthorized' }, 401);
 
-    // Staff check
-    const { data: isStaff } = await supabase.rpc('is_fluxcore_staff');
-    if (!isStaff) return json({ error: 'Forbidden — staff only' }, 403);
-
     const body = await req.json().catch(() => ({}));
     const action = String(body.action || '');
     const subdomainRaw = String(body.subdomain || '').toLowerCase().trim();
     const subdomain = subdomainRaw.replace(/[^a-z0-9-]/g, '');
     if (!subdomain || subdomain.length > 63) return json({ error: 'Invalid subdomain' }, 400);
+
+    // Authorization: either Fluxcore staff, OR a workspace owner attaching
+    // their own subdomain (must match a partner_portals row they own).
+    const { data: isStaff } = await supabase.rpc('is_fluxcore_staff');
+    if (!isStaff) {
+      const { data: portal } = await supabase
+        .from('partner_portals')
+        .select('workspace_id, subdomain, workspaces!inner(owner_id)')
+        .eq('subdomain', subdomain)
+        .maybeSingle();
+      const userId = (claims.claims as any).sub;
+      const ownerId = (portal as any)?.workspaces?.owner_id;
+      if (!portal || !ownerId || ownerId !== userId) {
+        return json({ error: 'Forbidden — not the owner of this subdomain' }, 403);
+      }
+      // Owners can add/verify their own subdomain, but never remove.
+      if (action === 'remove') {
+        return json({ error: 'Forbidden — owners cannot remove subdomains' }, 403);
+      }
+    }
 
     const vercelToken = Deno.env.get('VERCEL_API_TOKEN');
     const projectId = Deno.env.get('VERCEL_PROJECT_ID');
