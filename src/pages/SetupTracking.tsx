@@ -349,6 +349,18 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
     setTimeout(() => setCopiedRanking(false), 2000);
   };
 
+  if (allowed === false) {
+    return (
+      <DashboardLayout title="Setup Tracking">
+        <div className="max-w-md mx-auto mt-16 glass rounded-xl p-8 text-center space-y-3">
+          <Lock className="w-8 h-8 mx-auto text-muted-foreground" />
+          <h1 className="text-lg font-bold text-foreground">No access</h1>
+          <p className="text-sm text-muted-foreground">You need the <strong className="text-foreground">manage_settings</strong> permission to view tracker setup. Ask a workspace owner.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout title="Setup Tracking">
       <div className="max-w-3xl space-y-6">
