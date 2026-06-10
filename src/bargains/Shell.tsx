@@ -56,7 +56,7 @@ export function BargainsShell({ children }: ShellProps) {
     if (!workspace?.roblox_group_id) { setGroupIcon(null); return; }
     const key = `fluxcore-group-icon-${workspace.roblox_group_id}`;
     const cached = localStorage.getItem(key);
-    if (cached) setGroupIcon(cached);
+    if (cached) { setGroupIcon(cached); return; }
     fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/roblox-group-icon?groupIds=${workspace.roblox_group_id}`)
       .then(r => r.json())
       .then(j => {
