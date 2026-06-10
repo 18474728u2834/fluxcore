@@ -53,7 +53,7 @@ export default function Index() {
     { icon: MessageSquare, title: "Message logs", desc: "Search every staff chat in-game. Audit, moderate, never lose context again." },
     { icon: Plane, title: "Leave of absence", desc: "Staff request time off. Leadership approves in one click. Quotas adjust automatically." },
     { icon: Megaphone, title: "Staff wall", desc: "Pin announcements, post updates. Skip the seventh Discord channel nobody reads." },
-    { icon: Bot, title: "AI support", desc: "Built-in tickets with an AI that handles common questions before they hit you." },
+    { icon: BadgeCheck, title: "Warnings & promotions", desc: "Track member warnings, log promotions, and keep a full history on every staff profile." },
     { icon: KeyRound, title: "Open Cloud API", desc: "Auto-rank syncs straight to Roblox via your group's API key. No bots required." },
     { icon: Zap, title: "Discord webhooks", desc: "Session reminders, role changes, alerts — all routed where your team already lives." },
   ];
