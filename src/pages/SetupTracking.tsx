@@ -394,14 +394,15 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
-            <h2 className="font-semibold text-foreground text-sm">Add Server Script (v4)</h2>
+            <h2 className="font-semibold text-foreground text-sm">Add Server Script (v5 — all-in-one)</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
-            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>.
+            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>. The server script auto-installs the silent input beacon into <strong className="text-foreground">StarterPlayerScripts</strong> for you — no second script required.
           </p>
           <div className="pl-8 text-xs text-muted-foreground space-y-1">
-            <p><strong className="text-foreground">v4 Features:</strong></p>
+            <p><strong className="text-foreground">v5 Features:</strong></p>
             <ul className="list-disc pl-4 space-y-0.5">
+              <li>Auto-installs the input beacon LocalScript on startup</li>
               <li>Silent AFK detection (30s of no input or window unfocus)</li>
               <li>Message counting & logging</li>
               <li>15-second heartbeat keepalive</li>
@@ -422,25 +423,6 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
-            <h2 className="font-semibold text-foreground text-sm">Add Client Beacon (silent input ping)</h2>
-          </div>
-          <p className="text-xs text-muted-foreground pl-8">
-            Create a <strong className="text-foreground">LocalScript</strong> named <code className="text-primary">FluxcoreInputBeacon</code> in{" "}
-            <strong className="text-foreground">StarterPlayer → StarterPlayerScripts</strong>. No UI — it just notifies the server when the player presses keys, clicks, or focuses/unfocuses the Roblox window.
-          </p>
-          <div className="relative pl-8">
-            <pre className="bg-muted rounded-lg p-3 text-[11px] font-mono text-secondary-foreground overflow-x-auto max-h-80 overflow-y-auto leading-relaxed">
-              {luaClientScript}
-            </pre>
-            <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={copyClientToClipboard}>
-              <Copy className="w-3 h-3 mr-1" /> {copiedClient ? "Copied" : "Copy"}
-            </Button>
-          </div>
-        </div>
-
-        <div className="glass rounded-xl p-5 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
             <h2 className="font-semibold text-foreground text-sm">In-Game Ranking (optional)</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
@@ -458,11 +440,11 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
 
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
             <h2 className="font-semibold text-foreground text-sm">Test It</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
-            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v4 initialized</code>. Activity will appear in the dashboard immediately.
+            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v5 initialized</code>. Activity will appear in the dashboard immediately.
           </p>
         </div>
       </div>
