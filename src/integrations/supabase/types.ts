@@ -993,6 +993,51 @@ export type Database = {
         }
         Relationships: []
       }
+      site_banners: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          ends_at: string | null
+          id: string
+          level: string
+          link_label: string | null
+          link_url: string | null
+          message: string
+          placement: string
+          starts_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          level?: string
+          link_label?: string | null
+          link_url?: string | null
+          message: string
+          placement?: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          ends_at?: string | null
+          id?: string
+          level?: string
+          link_label?: string | null
+          link_url?: string | null
+          message?: string
+          placement?: string
+          starts_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       staff_admins: {
         Row: {
           added_by: string | null
@@ -1081,6 +1126,217 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      status_checks: {
+        Row: {
+          checked_at: string
+          component_id: string
+          id: number
+          latency_ms: number | null
+          source: string
+          status: string
+        }
+        Insert: {
+          checked_at?: string
+          component_id: string
+          id?: number
+          latency_ms?: number | null
+          source?: string
+          status: string
+        }
+        Update: {
+          checked_at?: string
+          component_id?: string
+          id?: number
+          latency_ms?: number | null
+          source?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_checks_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "status_components"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      status_components: {
+        Row: {
+          check_url: string | null
+          created_at: string
+          current_status: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          check_url?: string | null
+          created_at?: string
+          current_status?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          check_url?: string | null
+          created_at?: string
+          current_status?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      status_incident_components: {
+        Row: {
+          affected_status: string
+          component_id: string
+          incident_id: string
+        }
+        Insert: {
+          affected_status?: string
+          component_id: string
+          incident_id: string
+        }
+        Update: {
+          affected_status?: string
+          component_id?: string
+          incident_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_incident_components_component_id_fkey"
+            columns: ["component_id"]
+            isOneToOne: false
+            referencedRelation: "status_components"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "status_incident_components_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "status_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      status_incident_updates: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          incident_id: string
+          status: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id: string
+          status: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          incident_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "status_incident_updates_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "status_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      status_incidents: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          resolved_at: string | null
+          severity: string
+          started_at: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          started_at?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          started_at?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      status_maintenance: {
+        Row: {
+          body: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          scheduled_end: string
+          scheduled_start: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scheduled_end: string
+          scheduled_start: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scheduled_end?: string
+          scheduled_start?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       support_messages: {
         Row: {
