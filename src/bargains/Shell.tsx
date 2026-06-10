@@ -161,32 +161,33 @@ export function BargainsShell({ children }: ShellProps) {
     if (!workspaceId) { setSearchHits([]); return; }
     const q = searchQ.trim();
     if (q.length < 2) {
-      const pages: SearchHit[] = PAGE_INDEX.map((p) => ({
-        type: "page", id: p.to, label: p.label, to: `${base}/${p.to}`,
-      }));
-      setSearchHits(pages);
+      setSearchHits([]);
       setHighlight(0);
       return;
     }
     let cancelled = false;
     const timer = setTimeout(async () => {
       const like = `%${q}%`;
-      const [members, sessions, docs] = await Promise.all([
+      const [members, sessions, docs, users] = await Promise.all([
         supabase.from("workspace_members")
           .select("id, roblox_username, role")
           .eq("workspace_id", workspaceId)
           .ilike("roblox_username", like)
-          .limit(6),
+          .limit(5),
         supabase.from("scheduled_sessions")
           .select("id, title, starts_at")
           .eq("workspace_id", workspaceId)
           .ilike("title", like)
-          .limit(6),
+          .limit(4),
         supabase.from("workspace_documents")
           .select("id, title")
           .eq("workspace_id", workspaceId)
           .ilike("title", like)
-          .limit(6),
+          .limit(4),
+        supabase.from("verified_users")
+          .select("user_id, roblox_username, roblox_user_id")
+          .ilike("roblox_username", like)
+          .limit(5),
       ]);
       if (cancelled) return;
       const hits: SearchHit[] = [];
@@ -194,6 +195,16 @@ export function BargainsShell({ children }: ShellProps) {
         type: "member", id: m.id, label: m.roblox_username, sub: m.role || "Member",
         to: `${base}/members/${m.id}`,
       }));
+      const seen = new Set((members.data || []).map((m: any) => (m.roblox_username || "").toLowerCase()));
+      (users.data || []).forEach((u: any) => {
+        const key = (u.roblox_username || "").toLowerCase();
+        if (!key || seen.has(key)) return;
+        seen.add(key);
+        hits.push({
+          type: "member", id: u.user_id, label: u.roblox_username, sub: "Roblox user",
+          to: `https://www.roblox.com/users/${u.roblox_user_id}/profile`,
+        });
+      });
       (sessions.data || []).forEach((s: any) => hits.push({
         type: "session", id: s.id, label: s.title || "Session",
         sub: s.starts_at ? new Date(s.starts_at).toLocaleString() : undefined,
@@ -206,8 +217,9 @@ export function BargainsShell({ children }: ShellProps) {
       const ql = q.toLowerCase();
       PAGE_INDEX
         .filter((p) => p.label.toLowerCase().includes(ql))
+        .slice(0, 4)
         .forEach((p) => hits.push({ type: "page", id: p.to, label: p.label, to: `${base}/${p.to}` }));
-      setSearchHits(hits);
+      setSearchHits(hits.slice(0, 12));
       setHighlight(0);
     }, 200);
     return () => { cancelled = true; clearTimeout(timer); };
