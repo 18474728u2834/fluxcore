@@ -10,14 +10,15 @@ export default function SetupTracking() {
 
   const FUNCTION_URL = "https://fluxcore.works/api/v1/track";
 
-  const luaScript = `-- Fluxcore Activity Tracker v4 (silent)
--- Place in ServerScriptService as a Script named "FluxcoreTracker"
--- Detects AFK silently: 30s of no input OR window unfocus pauses tracked time.
--- No on-screen GUI, no popups.
+  const luaScript = `-- Fluxcore Activity Tracker v5 (all-in-one)
+-- Place in ServerScriptService as a Script named "FluxcoreTracker".
+-- This single script also installs the silent input beacon into StarterPlayerScripts
+-- automatically — you do NOT need a second script.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterPlayer = game:GetService("StarterPlayer")
 
 local InputEvent = ReplicatedStorage:FindFirstChild("FluxcoreInput")
 if not InputEvent then
@@ -25,6 +26,41 @@ if not InputEvent then
   InputEvent.Name = "FluxcoreInput"
   InputEvent.Parent = ReplicatedStorage
 end
+
+-- === Auto-install the client beacon (silent, no GUI) ============================
+do
+  local sps = StarterPlayer:FindFirstChildOfClass("StarterPlayerScripts")
+    or StarterPlayer:WaitForChild("StarterPlayerScripts")
+  local existing = sps:FindFirstChild("FluxcoreInputBeacon")
+  if existing then existing:Destroy() end
+  local beacon = Instance.new("LocalScript")
+  beacon.Name = "FluxcoreInputBeacon"
+  beacon.Source = [==[
+-- Fluxcore Input Beacon (auto-installed). Silent, no GUI.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local InputEvent = ReplicatedStorage:WaitForChild("FluxcoreInput")
+local PING_INTERVAL = 5
+local lastPing = 0
+local function pingActive()
+  local now = tick()
+  if now - lastPing < PING_INTERVAL then return end
+  lastPing = now
+  pcall(function() InputEvent:FireServer("input") end)
+end
+UserInputService.InputBegan:Connect(function(_, gpe) if gpe then return end pingActive() end)
+UserInputService.WindowFocused:Connect(function()
+  lastPing = 0
+  pcall(function() InputEvent:FireServer("focus") end)
+end)
+UserInputService.WindowFocusReleased:Connect(function()
+  pcall(function() InputEvent:FireServer("blur") end)
+end)
+]==]
+  beacon.Parent = sps
+end
+-- ================================================================================
 
 local Fluxcore = {}
 Fluxcore.API_URL = "${FUNCTION_URL}"
