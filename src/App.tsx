@@ -151,11 +151,10 @@ function BargainsWorkspacePages() {
 
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
-  const { version, loading: uiLoading } = useUIVersion();
+  const { version } = useUIVersion();
   // Forced Hyra (partner subdomains, bargains, etc) always get Nexus pages.
   const forceNexus = !!workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId);
   const useNexus = forceNexus || version === "nexus";
-  if (uiLoading) return <PageLoader />;
   return (
     <WorkspaceProvider>
       {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
@@ -175,9 +174,8 @@ function BargainsWorkspaceRoutes() {
 // Routes mounted at the root of a partner subdomain — no /w/:id prefix.
 // e.g. shoply.fluxcore.works/sessions instead of /w/<uuid>/sessions.
 function PartnerCleanRoutes({ workspaceId, useHyra }: { workspaceId: string; useHyra: boolean }) {
-  const { version, loading: uiLoading } = useUIVersion();
+  const { version } = useUIVersion();
   const useNexus = useHyra || version === "nexus";
-  if (uiLoading) return <PageLoader />;
   return (
     <WorkspaceProvider workspaceId={workspaceId}>
       {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
