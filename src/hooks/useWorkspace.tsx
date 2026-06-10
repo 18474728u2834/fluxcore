@@ -58,7 +58,10 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
 
       if (!wsData || error) {
         setLoading(false);
-        navigate("/workspaces");
+        const isPartnerHost = window.location.hostname.endsWith(".fluxcore.works")
+          && window.location.hostname !== "fluxcore.works"
+          && !window.location.hostname.startsWith("www.");
+        navigate(isPartnerHost ? "/login" : "/workspaces", { replace: true });
         return;
       }
 
@@ -95,7 +98,7 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
         if (cancelled) return;
         if (!member) {
           setLoading(false);
-          navigate("/workspaces");
+          navigate(workspaceIdOverride ? "/login" : "/workspaces", { replace: true });
           return;
         }
         setMemberRole(member.role);
