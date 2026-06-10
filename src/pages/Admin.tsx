@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PremiumGrantManager } from "@/components/PremiumGrantManager";
 import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
+import StatusAdminTab from "@/pages/admin/StatusAdminTab";
 
 type WhoAmI = {
   user_id: string;
