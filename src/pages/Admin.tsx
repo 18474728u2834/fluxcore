@@ -34,6 +34,7 @@ const ALL_PERMS = [
   { key: "delete_workspaces", label: "Delete workspaces" },
   { key: "moderate_chats", label: "Moderate workspace chats" },
   { key: "manage_blacklist", label: "Manage Fluxcore blacklist" },
+  { key: "manage_status", label: "Manage status page & banners" },
 ];
 
 async function callStaff<T = any>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
