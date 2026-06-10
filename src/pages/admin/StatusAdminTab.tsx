@@ -280,9 +280,9 @@ function BannersTab() {
           <Select value={placement} onValueChange={setPlacement}>
             <SelectTrigger><SelectValue /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="marketing">Marketing site (/)</SelectItem>
+              <SelectItem value="marketing">Landing page (/)</SelectItem>
               <SelectItem value="workspaces">Choose workspace page</SelectItem>
-              <SelectItem value="all">Both</SelectItem>
+              <SelectItem value="all">All pages</SelectItem>
             </SelectContent>
           </Select>
         </div>
