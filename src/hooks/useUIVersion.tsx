@@ -13,7 +13,7 @@ interface UIVersionContextType {
 const UIVersionContext = createContext<UIVersionContextType | undefined>(undefined);
 
 const LS_KEY = "fluxcore-ui-version";
-const DEFAULT_VERSION: UIVersion = "nexus";
+const DEFAULT_VERSION: UIVersion = "classic";
 
 function isValid(v: any): v is UIVersion {
   return v === "classic" || v === "minimal" || v === "nexus";
