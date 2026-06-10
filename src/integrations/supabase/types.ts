@@ -156,6 +156,7 @@ export type Database = {
           author_name: string
           content: string
           created_at: string
+          department_id: string | null
           id: string
           pinned: boolean
           title: string
@@ -167,6 +168,7 @@ export type Database = {
           author_name: string
           content: string
           created_at?: string
+          department_id?: string | null
           id?: string
           pinned?: boolean
           title: string
@@ -178,6 +180,7 @@ export type Database = {
           author_name?: string
           content?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           pinned?: boolean
           title?: string
@@ -185,6 +188,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "announcements_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "announcements_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -223,6 +233,86 @@ export type Database = {
           target_username?: string | null
         }
         Relationships: []
+      }
+      department_members: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          member_id: string
+          role: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          member_id: string
+          role?: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          member_id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_members_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "department_members_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      departments: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          name: string
+          primary_color: string | null
+          slug: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name: string
+          primary_color?: string | null
+          slug: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          name?: string
+          primary_color?: string | null
+          slug?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "departments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       discord_pending_links: {
         Row: {
@@ -743,6 +833,7 @@ export type Database = {
           category: string
           co_host_name: string | null
           created_at: string
+          department_id: string | null
           description: string | null
           duration_minutes: number
           game_url: string | null
@@ -767,6 +858,7 @@ export type Database = {
           category?: string
           co_host_name?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           duration_minutes?: number
           game_url?: string | null
@@ -791,6 +883,7 @@ export type Database = {
           category?: string
           co_host_name?: string | null
           created_at?: string
+          department_id?: string | null
           description?: string | null
           duration_minutes?: number
           game_url?: string | null
@@ -812,6 +905,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "scheduled_sessions_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "scheduled_sessions_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -1282,6 +1382,7 @@ export type Database = {
           created_at: string
           created_by: string
           deadline: string | null
+          department_id: string | null
           doc_type: string
           id: string
           signature_type: string
@@ -1297,6 +1398,7 @@ export type Database = {
           created_at?: string
           created_by: string
           deadline?: string | null
+          department_id?: string | null
           doc_type?: string
           id?: string
           signature_type?: string
@@ -1312,6 +1414,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           deadline?: string | null
+          department_id?: string | null
           doc_type?: string
           id?: string
           signature_type?: string
@@ -1321,6 +1424,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "workspace_documents_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "workspace_documents_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -1659,6 +1769,10 @@ export type Database = {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
       }
+      department_workspace_id: {
+        Args: { _department_id: string }
+        Returns: string
+      }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
@@ -1714,6 +1828,10 @@ export type Database = {
         Returns: boolean
       }
       heartbeat_portal: { Args: { _workspace_id: string }; Returns: undefined }
+      is_department_member: {
+        Args: { _department_id: string }
+        Returns: boolean
+      }
       is_fluxcore_staff: { Args: never; Returns: boolean }
       is_staff_admin: { Args: never; Returns: boolean }
       is_staff_owner_admin: { Args: never; Returns: boolean }
