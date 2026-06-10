@@ -16,6 +16,7 @@ import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { NexusSkeleton, ClassicSkeleton } from "@/components/PageSkeletons";
 
 // Lazy load every route — each gets its own JS chunk so devtools
 // only ever sees code for the page that's currently rendered.
