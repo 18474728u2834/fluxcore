@@ -149,8 +149,8 @@ export function SessionScriptGenerator() {
             </button>
           </div>
 
-          <Label label="Anything else? (tone, formatting, requirements)">
-            <textarea className="input-field min-h-[50px]" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Use a red embed color, mention attendance is mandatory..." />
+          <Label label="Anything else? (style, colors, behaviour)">
+            <textarea className="input-field min-h-[50px]" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Format time as 12h EST, show ‘LIVE NOW’ if session is active..." />
           </Label>
 
           <div className="flex justify-end">
