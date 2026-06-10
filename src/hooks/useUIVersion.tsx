@@ -34,7 +34,17 @@ export function UIVersionProvider({ children }: { children: ReactNode }) {
   }, [version]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    const stored = typeof window !== "undefined" ? localStorage.getItem(LS_KEY) : null;
+    if (isValid(stored)) {
+      setLoading(false);
+      return;
+    }
+
     let active = true;
     setLoading(true);
     supabase
@@ -57,6 +67,7 @@ export function UIVersionProvider({ children }: { children: ReactNode }) {
   const setVersion = useCallback(
     async (v: UIVersion) => {
       setVersionState(v);
+      try { localStorage.setItem(LS_KEY, v); } catch {}
       if (!user) return;
       await supabase
         .from("user_preferences")
