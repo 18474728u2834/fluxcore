@@ -214,7 +214,6 @@ function AppRoutes() {
   const isHardcoded =
     hostname.startsWith("almore.") ||
     hostname.startsWith("bargains.") ||
-    hostname.startsWith("shoply.") ||
     hostname.includes("bloxy-bargains");
 
   const [partner, setPartner] = useState<any | undefined>(
