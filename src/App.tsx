@@ -396,6 +396,12 @@ function AppRoutes() {
 }
 
 const App = () => {
+  const directPath = typeof window !== "undefined" ? window.location.pathname : "/";
+  if (directPath !== "/" && !window.location.hash) {
+    window.location.replace(`${window.location.origin}/#${directPath}${window.location.search}`);
+    return <PageLoader />;
+  }
+
   // Catch unhandled lazy import failures globally as a second safety net
   useEffect(() => {
     const onErr = (e: ErrorEvent | PromiseRejectionEvent) => {
