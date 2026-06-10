@@ -378,7 +378,7 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
       <div className="max-w-3xl space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Setup Tracking</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v3 in your Roblox game</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v5 in your Roblox game — one server script, auto-installs the client beacon.</p>
         </div>
 
         <div className="glass rounded-xl p-5 space-y-3">
