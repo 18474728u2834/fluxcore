@@ -97,8 +97,8 @@ export function SessionScriptGenerator() {
             <Sparkles className="w-4.5 h-4.5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-bold tracking-tight">AI Session Script Generator</h2>
-            <p className="text-xs text-muted-foreground">Generate a ModuleScript + handler that posts your sessions to Discord automatically.</p>
+            <h2 className="text-lg font-bold tracking-tight">AI Session Board Generator</h2>
+            <p className="text-xs text-muted-foreground">Generate a ModuleScript + handler that updates your in-game session board (SurfaceGui) live.</p>
           </div>
         </div>
         <div className="flex gap-1 text-[10px]">
@@ -123,17 +123,17 @@ export function SessionScriptGenerator() {
             </Label>
           </div>
 
-          <Label label="Description (what is this session for?)">
-            <textarea className="input-field min-h-[60px]" value={description} onChange={e => setDescription(e.target.value)} placeholder="Weekly training for new staff..." />
+          <Label label="Description (what is this board for?)">
+            <textarea className="input-field min-h-[60px]" value={description} onChange={e => setDescription(e.target.value)} placeholder="Lobby board showing the next training session..." />
           </Label>
 
-          <Label label="Discord role ID to ping (optional)">
-            <input className="input-field" value={pingRole} onChange={e => setPingRole(e.target.value)} placeholder="123456789012345678" />
+          <Label label="Anything specific about your board? (optional)">
+            <input className="input-field" value={pingRole} onChange={e => setPingRole(e.target.value)} placeholder="e.g. Part named SessionBoard, 30s refresh..." />
           </Label>
 
           <div className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fields in your template</div>
-            <p className="text-xs text-muted-foreground">These become placeholders the script fills in for each session.</p>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">TextLabels on your board</div>
+            <p className="text-xs text-muted-foreground">Each key should match a TextLabel name inside your SurfaceGui. The script fills them in live.</p>
             <div className="space-y-2">
               {fields.map((f, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-center">
@@ -149,13 +149,13 @@ export function SessionScriptGenerator() {
             </button>
           </div>
 
-          <Label label="Anything else? (tone, formatting, requirements)">
-            <textarea className="input-field min-h-[50px]" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Use a red embed color, mention attendance is mandatory..." />
+          <Label label="Anything else? (style, colors, behaviour)">
+            <textarea className="input-field min-h-[50px]" value={notes} onChange={e => setNotes(e.target.value)} placeholder="Format time as 12h EST, show ‘LIVE NOW’ if session is active..." />
           </Label>
 
           <div className="flex justify-end">
             <button onClick={() => setStep(2)} className="h-9 px-4 rounded-md bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90">
-              Next: Upload template →
+              Next: Upload board photo →
             </button>
           </div>
         </div>
@@ -163,8 +163,8 @@ export function SessionScriptGenerator() {
 
       {step === 2 && (
         <div className="space-y-4">
-          <div className="text-sm font-semibold">2. Upload screenshots of your session template (optional)</div>
-          <p className="text-xs text-muted-foreground">Drop in screenshots of how your session announcements look in Discord, in-game, or anywhere else. The AI will mimic the layout. Up to 4 images, 4 MB each.</p>
+          <div className="text-sm font-semibold">2. Upload a screenshot of your session board (optional)</div>
+          <p className="text-xs text-muted-foreground">Drop in screenshots of the SurfaceGui or board layout in Studio/in-game. The AI will match TextLabel names and layout. Up to 4 images, 4 MB each.</p>
 
           <label className="block border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors">
             <input type="file" accept="image/*" multiple className="hidden" onChange={e => onUpload(e.target.files)} />

@@ -19,9 +19,9 @@ interface Payload {
   description: string;
   fields: Field[];        // e.g. [{key:"host",label:"Host"},{key:"time",label:"Time"},{key:"link",label:"Game Link"}]
   game_link?: string;
-  ping_role_id?: string;  // optional discord role to ping
+  ping_role_id?: string;  // legacy — unused for board scripts
   notes?: string;
-  images?: string[];      // data URLs
+  images?: string[];      // data URLs of the board template / SurfaceGui
 }
 
 Deno.serve(async (req) => {
@@ -46,7 +46,7 @@ Deno.serve(async (req) => {
       .map(f => `- ${f.label} (key: ${f.key})${f.example ? ` — example: "${f.example}"` : ""}`)
       .join("\n");
 
-    const system = `You are a senior Roblox Lua developer. You generate clean, production-ready code for a SESSION ANNOUNCEMENT system using the Fluxcore Sessions API.
+    const system = `You are a senior Roblox Lua developer. You generate clean, production-ready code for an in-game SESSION BOARD — a physical board/SurfaceGui in a Roblox game that displays the current/next session live to players.
 
 You must return STRICT JSON in this exact shape (no markdown fences):
 {
@@ -55,20 +55,22 @@ You must return STRICT JSON in this exact shape (no markdown fences):
   "instructions": "<short markdown setup instructions for the user>"
 }
 
-The module script defines a SessionTemplate table with the user's fields. The handler script (placed in ServerScriptService) polls the Fluxcore Sessions API every 60s, formats the current session using the module's template, and posts it to a Discord webhook (uses HttpService).
+REQUIREMENTS:
+- ModuleScript (place in ReplicatedStorage): exports a config table with API_KEY placeholder ("YOUR_WORKSPACE_API_KEY"), API endpoint "https://fluxcore.works/api/v1/sessions?today=true", refresh interval (default 30s), and a TEMPLATE table mapping each of the user's field keys to the TextLabel name inside the SurfaceGui that should display that value. Also exports a format(session) function that returns a table { fieldKey = "display string" } resolving each field from the Fluxcore Sessions API session object (host -> session.host.username, time -> formatted session.date, link -> session.game_url, name -> session.name, description -> session.description, etc.) with safe fallbacks ("TBA" / "—").
+- Handler Script (place in ServerScriptService): finds a part named "SessionBoard" (or model with a SurfaceGui) in workspace, polls the Fluxcore Sessions API via HttpService:RequestAsync every refresh interval, picks the next upcoming session, formats it via the module, and updates each TextLabel inside the SurfaceGui by name based on the TEMPLATE mapping. Show a clear "No session scheduled" state when the array is empty. Use pcall everywhere. Make HttpService.HttpEnabled requirement explicit in instructions.
+- Use the actual Fluxcore Sessions API response shape (workspace, sessions[] with id, name, date ISO, host{username}, game_url, description, slots, tags).
+- DO NOT generate Discord webhook code. This is for an in-game board, not Discord.
+- Code must be copy-paste runnable.`;
 
-Always use HttpService:RequestAsync. Use rich Discord embeds. Resolve placeholders like {host}, {time}, {link} from session data. Be defensive (pcall, missing-field fallbacks). Code must be copy-paste runnable.`;
-
-    const userText = `Session name: ${body.session_name}
+    const userText = `Session board name: ${body.session_name}
 Description: ${body.description || "(none)"}
-Game link: ${body.game_link || "(none)"}
-Discord role to ping: ${body.ping_role_id || "(none)"}
+Game link (optional default): ${body.game_link || "(none)"}
 Extra notes: ${body.notes || "(none)"}
 
-Fields to include in the template (these become placeholders in the embed):
+Fields the board displays — each "key" should map to a TextLabel named with the same key (or label) inside the SurfaceGui:
 ${fieldList}
 
-${body.images?.length ? "Reference screenshots of the desired session announcement template are attached. Match the layout/wording style as closely as possible." : ""}`;
+${body.images?.length ? "Reference screenshots of the desired session board / SurfaceGui layout are attached. Match the TextLabel names and layout style." : ""}`;
 
     const content: any[] = [{ type: "text", text: userText }];
     for (const img of (body.images || []).slice(0, 4)) {
