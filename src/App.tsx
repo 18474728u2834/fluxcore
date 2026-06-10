@@ -401,6 +401,7 @@ function AppRoutes() {
         <Route path="/api" element={<ApiIndex />} />
         <Route path="/api/sessions" element={<ApiSessions />} />
         <Route path="/api/ranking" element={<ApiRanking />} />
+        <Route path="/status" element={<Status />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
