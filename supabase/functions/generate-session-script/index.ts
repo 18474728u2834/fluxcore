@@ -19,9 +19,9 @@ interface Payload {
   description: string;
   fields: Field[];        // e.g. [{key:"host",label:"Host"},{key:"time",label:"Time"},{key:"link",label:"Game Link"}]
   game_link?: string;
-  ping_role_id?: string;  // optional discord role to ping
+  ping_role_id?: string;  // legacy — unused for board scripts
   notes?: string;
-  images?: string[];      // data URLs
+  images?: string[];      // data URLs of the board template / SurfaceGui
 }
 
 Deno.serve(async (req) => {
