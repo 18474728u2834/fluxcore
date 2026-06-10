@@ -1,12 +1,28 @@
 import { DashboardLayout } from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
-import { useState } from "react";
+import { Copy, Lock } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function SetupTracking() {
   const [copied, setCopied] = useState(false);
-  const { workspace } = useWorkspace();
+  const { workspace, workspaceId, isOwner } = useWorkspace();
+  const [allowed, setAllowed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (isOwner) { setAllowed(true); return; }
+      if (!workspaceId) { setAllowed(false); return; }
+      const { data, error } = await supabase.rpc("has_workspace_permission", {
+        _workspace_id: workspaceId,
+        _permission: "manage_settings",
+      });
+      if (!cancelled) setAllowed(!error && !!data);
+    })();
+    return () => { cancelled = true; };
+  }, [workspaceId, isOwner]);
 
   const FUNCTION_URL = "https://fluxcore.works/api/v1/track";
 
