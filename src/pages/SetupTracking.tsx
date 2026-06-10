@@ -192,7 +192,7 @@ function Fluxcore:Init()
     self:HookChat(p)
   end
   spawn(function() self:RunHeartbeats() end)
-  print("[Fluxcore] Tracker v4 initialized")
+  print("[Fluxcore] Tracker v5 initialized")
 end
 
 Fluxcore:Init()
