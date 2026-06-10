@@ -99,7 +99,7 @@ export const HYRA_UI_WORKSPACE_IDS = new Set<string>();
 
 function WorkspacePages() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<ClassicSkeleton />}>
       <Routes>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="members" element={<Members />} />
@@ -126,7 +126,7 @@ function WorkspacePages() {
 
 function BargainsWorkspacePages() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<NexusSkeleton />}>
       <Routes>
         <Route path="dashboard" element={<BDashboard />} />
         <Route path="sessions"  element={<BSessions />}  />
