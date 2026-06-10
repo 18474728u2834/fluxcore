@@ -104,9 +104,10 @@ export function DOMTranslator() {
       });
     };
 
-    // Initial pass + interval to pick up async-loaded content & translation cache updates
+    // Initial pass + a slow interval to pick up async-loaded content & translation cache updates
+    // without continuously walking the whole Nexus DOM.
     translatePass();
-    const interval = window.setInterval(translatePass, 250);
+    const interval = window.setInterval(translatePass, 3000);
 
     // Mutation observer for new content
     const observer = new MutationObserver(() => {
@@ -116,7 +117,7 @@ export function DOMTranslator() {
         translatePass();
       }, 150);
     });
-    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
+    observer.observe(document.body, { childList: true, subtree: true });
 
     return () => {
       window.clearInterval(interval);
