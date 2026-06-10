@@ -1,8 +1,9 @@
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode, useState, useEffect, useMemo, useRef } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
   Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone, Sparkles,
+  Wrench, Building2,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
