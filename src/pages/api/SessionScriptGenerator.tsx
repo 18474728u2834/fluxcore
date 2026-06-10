@@ -127,8 +127,8 @@ export function SessionScriptGenerator() {
             <textarea className="input-field min-h-[60px]" value={description} onChange={e => setDescription(e.target.value)} placeholder="Lobby board showing the next training session..." />
           </Label>
 
-          <Label label="Discord role ID to ping (optional)">
-            <input className="input-field" value={pingRole} onChange={e => setPingRole(e.target.value)} placeholder="123456789012345678" />
+          <Label label="Anything specific about your board? (optional)">
+            <input className="input-field" value={pingRole} onChange={e => setPingRole(e.target.value)} placeholder="e.g. Part named SessionBoard, 30s refresh..." />
           </Label>
 
           <div className="space-y-2">
