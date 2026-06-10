@@ -214,7 +214,6 @@ function AppRoutes() {
   const isHardcoded =
     hostname.startsWith("almore.") ||
     hostname.startsWith("bargains.") ||
-    hostname.startsWith("shoply.") ||
     hostname.includes("bloxy-bargains");
 
   const [partner, setPartner] = useState<any | undefined>(
@@ -347,23 +346,9 @@ function AppRoutes() {
     );
   }
 
-  if (hostname.startsWith("shoply.fluxcore") || hostname.startsWith("shoply.")) {
-    const SHOPLY_WS = "9f2c9234-c02f-492b-8121-74324e0df624";
-    return (
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/" element={<Shoply />} />
-          <Route path="/login" element={<ShoplyLogin />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          <Route path="/link-discord" element={<LinkDiscord />} />
-          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
-          {/* Legacy /w/:id/* links redirect to clean URLs */}
-          <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
-          <Route path="/*" element={<PartnerCleanRoutes workspaceId={SHOPLY_WS} useHyra={false} />} />
-        </Routes>
-      </Suspense>
-    );
-  }
+  // Shoply released from hardcoded routing — now flows through partner_portals lookup above.
+
+
 
   if (hostname.includes("bloxy-bargains") || hostname.includes("bargains.")) {
     return (

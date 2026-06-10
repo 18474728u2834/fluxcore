@@ -1,4 +1,5 @@
 import { ApiShell, CodeBlock, EndpointBadge, ParamsTable } from "./ApiLayout";
+import { SessionScriptGenerator } from "./SessionScriptGenerator";
 
 const ENDPOINT = "https://fluxcore.works/api/v1/sessions";
 
@@ -97,6 +98,13 @@ export default function SessionsApi() {
         <h2 className="text-2xl font-bold tracking-tight">Response</h2>
         <CodeBlock code={responseExample} lang="JSON" />
       </section>
+
+      <section className="space-y-3">
+        <h2 className="text-2xl font-bold tracking-tight">✨ Generate scripts with AI</h2>
+        <p className="text-sm text-muted-foreground">Skip writing Lua. Describe your session template, upload a screenshot, and get a ModuleScript + handler that posts to Discord automatically.</p>
+        <SessionScriptGenerator />
+      </section>
+
 
       <section className="space-y-3">
         <h2 className="text-2xl font-bold tracking-tight">Errors</h2>
