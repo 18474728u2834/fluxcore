@@ -217,9 +217,21 @@ function AppRoutes() {
     hostname.startsWith("bargains.") ||
     hostname.includes("bloxy-bargains");
 
+  const isStatusHost = hostname.startsWith("status.fluxcore") || hostname === "status.fluxcore.works";
+
   const [partner, setPartner] = useState<any | undefined>(
-    isMainHost || isHardcoded ? null : undefined
+    isMainHost || isHardcoded || isStatusHost ? null : undefined
   );
+
+  if (isStatusHost) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="*" element={<Status />} />
+        </Routes>
+      </Suspense>
+    );
+  }
 
   useEffect(() => {
     let active = true;
