@@ -301,9 +301,12 @@ export default function Workspaces() {
     setNewName("");
     setGroupId("");
     setNewSubdomain("");
-    if (createdSubdomain && createdWorkspaceId) {
-      window.location.href = `https://${createdSubdomain}.fluxcore.works/#/w/${createdWorkspaceId}/dashboard`;
-    } else if (createdWorkspaceId) {
+    // IMPORTANT: stay on the main domain. Newly added Vercel subdomains can
+    // serve "DEPLOYMENT_NOT_FOUND" for up to a couple of minutes while DNS
+    // and Vercel's edge pick up the new alias. Going to the main-domain
+    // workspace route always works, and the workspace card will route to
+    // the subdomain on next visit once it's live.
+    if (createdWorkspaceId) {
       navigate(`/w/${createdWorkspaceId}/dashboard`);
     }
   };
