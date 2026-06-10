@@ -355,6 +355,7 @@ export default function Workspaces() {
 
   return (
     <div className="min-h-screen bg-background relative">
+      <SiteBanner placement="workspaces" />
       <div className="fixed inset-0 pointer-events-none bg-grid opacity-50 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent_80%)]" />
       <nav className="border-b border-border/20 bg-background/80 backdrop-blur-xl">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
