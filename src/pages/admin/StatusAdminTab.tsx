@@ -85,7 +85,7 @@ function ComponentsTab() {
           <div className="flex items-center gap-2">
             <Select value={c.current_status} onValueChange={v => setStatus(c.id, v)}>
               <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
-              <SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s.replaceAll("_", " ")}</SelectItem>)}</SelectContent>
+              <SelectContent>{STATUSES.map(s => <SelectItem key={s} value={s}>{s.replace(/_/g, " ")}</SelectItem>)}</SelectContent>
             </Select>
             <Button variant="ghost" size="icon" onClick={() => remove(c.id)}><Trash2 className="w-4 h-4" /></Button>
           </div>
