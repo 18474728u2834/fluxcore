@@ -113,9 +113,7 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
       // Staff/members can continue using legacy /w/<id> URLs.
       if (ownerCheck && !workspaceIdOverride) {
         const host = window.location.hostname;
-        const isMain = host === "fluxcore.works" || host === "www.fluxcore.works"
-          || host.endsWith(".lovable.app") || host.endsWith(".lovableproject.com")
-          || host === "localhost" || host.startsWith("127.0.0.1");
+        const isMain = host === "fluxcore.works" || host === "www.fluxcore.works";
         if (isMain) {
           const { data: portal } = await supabase
             .from("partner_portals")
