@@ -100,6 +100,13 @@ export default function SessionsApi() {
       </section>
 
       <section className="space-y-3">
+        <h2 className="text-2xl font-bold tracking-tight">✨ Generate scripts with AI</h2>
+        <p className="text-sm text-muted-foreground">Skip writing Lua. Describe your session template, upload a screenshot, and get a ModuleScript + handler that posts to Discord automatically.</p>
+        <SessionScriptGenerator />
+      </section>
+
+
+      <section className="space-y-3">
         <h2 className="text-2xl font-bold tracking-tight">Errors</h2>
         <ParamsTable rows={[
           { param: "401", desc: "Missing or invalid API key." },
