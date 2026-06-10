@@ -151,11 +151,10 @@ function BargainsWorkspacePages() {
 
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
-  const { version, loading: uiLoading } = useUIVersion();
+  const { version } = useUIVersion();
   // Forced Hyra (partner subdomains, bargains, etc) always get Nexus pages.
   const forceNexus = !!workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId);
   const useNexus = forceNexus || version === "nexus";
-  if (uiLoading) return <PageLoader />;
   return (
     <WorkspaceProvider>
       {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
@@ -175,9 +174,8 @@ function BargainsWorkspaceRoutes() {
 // Routes mounted at the root of a partner subdomain — no /w/:id prefix.
 // e.g. shoply.fluxcore.works/sessions instead of /w/<uuid>/sessions.
 function PartnerCleanRoutes({ workspaceId, useHyra }: { workspaceId: string; useHyra: boolean }) {
-  const { version, loading: uiLoading } = useUIVersion();
+  const { version } = useUIVersion();
   const useNexus = useHyra || version === "nexus";
-  if (uiLoading) return <PageLoader />;
   return (
     <WorkspaceProvider workspaceId={workspaceId}>
       {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
@@ -398,6 +396,12 @@ function AppRoutes() {
 }
 
 const App = () => {
+  const directPath = typeof window !== "undefined" ? window.location.pathname : "/";
+  if (directPath !== "/" && !window.location.hash) {
+    window.location.replace(`${window.location.origin}/#${directPath}${window.location.search}`);
+    return <PageLoader />;
+  }
+
   // Catch unhandled lazy import failures globally as a second safety net
   useEffect(() => {
     const onErr = (e: ErrorEvent | PromiseRejectionEvent) => {
