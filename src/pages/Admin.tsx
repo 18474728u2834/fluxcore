@@ -107,6 +107,7 @@ export default function Admin() {
             {has("moderate_chats") && <TabsTrigger value="chats">Wall Moderation</TabsTrigger>}
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
             <TabsTrigger value="portals">Partner Portals</TabsTrigger>
+            {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -123,6 +124,7 @@ export default function Admin() {
           {has("moderate_chats") && <TabsContent value="chats"><ChatsTab /></TabsContent>}
           {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
           <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
+          {has("manage_status") && <TabsContent value="status"><StatusAdminTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
