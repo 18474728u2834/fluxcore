@@ -405,6 +405,24 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+            <h2 className="font-semibold text-foreground text-sm">In-Game Ranking (optional)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground pl-8">
+            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreRanking</code> in <strong className="text-foreground">ServerScriptService</strong>. Staff can then run <code className="text-primary">!promote &lt;username&gt;</code> or <code className="text-primary">!demote &lt;username&gt;</code> in chat. Fluxcore verifies their workspace permission and Roblox rank — if they're not allowed, the command is silently declined (no kicks, no punishment).
+          </p>
+          <div className="relative pl-8">
+            <pre className="bg-muted rounded-lg p-3 text-[11px] font-mono text-secondary-foreground overflow-x-auto max-h-80 overflow-y-auto leading-relaxed">
+              {luaRankingScript}
+            </pre>
+            <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={copyRankingToClipboard}>
+              <Copy className="w-3 h-3 mr-1" /> {copiedRanking ? "Copied" : "Copy"}
+            </Button>
+          </div>
+        </div>
+
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
             <h2 className="font-semibold text-foreground text-sm">Test It</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
