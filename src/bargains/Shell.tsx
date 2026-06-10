@@ -228,7 +228,11 @@ export function BargainsShell({ children }: ShellProps) {
   const runHit = (h: SearchHit) => {
     setSearchOpen(false);
     setSearchQ("");
-    navigate(h.to);
+    if (h.to.startsWith("http")) {
+      window.open(h.to, "_blank", "noopener,noreferrer");
+    } else {
+      navigate(h.to);
+    }
   };
 
   const onSearchKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
