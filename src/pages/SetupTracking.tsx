@@ -198,40 +198,7 @@ end
 Fluxcore:Init()
 return Fluxcore`;
 
-  const luaClientScript = `-- Fluxcore Input Beacon (CLIENT) - silent, no GUI
--- Place in StarterPlayer > StarterPlayerScripts as a LocalScript named "FluxcoreInputBeacon"
--- Pings the server when the player presses keys/clicks or focuses/unfocuses the window.
-
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
-
-local InputEvent = ReplicatedStorage:WaitForChild("FluxcoreInput")
-
-local PING_INTERVAL = 5 -- only ping at most every 5 seconds while active
-local lastPing = 0
-
-local function pingActive()
-  local now = tick()
-  if now - lastPing < PING_INTERVAL then return end
-  lastPing = now
-  pcall(function() InputEvent:FireServer("input") end)
-end
-
-UserInputService.InputBegan:Connect(function(_, gpe)
-  if gpe then return end
-  pingActive()
-end)
-
-UserInputService.WindowFocused:Connect(function()
-  lastPing = 0
-  pcall(function() InputEvent:FireServer("focus") end)
-end)
-
-UserInputService.WindowFocusReleased:Connect(function()
-  pcall(function() InputEvent:FireServer("blur") end)
-end)
-`;
+  // (client beacon source now lives inside the v5 server script above)
 
   const luaRankingScript = `-- Fluxcore In-Game Ranking v1
 -- Place in ServerScriptService as a Script named "FluxcoreRanking"
