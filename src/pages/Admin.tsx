@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { PremiumGrantManager } from "@/components/PremiumGrantManager";
 import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
+import StatusAdminTab from "@/pages/admin/StatusAdminTab";
 
 type WhoAmI = {
   user_id: string;
@@ -34,6 +35,7 @@ const ALL_PERMS = [
   { key: "delete_workspaces", label: "Delete workspaces" },
   { key: "moderate_chats", label: "Moderate workspace chats" },
   { key: "manage_blacklist", label: "Manage Fluxcore blacklist" },
+  { key: "manage_status", label: "Manage status page & banners" },
 ];
 
 async function callStaff<T = any>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
@@ -106,6 +108,7 @@ export default function Admin() {
             {has("moderate_chats") && <TabsTrigger value="chats">Wall Moderation</TabsTrigger>}
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
             <TabsTrigger value="portals">Partner Portals</TabsTrigger>
+            {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -122,6 +125,7 @@ export default function Admin() {
           {has("moderate_chats") && <TabsContent value="chats"><ChatsTab /></TabsContent>}
           {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
           <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
+          {has("manage_status") && <TabsContent value="status"><StatusAdminTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>

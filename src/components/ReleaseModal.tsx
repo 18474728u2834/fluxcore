@@ -1,23 +1,21 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Shield, Target, FileText, Users, Zap, Bot, MessageSquare, BarChart3, Globe, Palette, Award, Gift, Webhook, Image as ImageIcon, Calendar, AlertTriangle } from "lucide-react";
+import { Sparkles, Shield, Search, Building2, Activity, MessageSquare, Megaphone, BarChart3, Code, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const CURRENT_VERSION = "4.0.0";
+const CURRENT_VERSION = "4.5.0";
 
 const features = [
-  { icon: Gift, title: "Fluxcore is now free for everyone", desc: "No more Premium plan — every workspace gets the full feature set, including per-role quotas and unlimited members, at zero cost." },
-  { icon: Webhook, title: "Discohook-style webhook templates", desc: "Owners can now customise Shift, Training and Event alerts with multiple embeds, fields, custom username and avatar, and per-category branding." },
-  { icon: ImageIcon, title: "Custom images in alerts", desc: "Upload your own banners and pick whether they show in the middle or at the bottom of the embed — different for Shifts, Trainings and Events." },
-  { icon: MessageSquare, title: "Flexible link formatting", desc: "Choose between an embedded button-style link or a plain text URL, and every notification is signed off with Fluxcore Systems on the final embed." },
-  { icon: Calendar, title: "Reliable session reminders", desc: "The reminder pipeline was rewritten — recurring shifts now fire once per occurrence and never get stuck on stale ‘starting now’ checks." },
-  { icon: Shield, title: "Roblox group ownership check", desc: "Workspace creation now verifies that you actually own the Roblox group you're attaching, blocking impostor workspaces." },
-  { icon: Users, title: "Old-UI shifts in Hyra view", desc: "Recurring shifts created in the classic UI now show up on the right day in the Hyra-style Sessions page with per-occurrence claims." },
-  { icon: AlertTriangle, title: "Quota logging", desc: "Pick how missed quotas are recorded — automatic warnings on the member's profile, or a Discord webhook report. First-time owners get a quick setup prompt." },
-  { icon: Target, title: "Run quota check on demand", desc: "Owners can trigger a quota check from the Quotas page that posts to Discord or logs warnings instantly." },
-  { icon: Sparkles, title: "Lots of polish", desc: "Faster dashboard loads, better Roblox avatar handling, more reliable Discord webhook delivery, and small UI fixes throughout." },
+  { icon: BarChart3, title: "Public status page at status.fluxcore.works", desc: "BetterStack-style components, 90-day uptime bars, incident history and scheduled maintenance — everyone can see the state of Fluxcore at a glance." },
+  { icon: Megaphone, title: "Site-wide banners", desc: "Staff can post banners on the marketing site and workspace selector for announcements, incidents and links — dismissible per user." },
+  { icon: Building2, title: "Departments as sub-workspaces", desc: "Spin up HR, Operations, or any team with its own announcements, documents and sessions — scoped by department membership." },
+  { icon: Search, title: "Global search in Nexus UI", desc: "⌘K (or Ctrl+K) jumps to any member, session, document or page across the workspace, with grouped results and keyboard nav." },
+  { icon: Activity, title: "In-game ranking script", desc: "A second Lua endpoint that checks the requester's Fluxcore permissions before ranking. No silent kicks — declined requests just get told no." },
+  { icon: Code, title: "One-script activity tracker", desc: "The server script now installs the input beacon for you. Two steps instead of three — one paste, you're done." },
+  { icon: Shield, title: "Per-admin status permission", desc: "New 'manage_status' staff permission so the right people can post incidents and banners without owner-admin keys." },
+  { icon: ArrowUpRight, title: "Polish & fixes", desc: "Faster workspace switching, sharper Nexus shell, and a heap of small QoL tweaks across the dashboard." },
 ];
 
 export function ReleaseModal() {

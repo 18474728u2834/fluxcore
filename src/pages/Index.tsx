@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
+import { SiteBanner } from "@/components/SiteBanner";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
 
 export default function Index() {
@@ -91,6 +92,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
+      <SiteBanner placement="marketing" />
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[1100px] h-[800px] rounded-full bg-primary/[0.10] blur-[160px]" />
