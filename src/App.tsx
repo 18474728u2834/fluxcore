@@ -16,6 +16,7 @@ import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { NexusSkeleton, ClassicSkeleton } from "@/components/PageSkeletons";
 
 // Lazy load every route — each gets its own JS chunk so devtools
 // only ever sees code for the page that's currently rendered.
@@ -98,7 +99,7 @@ export const HYRA_UI_WORKSPACE_IDS = new Set<string>();
 
 function WorkspacePages() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<ClassicSkeleton />}>
       <Routes>
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="members" element={<Members />} />
@@ -125,7 +126,7 @@ function WorkspacePages() {
 
 function BargainsWorkspacePages() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<NexusSkeleton />}>
       <Routes>
         <Route path="dashboard" element={<BDashboard />} />
         <Route path="sessions"  element={<BSessions />}  />
