@@ -1,61 +1,88 @@
-## New Workspace Features
 
-Three additions based on your answers.
+## 1. Global search in Nexus UI
 
----
+Make the header search in `src/bargains/Shell.tsx` a real spotlight search.
 
-### 1. Workspace Announcements
+- Replace the static `<input>` with a controlled search field that opens a results dropdown when focused or typed in.
+- Debounced query (200ms). Results grouped by section:
+  - **Members** — query `workspace_members` by `roblox_username` ilike, click → `/w/:id/members/:memberId`
+  - **Sessions** — `scheduled_sessions` by title, click → `/w/:id/sessions`
+  - **Documents** — `workspace_documents` by title, click → `/w/:id/documents`
+  - **Pages** — static list of Nexus pages (Dashboard, Activity, LOA, Quotas, Wall, Roles, Blacklist, Staff, Settings, Setup Tracking)
+- Keyboard: ↑/↓ to navigate, Enter to open, Esc to close. `Ctrl/Cmd+K` focuses it.
+- All queries scoped to the active `workspaceId`; uses existing RLS (no schema changes).
 
-A dashboard banner + dedicated `/announcements` page where owners (and members with `post_wall` permission) can post updates that every staff member sees on login.
+## 2. Departments as sub-workspaces
 
-- New **Announcements** sidebar item.
-- Pinned announcements show as a dismissible banner at the top of the dashboard.
-- Markdown-style formatting (bold, links, lists).
-- Author name + avatar + timestamp.
-- Per-user dismiss state so the same person isn't nagged twice.
-- No Discord ping (per your answer) — purely in-app.
+Departments are a first-class entity assigned to specific members, with their own subroute and isolated content.
 
-The `announcements` table already exists, so no schema changes are needed for the core feature. We'll just add a `dismissed_announcements` table to track per-user read state.
+### Schema (migration)
 
----
+```text
+departments
+  id uuid pk, workspace_id, name, slug, primary_color, icon, created_at, updated_at
+  unique (workspace_id, slug)
 
-### 2. Configurable Staff Leaderboards
+department_members
+  id uuid pk, department_id, member_id (fk workspace_members), role text default 'member'
+  unique (department_id, member_id)
+```
 
-A `/leaderboard` page inside each workspace. The owner picks **which categories appear** in workspace settings; if zero are enabled, the page is hidden.
+Add nullable `department_id uuid` columns to existing tables so a row can be scoped to a department:
+- `announcements.department_id`
+- `workspace_documents.department_id`
+- `scheduled_sessions.department_id`
 
-- Available categories (owner toggles each on/off):
-  - Time in-game (this week / month / all-time)
-  - Sessions hosted
-  - Messages sent
-  - Quotas met (streak)
-- Time-range tabs (Week / Month / All-time) within whichever categories are enabled.
-- Top 3 get podium styling; rest is a clean ranked list with avatars.
-- Visible to **all members** — no Premium gate.
+Helper SQL function `is_department_member(_department_id uuid)` (security definer) used in RLS.
 
----
+RLS updates so:
+- Anyone in the workspace can read rows where `department_id IS NULL` (existing behavior).
+- Rows with `department_id` set are only visible to workspace owner + members of that department.
 
-### 3. Bulk Member Actions
+### Routing
 
-Checkboxes on the Members page with a sticky action bar when 1+ rows are selected.
+- New route `/w/:workspaceId/d/:deptSlug/*` (React Router), rendering the same Nexus shell but with a `DepartmentContext` holding the active department.
+- `useWorkspace` exposes optional `activeDepartment`. When set, dashboard/announcements/documents/sessions hooks pass `department_id = activeDepartment.id` for reads and inserts.
+- Subdomain `shoply.fluxcore.works/hr` works by mapping the path segment `/hr` to `/w/<resolvedWorkspaceId>/d/hr` in `useWorkspace` partner resolution — no Vercel changes.
 
-- **Select all** / **Select filtered** / individual checkboxes.
-- Actions in the bar: **Promote**, **Demote**, **Assign role**, **Send warning**, **Remove from workspace**.
-- Confirmation dialog showing the affected member count before any destructive action.
-- Respects existing per-action permissions — buttons grey out if the actor lacks permission for that action across all selected members.
-- Each bulk operation writes one `member_logs` entry per affected member so the audit trail stays intact.
+### UI
 
----
+- New "Departments" section in the workspace settings page: create department, set name/slug/color/icon, assign members from the existing roster (multi-select).
+- In Nexus sidebar (`Shell.tsx`): below the page nav, a small "Departments" group with one icon per dept the current user belongs to. Clicking switches into that department's subroute.
+- A top-bar pill shows `Workspace · HR` when inside a department, with a back-to-main entry in the workspace menu.
+- New page `src/bargains/Departments.tsx` (settings sub-page) for managing departments.
 
-### Technical Notes
+## 3. Activity tracker setup inside Nexus UI
 
-**Database (one migration):**
-- `dismissed_announcements` table: `user_id`, `announcement_id`, `dismissed_at`. RLS so users only see/insert their own rows.
-- `workspaces.leaderboard_categories` — `jsonb` array, default `["time_in_game","sessions_hosted"]`. Empty array = leaderboard hidden.
+Move/expose the setup tracking page inside the Nexus shell.
 
-**Frontend:**
-- `src/pages/Announcements.tsx`, `src/components/AnnouncementBanner.tsx` (mounted in `DashboardLayout`).
-- `src/pages/Leaderboard.tsx` using existing `activity_sessions` + `scheduled_sessions` aggregates.
-- Extend `src/pages/Members.tsx` (and `src/bargains/Members.tsx`) with a `useBulkSelection` hook and a `BulkActionBar` component.
-- Settings page gains a "Leaderboard" section with category toggles.
+- New route `/w/:workspaceId/setup-tracking` rendering inside `BargainsShell`.
+- Sidebar shows the "Setup Tracking" item **only if** the current user has `manage_settings` workspace permission (uses existing `has_workspace_permission` RPC). Owners always see it.
+- Direct navigation to the route also checks the permission and shows a "You don't have access" panel otherwise.
 
-**No edge functions needed** — all aggregations are simple `supabase.from(...).select(...)` with RLS already in place. Bulk actions reuse the existing single-member RPCs in a `Promise.all` loop with client-side rate-limiting.
+## 4. One-script tracker installer (merge steps 2 & 3)
+
+Rewrite the tracker so a single server script is enough — it programmatically creates the input-beacon LocalScript at runtime.
+
+- Server script (in `ServerScriptService`) builds a `LocalScript` instance with the beacon source, sets it as `StarterPlayer.StarterPlayerScripts` child on init.
+- The setup page collapses steps 2 and 3 into a single "Add Server Script" step that just says: paste this one script — it handles the rest. Step 4 ("Test it") stays as the new step 3.
+- The `FluxcoreRanking` script section stays as the optional step 4.
+
+## Technical notes
+
+- All new tables include the required public-schema GRANTs (`authenticated`, `service_role`) before RLS + policies.
+- New RLS policies use security-definer helpers (`is_workspace_member`, `is_department_member`, `is_workspace_owner`) — no recursion.
+- No schema changes are needed for the global search; it relies on existing RLS scoping.
+- Subdomain routing for `/hr` is purely client-side path handling; we don't touch `vercel.json`.
+- Existing `useUIVersion`, partner portal lookup, and Roblox OAuth flows are untouched.
+
+## Files touched
+
+- New: `supabase/migrations/<ts>_departments.sql`
+- New: `src/bargains/Departments.tsx`, `src/bargains/SetupTracking.tsx`
+- New: `src/hooks/useDepartment.tsx`, `src/components/GlobalSearch.tsx`
+- Edited: `src/bargains/Shell.tsx` (search + dept switcher + tracker nav item)
+- Edited: `src/App.tsx` (new routes)
+- Edited: `src/hooks/useWorkspace.tsx` (department resolution from `/hr`-style path)
+- Edited: `src/pages/SetupTracking.tsx` (merge step 2 & 3, single-script installer)
+- Edited: existing dashboard/announcements/docs/sessions hooks to filter by `department_id` when active.
