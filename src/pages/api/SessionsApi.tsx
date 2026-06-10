@@ -100,8 +100,8 @@ export default function SessionsApi() {
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-2xl font-bold tracking-tight">✨ Generate scripts with AI</h2>
-        <p className="text-sm text-muted-foreground">Skip writing Lua. Describe your session template, upload a screenshot, and get a ModuleScript + handler that posts to Discord automatically.</p>
+        <h2 className="text-2xl font-bold tracking-tight">✨ Generate a session board with AI</h2>
+        <p className="text-sm text-muted-foreground">Skip writing Lua. Describe your in-game session board, upload a screenshot of the SurfaceGui, and get a ModuleScript + handler that updates it live.</p>
         <SessionScriptGenerator />
       </section>
 
