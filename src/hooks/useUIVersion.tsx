@@ -46,6 +46,9 @@ export function UIVersionProvider({ children }: { children: ReactNode }) {
     }
 
     let active = true;
+    const fallback = window.setTimeout(() => {
+      if (active) setLoading(false);
+    }, 1200);
     setLoading(true);
     supabase
       .from("user_preferences")
@@ -54,6 +57,7 @@ export function UIVersionProvider({ children }: { children: ReactNode }) {
       .maybeSingle()
       .then(({ data }) => {
         if (!active) return;
+        window.clearTimeout(fallback);
         if (isValid(data?.ui_version)) {
           setVersionState(data!.ui_version as UIVersion);
         }
@@ -61,6 +65,7 @@ export function UIVersionProvider({ children }: { children: ReactNode }) {
       });
     return () => {
       active = false;
+      window.clearTimeout(fallback);
     };
   }, [user]);
 
