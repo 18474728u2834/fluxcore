@@ -1,4 +1,5 @@
 import { ApiShell, CodeBlock, EndpointBadge, ParamsTable } from "./ApiLayout";
+import { SessionScriptGenerator } from "./SessionScriptGenerator";
 
 const ENDPOINT = "https://fluxcore.works/api/v1/sessions";
 
