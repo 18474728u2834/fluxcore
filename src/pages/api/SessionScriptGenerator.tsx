@@ -132,8 +132,8 @@ export function SessionScriptGenerator() {
           </Label>
 
           <div className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fields in your template</div>
-            <p className="text-xs text-muted-foreground">These become placeholders the script fills in for each session.</p>
+            <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">TextLabels on your board</div>
+            <p className="text-xs text-muted-foreground">Each key should match a TextLabel name inside your SurfaceGui. The script fills them in live.</p>
             <div className="space-y-2">
               {fields.map((f, i) => (
                 <div key={i} className="grid grid-cols-12 gap-2 items-center">
