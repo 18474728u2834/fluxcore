@@ -97,8 +97,8 @@ export function SessionScriptGenerator() {
             <Sparkles className="w-4.5 h-4.5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-bold tracking-tight">AI Session Script Generator</h2>
-            <p className="text-xs text-muted-foreground">Generate a ModuleScript + handler that posts your sessions to Discord automatically.</p>
+            <h2 className="text-lg font-bold tracking-tight">AI Session Board Generator</h2>
+            <p className="text-xs text-muted-foreground">Generate a ModuleScript + handler that updates your in-game session board (SurfaceGui) live.</p>
           </div>
         </div>
         <div className="flex gap-1 text-[10px]">
