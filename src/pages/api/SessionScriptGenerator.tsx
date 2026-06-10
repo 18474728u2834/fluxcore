@@ -163,8 +163,8 @@ export function SessionScriptGenerator() {
 
       {step === 2 && (
         <div className="space-y-4">
-          <div className="text-sm font-semibold">2. Upload screenshots of your session template (optional)</div>
-          <p className="text-xs text-muted-foreground">Drop in screenshots of how your session announcements look in Discord, in-game, or anywhere else. The AI will mimic the layout. Up to 4 images, 4 MB each.</p>
+          <div className="text-sm font-semibold">2. Upload a screenshot of your session board (optional)</div>
+          <p className="text-xs text-muted-foreground">Drop in screenshots of the SurfaceGui or board layout in Studio/in-game. The AI will match TextLabel names and layout. Up to 4 images, 4 MB each.</p>
 
           <label className="block border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors">
             <input type="file" accept="image/*" multiple className="hidden" onChange={e => onUpload(e.target.files)} />
