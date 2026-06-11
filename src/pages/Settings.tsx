@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target, Image as ImageIcon, Upload, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
