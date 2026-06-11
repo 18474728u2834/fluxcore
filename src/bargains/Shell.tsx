@@ -196,13 +196,27 @@ export function BargainsShell({ children }: ShellProps) {
         to: `${base}/members/${m.id}`,
       }));
       const seen = new Set((members.data || []).map((m: any) => (m.roblox_username || "").toLowerCase()));
-      (users.data || []).forEach((u: any) => {
+      const unseenUsers = (users.data || []).filter((u: any) => {
         const key = (u.roblox_username || "").toLowerCase();
-        if (!key || seen.has(key)) return;
-        seen.add(key);
+        return key && !seen.has(key);
+      });
+      const robloxIds = unseenUsers.map((u: any) => u.roblox_user_id).filter(Boolean);
+      const memberByRoblox: Record<string, { id: string; role: string | null }> = {};
+      if (robloxIds.length) {
+        const { data: mm } = await supabase.from("workspace_members")
+          .select("id, roblox_user_id, role")
+          .eq("workspace_id", workspaceId)
+          .in("roblox_user_id", robloxIds);
+        (mm || []).forEach((m: any) => { memberByRoblox[String(m.roblox_user_id)] = { id: m.id, role: m.role }; });
+      }
+      unseenUsers.forEach((u: any) => {
+        seen.add((u.roblox_username || "").toLowerCase());
+        const match = memberByRoblox[String(u.roblox_user_id)];
+        if (!match) return;
         hits.push({
-          type: "member", id: u.user_id, label: u.roblox_username, sub: "Roblox user",
-          to: `https://www.roblox.com/users/${u.roblox_user_id}/profile`,
+          type: "member", id: match.id, label: u.roblox_username,
+          sub: match.role || "Member",
+          to: `${base}/members/${match.id}`,
         });
       });
       (sessions.data || []).forEach((s: any) => hits.push({
