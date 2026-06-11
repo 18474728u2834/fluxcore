@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BargainsShell, bx } from "./Shell";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
-import { ArrowLeft, AlertTriangle, ExternalLink, Plus, X } from "lucide-react";
+import { ArrowLeft, AlertTriangle, ExternalLink, Plus, X, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
