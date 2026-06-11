@@ -144,6 +144,7 @@ function BargainsWorkspacePages() {
         <Route path="loa"       element={<BLOA />} />
         <Route path="staff"     element={<BStaff />} />
         <Route path="roles"     element={<BRoles />} />
+        <Route path="departments" element={<BDepartments />} />
         <Route path="message-logs" element={<MessageLogs />} />
         <Route path="join"      element={<JoinWorkspace />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
