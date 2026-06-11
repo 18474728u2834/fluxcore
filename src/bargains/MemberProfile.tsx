@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BargainsShell, bx } from "./Shell";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
-import { ArrowLeft, AlertTriangle, ExternalLink, Plus, X } from "lucide-react";
+import { ArrowLeft, AlertTriangle, ExternalLink, Plus, X, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
@@ -184,6 +184,20 @@ export default function BMemberProfile() {
                   <div className="flex items-center gap-2 mb-1.5">
                     <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider" style={{ background: "rgba(245,90,74,0.12)", color: bx.coral }}>{l.log_type}</span>
                     <span className="text-xs" style={{ color: bx.textMuted }}>{new Date(l.created_at).toLocaleDateString()} · by {l.author_name}</span>
+                    {canManage && (
+                      <button
+                        onClick={async () => {
+                          if (!confirm("Remove this entry?")) return;
+                          const { error } = await supabase.from("member_logs").delete().eq("id", l.id);
+                          if (error) { alert("Failed to remove: " + error.message); return; }
+                          setLogs(logs.filter((x) => x.id !== l.id));
+                        }}
+                        className="ml-auto text-[#7a7a7e] hover:text-[#f55a4a] transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                   <div className="text-sm" style={{ color: bx.text }}>{l.content}</div>
                 </div>
