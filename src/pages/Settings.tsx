@@ -439,20 +439,17 @@ export default function SettingsPage() {
             <span className="text-white font-bold drop-shadow text-base">Preview banner</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="inline-flex">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
-              />
-              <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} asChild>
-                <span>
-                  {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
-                  {nexusHeroUrl ? "Replace image" : "Upload image"}
-                </span>
-              </Button>
-            </label>
+            <input
+              ref={heroFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
+            />
+            <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} onClick={() => heroFileRef.current?.click()}>
+              {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+              {nexusHeroUrl ? "Replace image" : "Upload image"}
+            </Button>
             {nexusHeroUrl && (
               <Button type="button" variant="ghost" size="sm" onClick={clearHero}>
                 <X className="w-3 h-3 mr-1" /> Use default gradient
