@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target, Image as ImageIcon, Upload, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -41,6 +41,7 @@ export default function SettingsPage() {
   const [quotaLogWebhook, setQuotaLogWebhook] = useState("");
   const [nexusHeroUrl, setNexusHeroUrl] = useState<string>("");
   const [uploadingHero, setUploadingHero] = useState(false);
+  const heroFileRef = useRef<HTMLInputElement>(null);
 
 
   useEffect(() => {
@@ -438,20 +439,17 @@ export default function SettingsPage() {
             <span className="text-white font-bold drop-shadow text-base">Preview banner</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <label className="inline-flex">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
-              />
-              <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} asChild>
-                <span>
-                  {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
-                  {nexusHeroUrl ? "Replace image" : "Upload image"}
-                </span>
-              </Button>
-            </label>
+            <input
+              ref={heroFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
+            />
+            <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} onClick={() => heroFileRef.current?.click()}>
+              {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+              {nexusHeroUrl ? "Replace image" : "Upload image"}
+            </Button>
             {nexusHeroUrl && (
               <Button type="button" variant="ghost" size="sm" onClick={clearHero}>
                 <X className="w-3 h-3 mr-1" /> Use default gradient

@@ -74,6 +74,7 @@ const BMemberProfile = lazy(() => import("./bargains/MemberProfile"));
 const BWall      = lazy(() => import("./bargains/Wall"));
 const BStaff     = lazy(() => import("./bargains/Staff"));
 const BRoles     = lazy(() => import("./bargains/Roles"));
+const BDepartments = lazy(() => import("./bargains/Departments"));
 const PartnerPortal = lazy(() => import("./pages/PartnerPortal"));
 const PartnerLogin = lazy(() => import("./pages/PartnerLogin"));
 const ThemedPortal = lazy(() => import("./pages/ThemedPortal"));
@@ -143,6 +144,7 @@ function BargainsWorkspacePages() {
         <Route path="loa"       element={<BLOA />} />
         <Route path="staff"     element={<BStaff />} />
         <Route path="roles"     element={<BRoles />} />
+        <Route path="departments" element={<BDepartments />} />
         <Route path="message-logs" element={<MessageLogs />} />
         <Route path="join"      element={<JoinWorkspace />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
