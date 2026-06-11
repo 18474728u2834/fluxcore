@@ -41,6 +41,7 @@ export default function SettingsPage() {
   const [quotaLogWebhook, setQuotaLogWebhook] = useState("");
   const [nexusHeroUrl, setNexusHeroUrl] = useState<string>("");
   const [uploadingHero, setUploadingHero] = useState(false);
+  const heroFileRef = useRef<HTMLInputElement>(null);
 
 
   useEffect(() => {
