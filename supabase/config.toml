@@ -33,3 +33,7 @@ verify_jwt = false
 [functions.generate-session-script]
 verify_jwt = false
 
+[functions.quota-auto-check]
+verify_jwt = false
+
+
