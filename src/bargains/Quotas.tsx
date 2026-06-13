@@ -3,6 +3,7 @@ import { BargainsShell, bx } from "./Shell";
 import { Filter, ArrowDownUp, Plus, MessageSquare, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useDepartment } from "@/hooks/useDepartment";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 
 interface MemberRow {
