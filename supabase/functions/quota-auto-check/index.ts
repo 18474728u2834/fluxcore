@@ -158,6 +158,7 @@ Deno.serve(async (req) => {
         if (existing && existing.length) continue;
         rows.push({
           workspace_id: ws.id,
+          department_id: entries[0].q.department_id ?? null,
           member_id: member.id,
           author_id: (member.user_id ?? (ws as any).owner_id) as string,
           author_name: "Quota Check",
