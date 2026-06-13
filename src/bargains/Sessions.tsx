@@ -204,6 +204,7 @@ export default function BSessions() {
     const firstAssignee = cleanSlots.flatMap(s => s.assigned).find(n => n && n.trim()) || "Unassigned";
     const payload: any = {
       workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
       title: title.trim(),
       category,
       scheduled_at: dt.toISOString(),
