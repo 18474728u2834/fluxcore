@@ -4,6 +4,7 @@ import { BargainsShell, bx } from "./Shell";
 import { Plus, FileText, MoreHorizontal, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
