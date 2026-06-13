@@ -87,10 +87,9 @@ export default function Quotas() {
   const [checking, setChecking] = useState(false);
 
   const fetchData = async () => {
-    const [{ data: q }, { data: r }] = await Promise.all([
-      supabase.from("workspace_quotas").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }),
-      supabase.from("workspace_roles").select("id, name, color").eq("workspace_id", workspaceId),
-    ]);
+    const qBuilder = supabase.from("workspace_quotas").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false });
+    const rBuilder = supabase.from("workspace_roles").select("id, name, color").eq("workspace_id", workspaceId);
+    const [{ data: q }, { data: r }] = await Promise.all([scope(qBuilder), scope(rBuilder)]);
     setQuotas(q || []);
     setRoles(r || []);
     setLoading(false);
