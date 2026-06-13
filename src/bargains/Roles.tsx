@@ -41,6 +41,7 @@ function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
 
 export default function BRoles() {
   const { workspaceId, isOwner } = useWorkspace();
+  const { scope, newRowDepartmentId, department } = useDepartment();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,10 +51,11 @@ export default function BRoles() {
   const selected = useMemo(() => roles.find(r => r.id === selectedId) || null, [roles, selectedId]);
 
   const fetchRoles = async () => {
-    const { data } = await supabase.from("workspace_roles")
+    const q = supabase.from("workspace_roles")
       .select("id, name, color, position, permissions, roblox_role_id")
       .eq("workspace_id", workspaceId)
       .order("position", { ascending: true });
+    const { data } = await scope(q);
     const list = ((data || []) as any[]).map(r => ({
       ...r,
       permissions: Array.isArray(r.permissions) ? (r.permissions as string[]) : [],
@@ -65,7 +67,7 @@ export default function BRoles() {
   useEffect(() => {
     if (!workspaceId) return;
     fetchRoles().finally(() => setLoading(false));
-  }, [workspaceId]);
+  }, [workspaceId, department?.id]);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -75,7 +77,9 @@ export default function BRoles() {
 
   const createRole = async () => {
     const { data, error } = await supabase.from("workspace_roles").insert({
-      workspace_id: workspaceId, name: "New role", color: bx.coral, permissions: [], position: roles.length,
+      workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
+      name: "New role", color: bx.coral, permissions: [], position: roles.length,
     }).select().single();
     if (error) { toast.error(error.message); return; }
     await fetchRoles();
