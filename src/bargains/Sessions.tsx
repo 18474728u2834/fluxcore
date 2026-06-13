@@ -79,12 +79,12 @@ export default function BSessions() {
 
   useEffect(() => {
     if (!workspaceId) return;
-    supabase.from("scheduled_sessions")
+    const q = supabase.from("scheduled_sessions")
       .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments")
       .eq("workspace_id", workspaceId)
-      .order("scheduled_at", { ascending: true })
-      .then(({ data }) => setSessions((data as any) || []));
-  }, [workspaceId, refreshKey]);
+      .order("scheduled_at", { ascending: true });
+    scope(q).then(({ data }: any) => setSessions((data as any) || []));
+  }, [workspaceId, refreshKey, newRowDepartmentId]);
 
   // Expand recurring sessions into occurrences on the selected day
   const dayOccurrences = (() => {
