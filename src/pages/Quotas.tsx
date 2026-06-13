@@ -166,13 +166,14 @@ export default function Quotas() {
     setMemberProgress(progress.sort((a, b) => (b.completed ? 1 : 0) - (a.completed ? 1 : 0)));
   };
 
-  useEffect(() => { fetchData(); }, [workspaceId]);
+  useEffect(() => { fetchData(); }, [workspaceId, department?.id]);
 
   const handleCreate = async () => {
     if (!title.trim()) return;
     setCreating(true);
     const { error } = await supabase.from("workspace_quotas").insert({
       workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
       title: title.trim(),
       quota_type: quotaType,
       target_value: parseInt(targetValue) || 1,
