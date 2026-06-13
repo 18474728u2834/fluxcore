@@ -16,6 +16,7 @@ interface Doc {
 
 export default function BDocuments() {
   const { workspaceId, isOwner } = useWorkspace();
+  const { scope, newRowDepartmentId, department } = useDepartment();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [docs, setDocs] = useState<Doc[]>([]);
@@ -26,23 +27,28 @@ export default function BDocuments() {
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
-    const { data } = await supabase.from("workspace_documents")
+    const q = supabase.from("workspace_documents")
       .select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false });
+    const { data } = await scope(q);
     setDocs((data || []) as any);
   };
-  useEffect(() => { load(); }, [workspaceId]);
+  useEffect(() => { load(); }, [workspaceId, department?.id]);
 
   const create = async () => {
     if (!title.trim() || !content.trim() || !user) return;
     setSaving(true);
     const { error } = await supabase.from("workspace_documents").insert({
-      workspace_id: workspaceId, title: title.trim(), content: content.trim(),
+      workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
+      title: title.trim(), content: content.trim(),
       doc_type: docType, signature_type: "checkbox", auto_assign: false, created_by: user.id,
     });
     if (error) toast.error(error.message);
     else { toast.success("Created"); setOpen(false); setTitle(""); setContent(""); load(); }
     setSaving(false);
   };
+
+
 
   const groups = [
     { key: "policy", label: "Policies", icon: "📋" },
