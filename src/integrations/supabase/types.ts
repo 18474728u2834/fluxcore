@@ -234,6 +234,42 @@ export type Database = {
         }
         Relationships: []
       }
+      department_leads: {
+        Row: {
+          created_at: string
+          department_id: string
+          id: string
+          member_id: string
+        }
+        Insert: {
+          created_at?: string
+          department_id: string
+          id?: string
+          member_id: string
+        }
+        Update: {
+          created_at?: string
+          department_id?: string
+          id?: string
+          member_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "department_leads_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "department_leads_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       department_members: {
         Row: {
           created_at: string
@@ -276,6 +312,8 @@ export type Database = {
       departments: {
         Row: {
           created_at: string
+          description: string | null
+          hero_image_url: string | null
           icon: string | null
           id: string
           name: string
@@ -286,6 +324,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
+          hero_image_url?: string | null
           icon?: string | null
           id?: string
           name: string
@@ -296,6 +336,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
+          hero_image_url?: string | null
           icon?: string | null
           id?: string
           name?: string
@@ -592,6 +634,7 @@ export type Database = {
       loa_requests: {
         Row: {
           created_at: string
+          department_id: string | null
           end_date: string
           id: string
           member_id: string
@@ -605,6 +648,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          department_id?: string | null
           end_date: string
           id?: string
           member_id: string
@@ -618,6 +662,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          department_id?: string | null
           end_date?: string
           id?: string
           member_id?: string
@@ -630,6 +675,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "loa_requests_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "loa_requests_member_id_fkey"
             columns: ["member_id"]
@@ -652,6 +704,7 @@ export type Database = {
           author_name: string
           content: string
           created_at: string
+          department_id: string | null
           id: string
           log_type: string
           member_id: string
@@ -662,6 +715,7 @@ export type Database = {
           author_name: string
           content: string
           created_at?: string
+          department_id?: string | null
           id?: string
           log_type?: string
           member_id: string
@@ -672,12 +726,20 @@ export type Database = {
           author_name?: string
           content?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           log_type?: string
           member_id?: string
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "member_logs_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "member_logs_member_id_fkey"
             columns: ["member_id"]
@@ -1804,6 +1866,7 @@ export type Database = {
       workspace_quotas: {
         Row: {
           created_at: string
+          department_id: string | null
           id: string
           last_reset_at: string
           period: string
@@ -1815,6 +1878,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          department_id?: string | null
           id?: string
           last_reset_at?: string
           period?: string
@@ -1826,6 +1890,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          department_id?: string | null
           id?: string
           last_reset_at?: string
           period?: string
@@ -1836,6 +1901,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "workspace_quotas_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "workspace_quotas_role_id_fkey"
             columns: ["role_id"]
@@ -1856,6 +1928,7 @@ export type Database = {
         Row: {
           color: string
           created_at: string
+          department_id: string | null
           id: string
           name: string
           permissions: Json
@@ -1866,6 +1939,7 @@ export type Database = {
         Insert: {
           color?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           name: string
           permissions?: Json
@@ -1876,6 +1950,7 @@ export type Database = {
         Update: {
           color?: string
           created_at?: string
+          department_id?: string | null
           id?: string
           name?: string
           permissions?: Json
@@ -1884,6 +1959,13 @@ export type Database = {
           workspace_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "workspace_roles_department_id_fkey"
+            columns: ["department_id"]
+            isOneToOne: false
+            referencedRelation: "departments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "workspace_roles_workspace_id_fkey"
             columns: ["workspace_id"]
@@ -2014,6 +2096,14 @@ export type Database = {
         Args: { ws_id: string }
         Returns: undefined
       }
+      can_manage_department: {
+        Args: { _department_id: string }
+        Returns: boolean
+      }
+      can_see_department_row: {
+        Args: { _department_id: string; _workspace_id: string }
+        Returns: boolean
+      }
       claim_premium_grant: {
         Args: { _token: string }
         Returns: {
@@ -2032,6 +2122,19 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      get_accessible_departments: {
+        Args: never
+        Returns: {
+          hero_image_url: string
+          icon: string
+          id: string
+          is_lead: boolean
+          name: string
+          primary_color: string
+          slug: string
+          workspace_id: string
+        }[]
       }
       get_accessible_workspaces: {
         Args: never
@@ -2084,6 +2187,7 @@ export type Database = {
         Returns: boolean
       }
       heartbeat_portal: { Args: { _workspace_id: string }; Returns: undefined }
+      is_department_lead: { Args: { _department_id: string }; Returns: boolean }
       is_department_member: {
         Args: { _department_id: string }
         Returns: boolean

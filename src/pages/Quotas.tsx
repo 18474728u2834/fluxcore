@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Target, Plus, Loader2, Trash2, Clock, Calendar, CheckCircle2, XCircle, Users, BarChart3, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
@@ -58,6 +59,7 @@ interface MemberProgress {
 
 export default function Quotas() {
   const { workspaceId, isOwner, workspace } = useWorkspace();
+  const { scope, newRowDepartmentId, department } = useDepartment();
   const isPremium = !!workspace?.premium;
   const { hasPermission } = usePermissions();
   const { robloxUsername, robloxUserId } = useAuth();
@@ -85,10 +87,9 @@ export default function Quotas() {
   const [checking, setChecking] = useState(false);
 
   const fetchData = async () => {
-    const [{ data: q }, { data: r }] = await Promise.all([
-      supabase.from("workspace_quotas").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }),
-      supabase.from("workspace_roles").select("id, name, color").eq("workspace_id", workspaceId),
-    ]);
+    const qBuilder = supabase.from("workspace_quotas").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false });
+    const rBuilder = supabase.from("workspace_roles").select("id, name, color").eq("workspace_id", workspaceId);
+    const [{ data: q }, { data: r }] = await Promise.all([scope(qBuilder), scope(rBuilder)]);
     setQuotas(q || []);
     setRoles(r || []);
     setLoading(false);
@@ -165,13 +166,14 @@ export default function Quotas() {
     setMemberProgress(progress.sort((a, b) => (b.completed ? 1 : 0) - (a.completed ? 1 : 0)));
   };
 
-  useEffect(() => { fetchData(); }, [workspaceId]);
+  useEffect(() => { fetchData(); }, [workspaceId, department?.id]);
 
   const handleCreate = async () => {
     if (!title.trim()) return;
     setCreating(true);
     const { error } = await supabase.from("workspace_quotas").insert({
       workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
       title: title.trim(),
       quota_type: quotaType,
       target_value: parseInt(targetValue) || 1,

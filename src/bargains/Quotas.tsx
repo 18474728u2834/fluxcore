@@ -3,6 +3,7 @@ import { BargainsShell, bx } from "./Shell";
 import { Filter, ArrowDownUp, Plus, MessageSquare, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useDepartment } from "@/hooks/useDepartment";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 
 interface MemberRow {
@@ -19,14 +20,26 @@ interface MemberRow {
 
 export default function BQuotas() {
   const { workspaceId } = useWorkspace();
+  const { department } = useDepartment();
   const [rows, setRows] = useState<MemberRow[]>([]);
   const [sortDesc, setSortDesc] = useState(true);
 
   useEffect(() => {
     (async () => {
       const weekStart = new Date(); weekStart.setDate(weekStart.getDate()-7); weekStart.setHours(0,0,0,0);
+
+      // In a department: limit members to those assigned to that department.
+      let deptMemberIds: Set<string> | null = null;
+      if (department?.id) {
+        const { data: dm } = await supabase
+          .from("department_members")
+          .select("workspace_members!inner(id)")
+          .eq("department_id", department.id);
+        deptMemberIds = new Set((dm || []).map((r: any) => r.workspace_members?.id).filter(Boolean));
+      }
+
       const [mem, act, hosted] = await Promise.all([
-        supabase.from("workspace_members").select("user_id, role, roblox_username, roblox_user_id").eq("workspace_id", workspaceId),
+        supabase.from("workspace_members").select("id, user_id, role, roblox_username, roblox_user_id").eq("workspace_id", workspaceId),
         supabase.from("activity_sessions").select("roblox_user_id, duration_seconds, idle_seconds, joined_at, left_at").eq("workspace_id", workspaceId).eq("discarded", false).gte("joined_at", weekStart.toISOString()),
         supabase.from("scheduled_sessions").select("host_id").eq("workspace_id", workspaceId).eq("status", "completed").gte("scheduled_at", weekStart.toISOString()),
       ]);
@@ -47,7 +60,8 @@ export default function BQuotas() {
         if (h.host_id) hostedMap.set(h.host_id, (hostedMap.get(h.host_id) || 0) + 1);
       }
 
-      const out: MemberRow[] = (mem.data || []).map((m: any) => ({
+      const filteredMem = (mem.data || []).filter((m: any) => !deptMemberIds || deptMemberIds.has(m.id));
+      const out: MemberRow[] = filteredMem.map((m: any) => ({
         user_id: m.user_id,
         roblox_username: m.roblox_username || "Unknown",
         roblox_user_id: m.roblox_user_id || "",
@@ -60,7 +74,7 @@ export default function BQuotas() {
       }));
       setRows(out);
     })();
-  }, [workspaceId]);
+  }, [workspaceId, department?.id]);
 
   const sorted = [...rows].sort((a,b) => sortDesc ? b.minutes - a.minutes : a.minutes - b.minutes);
 

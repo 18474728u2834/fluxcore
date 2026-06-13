@@ -3,6 +3,7 @@ import { BargainsShell, bx } from "./Shell";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { toast } from "sonner";
@@ -54,6 +55,7 @@ const DEFAULT_SLOTS: Record<string, SessionSlot[]> = {
 
 export default function BSessions() {
   const { workspaceId } = useWorkspace();
+  const { scope, newRowDepartmentId } = useDepartment();
   const { user, robloxUsername } = useAuth();
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - d.getDay()); return d;
@@ -79,12 +81,12 @@ export default function BSessions() {
 
   useEffect(() => {
     if (!workspaceId) return;
-    supabase.from("scheduled_sessions")
+    const q = supabase.from("scheduled_sessions")
       .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments")
       .eq("workspace_id", workspaceId)
-      .order("scheduled_at", { ascending: true })
-      .then(({ data }) => setSessions((data as any) || []));
-  }, [workspaceId, refreshKey]);
+      .order("scheduled_at", { ascending: true });
+    scope(q).then(({ data }: any) => setSessions((data as any) || []));
+  }, [workspaceId, refreshKey, newRowDepartmentId]);
 
   // Expand recurring sessions into occurrences on the selected day
   const dayOccurrences = (() => {
@@ -202,6 +204,7 @@ export default function BSessions() {
     const firstAssignee = cleanSlots.flatMap(s => s.assigned).find(n => n && n.trim()) || "Unassigned";
     const payload: any = {
       workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
       title: title.trim(),
       category,
       scheduled_at: dt.toISOString(),

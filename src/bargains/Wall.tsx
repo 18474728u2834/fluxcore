@@ -3,6 +3,7 @@ import { BargainsShell, bx } from "./Shell";
 import { Pin, Plus, Trash2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
@@ -24,6 +25,7 @@ const timeAgo = (date: string) => {
 
 export default function BWall() {
   const { workspaceId } = useWorkspace();
+  const { scope, newRowDepartmentId, department } = useDepartment();
   const { user, robloxUsername } = useAuth();
   const { hasPermission } = usePermissions();
   const canPost = hasPermission("post_wall");
@@ -36,27 +38,30 @@ export default function BWall() {
   const [posting, setPosting] = useState(false);
 
   const fetch = async () => {
-    const { data } = await supabase.from("announcements").select("*")
+    const q = supabase.from("announcements").select("*")
       .eq("workspace_id", workspaceId)
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false });
+    const { data } = await scope(q);
     setPosts((data as any) || []);
   };
 
   useEffect(() => {
     if (!workspaceId) return;
     fetch();
-    const ch = supabase.channel(`wall-${workspaceId}`)
+    const ch = supabase.channel(`wall-${workspaceId}-${newRowDepartmentId || "main"}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "announcements", filter: `workspace_id=eq.${workspaceId}` }, fetch)
       .subscribe();
     return () => { supabase.removeChannel(ch); };
-  }, [workspaceId]);
+  }, [workspaceId, department?.id]);
 
   const post = async () => {
     if (!title.trim() || !content.trim() || !user) return;
     setPosting(true);
     const { error } = await supabase.from("announcements").insert({
-      workspace_id: workspaceId, title: title.trim(), content: content.trim(),
+      workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
+      title: title.trim(), content: content.trim(),
       pinned, author_id: user.id, author_name: robloxUsername || "Unknown",
     });
     setPosting(false);
