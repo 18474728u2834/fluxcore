@@ -82,11 +82,28 @@ Deno.serve(async (req) => {
       .eq("workspace_id", ws.id);
     if (!members?.length) continue;
 
+    // Pre-load department membership for any dept-scoped quotas.
+    const deptIds = Array.from(new Set(dueQuotas.map((q: any) => q.department_id).filter(Boolean))) as string[];
+    const deptMembers: Record<string, Set<string>> = {};
+    if (deptIds.length) {
+      const { data: dm } = await supabase
+        .from("department_members")
+        .select("department_id, member_id")
+        .in("department_id", deptIds);
+      for (const id of deptIds) deptMembers[id] = new Set();
+      (dm || []).forEach((r: any) => deptMembers[r.department_id]?.add(r.member_id));
+    }
+
     const misses: Record<string, { member: any; entries: { q: any; current: number; start: Date; end: Date }[] }> = {};
 
     for (const q of dueQuotas) {
       const { start, end } = previousPeriod(q.period);
-      const filtered = q.role_id ? members.filter((m: any) => m.role_id === q.role_id) : members;
+      let filtered = q.role_id ? members.filter((m: any) => m.role_id === q.role_id) : members;
+      if (q.department_id) {
+        const allowed = deptMembers[q.department_id] || new Set();
+        filtered = filtered.filter((m: any) => allowed.has(m.id));
+      }
+
 
       for (const m of filtered) {
         let current = 0;
