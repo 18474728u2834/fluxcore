@@ -108,13 +108,15 @@ Deno.serve(async (req) => {
       for (const m of filtered) {
         let current = 0;
         if (q.quota_type === "sessions") {
-          const { count } = await supabase
+          let ssQuery = supabase
             .from("scheduled_sessions")
             .select("*", { count: "exact", head: true })
             .eq("workspace_id", ws.id)
             .or(`host_name.eq.${m.roblox_username},co_host_name.eq.${m.roblox_username},trainer_name.eq.${m.roblox_username}`)
             .gte("scheduled_at", start.toISOString())
             .lt("scheduled_at", end.toISOString());
+          if (q.department_id) ssQuery = ssQuery.eq("department_id", q.department_id);
+          const { count } = await ssQuery;
           current = count || 0;
         } else {
           const { data: ses } = await supabase
