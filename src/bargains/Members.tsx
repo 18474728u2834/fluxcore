@@ -94,10 +94,21 @@ export default function BMembers() {
         }
       }
 
-      if (!cancelled) setMembers(list);
+      // When viewing inside a department, restrict to members assigned to it.
+      let scoped = list;
+      if (department?.id) {
+        const { data: dm } = await supabase
+          .from("department_members")
+          .select("workspace_members!inner(roblox_user_id)")
+          .eq("department_id", department.id);
+        const deptRobloxIds = new Set((dm || []).map((r: any) => String(r.workspace_members?.roblox_user_id)).filter(Boolean));
+        scoped = list.filter((m) => deptRobloxIds.has(String(m.roblox_user_id)));
+      }
+
+      if (!cancelled) setMembers(scoped);
     })();
     return () => { cancelled = true; };
-  }, [workspaceId, reloadKey]);
+  }, [workspaceId, reloadKey, department?.id]);
 
   useEffect(() => { setPage(1); }, [q]);
 
