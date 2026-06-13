@@ -1,88 +1,76 @@
+## Goal
 
-## 1. Global search in Nexus UI
+A department behaves like a mini-workspace nested inside its parent. When you're in the main workspace view, everything looks unchanged (all members, all sessions, etc.). When you switch into a department, every page is scoped to that department only.
 
-Make the header search in `src/bargains/Shell.tsx` a real spotlight search.
+## Data model (one migration)
 
-- Replace the static `<input>` with a controlled search field that opens a results dropdown when focused or typed in.
-- Debounced query (200ms). Results grouped by section:
-  - **Members** — query `workspace_members` by `roblox_username` ilike, click → `/w/:id/members/:memberId`
-  - **Sessions** — `scheduled_sessions` by title, click → `/w/:id/sessions`
-  - **Documents** — `workspace_documents` by title, click → `/w/:id/documents`
-  - **Pages** — static list of Nexus pages (Dashboard, Activity, LOA, Quotas, Wall, Roles, Blacklist, Staff, Settings, Setup Tracking)
-- Keyboard: ↑/↓ to navigate, Enter to open, Esc to close. `Ctrl/Cmd+K` focuses it.
-- All queries scoped to the active `workspaceId`; uses existing RLS (no schema changes).
+Add an optional `department_id uuid references departments(id) on delete cascade` column to:
+- `scheduled_sessions`
+- `workspace_quotas`
+- `announcements`
+- `workspace_documents`
+- `loa_requests`
+- `workspace_roles`
+- `member_logs`
 
-## 2. Departments as sub-workspaces
+Rules:
+- NULL = belongs to the parent workspace (visible in main view only).
+- Set = belongs to that department (visible only inside the department).
+- All existing rows stay NULL (no data migration needed).
 
-Departments are a first-class entity assigned to specific members, with their own subroute and isolated content.
+New columns on `departments`:
+- `description text`
+- `hero_image_url text`
+- `primary_color text` (already exists)
 
-### Schema (migration)
+New `department_leads` table:
+- `department_id`, `member_id` (workspace member), unique together.
+- A lead can manage that department (settings, members, roles, sessions, quotas, docs, LOA, announcements) without being workspace owner.
 
-```text
-departments
-  id uuid pk, workspace_id, name, slug, primary_color, icon, created_at, updated_at
-  unique (workspace_id, slug)
+New security definer functions:
+- `is_department_lead(_department_id uuid)` → bool
+- `can_manage_department(_department_id uuid)` → owner OR lead
 
-department_members
-  id uuid pk, department_id, member_id (fk workspace_members), role text default 'member'
-  unique (department_id, member_id)
-```
+RLS for every table that gained `department_id`:
+- Read: workspace member AND (`department_id IS NULL` OR `is_department_member(department_id)` OR owner).
+- Write: existing rule OR `can_manage_department(department_id)`.
 
-Add nullable `department_id uuid` columns to existing tables so a row can be scoped to a department:
-- `announcements.department_id`
-- `workspace_documents.department_id`
-- `scheduled_sessions.department_id`
+## Workspace switcher
 
-Helper SQL function `is_department_member(_department_id uuid)` (security definer) used in RLS.
+`get_accessible_workspaces()` extended to also return rows for each department the user belongs to, tagged with `kind = 'department'`, `parent_workspace_id`, `department_id`. The top-level workspace dropdown (Shell.tsx + classic Sidebar) shows them indented under their parent workspace.
 
-RLS updates so:
-- Anyone in the workspace can read rows where `department_id IS NULL` (existing behavior).
-- Rows with `department_id` set are only visible to workspace owner + members of that department.
+Selecting a department sets a context value `activeDepartmentId` (stored in `useWorkspace` alongside `workspaceId`). URL pattern: `/workspace/<id>/d/<slug>/...` for bargains, `/d/<slug>/...` style for classic. A `DepartmentContext` provides `{ id, slug, name, isLead, isMember }`.
 
-### Routing
+## Page scoping (single rule for every page)
 
-- New route `/w/:workspaceId/d/:deptSlug/*` (React Router), rendering the same Nexus shell but with a `DepartmentContext` holding the active department.
-- `useWorkspace` exposes optional `activeDepartment`. When set, dashboard/announcements/documents/sessions hooks pass `department_id = activeDepartment.id` for reads and inserts.
-- Subdomain `shoply.fluxcore.works/hr` works by mapping the path segment `/hr` to `/w/<resolvedWorkspaceId>/d/hr` in `useWorkspace` partner resolution — no Vercel changes.
+Every list query reads `useDepartment()`:
+- `activeDepartmentId == null` → query unchanged (main workspace view).
+- `activeDepartmentId != null` → add `.eq("department_id", activeDepartmentId)` AND restrict member-derived lists (Members, Leaderboard, MemberProfile picker) to `department_members` of that dept.
 
-### UI
+Pages touched: Sessions, Quotas, Wall/Announcements, Documents, LOA, Roles, Members, Leaderboard, MemberProfile, MessageLogs (filter by dept members), Activity stats.
 
-- New "Departments" section in the workspace settings page: create department, set name/slug/color/icon, assign members from the existing roster (multi-select).
-- In Nexus sidebar (`Shell.tsx`): below the page nav, a small "Departments" group with one icon per dept the current user belongs to. Clicking switches into that department's subroute.
-- A top-bar pill shows `Workspace · HR` when inside a department, with a back-to-main entry in the workspace menu.
-- New page `src/bargains/Departments.tsx` (settings sub-page) for managing departments.
+Create flows (new session, new quota, new doc, new role, post announcement) auto-stamp `department_id = activeDepartmentId`.
 
-## 3. Activity tracker setup inside Nexus UI
+## Department settings
 
-Move/expose the setup tracking page inside the Nexus shell.
+Inside a department, a Settings page lets leads/owner edit: name, description, hero image, primary color, member list (pick from workspace members), leads list. The existing `Departments` page in the parent workspace still lists/creates/deletes departments (owner only).
 
-- New route `/w/:workspaceId/setup-tracking` rendering inside `BargainsShell`.
-- Sidebar shows the "Setup Tracking" item **only if** the current user has `manage_settings` workspace permission (uses existing `has_workspace_permission` RPC). Owners always see it.
-- Direct navigation to the route also checks the permission and shows a "You don't have access" panel otherwise.
+## Permissions
 
-## 4. One-script tracker installer (merge steps 2 & 3)
-
-Rewrite the tracker so a single server script is enough — it programmatically creates the input-beacon LocalScript at runtime.
-
-- Server script (in `ServerScriptService`) builds a `LocalScript` instance with the beacon source, sets it as `StarterPlayer.StarterPlayerScripts` child on init.
-- The setup page collapses steps 2 and 3 into a single "Add Server Script" step that just says: paste this one script — it handles the rest. Step 4 ("Test it") stays as the new step 3.
-- The `FluxcoreRanking` script section stays as the optional step 4.
+- Workspace owner: full control everywhere.
+- Department lead: full control inside their department only; in the main view they have only their normal workspace permissions.
+- Department member: read-only inside the department unless they also hold a workspace permission like `manage_sessions` (those permissions also apply inside the dept).
 
 ## Technical notes
 
-- All new tables include the required public-schema GRANTs (`authenticated`, `service_role`) before RLS + policies.
-- New RLS policies use security-definer helpers (`is_workspace_member`, `is_department_member`, `is_workspace_owner`) — no recursion.
-- No schema changes are needed for the global search; it relies on existing RLS scoping.
-- Subdomain routing for `/hr` is purely client-side path handling; we don't touch `vercel.json`.
-- Existing `useUIVersion`, partner portal lookup, and Roblox OAuth flows are untouched.
+- One migration adds columns + `department_leads` + functions + updated RLS + updated `get_accessible_workspaces`.
+- A new `useDepartment()` hook + `DepartmentProvider` mounted by the `/d/:slug` route layout.
+- A small helper `withDept(query, deptId)` keeps page code tidy.
+- `quota-auto-check` edge function updated to evaluate quotas per dept (members = `department_members` when `department_id` is set).
+- Classic and bargains shells both updated; no visual redesign — same components, scoped data.
 
-## Files touched
+## Out of scope
 
-- New: `supabase/migrations/<ts>_departments.sql`
-- New: `src/bargains/Departments.tsx`, `src/bargains/SetupTracking.tsx`
-- New: `src/hooks/useDepartment.tsx`, `src/components/GlobalSearch.tsx`
-- Edited: `src/bargains/Shell.tsx` (search + dept switcher + tracker nav item)
-- Edited: `src/App.tsx` (new routes)
-- Edited: `src/hooks/useWorkspace.tsx` (department resolution from `/hr`-style path)
-- Edited: `src/pages/SetupTracking.tsx` (merge step 2 & 3, single-script installer)
-- Edited: existing dashboard/announcements/docs/sessions hooks to filter by `department_id` when active.
+- Per-department branding beyond color/hero image.
+- Cross-department analytics rollups.
+- Separate billing / premium per department.
