@@ -59,6 +59,7 @@ interface MemberProgress {
 
 export default function Quotas() {
   const { workspaceId, isOwner, workspace } = useWorkspace();
+  const { scope, newRowDepartmentId, department } = useDepartment();
   const isPremium = !!workspace?.premium;
   const { hasPermission } = usePermissions();
   const { robloxUsername, robloxUserId } = useAuth();
