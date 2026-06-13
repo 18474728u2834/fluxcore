@@ -141,6 +141,7 @@ function BargainsWorkspacePages() {
         <Route path="ranks"     element={<Ranks />} />
         <Route path="setup-tracking" element={<SetupTracking />} />
         <Route path="settings"  element={<SettingsPage />} />
+        <Route path="dept-settings" element={<BDepartmentSettings />} />
         <Route path="documents" element={<BDocuments />} />
         <Route path="documents/:docId" element={<DocumentView />} />
         <Route path="loa"       element={<BLOA />} />
@@ -155,15 +156,22 @@ function BargainsWorkspacePages() {
   );
 }
 
+function WithDepartment({ children }: { children: React.ReactNode }) {
+  return <DepartmentProvider>{children}</DepartmentProvider>;
+}
+
 function WorkspaceRoutes() {
   const { workspaceId } = useParams();
   const { version } = useUIVersion();
-  // Forced Hyra (partner subdomains, bargains, etc) always get Nexus pages.
   const forceNexus = !!workspaceId && HYRA_UI_WORKSPACE_IDS.has(workspaceId);
   const useNexus = forceNexus || version === "nexus";
+  const Pages = useNexus ? BargainsWorkspacePages : WorkspacePages;
   return (
     <WorkspaceProvider>
-      {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
+      <Routes>
+        <Route path="d/:deptSlug/*" element={<WithDepartment><Pages /></WithDepartment>} />
+        <Route path="/*" element={<WithDepartment><Pages /></WithDepartment>} />
+      </Routes>
     </WorkspaceProvider>
   );
 }
@@ -172,22 +180,30 @@ function WorkspaceRoutes() {
 function BargainsWorkspaceRoutes() {
   return (
     <WorkspaceProvider>
-      <BargainsWorkspacePages />
+      <Routes>
+        <Route path="d/:deptSlug/*" element={<WithDepartment><BargainsWorkspacePages /></WithDepartment>} />
+        <Route path="/*" element={<WithDepartment><BargainsWorkspacePages /></WithDepartment>} />
+      </Routes>
     </WorkspaceProvider>
   );
 }
 
 // Routes mounted at the root of a partner subdomain — no /w/:id prefix.
-// e.g. shoply.fluxcore.works/sessions instead of /w/<uuid>/sessions.
 function PartnerCleanRoutes({ workspaceId, useHyra }: { workspaceId: string; useHyra: boolean }) {
   const { version } = useUIVersion();
   const useNexus = useHyra || version === "nexus";
+  const Pages = useNexus ? BargainsWorkspacePages : WorkspacePages;
   return (
     <WorkspaceProvider workspaceId={workspaceId}>
-      {useNexus ? <BargainsWorkspacePages /> : <WorkspacePages />}
+      <Routes>
+        <Route path="d/:deptSlug/*" element={<WithDepartment><Pages /></WithDepartment>} />
+        <Route path="/*" element={<WithDepartment><Pages /></WithDepartment>} />
+      </Routes>
     </WorkspaceProvider>
   );
 }
+
+
 
 
 function BargainsWorkspaceGuard({ allowedId }: { allowedId: string }) {
