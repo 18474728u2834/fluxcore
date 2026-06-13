@@ -13,6 +13,7 @@ const PAGE_SIZE = 50;
 
 export default function BMembers() {
   const { workspaceId, isOwner } = useWorkspace();
+  const { department } = useDepartment();
   const [members, setMembers] = useState<any[]>([]);
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
