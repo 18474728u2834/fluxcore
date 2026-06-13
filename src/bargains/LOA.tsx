@@ -18,6 +18,7 @@ const TYPES = ["Vacation", "Sick Leave", "Personal", "Family", "Other"];
 
 export default function BLOA() {
   const { workspaceId, isOwner } = useWorkspace();
+  const { scope, newRowDepartmentId, department } = useDepartment();
   const { user, robloxUsername } = useAuth();
   const { hasPermission } = usePermissions();
   const canManage = isOwner || hasPermission("manage_members");
@@ -33,16 +34,17 @@ export default function BLOA() {
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
+    const reqQ = supabase.from("loa_requests").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false });
     const [r, m] = await Promise.all([
-      supabase.from("loa_requests").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false }),
+      scope(reqQ),
       supabase.from("workspace_members").select("id, user_id, roblox_username, roblox_user_id").eq("workspace_id", workspaceId),
     ]);
-    setRequests((r.data || []) as any);
+    setRequests(((r as any).data || []) as any);
     const map: Record<string, any> = {};
     (m.data || []).forEach((x: any) => { map[x.id] = x; if (x.user_id === user?.id) setMyMemberId(x.id); });
     setMemberRows(map);
   };
-  useEffect(() => { if (user) load(); }, [workspaceId, user]);
+  useEffect(() => { if (user) load(); }, [workspaceId, user, department?.id]);
 
   const submit = async () => {
     if (!start || !end || !type || !user) return;
@@ -61,7 +63,9 @@ export default function BLOA() {
     }
     if (!mid) { toast.error("Could not resolve member"); setSaving(false); return; }
     const { error } = await supabase.from("loa_requests").insert({
-      workspace_id: workspaceId, member_id: mid, user_id: user.id,
+      workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
+      member_id: mid, user_id: user.id,
       reason: `${type}${notes ? " — " + notes : ""}`,
       start_date: start, end_date: end,
     });
