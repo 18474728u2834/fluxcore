@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { UIVersionProvider, useUIVersion } from "@/hooks/useUIVersion";
 import { WorkspaceProvider } from "@/hooks/useWorkspace";
+import { DepartmentProvider } from "@/hooks/useDepartment";
 import { I18nProvider } from "@/hooks/useI18n";
 import { DOMTranslator } from "@/components/DOMTranslator";
 import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
