@@ -3,6 +3,7 @@ import { BargainsShell, bx } from "./Shell";
 import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { toast } from "sonner";
