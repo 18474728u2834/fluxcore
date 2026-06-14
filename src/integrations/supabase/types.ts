@@ -2173,12 +2173,30 @@ export type Database = {
           verified_official: boolean
         }[]
       }
+      get_workspace_integration_status: {
+        Args: { _workspace_id: string }
+        Returns: {
+          has_discord_webhook: boolean
+          has_roblox_api_key: boolean
+          quota_log_configured: boolean
+          quota_log_mode: string
+        }[]
+      }
       get_workspace_owner_info: {
         Args: { _workspace_id: string }
         Returns: {
           owner_id: string
           roblox_user_id: string
           roblox_username: string
+        }[]
+      }
+      get_workspace_secrets: {
+        Args: { _workspace_id: string }
+        Returns: {
+          api_key: string
+          discord_webhook_url: string
+          quota_log_webhook_url: string
+          roblox_api_key: string
         }[]
       }
       has_staff_permission: { Args: { _perm: string }; Returns: boolean }
