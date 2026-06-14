@@ -37,12 +37,22 @@ function previousPeriod(period: string, now = new Date()) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // Restrict invocation to the service role (used by pg_cron). Reject all other callers.
+  const authHeader = req.headers.get("authorization") || "";
+  if (authHeader !== `Bearer ${serviceRoleKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const url = new URL(req.url);
-  const force = url.searchParams.get("force") === "1"; // manual test override
+  const force = url.searchParams.get("force") === "1"; // manual test override (service-role only)
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    serviceRoleKey,
   );
 
   const summary: Array<{ workspace: string; mode: string; missed: number; warned: number; periods: string[] }> = [];
