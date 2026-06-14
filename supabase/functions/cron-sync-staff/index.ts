@@ -80,6 +80,15 @@ serve(async (req) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+  // Restrict invocation to the service role (used by pg_cron). Reject all other callers.
+  const authHeader = req.headers.get("authorization") || "";
+  if (authHeader !== `Bearer ${serviceRoleKey}`) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   const sb = createClient(supabaseUrl, serviceRoleKey);
 
   const summary: Record<string, any> = { workspaces: 0, added: 0, removed: 0, pruned_events: 0 };

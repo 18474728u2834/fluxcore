@@ -23,9 +23,15 @@ serve(async (req) => {
 
     // Get the requesting user
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user: reqUser } } = await createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+    const sbUserClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: `Bearer ${token}` } },
-    }).auth.getUser();
+    });
+    const { data: { user: reqUser } } = await sbUserClient.auth.getUser();
+    if (!reqUser) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const body = await req.json();
     const { action, workspace_id, roblox_user_id, role_id } = body;
@@ -41,6 +47,20 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    // Authorization: caller must own the workspace or have manage_members permission
+    const isOwner = ws.owner_id === reqUser.id;
+    if (!isOwner) {
+      const { data: hasPerm } = await sbUserClient.rpc("has_workspace_permission", {
+        _workspace_id: workspace_id, _permission: "manage_members",
+      });
+      if (!hasPerm) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Trim whitespace/newlines from pasted API key (common cause of "Unsupported authorization method")
     ws.roblox_api_key = String(ws.roblox_api_key).trim();
     ws.roblox_group_id = String(ws.roblox_group_id).trim();

@@ -15,7 +15,23 @@ serve(async (req) => {
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-    const { ticket_id, message, user_id } = await req.json();
+    // Require a valid Supabase JWT
+    const authHeader = req.headers.get("authorization") || "";
+    if (!authHeader.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const jwt = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsErr } = await supabase.auth.getClaims(jwt);
+    if (claimsErr || !claimsData?.claims?.sub) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const authUserId = claimsData.claims.sub as string;
+
+    const { ticket_id, message } = await req.json();
 
     if (!ticket_id || !message) {
       return new Response(JSON.stringify({ error: "Missing ticket_id or message" }), {
@@ -23,12 +39,18 @@ serve(async (req) => {
       });
     }
 
-    // Fetch ticket context
+    // Fetch ticket context — and verify caller owns the ticket
     const { data: ticket } = await supabase
       .from("support_tickets")
-      .select("subject, message, status")
+      .select("subject, message, status, user_id")
       .eq("id", ticket_id)
       .single();
+
+    if (!ticket || ticket.user_id !== authUserId) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Fetch previous messages for context
     const { data: prevMessages } = await supabase
