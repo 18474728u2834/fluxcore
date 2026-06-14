@@ -19,15 +19,16 @@ export function QuotaSetupPrompt() {
   useEffect(() => {
     if (!isOwner || !workspaceId) return;
     (async () => {
-      const { data } = await supabase
-        .from("workspaces")
-        .select("quota_log_configured, quota_log_mode, quota_log_webhook_url")
-        .eq("id", workspaceId)
-        .single();
-      const d = data as any;
+      const { data: integ } = await supabase
+        .rpc("get_workspace_integration_status", { _workspace_id: workspaceId });
+      const d: any = Array.isArray(integ) ? integ[0] : integ;
       if (d && !d.quota_log_configured) {
         setMode((d.quota_log_mode as any) || "warning");
-        setWebhook(d.quota_log_webhook_url || "");
+        // Webhook URL is a secret; only load it for owners on demand.
+        const { data: secretsRows } = await supabase
+          .rpc("get_workspace_secrets", { _workspace_id: workspaceId });
+        const secrets: any = Array.isArray(secretsRows) ? secretsRows[0] : secretsRows;
+        setWebhook(secrets?.quota_log_webhook_url || "");
         setOpen(true);
       }
     })();
