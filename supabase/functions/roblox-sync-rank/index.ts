@@ -165,6 +165,22 @@ serve(async (req) => {
 
     // ACTION: sync_member — pull current Roblox rank for one member, update Fluxcore role
     if (action === "sync_member") {
+      // Authorization: caller must own the workspace or have manage_members permission
+      const isOwner = ws.owner_id === user.id;
+      if (!isOwner) {
+        const sbUserClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+        const { data: hasPerm } = await sbUserClient.rpc("has_workspace_permission", {
+          _workspace_id: workspace_id, _permission: "manage_members",
+        });
+        if (!hasPerm) {
+          return new Response(JSON.stringify({ error: "Forbidden" }), {
+            status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+      }
+
       const { data: mem } = await sb.from("workspace_members")
         .select("id, roblox_user_id, role_id")
         .eq("id", member_id)

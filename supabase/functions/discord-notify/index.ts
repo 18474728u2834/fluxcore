@@ -338,10 +338,36 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
     const body = await safeJson(req);
     const action = body?.action || "dispatch_due_sessions";
     const workspaceId = body?.workspace_id || null;
+
+    const authHeader = req.headers.get("authorization") || "";
+
+    // Cron / batch path: service role only
+    if (action === "dispatch_due_sessions") {
+      if (authHeader !== `Bearer ${serviceRoleKey}`) {
+        return json({ error: "Unauthorized" }, 401);
+      }
+    } else {
+      // User actions: require a valid Supabase JWT AND workspace ownership
+      if (!authHeader.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
+      const sbAuth = createClient(supabaseUrl, anonKey);
+      const { data: claims, error: claimsErr } = await sbAuth.auth.getClaims(authHeader.replace("Bearer ", ""));
+      if (claimsErr || !claims?.claims?.sub) return json({ error: "Unauthorized" }, 401);
+      if (!workspaceId) return json({ error: "Missing workspace_id" }, 400);
+      const { data: isOwner } = await supabase.rpc("is_workspace_owner", { _workspace_id: workspaceId });
+      // is_workspace_owner uses auth.uid() — call it via a JWT-bound client
+      const sbUser = createClient(supabaseUrl, anonKey, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: ownerCheck } = await sbUser.rpc("is_workspace_owner", { _workspace_id: workspaceId });
+      if (!ownerCheck) return json({ error: "Forbidden" }, 403);
+    }
 
     if (action === "dispatch_due_sessions") {
       const now = new Date();
