@@ -91,7 +91,7 @@ end
 
 local Fluxcore = {}
 Fluxcore.API_URL = "${FUNCTION_URL}"
-Fluxcore.API_KEY = "${workspace?.api_key || "YOUR_API_KEY_FROM_SETTINGS"}"
+Fluxcore.API_KEY = "${apiKey || "YOUR_API_KEY_FROM_SETTINGS"}"
 Fluxcore.Sessions = {}
 Fluxcore.HEARTBEAT_INTERVAL = 15
 Fluxcore.IDLE_THRESHOLD = 30 -- seconds with no input/focus = idle (time stops counting)
@@ -241,7 +241,7 @@ local TextChatService = game:GetService("TextChatService")
 
 local Ranking = {}
 Ranking.API_URL = "https://fluxcore.works/api/v1/ranking"
-Ranking.API_KEY = "${workspace?.api_key || "YOUR_API_KEY_FROM_SETTINGS"}"
+Ranking.API_KEY = "${apiKey || "YOUR_API_KEY_FROM_SETTINGS"}"
 
 local function trim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 
