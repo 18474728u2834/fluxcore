@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
-import { Filter, ArrowDownUp, Plus, MessageSquare, AlertTriangle } from "lucide-react";
+import { Filter, ArrowDownUp, Plus, MessageSquare, AlertTriangle, Loader2, Trash2, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
+import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface MemberRow {
   user_id: string;
@@ -18,17 +25,49 @@ interface MemberRow {
   lastSeen: string | null;
 }
 
+interface Quota {
+  id: string;
+  title: string;
+  quota_type: string;
+  target_value: number;
+  period: string;
+  role_id: string | null;
+}
+
+interface Role { id: string; name: string; color: string; }
+
 export default function BQuotas() {
-  const { workspaceId } = useWorkspace();
-  const { department } = useDepartment();
+  const { workspaceId, workspace, isOwner } = useWorkspace();
+  const { department, scope, newRowDepartmentId } = useDepartment();
+  const { hasPermission } = usePermissions();
+  const canManage = isOwner || hasPermission("manage_members");
+  const isPremium = !!workspace?.premium;
+
   const [rows, setRows] = useState<MemberRow[]>([]);
   const [sortDesc, setSortDesc] = useState(true);
+
+  const [quotas, setQuotas] = useState<Quota[]>([]);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [title, setTitle] = useState("");
+  const [quotaType, setQuotaType] = useState("sessions");
+  const [targetValue, setTargetValue] = useState("2");
+  const [period, setPeriod] = useState("weekly");
+  const [roleId, setRoleId] = useState("all");
+
+  const loadQuotas = async () => {
+    const qB = supabase.from("workspace_quotas").select("*").eq("workspace_id", workspaceId).order("created_at", { ascending: false });
+    const rB = supabase.from("workspace_roles").select("id, name, color").eq("workspace_id", workspaceId);
+    const [{ data: q }, { data: r }] = await Promise.all([scope(qB), scope(rB)]);
+    setQuotas((q as Quota[]) || []);
+    setRoles((r as Role[]) || []);
+  };
 
   useEffect(() => {
     (async () => {
       const weekStart = new Date(); weekStart.setDate(weekStart.getDate()-7); weekStart.setHours(0,0,0,0);
 
-      // In a department: limit members to those assigned to that department.
       let deptMemberIds: Set<string> | null = null;
       if (department?.id) {
         const { data: dm } = await supabase
@@ -73,15 +112,153 @@ export default function BQuotas() {
         lastSeen: lastSeen.get(m.roblox_user_id) || null,
       }));
       setRows(out);
+
+      await loadQuotas();
     })();
   }, [workspaceId, department?.id]);
+
+  const handleCreate = async () => {
+    if (!title.trim()) return;
+    setCreating(true);
+    const { error } = await supabase.from("workspace_quotas").insert({
+      workspace_id: workspaceId,
+      department_id: newRowDepartmentId,
+      title: title.trim(),
+      quota_type: quotaType,
+      target_value: parseInt(targetValue) || 1,
+      period,
+      role_id: roleId === "all" ? null : roleId,
+    });
+    setCreating(false);
+    if (error) { toast.error("Failed: " + error.message); return; }
+    toast.success("Quota created");
+    setDialogOpen(false);
+    setTitle("");
+    loadQuotas();
+  };
+
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("workspace_quotas").delete().eq("id", id);
+    if (error) { toast.error("Failed to delete: " + error.message); return; }
+    toast.success("Quota deleted");
+    loadQuotas();
+  };
+
+  const roleName = (id: string | null) => id ? (roles.find(r => r.id === id)?.name || "Unknown role") : "All members";
 
   const sorted = [...rows].sort((a,b) => sortDesc ? b.minutes - a.minutes : a.minutes - b.minutes);
 
   return (
     <BargainsShell>
       <div className="max-w-7xl mx-auto space-y-6">
-        <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: bx.text }}>Most Minutes</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: bx.text }}>Quotas</h1>
+          {canManage && (
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <button
+                  className="inline-flex items-center gap-2 px-3 h-9 rounded-md text-sm font-medium"
+                  style={{ background: bx.coral, color: "#fff" }}>
+                  <Plus className="w-4 h-4" /> New quota
+                </button>
+              </DialogTrigger>
+              <DialogContent className="max-w-sm" style={{ background: "#1a1a1c", borderColor: bx.borderColor, color: bx.text }}>
+                <DialogHeader><DialogTitle style={{ color: bx.text }}>Create quota</DialogTitle></DialogHeader>
+                <div className="space-y-4 pt-2">
+                  <Input placeholder="e.g. Host 2 sessions" value={title} onChange={(e) => setTitle(e.target.value)} />
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs" style={{ color: bx.textDim }}>Type</Label>
+                      <Select value={quotaType} onValueChange={setQuotaType}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="sessions">Sessions hosted</SelectItem>
+                          <SelectItem value="minutes">In-game minutes</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs" style={{ color: bx.textDim }}>Target</Label>
+                      <Input type="number" value={targetValue} onChange={(e) => setTargetValue(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="text-xs" style={{ color: bx.textDim }}>Period</Label>
+                      <Select value={period} onValueChange={setPeriod}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="daily">Daily</SelectItem>
+                          <SelectItem value="weekly">Weekly</SelectItem>
+                          <SelectItem value="monthly">Monthly</SelectItem>
+                          <SelectItem value="manual">Manual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs flex items-center gap-1.5" style={{ color: bx.textDim }}>
+                        Applies to
+                        {!isPremium && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(245,90,74,0.15)", color: bx.coral }}>PREMIUM</span>}
+                      </Label>
+                      <Select value={isPremium ? roleId : "all"} onValueChange={(v) => isPremium && setRoleId(v)} disabled={!isPremium}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All members</SelectItem>
+                          {roles.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCreate}
+                    disabled={creating || !title.trim()}
+                    className="w-full inline-flex items-center justify-center gap-2 h-9 rounded-md text-sm font-medium disabled:opacity-50"
+                    style={{ background: bx.coral, color: "#fff" }}>
+                    {creating && <Loader2 className="w-4 h-4 animate-spin" />} Create quota
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          )}
+        </div>
+
+        {canManage && (
+          <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
+            <div className="px-5 py-3 flex items-center gap-2 border-b" style={{ borderColor: bx.borderColor }}>
+              <Target className="w-4 h-4" style={{ color: bx.coral }} />
+              <div className="text-sm font-semibold" style={{ color: bx.text }}>Assigned quotas</div>
+              <div className="text-xs ml-2" style={{ color: bx.textDim }}>{quotas.length} active</div>
+            </div>
+            {quotas.length === 0 ? (
+              <div className="p-8 text-center text-sm" style={{ color: bx.textDim }}>
+                No quotas yet. Create one to start tracking activity.
+              </div>
+            ) : (
+              <div className="divide-y" style={{ borderColor: bx.borderColor }}>
+                {quotas.map((q) => (
+                  <div key={q.id} className="px-5 py-3 flex items-center gap-4" style={{ borderColor: bx.borderColor }}>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{q.title}</div>
+                      <div className="text-xs mt-0.5" style={{ color: bx.textDim }}>
+                        {q.target_value} {q.quota_type === "sessions" ? "sessions" : "minutes"} · {q.period} · {roleName(q.role_id)}
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDelete(q.id)}
+                      className="p-2 rounded-md transition-colors"
+                      style={{ color: bx.textDim }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = bx.coral)}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = bx.textDim)}>
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <h2 className="text-xl font-semibold tracking-tight pt-2" style={{ color: bx.text }}>Most minutes</h2>
 
         {/* Toolbar */}
         <div className="flex items-center gap-1 -mx-2">
