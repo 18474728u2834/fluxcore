@@ -212,7 +212,7 @@ export default function Quotas() {
     setChecking(true);
     try {
       const { data: ws } = await supabase.from("workspaces")
-        .select("name, quota_log_mode, quota_log_webhook_url")
+        .select("name, quota_log_mode")
         .eq("id", workspaceId).single();
       const mode = (ws as any)?.quota_log_mode || "none";
       if (mode === "none") {
@@ -220,11 +220,17 @@ export default function Quotas() {
         setChecking(false);
         return;
       }
-      const webhookUrl = (ws as any)?.quota_log_webhook_url;
-      if (mode === "webhook" && !webhookUrl) {
-        toast.error("No Discord webhook configured. Set one in Settings.");
-        setChecking(false);
-        return;
+      let webhookUrl: string | null = null;
+      if (mode === "webhook") {
+        const { data: secretsRows } = await supabase
+          .rpc("get_workspace_secrets", { _workspace_id: workspaceId });
+        const secrets: any = Array.isArray(secretsRows) ? secretsRows[0] : secretsRows;
+        webhookUrl = secrets?.quota_log_webhook_url || null;
+        if (!webhookUrl) {
+          toast.error("No Discord webhook configured. Set one in Settings.");
+          setChecking(false);
+          return;
+        }
       }
       if (quotas.length === 0) { toast.error("No quotas to check."); setChecking(false); return; }
 

@@ -9,17 +9,28 @@ export default function SetupTracking() {
   const [copied, setCopied] = useState(false);
   const { workspace, workspaceId, isOwner } = useWorkspace();
   const [allowed, setAllowed] = useState<boolean | null>(null);
+  const [apiKey, setApiKey] = useState<string>("");
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (isOwner) { setAllowed(true); return; }
-      if (!workspaceId) { setAllowed(false); return; }
-      const { data, error } = await supabase.rpc("has_workspace_permission", {
-        _workspace_id: workspaceId,
-        _permission: "manage_settings",
-      });
-      if (!cancelled) setAllowed(!error && !!data);
+      if (isOwner) { setAllowed(true); }
+      else if (!workspaceId) { setAllowed(false); return; }
+      else {
+        const { data, error } = await supabase.rpc("has_workspace_permission", {
+          _workspace_id: workspaceId,
+          _permission: "manage_settings",
+        });
+        if (cancelled) return;
+        setAllowed(!error && !!data);
+      }
+      // API key is only readable by the workspace owner via this RPC.
+      if (workspaceId) {
+        const { data: secretsRows } = await supabase
+          .rpc("get_workspace_secrets", { _workspace_id: workspaceId });
+        const secrets: any = Array.isArray(secretsRows) ? secretsRows[0] : secretsRows;
+        if (!cancelled) setApiKey(secrets?.api_key || "");
+      }
     })();
     return () => { cancelled = true; };
   }, [workspaceId, isOwner]);
@@ -80,7 +91,7 @@ end
 
 local Fluxcore = {}
 Fluxcore.API_URL = "${FUNCTION_URL}"
-Fluxcore.API_KEY = "${workspace?.api_key || "YOUR_API_KEY_FROM_SETTINGS"}"
+Fluxcore.API_KEY = "${apiKey || "YOUR_API_KEY_FROM_SETTINGS"}"
 Fluxcore.Sessions = {}
 Fluxcore.HEARTBEAT_INTERVAL = 15
 Fluxcore.IDLE_THRESHOLD = 30 -- seconds with no input/focus = idle (time stops counting)
@@ -230,7 +241,7 @@ local TextChatService = game:GetService("TextChatService")
 
 local Ranking = {}
 Ranking.API_URL = "https://fluxcore.works/api/v1/ranking"
-Ranking.API_KEY = "${workspace?.api_key || "YOUR_API_KEY_FROM_SETTINGS"}"
+Ranking.API_KEY = "${apiKey || "YOUR_API_KEY_FROM_SETTINGS"}"
 
 local function trim(s) return (s:gsub("^%s+", ""):gsub("%s+$", "")) end
 

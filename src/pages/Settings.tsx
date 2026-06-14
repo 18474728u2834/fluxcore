@@ -50,16 +50,21 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("api_key, primary_color, text_color, roblox_api_key, background_color, show_grid, discord_webhook_url, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, quota_log_webhook_url, nexus_hero_image_url")
+          .select("primary_color, text_color, background_color, show_grid, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, nexus_hero_image_url")
           .eq("id", workspaceId).single();
+        // Sensitive credentials are fetched via an owner-only RPC so members
+        // can never read them through the Data API.
+        const { data: secretsRows } = await supabase
+          .rpc("get_workspace_secrets", { _workspace_id: workspaceId });
+        const secrets: any = Array.isArray(secretsRows) ? secretsRows[0] : secretsRows;
         if (data) {
-          setApiKey((data as any).api_key || "");
+          setApiKey(secrets?.api_key || "");
           setPrimaryColor((data as any).primary_color || "#7c3aed");
           setTextColor((data as any).text_color || "#ffffff");
           setBackgroundColor((data as any).background_color || "#0f0f11");
           setShowGrid((data as any).show_grid ?? true);
-          setRobloxApiKey((data as any).roblox_api_key || "");
-          setDiscordWebhook((data as any).discord_webhook_url || "");
+          setRobloxApiKey(secrets?.roblox_api_key || "");
+          setDiscordWebhook(secrets?.discord_webhook_url || "");
           setMessageLogger((data as any).message_logger_enabled || false);
           setAutoRank((data as any).auto_rank_enabled || false);
           setAfkConfirmSeconds((data as any).afk_confirm_seconds || 0);
@@ -70,10 +75,9 @@ export default function SettingsPage() {
           setTrainerLabel(labels.trainer || "Trainer");
           setLeaderboardCategories(((data as any).leaderboard_categories || []) as string[]);
           setQuotaLogMode(((data as any).quota_log_mode || "none") as any);
-          setQuotaLogWebhook((data as any).quota_log_webhook_url || "");
+          setQuotaLogWebhook(secrets?.quota_log_webhook_url || "");
           setNexusHeroUrl((data as any).nexus_hero_image_url || "");
         }
-
       };
       fetchExtras();
     }

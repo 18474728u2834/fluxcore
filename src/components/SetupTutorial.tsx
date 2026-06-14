@@ -39,17 +39,18 @@ export function SetupTutorial() {
     let cancelled = false;
     const load = async () => {
       try {
-        const [members, roles, docs, wsRow] = await Promise.all([
+        const [members, roles, docs, integ] = await Promise.all([
           supabase.from("workspace_members").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
           supabase.from("workspace_roles").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
           supabase.from("workspace_documents").select("id", { count: "exact", head: true }).eq("workspace_id", workspaceId),
-          supabase.from("workspaces").select("discord_webhook_url, roblox_api_key").eq("id", workspaceId).maybeSingle(),
+          supabase.rpc("get_workspace_integration_status", { _workspace_id: workspaceId }),
         ]);
         if (cancelled) return;
+        const integRow: any = Array.isArray(integ.data) ? integ.data[0] : integ.data;
         setProgress({
           members: (members.count ?? 0) > 0,
           role: (roles.count ?? 0) > 0,
-          webhook: !!wsRow.data?.discord_webhook_url || !!wsRow.data?.roblox_api_key,
+          webhook: !!integRow?.has_discord_webhook || !!integRow?.has_roblox_api_key,
           document: (docs.count ?? 0) > 0,
         });
       } finally {
