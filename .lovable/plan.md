@@ -1,76 +1,73 @@
-## Goal
+Here are concrete feature ideas in the two areas you picked. Pick any combination and I'll plan the build in detail.
 
-A department behaves like a mini-workspace nested inside its parent. When you're in the main workspace view, everything looks unchanged (all members, all sessions, etc.). When you switch into a department, every page is scoped to that department only.
+## Community & Engagement
 
-## Data model (one migration)
+1. **Shoutouts & Kudos wall**
+   - Members publicly thank/recognise teammates. Reactions, weekly "top recipient" highlight, optional Discord webhook mirror.
+   - Adds social momentum to the existing Wall without replacing announcements.
 
-Add an optional `department_id uuid references departments(id) on delete cascade` column to:
-- `scheduled_sessions`
-- `workspace_quotas`
-- `announcements`
-- `workspace_documents`
-- `loa_requests`
-- `workspace_roles`
-- `member_logs`
+2. **Staff Spotlight of the Week**
+   - Auto-pick from highest activity / most kudos / quota over-achiever. Owner can override. Banner on Dashboard + Nexus.
 
-Rules:
-- NULL = belongs to the parent workspace (visible in main view only).
-- Set = belongs to that department (visible only inside the department).
-- All existing rows stay NULL (no data migration needed).
+3. **Achievements & badges**
+   - Auto-awarded badges (first session hosted, 50h in-game, 10 sessions, 100% quota 4 weeks, perfect attendance). Shown on member profile and leaderboard.
+   - Owners can create custom badges and award manually.
 
-New columns on `departments`:
-- `description text`
-- `hero_image_url text`
-- `primary_color text` (already exists)
+4. **Polls / quick votes**
+   - Lightweight poll widget on the Wall (single/multi choice, anonymous toggle, expiry). Great for "next event theme", staff sentiment, etc.
 
-New `department_leads` table:
-- `department_id`, `member_id` (workspace member), unique together.
-- A lead can manage that department (settings, members, roles, sessions, quotas, docs, LOA, announcements) without being workspace owner.
+5. **Events / RSVP layer on Sessions**
+   - Non-shift community events (game nights, training, Q&A) with RSVP, reminders, and attendance auto-credit.
 
-New security definer functions:
-- `is_department_lead(_department_id uuid)` → bool
-- `can_manage_department(_department_id uuid)` → owner OR lead
+6. **Suggestion box (members → leads)**
+   - Internal version of the Feedback system scoped to a workspace/department, with upvotes and status (Planned/Done/Declined).
 
-RLS for every table that gained `department_id`:
-- Read: workspace member AND (`department_id IS NULL` OR `is_department_member(department_id)` OR owner).
-- Write: existing rule OR `can_manage_department(department_id)`.
+7. **Birthday & anniversary feed**
+   - You already capture birthdays — surface a feed for birthdays today/this week + join-date anniversaries with auto Discord ping.
 
-## Workspace switcher
+8. **Onboarding checklist for new members**
+   - Personal checklist (read handbook doc, sign NDA, attend 1 training, host 1 session). Progress bar on profile, nudges leads when stalled.
 
-`get_accessible_workspaces()` extended to also return rows for each department the user belongs to, tagged with `kind = 'department'`, `parent_workspace_id`, `department_id`. The top-level workspace dropdown (Shell.tsx + classic Sidebar) shows them indented under their parent workspace.
+## Analytics & Reporting
 
-Selecting a department sets a context value `activeDepartmentId` (stored in `useWorkspace` alongside `workspaceId`). URL pattern: `/workspace/<id>/d/<slug>/...` for bargains, `/d/<slug>/...` style for classic. A `DepartmentContext` provides `{ id, slug, name, isLead, isMember }`.
+1. **Workspace Insights dashboard**
+   - Time-series charts: active staff, sessions hosted, hours in-game, quota pass rate, LOA volume, document signature rate. Filter by department and date range.
 
-## Page scoping (single rule for every page)
+2. **Department scorecards**
+   - Per-department KPIs side-by-side: headcount, active %, average session length, quota compliance, kudos count. Owner-only.
 
-Every list query reads `useDepartment()`:
-- `activeDepartmentId == null` → query unchanged (main workspace view).
-- `activeDepartmentId != null` → add `.eq("department_id", activeDepartmentId)` AND restrict member-derived lists (Members, Leaderboard, MemberProfile picker) to `department_members` of that dept.
+3. **Member performance report**
+   - Drill-down per member: weekly hours, sessions, quota history, warnings, kudos, badges. Export to CSV/PDF.
 
-Pages touched: Sessions, Quotas, Wall/Announcements, Documents, LOA, Roles, Members, Leaderboard, MemberProfile, MessageLogs (filter by dept members), Activity stats.
+4. **Retention / churn report**
+   - New members, returning members, inactive 14/30 days, suspended, left. Cohort chart by join month.
 
-Create flows (new session, new quota, new doc, new role, post announcement) auto-stamp `department_id = activeDepartmentId`.
+5. **Session analytics**
+   - Avg attendance per host, popular days/times heatmap, no-show rate, recurring-session adherence.
 
-## Department settings
+6. **Quota analytics**
+   - Pass/fail trend, top under-performers, who is at risk this week. One-click "send Discord reminder" or "auto-warn" rules.
 
-Inside a department, a Settings page lets leads/owner edit: name, description, hero image, primary color, member list (pick from workspace members), leads list. The existing `Departments` page in the parent workspace still lists/creates/deletes departments (owner only).
+7. **Activity heatmap**
+   - Hour-of-day × day-of-week heatmap of in-game activity, per workspace and per member.
 
-## Permissions
+8. **Scheduled email/Discord digests**
+   - Weekly auto-digest to owner: top performers, at-risk members, sessions next week, open LOA/feedback. Uses existing email + webhook stack.
 
-- Workspace owner: full control everywhere.
-- Department lead: full control inside their department only; in the main view they have only their normal workspace permissions.
-- Department member: read-only inside the department unless they also hold a workspace permission like `manage_sessions` (those permissions also apply inside the dept).
+9. **Public-facing group stats page (optional)**
+   - Opt-in shareable URL (e.g. /g/<slug>/stats) showing safe high-level numbers — recruitment magnet.
 
 ## Technical notes
+- All additions reuse: `workspace_members`, `activity_sessions`, `scheduled_sessions`, `workspace_quotas`, `departments`, existing Discord webhook + email queue, and the `has_workspace_permission` RPC.
+- New tables likely needed: `kudos`, `badges` + `badge_awards`, `polls` + `poll_votes`, `events` (or extend `scheduled_sessions`), `onboarding_tasks`, `member_metrics_daily` (materialised cache for analytics speed).
+- Charts via `recharts` (already in stack).
+- Heavy analytics aggregated nightly by a Deno cron edge function into `member_metrics_daily` so dashboards stay fast.
+- Permissions: viewing analytics gated to owners + department leads (per-department scoped); engagement features open to all members but moderation-capable for leads/owners.
 
-- One migration adds columns + `department_leads` + functions + updated RLS + updated `get_accessible_workspaces`.
-- A new `useDepartment()` hook + `DepartmentProvider` mounted by the `/d/:slug` route layout.
-- A small helper `withDept(query, deptId)` keeps page code tidy.
-- `quota-auto-check` edge function updated to evaluate quotas per dept (members = `department_members` when `department_id` is set).
-- Classic and bargains shells both updated; no visual redesign — same components, scoped data.
+## Suggested first slice
+If you want maximum impact for minimum work, I'd start with:
+1. Kudos wall + auto Staff Spotlight
+2. Workspace Insights dashboard (sessions, hours, quota pass rate, retention)
+3. Achievements/badges (auto from existing data)
 
-## Out of scope
-
-- Per-department branding beyond color/hero image.
-- Cross-department analytics rollups.
-- Separate billing / premium per department.
+Tell me which of these to build (or pick your own combo) and I'll write a detailed implementation plan.
