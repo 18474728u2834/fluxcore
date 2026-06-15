@@ -23,6 +23,7 @@ interface Kudo {
 interface Member {
   id: string;
   roblox_username: string | null;
+  user_id: string;
 }
 
 function timeAgo(date: string) {
@@ -57,7 +58,7 @@ export default function Kudos() {
         .limit(200),
       supabase
         .from("workspace_members")
-        .select("id,roblox_username")
+        .select("id,roblox_username,user_id")
         .eq("workspace_id", workspaceId)
         .order("roblox_username"),
     ]);
@@ -139,10 +140,10 @@ export default function Kudos() {
 
   const filteredMembers = useMemo(() => {
     const q = memberSearch.trim().toLowerCase();
-    const base = members.filter((m) => m.user_id !== user?.id);
+    const others = members.filter((m) => m.user_id !== user?.id);
     return q
-      ? members.filter((m) => (m.roblox_username || "").toLowerCase().includes(q))
-      : members.slice(0, 30);
+      ? others.filter((m) => (m.roblox_username || "").toLowerCase().includes(q))
+      : others.slice(0, 30);
   }, [members, memberSearch, user?.id]);
 
   return (
