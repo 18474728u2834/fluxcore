@@ -631,6 +631,64 @@ export type Database = {
         }
         Relationships: []
       }
+      kudos: {
+        Row: {
+          created_at: string
+          from_member_id: string | null
+          from_name: string
+          from_user_id: string
+          id: string
+          message: string
+          to_member_id: string
+          to_name: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          from_member_id?: string | null
+          from_name: string
+          from_user_id: string
+          id?: string
+          message: string
+          to_member_id: string
+          to_name: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          from_member_id?: string | null
+          from_name?: string
+          from_user_id?: string
+          id?: string
+          message?: string
+          to_member_id?: string
+          to_name?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kudos_from_member_id_fkey"
+            columns: ["from_member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kudos_to_member_id_fkey"
+            columns: ["to_member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kudos_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       loa_requests: {
         Row: {
           created_at: string
@@ -889,6 +947,82 @@ export type Database = {
           uses?: number
         }
         Relationships: []
+      }
+      promotion_nominations: {
+        Row: {
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decided_by_name: string | null
+          decision_note: string | null
+          id: string
+          nominator_member_id: string | null
+          nominator_name: string
+          nominator_user_id: string
+          nominee_member_id: string
+          nominee_name: string
+          reason: string
+          status: string
+          suggested_rank: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_by_name?: string | null
+          decision_note?: string | null
+          id?: string
+          nominator_member_id?: string | null
+          nominator_name: string
+          nominator_user_id: string
+          nominee_member_id: string
+          nominee_name: string
+          reason: string
+          status?: string
+          suggested_rank?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decided_by_name?: string | null
+          decision_note?: string | null
+          id?: string
+          nominator_member_id?: string | null
+          nominator_name?: string
+          nominator_user_id?: string
+          nominee_member_id?: string
+          nominee_name?: string
+          reason?: string
+          status?: string
+          suggested_rank?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "promotion_nominations_nominator_member_id_fkey"
+            columns: ["nominator_member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_nominations_nominee_member_id_fkey"
+            columns: ["nominee_member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "promotion_nominations_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       scheduled_sessions: {
         Row: {

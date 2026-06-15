@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
   Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone, Sparkles,
-  Wrench, Building2,
+  Wrench, Building2, Heart, ArrowUp,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
@@ -24,6 +24,8 @@ const NAV = [
   { to: "sessions",   icon: Calendar,    label: "Sessions"  },
   { to: "quotas",     icon: Target,      label: "Quotas"    },
   { to: "wall",       icon: Megaphone,   label: "Wall"      },
+  { to: "kudos",      icon: Heart,       label: "Kudos"     },
+  { to: "promotions", icon: ArrowUp,     label: "Promotions"},
   { to: "roles",      icon: ShieldCheck, label: "Roles"     },
   { to: "staff",      icon: Grid3x3,     label: "Blacklist" },
 ];
@@ -40,6 +42,8 @@ const PAGE_INDEX: Array<{ label: string; to: string }> = [
   { label: "Sessions", to: "sessions" },
   { label: "Quotas", to: "quotas" },
   { label: "Wall", to: "wall" },
+  { label: "Kudos", to: "kudos" },
+  { label: "Promotions", to: "promotions" },
   { label: "Roles", to: "roles" },
   { label: "Blacklist", to: "staff" },
   { label: "Settings", to: "settings" },
