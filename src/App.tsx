@@ -52,6 +52,8 @@ const Roles = lazy(() => import("./pages/Roles"));
 const Quotas = lazy(() => import("./pages/Quotas"));
 const MessageLogs = lazy(() => import("./pages/MessageLogs"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
+const Kudos = lazy(() => import("./pages/Kudos"));
+const Promotions = lazy(() => import("./pages/Promotions"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
@@ -121,6 +123,8 @@ function WorkspacePages() {
         <Route path="quotas" element={<Quotas />} />
         <Route path="message-logs" element={<MessageLogs />} />
         <Route path="leaderboard" element={<Leaderboard />} />
+        <Route path="kudos" element={<Kudos />} />
+        <Route path="promotions" element={<Promotions />} />
         <Route path="join" element={<JoinWorkspace />} />
       </Routes>
     </Suspense>
@@ -149,6 +153,8 @@ function BargainsWorkspacePages() {
         <Route path="roles"     element={<BRoles />} />
         <Route path="departments" element={<BDepartments />} />
         <Route path="message-logs" element={<MessageLogs />} />
+        <Route path="kudos" element={<Kudos />} />
+        <Route path="promotions" element={<Promotions />} />
         <Route path="join"      element={<JoinWorkspace />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>

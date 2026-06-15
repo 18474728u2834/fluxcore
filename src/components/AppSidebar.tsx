@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck, MessageSquare, Sparkles, Trophy } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck, MessageSquare, Sparkles, Trophy, Heart, ArrowUp } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { NavLink } from "@/components/NavLink";
@@ -55,6 +55,8 @@ export function AppSidebar() {
     { title: "Sessions", url: `${base}/sessions`, icon: CalendarDays, show: true },
     { title: "Leaderboard", url: `${base}/leaderboard`, icon: Trophy, show: leaderboardOn },
     { title: "Wall", url: `${base}/wall`, icon: Megaphone, show: true },
+    { title: "Kudos", url: `${base}/kudos`, icon: Heart, show: true },
+    { title: "Promotions", url: `${base}/promotions`, icon: ArrowUp, show: true },
     { title: "Documents", url: `${base}/documents`, icon: FileText, show: true },
     { title: "LOA", url: `${base}/loa`, icon: CalendarOff, show: true },
     { title: "Staff", url: `${base}/staff`, icon: UserX, show: isOwner || hasPermission("manage_members") },
