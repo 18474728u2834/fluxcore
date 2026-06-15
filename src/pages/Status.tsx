@@ -84,7 +84,7 @@ export default function Status() {
         else if (dayChecks.length) {
           const downs = dayChecks.filter(k => k.status !== "operational").length;
           if (downs > 0) status = downs / dayChecks.length > 0.3 ? "partial_outage" : "degraded_performance";
-        } else if (d > 0) status = "no_data";
+        }
         if (status === "operational") upCount++;
         days.push({ date: dayStart.toISOString(), status });
       }
