@@ -18,6 +18,7 @@ interface WorkspaceData {
   premium: boolean;
   premium_until: string | null;
   tutorial_completed: boolean;
+  nexus_hero_image_url: string | null;
 }
 
 interface WorkspaceContextType {
