@@ -18,6 +18,7 @@ interface WorkspaceData {
   premium: boolean;
   premium_until: string | null;
   tutorial_completed: boolean;
+  nexus_hero_image_url: string | null;
 }
 
 interface WorkspaceContextType {
@@ -83,6 +84,7 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
         premium: isPremiumActive,
         premium_until: wsData.premium_until ?? null,
         tutorial_completed: !!wsData.tutorial_completed,
+        nexus_hero_image_url: wsData.nexus_hero_image_url ?? null,
       });
       const ownerCheck = wsData.owner_id === user.id;
       setIsOwner(ownerCheck);
