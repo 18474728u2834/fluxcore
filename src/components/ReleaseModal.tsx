@@ -1,21 +1,19 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Shield, Search, Building2, Activity, MessageSquare, Megaphone, BarChart3, Code, ArrowUpRight } from "lucide-react";
+import { Sparkles, Heart, Star, TrendingUp, BarChart3, CheckCircle2, ArrowUpRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const CURRENT_VERSION = "4.5.0";
+const CURRENT_VERSION = "4.6.0";
 
 const features = [
-  { icon: BarChart3, title: "Public status page at status.fluxcore.works", desc: "BetterStack-style components, 90-day uptime bars, incident history and scheduled maintenance — everyone can see the state of Fluxcore at a glance." },
-  { icon: Megaphone, title: "Site-wide banners", desc: "Staff can post banners on the marketing site and workspace selector for announcements, incidents and links — dismissible per user." },
-  { icon: Building2, title: "Departments as sub-workspaces", desc: "Spin up HR, Operations, or any team with its own announcements, documents and sessions — scoped by department membership." },
-  { icon: Search, title: "Global search in Nexus UI", desc: "⌘K (or Ctrl+K) jumps to any member, session, document or page across the workspace, with grouped results and keyboard nav." },
-  { icon: Activity, title: "In-game ranking script", desc: "A second Lua endpoint that checks the requester's Fluxcore permissions before ranking. No silent kicks — declined requests just get told no." },
-  { icon: Code, title: "One-script activity tracker", desc: "The server script now installs the input beacon for you. Two steps instead of three — one paste, you're done." },
-  { icon: Shield, title: "Per-admin status permission", desc: "New 'manage_status' staff permission so the right people can post incidents and banners without owner-admin keys." },
-  { icon: ArrowUpRight, title: "Polish & fixes", desc: "Faster workspace switching, sharper Nexus shell, and a heap of small QoL tweaks across the dashboard." },
+  { icon: Heart, title: "Kudos Wall", desc: "Members can post shoutouts to teammates — a live feed of recognition that flows in real-time across the workspace. Find it in the sidebar under Kudos." },
+  { icon: Star, title: "Staff Spotlight", desc: "Each week we automatically highlight the member who received the most kudos in the last 7 days. No nominations, no admin work — just earned recognition." },
+  { icon: TrendingUp, title: "Promotion Nominations", desc: "Any member can nominate a teammate for promotion with a reason. Leads and owners get a queue to approve or decline — no more guessing who's ready to move up." },
+  { icon: CheckCircle2, title: "Smarter Status Page", desc: "Days without incidents now go green automatically on status.fluxcore.works. Only the days that actually had outages stay flagged." },
+  { icon: BarChart3, title: "Available in both UIs", desc: "Kudos and Promotions are wired into the Classic sidebar and the Nexus shell — pick your UI, the features are there." },
+  { icon: ArrowUpRight, title: "Polish & fixes", desc: "Tighter glassmorphism, faster page loads, and a sweep of small QoL fixes across the dashboard." },
 ];
 
 export function ReleaseModal() {
