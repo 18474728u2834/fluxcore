@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
   Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone, Sparkles,
-  Wrench, Building2, Heart, ArrowUp,
+  Building2, Heart, ArrowUp,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
@@ -262,10 +262,7 @@ export function BargainsShell({ children }: ShellProps) {
 
   // When in a department, page paths sit under /d/<slug>/
   const navBase = activeDeptSlug ? `${base}/d/${activeDeptSlug}` : base;
-  const navItems = [
-    ...NAV,
-    ...(canManageSettings ? [{ to: "setup-tracking", icon: Wrench, label: "Setup Tracking" }] : []),
-  ];
+  const navItems = NAV;
 
   return (
     <div className="min-h-screen w-full flex font-bargains" style={{ background: "#0f0f10", color: "#fafafa" }}>
