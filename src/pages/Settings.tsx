@@ -3,19 +3,45 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3, MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target, Image as ImageIcon, Upload, X } from "lucide-react";
+import {
+  Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3,
+  MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target,
+  Image as ImageIcon, Upload, X, Sliders, Plug, Code, CalendarDays,
+  ExternalLink, ChevronRight,
+} from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { InviteSection } from "@/components/InviteSection";
 import SubdomainCard from "@/components/SubdomainCard";
 import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
+import { Link, useSearchParams } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
+type SectionId = "general" | "integrations" | "tracking" | "sessions";
+
+const SECTIONS: { id: SectionId; label: string; icon: any; desc: string }[] = [
+  { id: "general",      label: "General & Appearance", icon: Sliders, desc: "Workspace identity, branding, dashboard look" },
+  { id: "integrations", label: "Integrations",          icon: Plug,    desc: "Discord webhooks, Roblox Open Cloud" },
+  { id: "tracking",     label: "Tracking & Scripts",    icon: Code,    desc: "Activity tracker, API key, in-game features" },
+  { id: "sessions",     label: "Sessions & Quotas",     icon: CalendarDays, desc: "Role labels, leaderboards, quota logging" },
+];
 
 export default function SettingsPage() {
   const { workspace, isOwner, workspaceId, loading } = useWorkspace();
+  const [params, setParams] = useSearchParams();
+  const initial = (params.get("section") as SectionId) || "general";
+  const [active, setActive] = useState<SectionId>(SECTIONS.find(s => s.id === initial) ? initial : "general");
+
+  const setSection = (id: SectionId) => {
+    setActive(id);
+    const next = new URLSearchParams(params);
+    next.set("section", id);
+    setParams(next, { replace: true });
+  };
+
   const [apiKey, setApiKey] = useState("");
   const [copied, setCopied] = useState(false);
   const [resetting, setResetting] = useState(false);
@@ -43,7 +69,6 @@ export default function SettingsPage() {
   const [uploadingHero, setUploadingHero] = useState(false);
   const heroFileRef = useRef<HTMLInputElement>(null);
 
-
   useEffect(() => {
     if (workspace) {
       setName(workspace.name);
@@ -52,8 +77,6 @@ export default function SettingsPage() {
         const { data } = await supabase.from("workspaces")
           .select("primary_color, text_color, background_color, show_grid, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, nexus_hero_image_url")
           .eq("id", workspaceId).single();
-        // Sensitive credentials are fetched via an owner-only RPC so members
-        // can never read them through the Data API.
         const { data: secretsRows } = await supabase
           .rpc("get_workspace_secrets", { _workspace_id: workspaceId });
         const secrets: any = Array.isArray(secretsRows) ? secretsRows[0] : secretsRows;
@@ -161,7 +184,6 @@ export default function SettingsPage() {
     toast.success("Reverted to default blue background");
   };
 
-
   if (!loading && !isOwner) {
     return (
       <DashboardLayout title="Settings">
@@ -176,347 +198,436 @@ export default function SettingsPage() {
     );
   }
 
+  const SectionHeader = ({ title, sub }: { title: string; sub?: string }) => (
+    <div className="mb-4">
+      <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+      {sub && <p className="text-sm text-muted-foreground mt-0.5">{sub}</p>}
+    </div>
+  );
+
   return (
     <DashboardLayout title="Settings">
-      <div className="space-y-6 max-w-2xl">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Workspace configuration</p>
-        </div>
-
-        <InviteSection />
-
-        <SubdomainCard workspaceId={workspaceId} workspaceName={workspace?.name || "My Workspace"} />
-
-
-        {/* Workspace Settings */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <h2 className="font-semibold text-foreground text-sm">Workspace Settings</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">Workspace Name</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} className="bg-muted border-border" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Roblox Group ID</Label>
-              <Input value={groupId} onChange={(e) => setGroupId(e.target.value)} placeholder="e.g. 12345678" className="bg-muted border-border" />
-            </div>
+      <div className="flex flex-col lg:flex-row gap-6 items-start">
+        {/* Left sidebar nav */}
+        <aside className="w-full lg:w-64 lg:sticky lg:top-4 shrink-0">
+          <div className="glass rounded-xl p-2">
+            <nav className="space-y-0.5">
+              {SECTIONS.map((s) => {
+                const Icon = s.icon;
+                const isActive = active === s.id;
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => setSection(s.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors",
+                      isActive ? "bg-primary/15 text-foreground" : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    )}
+                  >
+                    <Icon className={cn("w-4 h-4 shrink-0", isActive && "text-primary")} />
+                    <span className="text-sm font-medium">{s.label}</span>
+                  </button>
+                );
+              })}
+            </nav>
           </div>
-        </div>
-
-        {/* Fluxcore API Key */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Key className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Fluxcore API Key</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">Used by the Lua tracker module.</p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all">{apiKey}</code>
-            <Button variant="secondary" size="sm" onClick={copyKey}><Copy className="w-3 h-3 mr-1" /> {copied ? "Copied" : "Copy"}</Button>
-            <Button variant="secondary" size="sm" onClick={resetKey} disabled={resetting}>
-              {resetting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />} Reset
-            </Button>
-          </div>
-        </div>
-
-        {/* Roblox Open Cloud API Key */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Globe className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Roblox Open Cloud API Key</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Required for promotions/demotions and importing group roles. Get it from{" "}
-            <a href="https://create.roblox.com/credentials" target="_blank" rel="noreferrer" className="text-primary hover:underline">
-              Roblox Creator Hub
-            </a>. Ensure the key has <strong>group:read</strong> and <strong>group:write</strong> scopes.
+          <p className="text-[11px] text-muted-foreground mt-3 px-3">
+            Changes apply when you click <span className="text-foreground font-medium">Save All Changes</span>.
           </p>
-          <Input type="password" placeholder="Enter your Roblox Open Cloud API key" value={robloxApiKey}
-            onChange={(e) => setRobloxApiKey(e.target.value)} className="bg-muted border-border font-mono text-xs" />
-        </div>
+        </aside>
 
-        {/* Discord Integration */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Bot className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Discord Integration</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Add a Discord webhook URL to receive announcements when sessions are scheduled and reminders 5 minutes before they start.
-            Create a webhook in: Server Settings → Integrations → Webhooks → New Webhook.
-          </p>
-          <div className="space-y-2">
-            <Label className="text-xs">Webhook URL</Label>
-            <Input placeholder="https://discord.com/api/webhooks/..." value={discordWebhook}
-              onChange={(e) => setDiscordWebhook(e.target.value)} className="bg-muted border-border font-mono text-xs" />
-          </div>
-          <div className="space-y-2">
-            <Label className="text-xs">Game Link <span className="text-muted-foreground">(included in webhook messages)</span></Label>
-            <Input placeholder="https://www.roblox.com/games/..." value={gameUrl}
-              onChange={(e) => setGameUrl(e.target.value)} className="bg-muted border-border font-mono text-xs" />
-          </div>
-          {discordWebhook && (
-            <Button variant="secondary" size="sm" onClick={testDiscord} disabled={testingDiscord}>
-              {testingDiscord && <Loader2 className="w-3 h-3 mr-1 animate-spin" />} Test Webhook
-            </Button>
-          )}
-        </div>
+        {/* Right pane */}
+        <div className="flex-1 min-w-0 space-y-6 max-w-2xl w-full">
+          {active === "general" && (
+            <>
+              <SectionHeader title="General & Appearance" sub="Workspace identity, branding, and dashboard look." />
 
-        {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}
+              <InviteSection />
+              <SubdomainCard workspaceId={workspaceId} workspaceName={workspace?.name || "My Workspace"} />
 
-        {/* Quota Enforcement */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Target className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Quota Logging</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            How Fluxcore reports staff who don't meet their quota for the current period. Use the "Run quota check" button on the Quotas page to apply.
-          </p>
-          <RadioGroup value={quotaLogMode} onValueChange={(v) => setQuotaLogMode(v as any)} className="space-y-2">
-            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
-              <RadioGroupItem value="warning" className="mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-foreground">Warning on profile</div>
-                <div className="text-xs text-muted-foreground">Adds a warning log to each member's profile.</div>
-              </div>
-            </label>
-            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
-              <RadioGroupItem value="webhook" className="mt-0.5" />
-              <div className="w-full">
-                <div className="text-sm font-medium text-foreground">Post to Discord channel</div>
-                <div className="text-xs text-muted-foreground">Sends a report listing missed quotas to a webhook.</div>
-                {quotaLogMode === "webhook" && (
-                  <div className="pt-2 space-y-1">
-                    <Label className="text-xs">Webhook URL</Label>
-                    <Input value={quotaLogWebhook} onChange={(e) => setQuotaLogWebhook(e.target.value)}
-                      placeholder="https://discord.com/api/webhooks/..."
-                      className="bg-muted border-border font-mono text-xs h-8" />
+              <div className="glass rounded-xl p-5 space-y-4">
+                <h2 className="font-semibold text-foreground text-sm">Workspace</h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Workspace Name</Label>
+                    <Input value={name} onChange={(e) => setName(e.target.value)} className="bg-muted border-border" />
                   </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Roblox Group ID</Label>
+                    <Input value={groupId} onChange={(e) => setGroupId(e.target.value)} placeholder="e.g. 12345678" className="bg-muted border-border" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Branding & Customization</h2>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Primary Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+                      <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Text Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+                      <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Background Color</Label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
+                      <Input value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+                  <div className="flex items-center gap-2">
+                    <Grid3X3 className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Grid Background</p>
+                      <p className="text-xs text-muted-foreground">Show grid pattern on dashboard</p>
+                    </div>
+                  </div>
+                  <Switch checked={showGrid} onCheckedChange={setShowGrid} />
+                </div>
+
+                <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor }}>
+                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: primaryColor, color: textColor }}>Aa</div>
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: textColor }}>Preview</p>
+                    <p className="text-xs" style={{ color: textColor, opacity: 0.6 }}>Your brand colors</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <ImageIcon className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Nexus Dashboard Banner</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Replace the default blue gradient on the Nexus dashboard with your own image. Leave empty to use the default gradient.
+                </p>
+                <div
+                  className="rounded-md overflow-hidden relative h-32 flex items-end p-4 border border-border"
+                  style={nexusHeroUrl
+                    ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${nexusHeroUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
+                    : { background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" }}
+                >
+                  <span className="text-white font-bold drop-shadow text-base">Preview banner</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <input
+                    ref={heroFileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
+                  />
+                  <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} onClick={() => heroFileRef.current?.click()}>
+                    {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
+                    {nexusHeroUrl ? "Replace image" : "Upload image"}
+                  </Button>
+                  {nexusHeroUrl && (
+                    <Button type="button" variant="ghost" size="sm" onClick={clearHero}>
+                      <X className="w-3 h-3 mr-1" /> Use default gradient
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {active === "integrations" && (
+            <>
+              <SectionHeader title="Integrations" sub="Connect Fluxcore to Discord and Roblox Open Cloud." />
+
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Roblox Open Cloud API Key</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Required for promotions/demotions and importing group roles. Get it from{" "}
+                  <a href="https://create.roblox.com/credentials" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    Roblox Creator Hub
+                  </a>. Ensure the key has <strong>group:read</strong> and <strong>group:write</strong> scopes.
+                </p>
+                <Input type="password" placeholder="Enter your Roblox Open Cloud API key" value={robloxApiKey}
+                  onChange={(e) => setRobloxApiKey(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+              </div>
+
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Discord Integration</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Add a Discord webhook URL to receive announcements when sessions are scheduled and reminders 5 minutes before they start.
+                  Create a webhook in: Server Settings → Integrations → Webhooks → New Webhook.
+                </p>
+                <div className="space-y-2">
+                  <Label className="text-xs">Webhook URL</Label>
+                  <Input placeholder="https://discord.com/api/webhooks/..." value={discordWebhook}
+                    onChange={(e) => setDiscordWebhook(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs">Game Link <span className="text-muted-foreground">(included in webhook messages)</span></Label>
+                  <Input placeholder="https://www.roblox.com/games/..." value={gameUrl}
+                    onChange={(e) => setGameUrl(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+                </div>
+                {discordWebhook && (
+                  <Button variant="secondary" size="sm" onClick={testDiscord} disabled={testingDiscord}>
+                    {testingDiscord && <Loader2 className="w-3 h-3 mr-1 animate-spin" />} Test Webhook
+                  </Button>
                 )}
               </div>
-            </label>
-            <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
-              <RadioGroupItem value="none" className="mt-0.5" />
-              <div>
-                <div className="text-sm font-medium text-foreground">Don't log</div>
-                <div className="text-xs text-muted-foreground">Track quotas without automatic action.</div>
+
+              {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}
+            </>
+          )}
+
+          {active === "tracking" && (
+            <>
+              <SectionHeader title="Tracking & Scripts" sub="The Lua activity tracker, in-game features, and the API key it uses." />
+
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Fluxcore API Key</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">Used by the Lua tracker module.</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all">{apiKey}</code>
+                  <Button variant="secondary" size="sm" onClick={copyKey}><Copy className="w-3 h-3 mr-1" /> {copied ? "Copied" : "Copy"}</Button>
+                  <Button variant="secondary" size="sm" onClick={resetKey} disabled={resetting}>
+                    {resetting ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />} Reset
+                  </Button>
+                </div>
               </div>
-            </label>
-          </RadioGroup>
-        </div>
 
-        {/* Session Role Labels */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Bot className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Session Role Labels</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Customize what the three session roles are called in your workspace (e.g. "Trainer" → "Instructor").
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-2">
-              <Label className="text-xs">Host label</Label>
-              <Input value={hostLabel} onChange={(e) => setHostLabel(e.target.value)} className="bg-muted border-border" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Co-Host label</Label>
-              <Input value={coHostLabel} onChange={(e) => setCoHostLabel(e.target.value)} className="bg-muted border-border" />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Trainer label</Label>
-              <Input value={trainerLabel} onChange={(e) => setTrainerLabel(e.target.value)} className="bg-muted border-border" />
-            </div>
-          </div>
-        </div>
-
-        {/* Leaderboard */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Trophy className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Leaderboard</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Pick which leaderboards appear in the sidebar for everyone in this workspace. Uncheck all to hide the page entirely.
-          </p>
-          <div className="space-y-2">
-            {[
-              { key: "time_in_game",    label: "Time In-Game",    desc: "Total minutes tracked by the activity logger." },
-              { key: "sessions_hosted", label: "Sessions Hosted", desc: "Counts scheduled sessions hosted." },
-              { key: "messages_sent",   label: "Messages Sent",   desc: "In-game chat messages logged per session." },
-              { key: "quotas_met",      label: "Quotas Met",      desc: "How many active quotas each member is meeting." },
-            ].map((opt) => {
-              const checked = leaderboardCategories.includes(opt.key);
-              return (
-                <label key={opt.key} className="flex items-start gap-3 p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/70 transition-colors">
-                  <Switch
-                    checked={checked}
-                    onCheckedChange={(v) => {
-                      setLeaderboardCategories((prev) =>
-                        v ? [...prev, opt.key] : prev.filter((k) => k !== opt.key)
-                      );
-                    }}
-                  />
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{opt.label}</p>
-                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+              <Link
+                to="../setup-tracking"
+                relative="path"
+                className="glass rounded-xl p-5 flex items-center justify-between hover:bg-muted/40 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                    <Code className="w-4 h-4 text-primary" />
                   </div>
-                </label>
-              );
-            })}
-          </div>
-        </div>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Open the full setup guide</p>
+                    <p className="text-xs text-muted-foreground">Lua install steps, copy-paste script, and live tracker status.</p>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+              </Link>
 
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">In-Game Features</h2>
+                </div>
 
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Message Logger</p>
+                      <p className="text-xs text-muted-foreground">Log what messages staff send in-game</p>
+                    </div>
+                  </div>
+                  <Switch checked={messageLogger} onCheckedChange={setMessageLogger} />
+                </div>
 
-        {/* Feature Toggles */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Feature Toggles</h2>
-          </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Auto-Rank from Group</p>
+                      <p className="text-xs text-muted-foreground">Automatically assign workspace roles based on Roblox group rank. Members don't need invite if enabled.</p>
+                    </div>
+                  </div>
+                  <Switch checked={autoRank} onCheckedChange={setAutoRank} />
+                </div>
 
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Message Logger</p>
-                <p className="text-xs text-muted-foreground">Log what messages staff send in-game</p>
+                <div className="p-3 rounded-lg bg-muted space-y-2">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-muted-foreground" />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">AFK Confirmation Timer</p>
+                      <p className="text-xs text-muted-foreground">
+                        After a staff member is idle for this many seconds, an in-game button appears: "Click here to remove AFK timer".
+                        If they don't click within 30 seconds, their session time is discarded. Set to <strong>0</strong> to disable.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Input
+                      type="number"
+                      min={0}
+                      step={30}
+                      value={afkConfirmSeconds}
+                      onChange={(e) => setAfkConfirmSeconds(parseInt(e.target.value) || 0)}
+                      className="bg-background border-border w-32"
+                    />
+                    <span className="text-xs text-muted-foreground">seconds (e.g. 300 = 5 min)</span>
+                  </div>
+                </div>
               </div>
-            </div>
-            <Switch checked={messageLogger} onCheckedChange={setMessageLogger} />
-          </div>
+            </>
+          )}
 
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Auto-Rank from Group</p>
-                <p className="text-xs text-muted-foreground">Automatically assign workspace roles based on Roblox group rank. Members don't need invite if enabled.</p>
-              </div>
-            </div>
-            <Switch checked={autoRank} onCheckedChange={setAutoRank} />
-          </div>
+          {active === "sessions" && (
+            <>
+              <SectionHeader title="Sessions & Quotas" sub="Customize session role names, leaderboards, and quota logging." />
 
-          <div className="p-3 rounded-lg bg-muted space-y-2">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-muted-foreground" />
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">AFK Confirmation Timer</p>
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Bot className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Session Role Labels</h2>
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  After a staff member is idle for this many seconds, an in-game button appears: "Click here to remove AFK timer".
-                  If they don't click within 30 seconds, their session time is discarded. Set to <strong>0</strong> to disable.
+                  Customize what the three session roles are called in your workspace (e.g. "Trainer" → "Instructor").
                 </p>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Host label</Label>
+                    <Input value={hostLabel} onChange={(e) => setHostLabel(e.target.value)} className="bg-muted border-border" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Co-Host label</Label>
+                    <Input value={coHostLabel} onChange={(e) => setCoHostLabel(e.target.value)} className="bg-muted border-border" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Trainer label</Label>
+                    <Input value={trainerLabel} onChange={(e) => setTrainerLabel(e.target.value)} className="bg-muted border-border" />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2 pt-1">
-              <Input
-                type="number"
-                min={0}
-                step={30}
-                value={afkConfirmSeconds}
-                onChange={(e) => setAfkConfirmSeconds(parseInt(e.target.value) || 0)}
-                className="bg-background border-border w-32"
-              />
-              <span className="text-xs text-muted-foreground">seconds (e.g. 300 = 5 min)</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Nexus Hero Image */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Nexus Dashboard Banner</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Replace the default blue gradient on the Nexus dashboard with your own image. Leave empty to use the default gradient.
-          </p>
-          <div
-            className="rounded-md overflow-hidden relative h-32 flex items-end p-4 border border-border"
-            style={nexusHeroUrl
-              ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${nexusHeroUrl})`, backgroundSize: "cover", backgroundPosition: "center" }
-              : { background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" }}
-          >
-            <span className="text-white font-bold drop-shadow text-base">Preview banner</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              ref={heroFileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadHero(f); e.currentTarget.value = ""; }}
-            />
-            <Button type="button" variant="secondary" size="sm" disabled={uploadingHero} onClick={() => heroFileRef.current?.click()}>
-              {uploadingHero ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Upload className="w-3 h-3 mr-1" />}
-              {nexusHeroUrl ? "Replace image" : "Upload image"}
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Leaderboard</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Pick which leaderboards appear in the sidebar for everyone in this workspace. Uncheck all to hide the page entirely.
+                </p>
+                <div className="space-y-2">
+                  {[
+                    { key: "time_in_game",    label: "Time In-Game",    desc: "Total minutes tracked by the activity logger." },
+                    { key: "sessions_hosted", label: "Sessions Hosted", desc: "Counts scheduled sessions hosted." },
+                    { key: "messages_sent",   label: "Messages Sent",   desc: "In-game chat messages logged per session." },
+                    { key: "quotas_met",      label: "Quotas Met",      desc: "How many active quotas each member is meeting." },
+                  ].map((opt) => {
+                    const checked = leaderboardCategories.includes(opt.key);
+                    return (
+                      <label key={opt.key} className="flex items-start gap-3 p-3 rounded-lg bg-muted cursor-pointer hover:bg-muted/70 transition-colors">
+                        <Switch
+                          checked={checked}
+                          onCheckedChange={(v) => {
+                            setLeaderboardCategories((prev) =>
+                              v ? [...prev, opt.key] : prev.filter((k) => k !== opt.key)
+                            );
+                          }}
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{opt.label}</p>
+                          <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Target className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Quota Logging</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  How Fluxcore reports staff who don't meet their quota for the current period. Use the "Run quota check" button on the Quotas page to apply.
+                </p>
+                <RadioGroup value={quotaLogMode} onValueChange={(v) => setQuotaLogMode(v as any)} className="space-y-2">
+                  <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+                    <RadioGroupItem value="warning" className="mt-0.5" />
+                    <div>
+                      <div className="text-sm font-medium text-foreground">Warning on profile</div>
+                      <div className="text-xs text-muted-foreground">Adds a warning log to each member's profile.</div>
+                    </div>
+                  </label>
+                  <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+                    <RadioGroupItem value="webhook" className="mt-0.5" />
+                    <div className="w-full">
+                      <div className="text-sm font-medium text-foreground">Post to Discord channel</div>
+                      <div className="text-xs text-muted-foreground">Sends a report listing missed quotas to a webhook.</div>
+                      {quotaLogMode === "webhook" && (
+                        <div className="pt-2 space-y-1">
+                          <Label className="text-xs">Webhook URL</Label>
+                          <Input value={quotaLogWebhook} onChange={(e) => setQuotaLogWebhook(e.target.value)}
+                            placeholder="https://discord.com/api/webhooks/..."
+                            className="bg-muted border-border font-mono text-xs h-8" />
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                  <label className="flex gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-muted/40">
+                    <RadioGroupItem value="none" className="mt-0.5" />
+                    <div>
+                      <div className="text-sm font-medium text-foreground">Don't log</div>
+                      <div className="text-xs text-muted-foreground">Track quotas without automatic action.</div>
+                    </div>
+                  </label>
+                </RadioGroup>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Link to="../quotas" relative="path" className="glass rounded-xl p-4 flex items-center justify-between hover:bg-muted/40 transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                      <Target className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Manage Quotas</p>
+                      <p className="text-xs text-muted-foreground">Create and edit quota rules</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                </Link>
+                <Link to="../roles" relative="path" className="glass rounded-xl p-4 flex items-center justify-between hover:bg-muted/40 transition-colors group">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                      <ShieldCheck className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Manage Roles</p>
+                      <p className="text-xs text-muted-foreground">Custom roles and permissions</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                </Link>
+              </div>
+            </>
+          )}
+
+          <div className="sticky bottom-4 flex justify-end">
+            <Button variant="hero" size="sm" onClick={saveSettings} disabled={saving} className="shadow-lg">
+              {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+              Save All Changes
             </Button>
-            {nexusHeroUrl && (
-              <Button type="button" variant="ghost" size="sm" onClick={clearHero}>
-                <X className="w-3 h-3 mr-1" /> Use default gradient
-              </Button>
-            )}
           </div>
         </div>
-
-
-        {/* Branding */}
-        <div className="glass rounded-xl p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <Palette className="w-4 h-4 text-primary" />
-            <h2 className="font-semibold text-foreground text-sm">Branding & Customization</h2>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs">Primary Color</Label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Text Color</Label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-xs">Background Color</Label>
-              <div className="flex items-center gap-2">
-                <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                <Input value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-            <div className="flex items-center gap-2">
-              <Grid3X3 className="w-4 h-4 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium text-foreground">Grid Background</p>
-                <p className="text-xs text-muted-foreground">Show grid pattern on dashboard</p>
-              </div>
-            </div>
-            <Switch checked={showGrid} onCheckedChange={setShowGrid} />
-          </div>
-
-          <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor }}>
-            <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: primaryColor, color: textColor }}>Aa</div>
-            <div>
-              <p className="text-sm font-medium" style={{ color: textColor }}>Preview</p>
-              <p className="text-xs" style={{ color: textColor, opacity: 0.6 }}>Your brand colors</p>
-            </div>
-          </div>
-        </div>
-
-        <Button variant="hero" size="sm" onClick={saveSettings} disabled={saving}>
-          {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
-          Save All Changes
-        </Button>
       </div>
     </DashboardLayout>
   );
