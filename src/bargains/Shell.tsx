@@ -262,10 +262,7 @@ export function BargainsShell({ children }: ShellProps) {
 
   // When in a department, page paths sit under /d/<slug>/
   const navBase = activeDeptSlug ? `${base}/d/${activeDeptSlug}` : base;
-  const navItems = [
-    ...NAV,
-    ...(canManageSettings ? [{ to: "setup-tracking", icon: Wrench, label: "Setup Tracking" }] : []),
-  ];
+  const navItems = NAV;
 
   return (
     <div className="min-h-screen w-full flex font-bargains" style={{ background: "#0f0f10", color: "#fafafa" }}>
