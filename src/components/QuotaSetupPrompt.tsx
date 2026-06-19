@@ -44,10 +44,16 @@ export function QuotaSetupPrompt() {
       .from("workspaces")
       .update({
         quota_log_mode: mode,
-        quota_log_webhook_url: mode === "webhook" ? webhook.trim() : null,
         quota_log_configured: true,
       } as any)
       .eq("id", workspaceId);
+    if (!error) {
+      const { error: secErr } = await supabase.rpc("set_workspace_secrets", {
+        _workspace_id: workspaceId,
+        _values: { quota_log_webhook_url: mode === "webhook" ? webhook.trim() : null } as any,
+      });
+      if (secErr) { setSaving(false); toast.error("Failed to save: " + secErr.message); return; }
+    }
     setSaving(false);
     if (error) {
       toast.error("Failed to save: " + error.message);

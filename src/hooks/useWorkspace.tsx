@@ -7,7 +7,7 @@ interface WorkspaceData {
   id: string;
   name: string;
   owner_id: string;
-  api_key: string;
+  
   roblox_group_id: string | null;
   gamepass_id: string | null;
   primary_color: string | null;
@@ -73,7 +73,7 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
         id: wsData.id,
         name: wsData.name,
         owner_id: wsData.owner_id,
-        api_key: "",
+        
         roblox_group_id: wsData.roblox_group_id,
         gamepass_id: wsData.gamepass_id,
         primary_color: wsData.primary_color,
