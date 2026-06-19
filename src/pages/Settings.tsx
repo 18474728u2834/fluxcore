@@ -111,7 +111,7 @@ export default function SettingsPage() {
   const resetKey = async () => {
     setResetting(true);
     const newKey = "flx_" + Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, "0")).join("");
-    const { error } = await supabase.from("workspaces").update({ api_key: newKey }).eq("id", workspaceId);
+    const { error } = await supabase.rpc("set_workspace_secrets", { _workspace_id: workspaceId, _values: { api_key: newKey } as any });
     if (error) toast.error("Failed to reset API key");
     else { setApiKey(newKey); toast.success("API key reset!"); }
     setResetting(false);
@@ -132,12 +132,10 @@ export default function SettingsPage() {
     const { error } = await supabase.from("workspaces").update({
       name: name.trim(),
       roblox_group_id: groupId.trim() || null,
-      roblox_api_key: robloxApiKey.trim() || null,
       primary_color: primaryColor,
       text_color: textColor,
       background_color: backgroundColor,
       show_grid: showGrid,
-      discord_webhook_url: discordWebhook.trim() || null,
       message_logger_enabled: messageLogger,
       auto_rank_enabled: autoRank,
       afk_confirm_seconds: Math.max(0, Math.floor(Number(afkConfirmSeconds) || 0)),
@@ -149,10 +147,22 @@ export default function SettingsPage() {
       },
       leaderboard_categories: leaderboardCategories,
       quota_log_mode: quotaLogMode,
-      quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
       quota_log_configured: true,
       nexus_hero_image_url: nexusHeroUrl.trim() || null,
     } as any).eq("id", workspaceId);
+
+    if (!error) {
+      // Sensitive credentials are stored encrypted via a security-definer RPC.
+      const { error: secErr } = await supabase.rpc("set_workspace_secrets", {
+        _workspace_id: workspaceId,
+        _values: {
+          roblox_api_key: robloxApiKey.trim() || null,
+          discord_webhook_url: discordWebhook.trim() || null,
+          quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
+        } as any,
+      });
+      if (secErr) { toast.error("Failed to save credentials: " + secErr.message); setSaving(false); return; }
+    }
 
     if (error) toast.error("Failed to save: " + error.message);
     else toast.success("Settings saved!");
