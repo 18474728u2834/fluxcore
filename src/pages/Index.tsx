@@ -176,6 +176,15 @@ export default function Index() {
           <p className="text-[12px] text-muted-foreground">
             Free forever for the basics · No credit card · Sign in with Roblox
           </p>
+
+          <button
+            onClick={() => navigate("/security")}
+            className="mt-5 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border/40 bg-card/40 backdrop-blur-sm text-[12px] text-muted-foreground hover:text-foreground hover:border-border/70 transition-colors"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            Encrypted in transit &amp; at rest · RLS-isolated
+            <ArrowRight className="w-3 h-3 opacity-60" />
+          </button>
         </div>
 
         {/* Real-UI dashboard mockup — mirrors Nexus (BargainsShell) */}
