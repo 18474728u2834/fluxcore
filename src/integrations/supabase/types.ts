@@ -2112,13 +2112,13 @@ export type Database = {
       workspaces: {
         Row: {
           afk_confirm_seconds: number | null
-          api_key: string
+          api_key_enc: string | null
           auto_rank_enabled: boolean | null
           background_color: string | null
           closed_at: string | null
           closed_reason: string | null
           created_at: string
-          discord_webhook_url: string | null
+          discord_webhook_url_enc: string | null
           game_url: string | null
           gamepass_id: string | null
           id: string
@@ -2133,9 +2133,9 @@ export type Database = {
           primary_color: string | null
           quota_log_configured: boolean
           quota_log_mode: string
-          quota_log_webhook_url: string | null
+          quota_log_webhook_url_enc: string | null
           release_version: string | null
-          roblox_api_key: string | null
+          roblox_api_key_enc: string | null
           roblox_group_id: string | null
           session_role_labels: Json
           show_grid: boolean | null
@@ -2147,13 +2147,13 @@ export type Database = {
         }
         Insert: {
           afk_confirm_seconds?: number | null
-          api_key?: string
+          api_key_enc?: string | null
           auto_rank_enabled?: boolean | null
           background_color?: string | null
           closed_at?: string | null
           closed_reason?: string | null
           created_at?: string
-          discord_webhook_url?: string | null
+          discord_webhook_url_enc?: string | null
           game_url?: string | null
           gamepass_id?: string | null
           id?: string
@@ -2168,9 +2168,9 @@ export type Database = {
           primary_color?: string | null
           quota_log_configured?: boolean
           quota_log_mode?: string
-          quota_log_webhook_url?: string | null
+          quota_log_webhook_url_enc?: string | null
           release_version?: string | null
-          roblox_api_key?: string | null
+          roblox_api_key_enc?: string | null
           roblox_group_id?: string | null
           session_role_labels?: Json
           show_grid?: boolean | null
@@ -2182,13 +2182,13 @@ export type Database = {
         }
         Update: {
           afk_confirm_seconds?: number | null
-          api_key?: string
+          api_key_enc?: string | null
           auto_rank_enabled?: boolean | null
           background_color?: string | null
           closed_at?: string | null
           closed_reason?: string | null
           created_at?: string
-          discord_webhook_url?: string | null
+          discord_webhook_url_enc?: string | null
           game_url?: string | null
           gamepass_id?: string | null
           id?: string
@@ -2203,9 +2203,9 @@ export type Database = {
           primary_color?: string | null
           quota_log_configured?: boolean
           quota_log_mode?: string
-          quota_log_webhook_url?: string | null
+          quota_log_webhook_url_enc?: string | null
           release_version?: string | null
-          roblox_api_key?: string | null
+          roblox_api_key_enc?: string | null
           roblox_group_id?: string | null
           session_role_labels?: Json
           show_grid?: boolean | null
@@ -2372,6 +2372,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      set_workspace_secrets: {
+        Args: { _values: Json; _workspace_id: string }
+        Returns: undefined
       }
       sweep_dormant_portals: { Args: never; Returns: number }
     }
