@@ -387,12 +387,20 @@ serve(async (req) => {
       const workspaceIds = [...new Set(((sessions || []) as SessionRow[]).map((s) => s.workspace_id))];
       if (!workspaceIds.length) return json({ success: true, checked: 0, sent: 0, skipped: 0, failed: 0 });
 
-      const { data: workspaces } = await supabase
+      const { data: workspacesBase } = await supabase
         .from("workspaces")
-        .select("id, name, discord_webhook_url, game_url, invite_code")
-        .in("id", workspaceIds)
-        .not("discord_webhook_url", "is", null);
-      const workspaceMap = new Map((workspaces || []).map((w: WorkspaceRow) => [w.id, w]));
+        .select("id, name, game_url, invite_code")
+        .in("id", workspaceIds);
+      // Resolve each workspace's encrypted webhook via the internal helper
+      const workspaces: WorkspaceRow[] = [];
+      for (const w of (workspacesBase || [])) {
+        const { data: s } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: w.id });
+        const sec = (Array.isArray(s) ? s[0] : s) as any;
+        const url = sec?.discord_webhook_url || null;
+        if (!url) continue;
+        workspaces.push({ ...(w as any), discord_webhook_url: url });
+      }
+      const workspaceMap = new Map(workspaces.map((w: WorkspaceRow) => [w.id, w]));
 
       const { data: portals } = await supabase
         .from("partner_portals")
