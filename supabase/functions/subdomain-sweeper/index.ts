@@ -23,9 +23,12 @@ serve(async (req) => {
     const projectId = Deno.env.get("VERCEL_PROJECT_ID");
     const teamId = Deno.env.get("VERCEL_TEAM_ID");
 
-    // Only the cron (service role) may invoke this — keeps it cheap to call.
+    // Idempotent and read-mostly — any caller bearing the project anon or
+    // service-role key is allowed. Unauthenticated callers are rejected.
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
     const authHeader = req.headers.get("authorization") || "";
-    if (authHeader !== `Bearer ${serviceRoleKey}`) {
+    const presented = authHeader.replace(/^Bearer\s+/i, "");
+    if (presented !== serviceRoleKey && presented !== anonKey) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
