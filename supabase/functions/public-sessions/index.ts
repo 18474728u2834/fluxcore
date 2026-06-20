@@ -25,10 +25,17 @@ serve(async (req) => {
       });
     }
 
+    const { data: wsId } = await supabase.rpc("internal_workspace_id_by_api_key", { _api_key: apiKey });
+    if (!wsId) {
+      return new Response(JSON.stringify({ error: "Invalid API key" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const { data: workspace, error: wsError } = await supabase
       .from("workspaces")
       .select("id, name, game_url")
-      .eq("api_key", apiKey)
+      .eq("id", wsId as string)
       .single();
 
     if (wsError || !workspace) {
