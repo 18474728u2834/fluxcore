@@ -55,12 +55,30 @@ serve(async (req) => {
     // Fetch previous messages for context
     const { data: prevMessages } = await supabase
       .from("support_messages")
-      .select("content, roblox_username")
+      .select("content, roblox_username, user_id")
       .eq("ticket_id", ticket_id)
       .order("created_at", { ascending: true })
-      .limit(10);
+      .limit(50);
 
-    const context = (prevMessages || []).map(m => `${m.roblox_username}: ${m.content}`).join("\n");
+    // If ANY message in this ticket was sent by a non-owner (i.e. a staff
+    // member or anyone other than the ticket creator), the human has taken
+    // over — the AI must stay silent for the rest of the conversation.
+    const humanTookOver = (prevMessages || []).some(
+      (m: any) => m.user_id && m.user_id !== ticket.user_id,
+    );
+
+    if (humanTookOver) {
+      return new Response(JSON.stringify({
+        success: true,
+        ai_response: null,
+        escalated: true,
+        silent: true,
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const context = (prevMessages || []).map((m: any) => `${m.roblox_username}: ${m.content}`).join("\n");
 
     // Check if user is asking for staff help
     const needsStaff = /staff|human|agent|novavoff|real person|escalat/i.test(message);
