@@ -34,16 +34,28 @@ Deno.serve(async (req) => {
 
     // Authorization: either Fluxcore staff, OR a workspace owner attaching
     // their own subdomain (must match a partner_portals row they own).
+    const userId = (claims.claims as any).sub as string;
     const { data: isStaff } = await supabase.rpc('is_fluxcore_staff');
     if (!isStaff) {
-      const { data: portal } = await supabase
+      // Use the service role to avoid RLS pitfalls on the workspaces join.
+      const admin = createClient(
+        Deno.env.get('SUPABASE_URL')!,
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      );
+      const { data: portal } = await admin
         .from('partner_portals')
-        .select('workspace_id, subdomain, workspaces!inner(owner_id)')
+        .select('workspace_id')
         .eq('subdomain', subdomain)
         .maybeSingle();
-      const userId = (claims.claims as any).sub;
-      const ownerId = (portal as any)?.workspaces?.owner_id;
-      if (!portal || !ownerId || ownerId !== userId) {
+      if (!portal) {
+        return json({ error: 'Forbidden — subdomain not found' }, 403);
+      }
+      const { data: ws } = await admin
+        .from('workspaces')
+        .select('owner_id')
+        .eq('id', (portal as any).workspace_id)
+        .maybeSingle();
+      if (!ws || (ws as any).owner_id !== userId) {
         return json({ error: 'Forbidden — not the owner of this subdomain' }, 403);
       }
       // Owners can add/verify their own subdomain, but never remove.
