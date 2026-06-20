@@ -437,11 +437,14 @@ serve(async (req) => {
     }
 
     if (!workspaceId) return json({ error: "Missing workspace_id" }, 400);
-    const { data: workspace, error: workspaceError } = await supabase
-      .from("workspaces").select("id, name, discord_webhook_url, game_url, invite_code")
+    const { data: workspaceBase, error: workspaceError } = await supabase
+      .from("workspaces").select("id, name, game_url, invite_code")
       .eq("id", workspaceId).maybeSingle();
     if (workspaceError) throw workspaceError;
-    if (!workspace) return json({ error: "Workspace not found" }, 404);
+    if (!workspaceBase) return json({ error: "Workspace not found" }, 404);
+    const { data: wsSecRow } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: workspaceId });
+    const wsSec = (Array.isArray(wsSecRow) ? wsSecRow[0] : wsSecRow) as any;
+    const workspace: any = { ...(workspaceBase as any), discord_webhook_url: wsSec?.discord_webhook_url || null };
     if (!workspace.discord_webhook_url) return json({ error: "Discord webhook not configured" }, 400);
 
     const { data: portal } = await supabase
