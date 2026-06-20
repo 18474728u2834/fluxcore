@@ -160,6 +160,7 @@ export default function SettingsPage() {
         _values: {
           roblox_api_key: robloxApiKey.trim() || null,
           discord_webhook_url: discordWebhook.trim() || null,
+          rankgun_api_key: rankgunApiKey.trim() || null,
           quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
         } as any,
       });
