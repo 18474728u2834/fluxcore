@@ -387,12 +387,20 @@ serve(async (req) => {
       const workspaceIds = [...new Set(((sessions || []) as SessionRow[]).map((s) => s.workspace_id))];
       if (!workspaceIds.length) return json({ success: true, checked: 0, sent: 0, skipped: 0, failed: 0 });
 
-      const { data: workspaces } = await supabase
+      const { data: workspacesBase } = await supabase
         .from("workspaces")
-        .select("id, name, discord_webhook_url, game_url, invite_code")
-        .in("id", workspaceIds)
-        .not("discord_webhook_url", "is", null);
-      const workspaceMap = new Map((workspaces || []).map((w: WorkspaceRow) => [w.id, w]));
+        .select("id, name, game_url, invite_code")
+        .in("id", workspaceIds);
+      // Resolve each workspace's encrypted webhook via the internal helper
+      const workspaces: WorkspaceRow[] = [];
+      for (const w of (workspacesBase || [])) {
+        const { data: s } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: w.id });
+        const sec = (Array.isArray(s) ? s[0] : s) as any;
+        const url = sec?.discord_webhook_url || null;
+        if (!url) continue;
+        workspaces.push({ ...(w as any), discord_webhook_url: url });
+      }
+      const workspaceMap = new Map(workspaces.map((w: WorkspaceRow) => [w.id, w]));
 
       const { data: portals } = await supabase
         .from("partner_portals")
@@ -429,11 +437,14 @@ serve(async (req) => {
     }
 
     if (!workspaceId) return json({ error: "Missing workspace_id" }, 400);
-    const { data: workspace, error: workspaceError } = await supabase
-      .from("workspaces").select("id, name, discord_webhook_url, game_url, invite_code")
+    const { data: workspaceBase, error: workspaceError } = await supabase
+      .from("workspaces").select("id, name, game_url, invite_code")
       .eq("id", workspaceId).maybeSingle();
     if (workspaceError) throw workspaceError;
-    if (!workspace) return json({ error: "Workspace not found" }, 404);
+    if (!workspaceBase) return json({ error: "Workspace not found" }, 404);
+    const { data: wsSecRow } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: workspaceId });
+    const wsSec = (Array.isArray(wsSecRow) ? wsSecRow[0] : wsSecRow) as any;
+    const workspace: any = { ...(workspaceBase as any), discord_webhook_url: wsSec?.discord_webhook_url || null };
     if (!workspace.discord_webhook_url) return json({ error: "Discord webhook not configured" }, 400);
 
     const { data: portal } = await supabase

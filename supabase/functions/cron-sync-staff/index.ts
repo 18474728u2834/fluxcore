@@ -105,15 +105,16 @@ serve(async (req) => {
     // 2) Workspaces with a configured group + API key + auto_rank_enabled
     const { data: workspaces } = await sb
       .from("workspaces")
-      .select("id, roblox_group_id, roblox_api_key, auto_rank_enabled")
-      .not("roblox_api_key", "is", null)
+      .select("id, roblox_group_id, auto_rank_enabled")
       .not("roblox_group_id", "is", null)
       .eq("auto_rank_enabled", true);
 
     for (const ws of workspaces || []) {
       summary.workspaces++;
       const groupId = String(ws.roblox_group_id || "").trim();
-      const apiKey = String(ws.roblox_api_key || "").trim();
+      const { data: secretsRow } = await sb.rpc("internal_get_workspace_secrets", { _workspace_id: ws.id });
+      const secrets = (Array.isArray(secretsRow) ? secretsRow[0] : secretsRow) || {};
+      const apiKey = String((secrets as any).roblox_api_key || "").trim();
       if (!groupId || !apiKey) continue;
 
       // Roles with mapping

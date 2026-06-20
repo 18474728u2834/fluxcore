@@ -64,7 +64,18 @@ export default function BMemberProfile() {
     });
     if (error) toast.error(error.message);
     else {
-      toast.success("Added"); setLogOpen(false); setLogContent("");
+      // Mirror promotion/demotion to the Roblox group via Open Cloud.
+      if ((logType === "demotion" || logType === "promotion") && member) {
+        const stepAction = logType === "demotion" ? "demote_one" : "promote_one";
+        const res = await supabase.functions.invoke("roblox-rank", {
+          body: { action: stepAction, workspace_id: workspaceId, roblox_user_id: member.roblox_user_id },
+        });
+        if (res.data?.success) toast.success(`Log added — moved to ${res.data.to?.name || "new rank"}`);
+        else toast.warning(`Log saved, but Roblox rank wasn't changed: ${res.data?.error || res.error?.message || "unknown error"}`);
+      } else {
+        toast.success("Added");
+      }
+      setLogOpen(false); setLogContent("");
       const { data } = await supabase.from("member_logs").select("*").eq("member_id", memberId).order("created_at", { ascending: false });
       setLogs((data || []) as any);
     }

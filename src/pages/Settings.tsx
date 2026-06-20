@@ -53,6 +53,7 @@ export default function SettingsPage() {
   const [backgroundColor, setBackgroundColor] = useState("#0f0f11");
   const [showGrid, setShowGrid] = useState(true);
   const [discordWebhook, setDiscordWebhook] = useState("");
+  const [rankgunApiKey, setRankgunApiKey] = useState("");
   const [gameUrl, setGameUrl] = useState("");
   const [hostLabel, setHostLabel] = useState("Host");
   const [coHostLabel, setCoHostLabel] = useState("Co-Host");
@@ -88,6 +89,7 @@ export default function SettingsPage() {
           setShowGrid((data as any).show_grid ?? true);
           setRobloxApiKey(secrets?.roblox_api_key || "");
           setDiscordWebhook(secrets?.discord_webhook_url || "");
+          setRankgunApiKey(secrets?.rankgun_api_key || "");
           setMessageLogger((data as any).message_logger_enabled || false);
           setAutoRank((data as any).auto_rank_enabled || false);
           setAfkConfirmSeconds((data as any).afk_confirm_seconds || 0);
@@ -158,6 +160,7 @@ export default function SettingsPage() {
         _values: {
           roblox_api_key: robloxApiKey.trim() || null,
           discord_webhook_url: discordWebhook.trim() || null,
+          rankgun_api_key: rankgunApiKey.trim() || null,
           quota_log_webhook_url: quotaLogMode === "webhook" ? (quotaLogWebhook.trim() || null) : null,
         } as any,
       });
@@ -400,6 +403,24 @@ export default function SettingsPage() {
                     {testingDiscord && <Loader2 className="w-3 h-3 mr-1 animate-spin" />} Test Webhook
                   </Button>
                 )}
+              </div>
+
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">RankGun</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Paste your workspace API key from{" "}
+                  <a href="https://www.rankgun.works/docs/developing/APIReference" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    RankGun → Settings → API Key
+                  </a>. Stored encrypted; only used server-side for promote/demote/session calls to <code className="text-foreground">api.rankgun.works</code>.
+                </p>
+                <div className="space-y-2">
+                  <Label className="text-xs">RankGun API Key</Label>
+                  <Input type="password" placeholder="Enter your RankGun API key" value={rankgunApiKey}
+                    onChange={(e) => setRankgunApiKey(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+                </div>
               </div>
 
               {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}

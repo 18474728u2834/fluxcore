@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
 
   const { data: workspaces, error: wsErr } = await supabase
     .from("workspaces")
-    .select("id, name, owner_id, quota_log_mode, quota_log_webhook_url")
+    .select("id, name, owner_id, quota_log_mode")
     .neq("quota_log_mode", "none")
     .not("quota_log_mode", "is", null);
 
@@ -71,8 +71,13 @@ Deno.serve(async (req) => {
 
   for (const ws of workspaces || []) {
     const mode = (ws as any).quota_log_mode as string;
-    const webhookUrl = (ws as any).quota_log_webhook_url as string | null;
-    if (mode === "webhook" && !webhookUrl) continue;
+    let webhookUrl: string | null = null;
+    if (mode === "webhook") {
+      const { data: secRow } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: ws.id });
+      const sec = (Array.isArray(secRow) ? secRow[0] : secRow) as any;
+      webhookUrl = sec?.quota_log_webhook_url || null;
+      if (!webhookUrl) continue;
+    }
 
     const { data: quotas } = await supabase
       .from("workspace_quotas").select("*").eq("workspace_id", ws.id);

@@ -24,13 +24,24 @@ serve(async (req) => {
       );
     }
 
-    const { data: workspace, error: wsError } = await supabase
+    // Look up the workspace id by hashed api key (secrets are encrypted)
+    const { data: wsIdRow } = await supabase.rpc('internal_workspace_id_by_api_key', { _api_key: apiKey });
+    const wsId = wsIdRow as string | null;
+    if (!wsId) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid API key' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    const { data: wsRow } = await supabase
       .from('workspaces')
-      .select('id, message_logger_enabled, roblox_api_key, roblox_group_id, auto_rank_enabled, afk_confirm_seconds')
-      .eq('api_key', apiKey)
+      .select('id, message_logger_enabled, roblox_group_id, auto_rank_enabled, afk_confirm_seconds')
+      .eq('id', wsId)
       .single();
-
-    if (wsError || !workspace) {
+    const { data: secretsRow } = await supabase.rpc('internal_get_workspace_secrets', { _workspace_id: wsId });
+    const secrets = (Array.isArray(secretsRow) ? secretsRow[0] : secretsRow) || {};
+    const workspace = { ...(wsRow as any), roblox_api_key: secrets.roblox_api_key as string | null } as any;
+    if (!workspace?.id) {
       return new Response(
         JSON.stringify({ error: 'Invalid API key' }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

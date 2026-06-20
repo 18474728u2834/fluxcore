@@ -36,11 +36,14 @@ serve(async (req) => {
     const body = await req.json();
     const { action, workspace_id, roblox_user_id, role_id } = body;
 
-    const { data: ws } = await supabase
+    const { data: wsRow } = await supabase
       .from("workspaces")
-      .select("roblox_api_key, roblox_group_id, owner_id")
+      .select("roblox_group_id, owner_id")
       .eq("id", workspace_id)
       .single();
+    const { data: secretsRow } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: workspace_id });
+    const secrets = (Array.isArray(secretsRow) ? secretsRow[0] : secretsRow) || {};
+    const ws: any = wsRow ? { ...wsRow, roblox_api_key: secrets.roblox_api_key } : null;
 
     if (!ws?.roblox_api_key || !ws?.roblox_group_id) {
       return new Response(JSON.stringify({ error: "Roblox API key or Group ID not configured" }), {
@@ -247,6 +250,68 @@ serve(async (req) => {
           status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+    }
+
+    // Action: step_rank — bump the target up or down by exactly one rank in
+    // the Roblox group ladder. Used by the in-app "Demotion" logbook entry.
+    if (action === "promote_one" || action === "demote_one") {
+      const targetUserId: string | undefined = body.roblox_user_id;
+      if (!targetUserId) {
+        return new Response(JSON.stringify({ error: "Missing roblox_user_id" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const allRoles = await fetchAllRoles();
+      const ladder = allRoles
+        .filter((r: any) => (r.rank ?? 0) > 0)
+        .sort((a: any, b: any) => (a.rank ?? 0) - (b.rank ?? 0));
+      const memRes = await fetch(
+        `https://apis.roblox.com/cloud/v2/groups/${ws.roblox_group_id}/memberships?filter=user=='users/${targetUserId}'&maxPageSize=1`,
+        { headers: { "x-api-key": ws.roblox_api_key } },
+      );
+      if (!memRes.ok) {
+        return new Response(JSON.stringify({ error: "Target not found in Roblox group" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const memData = await memRes.json();
+      const membership = memData.groupMemberships?.[0];
+      if (!membership) {
+        return new Response(JSON.stringify({ error: "Target not found in Roblox group" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const curRoleId = String(membership.role || "").split("/").pop();
+      const curIdx = ladder.findIndex((r: any) => String(r.id || "").split("/").pop() === curRoleId);
+      if (curIdx === -1) {
+        return new Response(JSON.stringify({ error: "Current rank not in promotable ladder" }), {
+          status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const nextIdx = action === "promote_one" ? curIdx + 1 : curIdx - 1;
+      if (nextIdx < 0 || nextIdx >= ladder.length) {
+        return new Response(JSON.stringify({ error: `Cannot ${action.replace("_one", "")} further` }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const newRole = ladder[nextIdx];
+      const newRoleId = String(newRole.id || "").split("/").pop();
+      const patchRes = await fetch(`https://apis.roblox.com/cloud/v2/${membership.path}`, {
+        method: "PATCH",
+        headers: { "x-api-key": ws.roblox_api_key, "Content-Type": "application/json" },
+        body: JSON.stringify({ role: `groups/${ws.roblox_group_id}/roles/${newRoleId}` }),
+      });
+      if (!patchRes.ok) {
+        const t = await patchRes.text();
+        return new Response(JSON.stringify({ error: "Roblox rejected the rank change", details: t }), {
+          status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(JSON.stringify({
+        success: true,
+        from: { rank: ladder[curIdx].rank, name: ladder[curIdx].displayName || ladder[curIdx].name },
+        to:   { rank: newRole.rank, name: newRole.displayName || newRole.name },
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ error: "Unknown action" }), {
