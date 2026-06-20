@@ -405,6 +405,24 @@ export default function SettingsPage() {
                 )}
               </div>
 
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">RankGun</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Paste your workspace API key from{" "}
+                  <a href="https://www.rankgun.works/docs/developing/APIReference" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    RankGun → Settings → API Key
+                  </a>. Stored encrypted; only used server-side for promote/demote/session calls to <code className="text-foreground">api.rankgun.works</code>.
+                </p>
+                <div className="space-y-2">
+                  <Label className="text-xs">RankGun API Key</Label>
+                  <Input type="password" placeholder="Enter your RankGun API key" value={rankgunApiKey}
+                    onChange={(e) => setRankgunApiKey(e.target.value)} className="bg-muted border-border font-mono text-xs" />
+                </div>
+              </div>
+
               {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}
             </>
           )}
