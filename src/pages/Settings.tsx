@@ -89,6 +89,7 @@ export default function SettingsPage() {
           setShowGrid((data as any).show_grid ?? true);
           setRobloxApiKey(secrets?.roblox_api_key || "");
           setDiscordWebhook(secrets?.discord_webhook_url || "");
+          setRankgunApiKey(secrets?.rankgun_api_key || "");
           setMessageLogger((data as any).message_logger_enabled || false);
           setAutoRank((data as any).auto_rank_enabled || false);
           setAfkConfirmSeconds((data as any).afk_confirm_seconds || 0);
