@@ -36,11 +36,14 @@ serve(async (req) => {
     const body = await req.json();
     const { action, workspace_id, roblox_user_id, role_id } = body;
 
-    const { data: ws } = await supabase
+    const { data: wsRow } = await supabase
       .from("workspaces")
-      .select("roblox_api_key, roblox_group_id, owner_id")
+      .select("roblox_group_id, owner_id")
       .eq("id", workspace_id)
       .single();
+    const { data: secretsRow } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: workspace_id });
+    const secrets = (Array.isArray(secretsRow) ? secretsRow[0] : secretsRow) || {};
+    const ws: any = wsRow ? { ...wsRow, roblox_api_key: secrets.roblox_api_key } : null;
 
     if (!ws?.roblox_api_key || !ws?.roblox_group_id) {
       return new Response(JSON.stringify({ error: "Roblox API key or Group ID not configured" }), {
