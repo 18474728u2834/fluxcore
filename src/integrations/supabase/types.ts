@@ -2113,6 +2113,7 @@ export type Database = {
         Row: {
           afk_confirm_seconds: number | null
           api_key_enc: string | null
+          api_key_hash: string | null
           auto_rank_enabled: boolean | null
           background_color: string | null
           closed_at: string | null
@@ -2134,6 +2135,7 @@ export type Database = {
           quota_log_configured: boolean
           quota_log_mode: string
           quota_log_webhook_url_enc: string | null
+          rankgun_api_key_enc: string | null
           release_version: string | null
           roblox_api_key_enc: string | null
           roblox_group_id: string | null
@@ -2148,6 +2150,7 @@ export type Database = {
         Insert: {
           afk_confirm_seconds?: number | null
           api_key_enc?: string | null
+          api_key_hash?: string | null
           auto_rank_enabled?: boolean | null
           background_color?: string | null
           closed_at?: string | null
@@ -2169,6 +2172,7 @@ export type Database = {
           quota_log_configured?: boolean
           quota_log_mode?: string
           quota_log_webhook_url_enc?: string | null
+          rankgun_api_key_enc?: string | null
           release_version?: string | null
           roblox_api_key_enc?: string | null
           roblox_group_id?: string | null
@@ -2183,6 +2187,7 @@ export type Database = {
         Update: {
           afk_confirm_seconds?: number | null
           api_key_enc?: string | null
+          api_key_hash?: string | null
           auto_rank_enabled?: boolean | null
           background_color?: string | null
           closed_at?: string | null
@@ -2204,6 +2209,7 @@ export type Database = {
           quota_log_configured?: boolean
           quota_log_mode?: string
           quota_log_webhook_url_enc?: string | null
+          rankgun_api_key_enc?: string | null
           release_version?: string | null
           roblox_api_key_enc?: string | null
           roblox_group_id?: string | null
@@ -2311,6 +2317,7 @@ export type Database = {
         Args: { _workspace_id: string }
         Returns: {
           has_discord_webhook: boolean
+          has_rankgun_api_key: boolean
           has_roblox_api_key: boolean
           quota_log_configured: boolean
           quota_log_mode: string
@@ -2330,6 +2337,7 @@ export type Database = {
           api_key: string
           discord_webhook_url: string
           quota_log_webhook_url: string
+          rankgun_api_key: string
           roblox_api_key: string
         }[]
       }
@@ -2339,6 +2347,20 @@ export type Database = {
         Returns: boolean
       }
       heartbeat_portal: { Args: { _workspace_id: string }; Returns: undefined }
+      internal_get_workspace_secrets: {
+        Args: { _workspace_id: string }
+        Returns: {
+          api_key: string
+          discord_webhook_url: string
+          quota_log_webhook_url: string
+          rankgun_api_key: string
+          roblox_api_key: string
+        }[]
+      }
+      internal_workspace_id_by_api_key: {
+        Args: { _api_key: string }
+        Returns: string
+      }
       is_department_lead: { Args: { _department_id: string }; Returns: boolean }
       is_department_member: {
         Args: { _department_id: string }
