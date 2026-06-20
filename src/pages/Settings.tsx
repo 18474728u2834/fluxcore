@@ -53,6 +53,7 @@ export default function SettingsPage() {
   const [backgroundColor, setBackgroundColor] = useState("#0f0f11");
   const [showGrid, setShowGrid] = useState(true);
   const [discordWebhook, setDiscordWebhook] = useState("");
+  const [rankgunApiKey, setRankgunApiKey] = useState("");
   const [gameUrl, setGameUrl] = useState("");
   const [hostLabel, setHostLabel] = useState("Host");
   const [coHostLabel, setCoHostLabel] = useState("Co-Host");
