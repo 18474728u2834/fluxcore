@@ -42,12 +42,19 @@ serve(async (req) => {
       return json({ error: "You can't rank yourself" }, 403);
     }
 
-    // Look up workspace by API key
-    const { data: ws } = await supabase
+    // Look up workspace by hashed API key
+    const { data: wsIdData } = await supabase.rpc("internal_workspace_id_by_api_key", { _api_key: apiKey });
+    const wsId = wsIdData as string | null;
+    if (!wsId) return json({ error: "Invalid API key" }, 401);
+
+    const { data: wsRow } = await supabase
       .from("workspaces")
-      .select("id, owner_id, roblox_api_key, roblox_group_id")
-      .eq("api_key", apiKey)
+      .select("id, owner_id, roblox_group_id")
+      .eq("id", wsId)
       .maybeSingle();
+    const { data: secretsRow } = await supabase.rpc("internal_get_workspace_secrets", { _workspace_id: wsId });
+    const secrets = (Array.isArray(secretsRow) ? secretsRow[0] : secretsRow) || {};
+    const ws: any = wsRow ? { ...wsRow, roblox_api_key: secrets.roblox_api_key } : null;
 
     if (!ws) return json({ error: "Invalid API key" }, 401);
     if (!ws.roblox_api_key || !ws.roblox_group_id) {
