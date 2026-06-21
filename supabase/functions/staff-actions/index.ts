@@ -511,6 +511,103 @@ Deno.serve(async (req) => {
         return json({ ok: true });
       }
 
+      case "send_admin_email": {
+        if (!caller.has("send_admin_email")) return json({ error: "forbidden" }, 403);
+        const target = String(body.target || "");
+        const subject = String(body.subject || "").trim();
+        const heading = String(body.heading || subject).trim();
+        const preheader = String(body.preheader || "").trim();
+        const bodyHtmlRaw = String(body.body_html || "").trim();
+        if (!subject || !bodyHtmlRaw) return json({ error: "missing_fields" }, 400);
+        if (subject.length > 200) return json({ error: "subject_too_long" }, 400);
+        if (bodyHtmlRaw.length > 50000) return json({ error: "body_too_long" }, 400);
+
+        const sanitize = (html: string) =>
+          html
+            .replace(/<\s*(script|style|iframe|object|embed|link|meta)[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+            .replace(/<\s*(script|style|iframe|object|embed|link|meta)[^>]*\/?>/gi, "")
+            .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "")
+            .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "")
+            .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "")
+            .replace(/javascript:/gi, "")
+            .replace(/data:text\/html/gi, "");
+        const bodyHtml = sanitize(bodyHtmlRaw);
+
+        const recipients = new Set<string>();
+        if (target === "specific_email") {
+          const e = String(body.email || "").trim().toLowerCase();
+          if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e)) return json({ error: "invalid_email" }, 400);
+          recipients.add(e);
+        } else if (target === "roblox_user") {
+          const username = String(body.roblox_username || "").trim();
+          if (!username) return json({ error: "missing_username" }, 400);
+          const { data: vu } = await sb.from("verified_users").select("user_id").ilike("roblox_username", username).maybeSingle();
+          if (!vu) return json({ error: "user_not_verified" }, 404);
+          const { data: u } = await sb.auth.admin.getUserById(vu.user_id);
+          const e = u?.user?.email?.toLowerCase();
+          if (!e) return json({ error: "no_email_on_file" }, 404);
+          recipients.add(e);
+        } else if (target === "all_owners") {
+          const { data: ws } = await sb.from("workspaces").select("owner_id");
+          const ownerSet = new Set((ws || []).map((w: any) => w.owner_id).filter(Boolean));
+          let page = 1;
+          const perPage = 1000;
+          for (let i = 0; i < 20; i++) {
+            const { data, error } = await sb.auth.admin.listUsers({ page, perPage });
+            if (error) break;
+            const users = data?.users || [];
+            for (const u of users) {
+              if (ownerSet.has(u.id) && u.email) recipients.add(u.email.toLowerCase());
+            }
+            if (users.length < perPage) break;
+            page++;
+          }
+        } else {
+          return json({ error: "invalid_target" }, 400);
+        }
+
+        if (recipients.size === 0) return json({ error: "no_recipients" }, 400);
+
+        const list = Array.from(recipients);
+        const results = { sent: 0, failed: 0, suppressed: 0, errors: [] as string[] };
+        const idempotencyBase = `admin-msg-${Date.now()}-${crypto.randomUUID().slice(0, 8)}`;
+        const fnUrl = `${SUPABASE_URL}/functions/v1/send-transactional-email`;
+        const authHeader = req.headers.get("Authorization") || `Bearer ${SERVICE_KEY}`;
+
+        for (const email of list) {
+          try {
+            const res = await fetch(fnUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: authHeader },
+              body: JSON.stringify({
+                templateName: "admin-message",
+                recipientEmail: email,
+                idempotencyKey: `${idempotencyBase}-${email}`,
+                templateData: {
+                  subject, heading, preheader, bodyHtml,
+                  fromName: `Fluxcore Staff (${caller.staff.roblox_username})`,
+                },
+              }),
+            });
+            const j = await res.json().catch(() => ({}));
+            if (res.ok && j?.success !== false) results.sent++;
+            else if (j?.reason === "email_suppressed") results.suppressed++;
+            else {
+              results.failed++;
+              if (results.errors.length < 5) results.errors.push(`${email}: ${j?.error || res.status}`);
+            }
+          } catch (e: any) {
+            results.failed++;
+            if (results.errors.length < 5) results.errors.push(`${email}: ${e?.message || e}`);
+          }
+        }
+
+        await audit(caller, "send_admin_email", "email", null, {
+          target, subject, recipients: list.length, ...results,
+        });
+        return json({ ok: true, recipients: list.length, ...results });
+      }
+
       default:
         return json({ error: "unknown_action" }, 400);
     }
