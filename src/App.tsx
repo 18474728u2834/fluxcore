@@ -85,6 +85,7 @@ const ThemedPortal = lazy(() => import("./pages/ThemedPortal"));
 const PartnerClosed = lazy(() => import("./pages/PartnerClosed"));
 const Status = lazy(() => import("./pages/Status"));
 const SecurityPage = lazy(() => import("./pages/Security"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 
 
 const queryClient = new QueryClient();
@@ -431,6 +432,7 @@ function AppRoutes() {
         <Route path="/api/ranking" element={<ApiRanking />} />
         <Route path="/status" element={<Status />} />
         <Route path="/security" element={<SecurityPage />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>

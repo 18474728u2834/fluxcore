@@ -36,6 +36,7 @@ const ALL_PERMS = [
   { key: "moderate_chats", label: "Moderate workspace chats" },
   { key: "manage_blacklist", label: "Manage Fluxcore blacklist" },
   { key: "manage_status", label: "Manage status page & banners" },
+  { key: "send_admin_email", label: "Send admin emails (to users or all owners)" },
 ];
 
 async function callStaff<T = any>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
@@ -109,6 +110,7 @@ export default function Admin() {
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
             <TabsTrigger value="portals">Partner Portals</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
+            {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -126,6 +128,7 @@ export default function Admin() {
           {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
           <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
           {has("manage_status") && <TabsContent value="status"><StatusAdminTab /></TabsContent>}
+          {has("send_admin_email") && <TabsContent value="email"><EmailSenderTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
@@ -802,6 +805,175 @@ function BlacklistTab() {
           </Card>
         ))}
       </div>
+    </div>
+  );
+}
+
+function EmailSenderTab() {
+  const [target, setTarget] = useState<"specific_email" | "roblox_user" | "all_owners">("specific_email");
+  const [email, setEmail] = useState("");
+  const [robloxUsername, setRobloxUsername] = useState("");
+  const [subject, setSubject] = useState("");
+  const [heading, setHeading] = useState("");
+  const [preheader, setPreheader] = useState("");
+  const [bodyHtml, setBodyHtml] = useState(
+    "<p>Hi there,</p>\n<p>Write your message here. You can use <strong>bold</strong>, <em>italic</em>, lists, and <a href=\"https://fluxcore.works\">links</a>.</p>"
+  );
+  const [busy, setBusy] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [lastResult, setLastResult] = useState<any>(null);
+
+  const sendNow = async () => {
+    if (!subject.trim() || !bodyHtml.trim()) {
+      toast.error("Subject and body are required");
+      return;
+    }
+    if (target === "specific_email" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
+      toast.error("Enter a valid email"); return;
+    }
+    if (target === "roblox_user" && !robloxUsername.trim()) {
+      toast.error("Enter a Roblox username"); return;
+    }
+    setBusy(true);
+    try {
+      const r = await callStaff<any>("send_admin_email", {
+        target, email, roblox_username: robloxUsername,
+        subject, heading: heading || subject, preheader, body_html: bodyHtml,
+      });
+      setLastResult(r);
+      toast.success(`Queued ${r.sent}/${r.recipients} emails${r.suppressed ? `, ${r.suppressed} suppressed` : ""}${r.failed ? `, ${r.failed} failed` : ""}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send");
+    } finally {
+      setBusy(false);
+      setConfirmOpen(false);
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <div className="space-y-1 mb-4">
+          <h2 className="text-lg font-semibold">Admin Email Sender</h2>
+          <p className="text-sm text-muted-foreground">Send a branded email from support@fluxcore.works to a specific user or broadcast to all workspace owners.</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          {[
+            { v: "specific_email", l: "Specific email" },
+            { v: "roblox_user", l: "Roblox user" },
+            { v: "all_owners", l: "All workspace owners" },
+          ].map((o) => (
+            <button
+              key={o.v}
+              onClick={() => setTarget(o.v as any)}
+              className={`rounded-lg border p-3 text-sm text-left transition ${target === o.v ? "border-primary bg-primary/10" : "border-border hover:border-muted-foreground"}`}
+            >
+              {o.l}
+            </button>
+          ))}
+        </div>
+
+        {target === "specific_email" && (
+          <div className="mb-3">
+            <Label>Recipient email</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="user@example.com" />
+          </div>
+        )}
+        {target === "roblox_user" && (
+          <div className="mb-3">
+            <Label>Roblox username</Label>
+            <Input value={robloxUsername} onChange={(e) => setRobloxUsername(e.target.value)} placeholder="Novavoff" />
+            <p className="text-xs text-muted-foreground mt-1">Will email the address linked to their Fluxcore account.</p>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <div>
+            <Label>Subject *</Label>
+            <Input value={subject} onChange={(e) => setSubject(e.target.value)} maxLength={200} />
+          </div>
+          <div>
+            <Label>Heading (optional)</Label>
+            <Input value={heading} onChange={(e) => setHeading(e.target.value)} placeholder="Defaults to subject" />
+          </div>
+        </div>
+        <div className="mb-3">
+          <Label>Preheader (preview text)</Label>
+          <Input value={preheader} onChange={(e) => setPreheader(e.target.value)} maxLength={150} />
+        </div>
+        <div className="mb-3">
+          <Label>Body (HTML)</Label>
+          <Textarea
+            value={bodyHtml}
+            onChange={(e) => setBodyHtml(e.target.value)}
+            rows={10}
+            className="font-mono text-xs"
+          />
+          <p className="text-xs text-muted-foreground mt-1">Allowed: &lt;p&gt;, &lt;a&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;br&gt;, &lt;h2&gt;, &lt;h3&gt;. Scripts, styles, and event handlers are stripped.</p>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">
+            {target === "all_owners" ? "⚠️ This will email every workspace owner. Use for service notices only." : "Only the chosen recipient will receive this."}
+          </p>
+          <Button
+            disabled={busy}
+            onClick={() => (target === "all_owners" ? setConfirmOpen(true) : sendNow())}
+          >
+            {busy ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Send email
+          </Button>
+        </div>
+      </Card>
+
+      {lastResult && (
+        <Card>
+          <div className="text-sm">
+            <div className="font-medium mb-1">Last send result</div>
+            <div className="text-muted-foreground">
+              Recipients: {lastResult.recipients} · Sent: {lastResult.sent} · Suppressed: {lastResult.suppressed} · Failed: {lastResult.failed}
+            </div>
+            {lastResult.errors?.length ? (
+              <ul className="mt-2 text-xs text-destructive list-disc pl-5">
+                {lastResult.errors.map((e: string, i: number) => <li key={i}>{e}</li>)}
+              </ul>
+            ) : null}
+          </div>
+        </Card>
+      )}
+
+      {target === "all_owners" && (
+        <Card>
+          <div className="text-sm space-y-2">
+            <div className="font-medium">Preview</div>
+            <div className="rounded border border-border p-3 bg-background/50">
+              <div className="text-xs text-muted-foreground mb-1">Subject</div>
+              <div className="font-medium mb-2">{subject || "(no subject)"}</div>
+              <div className="text-xs text-muted-foreground mb-1">Body</div>
+              <div className="prose prose-invert max-w-none text-sm" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
+            </div>
+          </div>
+        </Card>
+      )}
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Broadcast to all workspace owners?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            This will queue an email to every workspace owner with a verified email address. Make sure this is a service notice — Fluxcore does not allow marketing or promotional broadcasts.
+          </p>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setConfirmOpen(false)} disabled={busy}>Cancel</Button>
+            <Button onClick={sendNow} disabled={busy}>
+              {busy ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Confirm broadcast
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
