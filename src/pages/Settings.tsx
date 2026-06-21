@@ -412,8 +412,8 @@ export default function SettingsPage() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   Paste your workspace API key from{" "}
-                  <a href="https://www.rankgun.works/docs/developing/APIReference" target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                    RankGun → Settings → API Key
+                  <a href="https://www.rankgun.works/sign-in" target="_blank" rel="noreferrer" className="text-primary hover:underline">
+                    RankGun → Sign in → API Key
                   </a>. Stored encrypted; only used server-side for promote/demote/session calls to <code className="text-foreground">api.rankgun.works</code>.
                 </p>
                 <div className="space-y-2">
