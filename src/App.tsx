@@ -432,6 +432,7 @@ function AppRoutes() {
         <Route path="/api/ranking" element={<ApiRanking />} />
         <Route path="/status" element={<Status />} />
         <Route path="/security" element={<SecurityPage />} />
+        <Route path="/unsubscribe" element={<Unsubscribe />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
