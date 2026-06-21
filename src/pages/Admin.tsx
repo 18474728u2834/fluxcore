@@ -110,6 +110,7 @@ export default function Admin() {
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
             <TabsTrigger value="portals">Partner Portals</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
+            {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
