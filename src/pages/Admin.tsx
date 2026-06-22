@@ -810,6 +810,7 @@ function BlacklistTab() {
 }
 
 function EmailSenderTab() {
+  const [view, setView] = useState<"compose" | "sent">("compose");
   const [target, setTarget] = useState<"specific_email" | "roblox_user" | "all_owners">("specific_email");
   const [email, setEmail] = useState("");
   const [robloxUsername, setRobloxUsername] = useState("");
@@ -819,26 +820,42 @@ function EmailSenderTab() {
   const [bodyHtml, setBodyHtml] = useState(
     "<p>Hi there,</p>\n<p>Write your message here. You can use <strong>bold</strong>, <em>italic</em>, lists, and <a href=\"https://fluxcore.works\">links</a>.</p>"
   );
+  const [images, setImages] = useState<string[]>([]);
+  const [includeNewsletter, setIncludeNewsletter] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [lastResult, setLastResult] = useState<any>(null);
 
+  const uploadImage = async (file: File) => {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image too large (max 5 MB)"); return; }
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "");
+      const path = `admin-email/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error } = await supabase.storage.from("webhook-images").upload(path, file, { contentType: file.type, upsert: false });
+      if (error) throw error;
+      const { data } = supabase.storage.from("webhook-images").getPublicUrl(path);
+      setImages((arr) => [...arr, data.publicUrl]);
+      toast.success("Image uploaded");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const sendNow = async () => {
-    if (!subject.trim() || !bodyHtml.trim()) {
-      toast.error("Subject and body are required");
-      return;
-    }
-    if (target === "specific_email" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) {
-      toast.error("Enter a valid email"); return;
-    }
-    if (target === "roblox_user" && !robloxUsername.trim()) {
-      toast.error("Enter a Roblox username"); return;
-    }
+    if (!subject.trim() || !bodyHtml.trim()) { toast.error("Subject and body are required"); return; }
+    if (target === "specific_email" && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) { toast.error("Enter a valid email"); return; }
+    if (target === "roblox_user" && !robloxUsername.trim()) { toast.error("Enter a Roblox username"); return; }
     setBusy(true);
     try {
       const r = await callStaff<any>("send_admin_email", {
         target, email, roblox_username: robloxUsername,
         subject, heading: heading || subject, preheader, body_html: bodyHtml,
+        images, include_newsletter_cta: includeNewsletter,
       });
       setLastResult(r);
       toast.success(`Queued ${r.sent}/${r.recipients} emails${r.suppressed ? `, ${r.suppressed} suppressed` : ""}${r.failed ? `, ${r.failed} failed` : ""}`);
@@ -850,12 +867,28 @@ function EmailSenderTab() {
     }
   };
 
+  // Live preview HTML that mirrors the rendered email template
+  const previewHtml = useMemo(() => {
+    const imgHtml = images.map((src) => `<img src="${src}" alt="" style="display:block;width:100%;height:auto;border-radius:10px;margin-bottom:10px"/>`).join("");
+    const newsletter = includeNewsletter
+      ? `<div style="margin-top:14px;padding:14px 18px;border-radius:12px;border:1px solid #1f2937;background:#0b1220;text-align:center"><p style="color:#d1d5db;font-size:13px;margin:0 0 6px">Want occasional product updates from Fluxcore?</p><a href="https://fluxcore.works/newsletter" style="color:#06b6d4;font-size:14px;font-weight:600;text-decoration:none">Subscribe to our newsletter →</a></div>`
+      : "";
+    return `<div style="background:#ffffff;padding:24px 0;font-family:Outfit,system-ui,Arial,sans-serif"><div style="max-width:560px;margin:0 auto;padding:0 16px"><div style="text-align:center;padding:8px 0 16px"><span style="font-size:20px;font-weight:700;color:#06b6d4">Fluxcore</span></div><div style="background:#0b1220;border:1px solid #1f2937;border-radius:14px;padding:28px;color:#e5e7eb"><h1 style="font-size:22px;font-weight:700;color:#fff;margin:0 0 14px">${(heading || subject || "(no subject)").replace(/</g, "&lt;")}</h1>${imgHtml}<div style="color:#d1d5db;font-size:15px;line-height:24px">${bodyHtml}</div><hr style="border-color:#1f2937;margin:22px 0 12px"/><p style="color:#9ca3af;font-size:12px;margin:0">Sent by Fluxcore staff</p></div>${newsletter}<p style="color:#9ca3af;font-size:11px;text-align:center;padding:16px 8px 0">You're receiving this because you operate a workspace on Fluxcore.</p></div></div>`;
+  }, [bodyHtml, heading, subject, images, includeNewsletter]);
+
   return (
     <div className="space-y-4">
+      <div className="flex gap-2">
+        <Button variant={view === "compose" ? "default" : "outline"} size="sm" onClick={() => setView("compose")}>Compose</Button>
+        <Button variant={view === "sent" ? "default" : "outline"} size="sm" onClick={() => setView("sent")}>Sent emails</Button>
+      </div>
+
+      {view === "sent" ? <SentEmailsList /> : (
+      <>
       <Card>
         <div className="space-y-1 mb-4">
           <h2 className="text-lg font-semibold">Admin Email Sender</h2>
-          <p className="text-sm text-muted-foreground">Send a branded email from support@fluxcore.works to a specific user or broadcast to all workspace owners.</p>
+          <p className="text-sm text-muted-foreground">Send a branded Fluxcore email to a specific user or broadcast to all workspace owners. Images and live preview supported.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
@@ -910,7 +943,34 @@ function EmailSenderTab() {
             rows={10}
             className="font-mono text-xs"
           />
-          <p className="text-xs text-muted-foreground mt-1">Allowed: &lt;p&gt;, &lt;a&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;br&gt;, &lt;h2&gt;, &lt;h3&gt;. Scripts, styles, and event handlers are stripped.</p>
+          <p className="text-xs text-muted-foreground mt-1">Allowed: &lt;p&gt;, &lt;a&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;br&gt;, &lt;h2&gt;, &lt;h3&gt;, &lt;img&gt;. Scripts, styles, event handlers are stripped.</p>
+        </div>
+
+        <div className="mb-3 space-y-2">
+          <Label>Images (max 6, 5 MB each)</Label>
+          <div className="flex items-center gap-2">
+            <Input type="file" accept="image/*" disabled={uploading || images.length >= 6}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadImage(f); e.currentTarget.value = ""; }} />
+            {uploading && <Loader2 className="w-4 h-4 animate-spin" />}
+          </div>
+          {images.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {images.map((src, i) => (
+                <div key={i} className="relative">
+                  <img src={src} alt="" className="w-20 h-20 object-cover rounded border border-border" />
+                  <button onClick={() => setImages((arr) => arr.filter((_, k) => k !== i))}
+                    className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">×</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <div className="mb-3 flex items-center gap-2">
+          <Checkbox id="newsletter" checked={includeNewsletter} onCheckedChange={(v) => setIncludeNewsletter(Boolean(v))} />
+          <Label htmlFor="newsletter" className="cursor-pointer text-sm font-normal">
+            Include "Subscribe to newsletter" CTA at the bottom
+          </Label>
         </div>
 
         <div className="flex items-center justify-between gap-3">
@@ -927,6 +987,15 @@ function EmailSenderTab() {
         </div>
       </Card>
 
+      <Card>
+        <div className="text-sm font-medium mb-2">Live preview (recipient's view)</div>
+        <iframe
+          title="Email preview"
+          srcDoc={previewHtml}
+          className="w-full h-[520px] rounded-lg border border-border bg-white"
+        />
+      </Card>
+
       {lastResult && (
         <Card>
           <div className="text-sm">
@@ -939,20 +1008,6 @@ function EmailSenderTab() {
                 {lastResult.errors.map((e: string, i: number) => <li key={i}>{e}</li>)}
               </ul>
             ) : null}
-          </div>
-        </Card>
-      )}
-
-      {target === "all_owners" && (
-        <Card>
-          <div className="text-sm space-y-2">
-            <div className="font-medium">Preview</div>
-            <div className="rounded border border-border p-3 bg-background/50">
-              <div className="text-xs text-muted-foreground mb-1">Subject</div>
-              <div className="font-medium mb-2">{subject || "(no subject)"}</div>
-              <div className="text-xs text-muted-foreground mb-1">Body</div>
-              <div className="prose prose-invert max-w-none text-sm" dangerouslySetInnerHTML={{ __html: bodyHtml }} />
-            </div>
           </div>
         </Card>
       )}
@@ -974,6 +1029,88 @@ function EmailSenderTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </>
+      )}
     </div>
   );
+}
+
+function SentEmailsList() {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<any | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const r = await callStaff<any>("list_sent_emails");
+        setItems(r.entries || []);
+      } catch (e: any) {
+        toast.error(e.message || "Failed to load");
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, []);
+
+  if (loading) return <div className="flex justify-center py-8"><Loader2 className="w-5 h-5 animate-spin" /></div>;
+  if (!items.length) return <Card><p className="text-sm text-muted-foreground text-center py-6">No emails sent yet.</p></Card>;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <div className="text-sm font-medium mb-3">Sent emails ({items.length})</div>
+        <div className="space-y-2 max-h-[600px] overflow-y-auto">
+          {items.map((e) => {
+            const d = e.details || {};
+            return (
+              <button key={e.id} onClick={() => setSelected(e)}
+                className={`w-full text-left rounded-lg border p-3 transition ${selected?.id === e.id ? "border-primary bg-primary/10" : "border-border hover:border-muted-foreground"}`}>
+                <div className="text-sm font-medium truncate">{d.subject || "(no subject)"}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {d.target} · {d.recipients} recipient{d.recipients === 1 ? "" : "s"} · {d.sent ?? 0} sent
+                </div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  {e.admin_username} · {new Date(e.created_at).toLocaleString()}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+      <Card>
+        {selected ? (
+          <div className="space-y-3">
+            <div>
+              <div className="text-xs text-muted-foreground">Subject</div>
+              <div className="text-sm font-medium">{selected.details?.subject}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Recipients ({selected.details?.recipients})</div>
+              <div className="text-xs">{(selected.details?.recipient_sample || []).join(", ")}{selected.details?.recipients > (selected.details?.recipient_sample?.length || 0) ? " …" : ""}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">Body</div>
+              <div className="rounded-lg border border-border p-3 bg-white text-black prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: selected.details?.body_html || "<em>(no body stored)</em>" }} />
+            </div>
+            {selected.details?.images?.length ? (
+              <div className="flex flex-wrap gap-2">
+                {selected.details.images.map((src: string, i: number) => (
+                  <img key={i} src={src} alt="" className="w-20 h-20 object-cover rounded border border-border" />
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground text-center py-6">Select a sent email to read it.</p>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+// Small Card wrapper used above
+function Card({ children }: { children: React.ReactNode }) {
+  return <div className="rounded-xl border border-border bg-card/40 p-4">{children}</div>;
 }
