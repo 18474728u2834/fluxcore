@@ -434,6 +434,7 @@ function AppRoutes() {
         <Route path="/status" element={<Status />} />
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
+        <Route path="/newsletter" element={<Newsletter />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
