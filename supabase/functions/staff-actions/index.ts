@@ -511,6 +511,17 @@ Deno.serve(async (req) => {
         return json({ ok: true });
       }
 
+      case "list_sent_emails": {
+        if (!caller.has("send_admin_email")) return json({ error: "forbidden" }, 403);
+        const { data } = await sb
+          .from("staff_audit_log")
+          .select("id, admin_username, created_at, details")
+          .eq("action", "send_admin_email")
+          .order("created_at", { ascending: false })
+          .limit(100);
+        return json({ entries: data || [] });
+      }
+
       case "send_admin_email": {
         if (!caller.has("send_admin_email")) return json({ error: "forbidden" }, 403);
         const target = String(body.target || "");
@@ -518,6 +529,10 @@ Deno.serve(async (req) => {
         const heading = String(body.heading || subject).trim();
         const preheader = String(body.preheader || "").trim();
         const bodyHtmlRaw = String(body.body_html || "").trim();
+        const images: string[] = Array.isArray(body.images)
+          ? body.images.filter((u: any) => typeof u === "string" && /^https?:\/\//i.test(u)).slice(0, 6)
+          : [];
+        const showNewsletterCTA = Boolean(body.include_newsletter_cta);
         if (!subject || !bodyHtmlRaw) return json({ error: "missing_fields" }, 400);
         if (subject.length > 200) return json({ error: "subject_too_long" }, 400);
         if (bodyHtmlRaw.length > 50000) return json({ error: "body_too_long" }, 400);
@@ -585,6 +600,8 @@ Deno.serve(async (req) => {
                 idempotencyKey: `${idempotencyBase}-${email}`,
                 templateData: {
                   subject, heading, preheader, bodyHtml,
+                  images,
+                  showNewsletterCTA,
                   fromName: `Fluxcore Staff (${caller.staff.roblox_username})`,
                 },
               }),
@@ -603,7 +620,13 @@ Deno.serve(async (req) => {
         }
 
         await audit(caller, "send_admin_email", "email", null, {
-          target, subject, recipients: list.length, ...results,
+          target, subject, heading, preheader,
+          body_html: bodyHtml,
+          images,
+          include_newsletter_cta: showNewsletterCTA,
+          recipients: list.length,
+          recipient_sample: list.slice(0, 10),
+          ...results,
         });
         return json({ ok: true, recipients: list.length, ...results });
       }
