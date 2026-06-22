@@ -214,6 +214,9 @@ export default function Support() {
           <Globe className="w-3.5 h-3.5 shrink-0 text-primary" />
           <span>Support is available in <strong className="text-foreground">English only</strong> so our team can assist you accurately. The rest of Fluxcore supports your language.</span>
         </div>
+        <div className="mb-6 flex items-center justify-between gap-3 px-4 py-3 rounded-lg border border-primary/30 bg-primary/5 text-sm">
+          <span className="text-foreground">Open a support ticket below, or email us directly at <a href="mailto:support@fluxcore.works" className="text-primary font-semibold hover:underline">support@fluxcore.works</a>.</span>
+        </div>
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-extrabold text-foreground">Support Center {isStaff && <span className="text-xs ml-2 px-2 py-0.5 rounded-full bg-primary/15 text-primary align-middle">Staff</span>}</h1>
