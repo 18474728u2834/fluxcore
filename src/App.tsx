@@ -86,6 +86,7 @@ const PartnerClosed = lazy(() => import("./pages/PartnerClosed"));
 const Status = lazy(() => import("./pages/Status"));
 const SecurityPage = lazy(() => import("./pages/Security"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
+const Newsletter = lazy(() => import("./pages/Newsletter"));
 
 
 const queryClient = new QueryClient();
