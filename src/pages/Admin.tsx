@@ -1109,8 +1109,3 @@ function SentEmailsList() {
     </div>
   );
 }
-
-// Small Card wrapper used above
-function Card({ children }: { children: React.ReactNode }) {
-  return <div className="rounded-xl border border-border bg-card/40 p-4">{children}</div>;
-}
