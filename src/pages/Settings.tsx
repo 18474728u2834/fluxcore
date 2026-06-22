@@ -82,7 +82,14 @@ export default function SettingsPage() {
           .rpc("get_workspace_secrets", { _workspace_id: workspaceId });
         const secrets: any = Array.isArray(secretsRows) ? secretsRows[0] : secretsRows;
         if (data) {
-          setApiKey(secrets?.api_key || "");
+          // Auto-create an API key on first load so owners never need to "reset" to get one.
+          let key = secrets?.api_key || "";
+          if (!key) {
+            const generated = "flx_" + Array.from(crypto.getRandomValues(new Uint8Array(24))).map(b => b.toString(16).padStart(2, "0")).join("");
+            const { error: genErr } = await supabase.rpc("set_workspace_secrets", { _workspace_id: workspaceId, _values: { api_key: generated } as any });
+            if (!genErr) key = generated;
+          }
+          setApiKey(key);
           setPrimaryColor((data as any).primary_color || "#7c3aed");
           setTextColor((data as any).text_color || "#ffffff");
           setBackgroundColor((data as any).background_color || "#0f0f11");

@@ -6,6 +6,8 @@ import {
   Head,
   Heading,
   Html,
+  Img,
+  Link,
   Preview,
   Section,
   Text,
@@ -17,11 +19,11 @@ interface Props {
   subject?: string
   heading?: string
   preheader?: string
-  // bodyHtml is sanitized server-side before being injected. The template
-  // intentionally renders it as raw HTML so admins can use rich formatting
-  // (lists, links, bold, etc.) — see send-transactional-email for sanitization.
   bodyHtml?: string
   fromName?: string
+  images?: string[]
+  showNewsletterCTA?: boolean
+  newsletterUrl?: string
 }
 
 const AdminMessage = ({
@@ -30,6 +32,9 @@ const AdminMessage = ({
   preheader,
   bodyHtml = '<p>Hello,</p><p>This is a message from the Fluxcore team.</p>',
   fromName = 'Fluxcore Team',
+  images = [],
+  showNewsletterCTA = false,
+  newsletterUrl = 'https://fluxcore.works/newsletter',
 }: Props) => {
   const title = heading || subject
   return (
@@ -43,6 +48,13 @@ const AdminMessage = ({
           </Section>
           <Section style={card}>
             <Heading style={h1}>{title}</Heading>
+            {images.length > 0 && (
+              <Section style={imageStack}>
+                {images.map((src, i) => (
+                  <Img key={i} src={src} alt="" style={image} />
+                ))}
+              </Section>
+            )}
             <div
               style={contentStyle}
               dangerouslySetInnerHTML={{ __html: bodyHtml }}
@@ -52,6 +64,16 @@ const AdminMessage = ({
               Sent by {fromName} · Fluxcore staff
             </Text>
           </Section>
+          {showNewsletterCTA && (
+            <Section style={newsletterBox}>
+              <Text style={newsletterText}>
+                Want occasional product updates from Fluxcore?
+              </Text>
+              <Link href={newsletterUrl} style={newsletterLink}>
+                Subscribe to our newsletter →
+              </Link>
+            </Section>
+          )}
           <Text style={legalFooter}>
             You're receiving this because you operate a workspace on Fluxcore.
           </Text>
@@ -72,6 +94,7 @@ export const template = {
     bodyHtml:
       '<p>Hi there,</p><p>This is an example admin message with <strong>rich</strong> formatting and a <a href="https://fluxcore.works">link</a>.</p>',
     fromName: 'Fluxcore Team',
+    showNewsletterCTA: true,
   },
 } satisfies TemplateEntry
 
@@ -110,6 +133,16 @@ const h1: React.CSSProperties = {
   color: '#ffffff',
   margin: '0 0 14px',
 }
+const imageStack: React.CSSProperties = {
+  margin: '0 0 16px',
+}
+const image: React.CSSProperties = {
+  display: 'block',
+  width: '100%',
+  height: 'auto',
+  borderRadius: '10px',
+  marginBottom: '10px',
+}
 const contentStyle: React.CSSProperties = {
   color: '#d1d5db',
   fontSize: '15px',
@@ -123,6 +156,25 @@ const footer: React.CSSProperties = {
   color: '#9ca3af',
   fontSize: '12px',
   margin: 0,
+}
+const newsletterBox: React.CSSProperties = {
+  marginTop: '14px',
+  padding: '14px 18px',
+  borderRadius: '12px',
+  border: '1px solid #1f2937',
+  backgroundColor: '#0b1220',
+  textAlign: 'center' as const,
+}
+const newsletterText: React.CSSProperties = {
+  color: '#d1d5db',
+  fontSize: '13px',
+  margin: '0 0 6px',
+}
+const newsletterLink: React.CSSProperties = {
+  color: '#06b6d4',
+  fontSize: '14px',
+  fontWeight: 600,
+  textDecoration: 'none',
 }
 const legalFooter: React.CSSProperties = {
   color: '#9ca3af',
