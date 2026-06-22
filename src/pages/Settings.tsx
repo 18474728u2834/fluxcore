@@ -90,6 +90,7 @@ export default function SettingsPage() {
             if (!genErr) key = generated;
           }
           setApiKey(key);
+          setPrimaryColor((data as any).primary_color || "#7c3aed");
           setTextColor((data as any).text_color || "#ffffff");
           setBackgroundColor((data as any).background_color || "#0f0f11");
           setShowGrid((data as any).show_grid ?? true);
