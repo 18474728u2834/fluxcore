@@ -92,7 +92,6 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary/30">
-      <SiteBanner placement="marketing" />
       {/* Ambient glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-[1100px] h-[800px] rounded-full bg-primary/[0.10] blur-[160px]" />
@@ -100,35 +99,38 @@ export default function Index() {
       </div>
 
       {/* Nav */}
-      <nav className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl border-b border-border/10">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <Logo />
+      <nav className="fixed top-0 w-full z-50">
+        <SiteBanner placement="marketing" />
+        <div className="bg-background/60 backdrop-blur-xl border-b border-border/10">
+          <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <Logo />
 
-          <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
-            <a href="#features" className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Product</a>
-            <button onClick={() => navigate("/pricing")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
-            <button onClick={() => navigate("/feedback")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Changelog</button>
-            <button onClick={() => navigate("/support")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Support</button>
-          </div>
+            <div className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
+              <a href="#features" className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Product</a>
+              <button onClick={() => navigate("/pricing")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
+              <button onClick={() => navigate("/feedback")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Changelog</button>
+              <button onClick={() => navigate("/support")} className="text-[14px] text-muted-foreground hover:text-foreground transition-colors">Support</button>
+            </div>
 
-          <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} className="p-2 text-muted-foreground hover:text-foreground rounded-md transition-colors">
-              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
-            {isLoggedIn ? (
-              <Button size="sm" onClick={() => navigate("/workspaces")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4 rounded-lg shadow-lg shadow-primary/30">
-                Open dashboard
-              </Button>
-            ) : (
-              <>
-                <button onClick={() => navigate("/login")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block px-3 py-1.5">
-                  Sign in
-                </button>
-                <Button size="sm" onClick={() => navigate("/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4 rounded-lg shadow-lg shadow-primary/30">
-                  Sign up
+            <div className="flex items-center gap-2">
+              <button onClick={toggleTheme} className="p-2 text-muted-foreground hover:text-foreground rounded-md transition-colors">
+                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+              {isLoggedIn ? (
+                <Button size="sm" onClick={() => navigate("/workspaces")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4 rounded-lg shadow-lg shadow-primary/30">
+                  Open dashboard
                 </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <button onClick={() => navigate("/login")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors hidden sm:block px-3 py-1.5">
+                    Sign in
+                  </button>
+                  <Button size="sm" onClick={() => navigate("/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4 rounded-lg shadow-lg shadow-primary/30">
+                    Sign up
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </nav>
