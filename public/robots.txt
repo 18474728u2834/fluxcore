@@ -4,11 +4,49 @@ Allow: /
 User-agent: Bingbot
 Allow: /
 
-User-agent: Twitterbot
+User-agent: DuckDuckBot
 Allow: /
 
-User-agent: facebookexternalhit
-Allow: /
+User-agent: HTTrack
+Disallow: /
+
+User-agent: wget
+Disallow: /
+
+User-agent: curl
+Disallow: /
+
+User-agent: SiteSucker
+Disallow: /
+
+User-agent: WebCopier
+Disallow: /
+
+User-agent: Cyotek WebCopy
+Disallow: /
+
+User-agent: Offline Explorer
+Disallow: /
+
+User-agent: Teleport
+Disallow: /
+
+User-agent: WebReaper
+Disallow: /
+
+User-agent: WebsiteRipper
+Disallow: /
+
+User-agent: GetLeft
+Disallow: /
+
+User-agent: BlackWidow
+Disallow: /
 
 User-agent: *
-Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /unsubscribe
+Disallow: /auth/
+
+Sitemap: https://fluxcore.works/sitemap.xml
