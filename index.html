@@ -18,13 +18,41 @@
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
-      // Basic anti-inspect measures
-      document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'F12') e.preventDefault();
-        if (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) e.preventDefault();
-        if (e.ctrlKey && e.key === 'u') e.preventDefault();
-      });
+      // Fluxcore client-side protection — anti-inspect + anti-mirror heuristics.
+      (function () {
+        try {
+          // Block right-click + common devtools/save shortcuts
+          document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+          document.addEventListener('keydown', function (e) {
+            var k = (e.key || '').toLowerCase();
+            if (k === 'f12') e.preventDefault();
+            if (e.ctrlKey && e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) e.preventDefault();
+            if (e.ctrlKey && (k === 'u' || k === 's' || k === 'a' || k === 'p')) e.preventDefault();
+            if (e.metaKey && (k === 's' || k === 'p' || k === 'a' || k === 'u')) e.preventDefault();
+          });
+          // Disable drag/select on images and the page chrome
+          document.addEventListener('dragstart', function (e) {
+            var t = e.target;
+            if (t && (t.tagName === 'IMG' || t.tagName === 'VIDEO' || t.tagName === 'SOURCE')) e.preventDefault();
+          });
+          // Headless / automation / mirror tool sniff
+          var ua = (navigator.userAgent || '').toLowerCase();
+          var bad = /(httrack|wget|curl|sitesucker|webcopy|cyotek|offline ?explorer|teleport|getleft|webreaper|website ?ripper|website ?downloader|scrapy|httpx|python-requests|libwww|java\/|go-http-client|node-fetch|axios\/|okhttp|headlesschrome|phantomjs|slimerjs|electron|puppeteer|playwright|selenium|cypress)/;
+          var suspect = bad.test(ua) || navigator.webdriver === true || (!navigator.languages || navigator.languages.length === 0);
+          if (suspect && location.pathname !== '/403.html') {
+            location.replace('/403.html');
+          }
+          // Detect file:// or non-http origin (offline mirror copy opened from disk)
+          if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+            document.documentElement.innerHTML = '<div style="font-family:sans-serif;padding:40px;color:#e7eaf0;background:#0b0d12;min-height:100vh"><h1>Fluxcore</h1><p>This site only runs on its official domain. Offline copies are not permitted.</p></div>';
+          }
+        } catch (_) { /* ignore */ }
+      })();
     </script>
+    <style>
+      /* Discourage casual asset extraction */
+      img, video, source { -webkit-user-drag: none; user-select: none; -webkit-touch-callout: none; }
+      body { -webkit-tap-highlight-color: transparent; }
+    </style>
   </body>
 </html>

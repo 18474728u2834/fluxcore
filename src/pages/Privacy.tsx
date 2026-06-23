@@ -13,7 +13,12 @@ export default function Privacy() {
         </Button>
 
         <h1 className="text-3xl font-extrabold text-foreground mb-2">Privacy Policy</h1>
-        <p className="text-sm text-muted-foreground mb-8">Last updated: May 29, 2026 (translation provider update and wall moderation disclosure)</p>
+        <p className="text-sm text-muted-foreground mb-2">Last updated: June 25, 2026 (operator transition to RetailPro Technologies UIA)</p>
+        <div className="mb-8 rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm text-foreground">
+          <strong>Operator notice.</strong> From <strong>25.06.2026</strong>, the Fluxcore service is operated and driven by <strong>RetailPro Technologies UIA</strong> (Estonia). RetailPro Technologies UIA becomes the data controller for personal data processed through Fluxcore from that date and is responsible for fulfilling the rights and obligations described in this policy. All prior commitments around data handling, retention, and security continue to apply unchanged.
+        </div>
+
+
 
         <div className="prose prose-sm prose-invert max-w-none space-y-6 text-muted-foreground">
           <section>
@@ -85,9 +90,11 @@ export default function Privacy() {
           </section>
 
           <section>
-            <h2 className="text-lg font-bold text-foreground">10. Contact</h2>
-            <p>For privacy-related questions, use the <button onClick={() => navigate("/feedback")} className="text-primary hover:underline">Feedback page</button> or contact us through the support center.</p>
+            <h2 className="text-lg font-bold text-foreground">10. Contact & Operator</h2>
+            <p>Fluxcore is operated by <strong>RetailPro Technologies UIA</strong> (Estonia) from 25.06.2026. For privacy-related questions or to exercise your rights under this policy, use the <button onClick={() => navigate("/feedback")} className="text-primary hover:underline">Feedback page</button>, email <a href="mailto:support@fluxcore.works" className="text-primary hover:underline">support@fluxcore.works</a>, or contact us through the support center.</p>
           </section>
+
+          <p className="pt-8 text-xs text-muted-foreground border-t border-border">© 2026 Fluxcore. All Rights Reserved to RetailPro Technologies UIA.</p>
         </div>
       </div>
     </div>

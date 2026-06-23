@@ -446,7 +446,7 @@ export default function Index() {
             <button onClick={() => navigate("/privacy")} className="hover:text-foreground transition-colors">Privacy</button>
             <LanguageSelector />
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Fluxcore</p>
+          <p className="text-xs text-muted-foreground">© 2026 Fluxcore · All Rights Reserved to RetailPro Technologies UIA</p>
         </div>
       </footer>
     </div>
