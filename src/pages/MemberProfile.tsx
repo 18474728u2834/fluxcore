@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
-import { ArrowLeft, Clock, AlertTriangle, TrendingUp, MessageSquare, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Clock, AlertTriangle, TrendingUp, TrendingDown, MessageSquare, Loader2, Plus, Trash2, ExternalLink, Copy, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
@@ -208,39 +208,12 @@ export default function MemberProfile() {
 
         {/* Profile Tab */}
         {tab === "profile" && (
-          <div className="glass rounded-xl p-5 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Roblox ID</p>
-                <p className="text-sm font-medium text-foreground">{member.roblox_user_id}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Role</p>
-                <p className="text-sm font-medium text-foreground">{member.role}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Joined</p>
-                <p className="text-sm font-medium text-foreground">{new Date(member.joined_at).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Status</p>
-                <p className="text-sm font-medium text-foreground">{member.verified ? "Verified" : "Unverified"}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Quick Stats</p>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="bg-secondary/40 rounded-lg p-3 text-center">
-                  <p className="text-lg font-bold text-foreground">{logs.filter(l => l.log_type === "warning").length}</p>
-                  <p className="text-xs text-muted-foreground">Warnings</p>
-                </div>
-                <div className="bg-secondary/40 rounded-lg p-3 text-center">
-                  <p className="text-lg font-bold text-foreground">{activity.length}</p>
-                  <p className="text-xs text-muted-foreground">Events</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <RobloxPanel
+            member={member}
+            avatar={avatar}
+            logs={logs}
+            activityCount={activity.length}
+          />
         )}
 
         {/* Logs Tab */}
