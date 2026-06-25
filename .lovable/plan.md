@@ -1,73 +1,55 @@
-Here are concrete feature ideas in the two areas you picked. Pick any combination and I'll plan the build in detail.
+# Roblox Integrations & Tools — Visual Refresh Roadmap
 
-## Community & Engagement
+Four focused refresh slices. Each one keeps existing logic untouched and only modernizes the UI/UX of a Roblox-facing surface. Everything stays inside the existing dark + cyan + Outfit theme, glassmorphism, and uses semantic tokens (no hardcoded colors).
 
-1. **Shoutouts & Kudos wall**
-   - Members publicly thank/recognise teammates. Reactions, weekly "top recipient" highlight, optional Discord webhook mirror.
-   - Adds social momentum to the existing Wall without replacing announcements.
+## 1. Ranks & Roles Command Center
+Refresh `src/pages/Ranks.tsx` and `src/pages/Roles.tsx` into a single visual language.
 
-2. **Staff Spotlight of the Week**
-   - Auto-pick from highest activity / most kudos / quota over-achiever. Owner can override. Banner on Dashboard + Nexus.
+- New header strip showing connected Roblox group: group icon, member count, last sync time, "Sync now" pill.
+- Roles as a vertical rank ladder (highest at top) with rank number, color dot, member count, and quick actions on hover.
+- Drag handle styling refresh (still uses existing reorder logic).
+- Empty / "no group connected" state becomes a single illustrated card with one clear CTA.
 
-3. **Achievements & badges**
-   - Auto-awarded badges (first session hosted, 50h in-game, 10 sessions, 100% quota 4 weeks, perfect attendance). Shown on member profile and leaderboard.
-   - Owners can create custom badges and award manually.
+## 2. Integrations Hub
+Promote integrations out of Settings into a dedicated `/integrations` index page (visual layer only — reuses existing setting cards under the hood).
 
-4. **Polls / quick votes**
-   - Lightweight poll widget on the Wall (single/multi choice, anonymous toggle, expiry). Great for "next event theme", staff sentiment, etc.
+- Bento grid of integration tiles: Roblox Open Cloud, RankGun, Discord webhooks, Quota webhook, Lua tracker, In-game module.
+- Each tile: logo, one-line status ("Connected as X", "Not connected", "Key set 3d ago"), subtle status dot, click → opens the existing Settings panel.
+- Top filter chips: All / Connected / Needs setup.
+- Settings page keeps working; this is a friendlier entry point.
 
-5. **Events / RSVP layer on Sessions**
-   - Non-shift community events (game nights, training, Q&A) with RSVP, reminders, and attendance auto-credit.
+## 3. Member Profile Roblox Panel
+Refresh the Roblox-related section of `src/pages/MemberProfile.tsx`.
 
-6. **Suggestion box (members → leads)**
-   - Internal version of the Feedback system scoped to a workspace/department, with upvotes and status (Planned/Done/Declined).
+- New "Roblox" card: large avatar headshot, username + display name, current group rank as a chip, join date, last in-game seen.
+- Quick-action row: Promote / Demote / Open on Roblox / Copy ID — styled as ghost buttons with icon + label.
+- Inline rank history timeline (uses existing logbook data) with promotion ↑ / demotion ↓ icons and color accents.
+- No backend changes; uses the data already loaded.
 
-7. **Birthday & anniversary feed**
-   - You already capture birthdays — surface a feed for birthdays today/this week + join-date anniversaries with auto Discord ping.
+## 4. Lua Tracker / Setup Tracking Refresh
+Refresh the in-Settings "Tracking & Scripts" category visuals.
 
-8. **Onboarding checklist for new members**
-   - Personal checklist (read handbook doc, sign NDA, attend 1 training, host 1 session). Progress bar on profile, nudges leads when stalled.
+- Stepper layout: 1) Generate API key, 2) Paste Lua script, 3) Enable in-game, 4) Verify.
+- API key field becomes a monospace masked pill with copy + rotate buttons and a "last used" timestamp.
+- Script block gets a faux-editor chrome (tab bar with `tracker.lua`, line numbers, copy button) — purely cosmetic, content unchanged.
+- Status indicator: green pulse if a heartbeat has been received in the last 5 min, amber otherwise.
 
-## Analytics & Reporting
+## Technical Details
 
-1. **Workspace Insights dashboard**
-   - Time-series charts: active staff, sessions hosted, hours in-game, quota pass rate, LOA volume, document signature rate. Filter by department and date range.
+- Files touched (UI only):
+  - `src/pages/Ranks.tsx`, `src/pages/Roles.tsx`
+  - `src/pages/Settings.tsx` (Tracking & Scripts category + Integrations entries)
+  - New `src/pages/Integrations.tsx` + route in `src/App.tsx`
+  - Nav entry in `src/components/AppSidebar.tsx` and `src/bargains/Shell.tsx`
+  - `src/pages/MemberProfile.tsx` (Roblox card section only)
+- Reuses existing hooks, RPCs, and edge functions — no schema, no policy, no edge-function changes.
+- All styling via existing semantic tokens in `index.css` / `tailwind.config.ts`; new tokens only if needed for status dots, added centrally.
+- Motion via existing `framer-motion`; small entrance + hover transitions only.
 
-2. **Department scorecards**
-   - Per-department KPIs side-by-side: headcount, active %, average session length, quota compliance, kudos count. Owner-only.
+## Out of scope
+- No new Roblox API calls or webhook types.
+- No changes to ranking logic, RankGun flow, or Open Cloud auth.
+- No copy/legal/footer changes.
 
-3. **Member performance report**
-   - Drill-down per member: weekly hours, sessions, quota history, warnings, kudos, badges. Export to CSV/PDF.
-
-4. **Retention / churn report**
-   - New members, returning members, inactive 14/30 days, suspended, left. Cohort chart by join month.
-
-5. **Session analytics**
-   - Avg attendance per host, popular days/times heatmap, no-show rate, recurring-session adherence.
-
-6. **Quota analytics**
-   - Pass/fail trend, top under-performers, who is at risk this week. One-click "send Discord reminder" or "auto-warn" rules.
-
-7. **Activity heatmap**
-   - Hour-of-day × day-of-week heatmap of in-game activity, per workspace and per member.
-
-8. **Scheduled email/Discord digests**
-   - Weekly auto-digest to owner: top performers, at-risk members, sessions next week, open LOA/feedback. Uses existing email + webhook stack.
-
-9. **Public-facing group stats page (optional)**
-   - Opt-in shareable URL (e.g. /g/<slug>/stats) showing safe high-level numbers — recruitment magnet.
-
-## Technical notes
-- All additions reuse: `workspace_members`, `activity_sessions`, `scheduled_sessions`, `workspace_quotas`, `departments`, existing Discord webhook + email queue, and the `has_workspace_permission` RPC.
-- New tables likely needed: `kudos`, `badges` + `badge_awards`, `polls` + `poll_votes`, `events` (or extend `scheduled_sessions`), `onboarding_tasks`, `member_metrics_daily` (materialised cache for analytics speed).
-- Charts via `recharts` (already in stack).
-- Heavy analytics aggregated nightly by a Deno cron edge function into `member_metrics_daily` so dashboards stay fast.
-- Permissions: viewing analytics gated to owners + department leads (per-department scoped); engagement features open to all members but moderation-capable for leads/owners.
-
-## Suggested first slice
-If you want maximum impact for minimum work, I'd start with:
-1. Kudos wall + auto Staff Spotlight
-2. Workspace Insights dashboard (sessions, hours, quota pass rate, retention)
-3. Achievements/badges (auto from existing data)
-
-Tell me which of these to build (or pick your own combo) and I'll write a detailed implementation plan.
+## Build order
+1 → 2 → 3 → 4, each shippable independently. Want me to start with all four, or pick a subset?
