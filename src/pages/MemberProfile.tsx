@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
-import { ArrowLeft, Clock, AlertTriangle, TrendingUp, MessageSquare, Loader2, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Clock, AlertTriangle, TrendingUp, TrendingDown, MessageSquare, Loader2, Plus, Trash2, ExternalLink, Copy, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
@@ -208,39 +208,12 @@ export default function MemberProfile() {
 
         {/* Profile Tab */}
         {tab === "profile" && (
-          <div className="glass rounded-xl p-5 space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Roblox ID</p>
-                <p className="text-sm font-medium text-foreground">{member.roblox_user_id}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Role</p>
-                <p className="text-sm font-medium text-foreground">{member.role}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Joined</p>
-                <p className="text-sm font-medium text-foreground">{new Date(member.joined_at).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Status</p>
-                <p className="text-sm font-medium text-foreground">{member.verified ? "Verified" : "Unverified"}</p>
-              </div>
-            </div>
-            <div>
-              <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Quick Stats</p>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="bg-secondary/40 rounded-lg p-3 text-center">
-                  <p className="text-lg font-bold text-foreground">{logs.filter(l => l.log_type === "warning").length}</p>
-                  <p className="text-xs text-muted-foreground">Warnings</p>
-                </div>
-                <div className="bg-secondary/40 rounded-lg p-3 text-center">
-                  <p className="text-lg font-bold text-foreground">{activity.length}</p>
-                  <p className="text-xs text-muted-foreground">Events</p>
-                </div>
-              </div>
-            </div>
-          </div>
+          <RobloxPanel
+            member={member}
+            avatar={avatar}
+            logs={logs}
+            activityCount={activity.length}
+          />
         )}
 
         {/* Logs Tab */}
@@ -327,5 +300,117 @@ export default function MemberProfile() {
         )}
       </div>
     </DashboardLayout>
+  );
+}
+
+function RobloxPanel({ member, avatar, logs, activityCount }: {
+  member: MemberData; avatar: string; logs: MemberLog[]; activityCount: number;
+}) {
+  const [copied, setCopied] = useState(false);
+  const copyId = () => {
+    navigator.clipboard.writeText(member.roblox_user_id);
+    setCopied(true); setTimeout(() => setCopied(false), 1500);
+  };
+  const rankHistory = logs
+    .filter(l => l.log_type === "promotion" || l.log_type === "demotion")
+    .slice(0, 6);
+  const warnings = logs.filter(l => l.log_type === "warning").length;
+  const fmt = (d: string) => new Date(d).toLocaleDateString();
+
+  return (
+    <div className="space-y-4">
+      {/* Roblox identity card */}
+      <div className="glass rounded-xl p-5 space-y-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
+        <div className="relative flex items-start gap-4">
+          {avatar ? (
+            <img src={avatar} alt={member.roblox_username} className="w-20 h-20 rounded-2xl border border-border/40 bg-secondary/40" />
+          ) : (
+            <div className="w-20 h-20 rounded-2xl bg-secondary/40 flex items-center justify-center text-2xl font-bold text-muted-foreground">
+              {member.roblox_username.charAt(0)}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] uppercase tracking-widest text-muted-foreground">Roblox</p>
+            <h2 className="text-lg font-bold text-foreground truncate">@{member.roblox_username}</h2>
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+              <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-primary/15 text-primary">{member.role}</span>
+              {member.verified && <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-success/15 text-success">Verified</span>}
+              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+                <Clock className="w-3 h-3" /> Joined {fmt(member.joined_at)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick actions */}
+        <div className="relative grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+          <a
+            href={`https://www.roblox.com/users/${member.roblox_user_id}/profile`}
+            target="_blank" rel="noreferrer"
+            className="flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 bg-muted/50 hover:bg-muted text-foreground transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" /> Open Roblox
+          </a>
+          <button
+            onClick={copyId}
+            className="flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 bg-muted/50 hover:bg-muted text-foreground transition-colors"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-success" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? "Copied" : `ID ${member.roblox_user_id}`}
+          </button>
+          <a
+            href={`https://www.roblox.com/messages/compose?recipientId=${member.roblox_user_id}`}
+            target="_blank" rel="noreferrer"
+            className="flex items-center justify-center gap-1.5 text-xs font-medium rounded-lg px-3 py-2 bg-muted/50 hover:bg-muted text-foreground transition-colors col-span-2 sm:col-span-1"
+          >
+            <MessageSquare className="w-3.5 h-3.5" /> Message
+          </a>
+        </div>
+
+        {/* Quick stats strip */}
+        <div className="relative grid grid-cols-3 gap-2 pt-2 border-t border-border/30">
+          <Stat label="Warnings" value={warnings} tone={warnings > 0 ? "warn" : "muted"} />
+          <Stat label="Events" value={activityCount} />
+          <Stat label="Rank moves" value={rankHistory.length} />
+        </div>
+      </div>
+
+      {/* Rank history timeline */}
+      <div className="glass rounded-xl p-5">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-semibold text-foreground">Rank history</h3>
+          <span className="text-[11px] text-muted-foreground">{rankHistory.length} recent</span>
+        </div>
+        {rankHistory.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No promotions or demotions logged yet.</p>
+        ) : (
+          <ol className="relative border-l border-border/40 ml-1 space-y-3">
+            {rankHistory.map((log) => {
+              const up = log.log_type === "promotion";
+              return (
+                <li key={log.id} className="pl-4 relative">
+                  <span className={`absolute -left-[7px] top-1 w-3 h-3 rounded-full flex items-center justify-center ${up ? "bg-success/20 text-success" : "bg-destructive/20 text-destructive"}`}>
+                    {up ? <TrendingUp className="w-2.5 h-2.5" /> : <TrendingDown className="w-2.5 h-2.5" />}
+                  </span>
+                  <p className="text-sm text-foreground">{log.content}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">by {log.author_name} · {fmt(log.created_at)}</p>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value, tone = "default" }: { label: string; value: number; tone?: "default" | "warn" | "muted" }) {
+  const color = tone === "warn" ? "text-warning" : tone === "muted" ? "text-muted-foreground" : "text-foreground";
+  return (
+    <div className="text-center">
+      <p className={`text-lg font-bold tabular-nums ${color}`}>{value}</p>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+    </div>
   );
 }

@@ -49,6 +49,7 @@ const DocumentView = lazy(() => import("./pages/DocumentView"));
 const LOA = lazy(() => import("./pages/LOA"));
 const Staff = lazy(() => import("./pages/Staff"));
 const Roles = lazy(() => import("./pages/Roles"));
+const Integrations = lazy(() => import("./pages/Integrations"));
 const Quotas = lazy(() => import("./pages/Quotas"));
 const MessageLogs = lazy(() => import("./pages/MessageLogs"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
@@ -118,6 +119,7 @@ function WorkspacePages() {
         <Route path="ranks" element={<Ranks />} />
         <Route path="setup-tracking" element={<SetupTracking />} />
         <Route path="settings" element={<SettingsPage />} />
+        <Route path="integrations" element={<Integrations />} />
         <Route path="documents" element={<Documents />} />
         <Route path="documents/:docId" element={<DocumentView />} />
         <Route path="loa" element={<LOA />} />
@@ -148,6 +150,7 @@ function BargainsWorkspacePages() {
         <Route path="ranks"     element={<Ranks />} />
         <Route path="setup-tracking" element={<SetupTracking />} />
         <Route path="settings"  element={<SettingsPage />} />
+        <Route path="integrations" element={<Integrations />} />
         <Route path="dept-settings" element={<BDepartmentSettings />} />
         <Route path="documents" element={<BDocuments />} />
         <Route path="documents/:docId" element={<DocumentView />} />
