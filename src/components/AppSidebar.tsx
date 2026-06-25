@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck, MessageSquare, Sparkles, Trophy, Heart, ArrowUp } from "lucide-react";
+import { LayoutDashboard, Users, Settings, LogOut, Menu, Clock, Code, Megaphone, CalendarDays, Sun, Moon, FileText, CalendarOff, UserX, Target, ShieldCheck, DoorOpen, BadgeCheck, MessageSquare, Sparkles, Trophy, Heart, ArrowUp, Plug } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { NavLink } from "@/components/NavLink";
@@ -67,6 +67,7 @@ export function AppSidebar() {
   const showConfig = isOwner || hasPermission("view_config");
   const configItems = [
     { title: "Roles", url: `${base}/roles`, icon: ShieldCheck },
+    { title: "Integrations", url: `${base}/integrations`, icon: Plug },
     { title: "Settings", url: `${base}/settings`, icon: Settings },
   ];
 
