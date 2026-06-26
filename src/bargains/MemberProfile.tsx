@@ -198,29 +198,36 @@ export default function BMemberProfile() {
             <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
               {logs.length === 0 ? (
                 <div className="p-10 text-center text-sm" style={{ color: bx.textDim }}>No log entries yet.</div>
-              ) : logs.map((l, i) => (
-                <div key={l.id} className="p-4" style={{ borderTop: i === 0 ? "none" : "1px solid #22222a" }}>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider" style={{ background: "rgba(245,90,74,0.12)", color: bx.coral }}>{l.log_type}</span>
-                    <span className="text-xs" style={{ color: bx.textMuted }}>{new Date(l.created_at).toLocaleDateString()} · by {l.author_name}</span>
-                    {canManage && (
-                      <button
-                        onClick={async () => {
-                          if (!confirm("Remove this entry?")) return;
-                          const { error } = await supabase.from("member_logs").delete().eq("id", l.id);
-                          if (error) { alert("Failed to remove: " + error.message); return; }
-                          setLogs(logs.filter((x) => x.id !== l.id));
-                        }}
-                        className="ml-auto text-[#7a7a7e] hover:text-[#f55a4a] transition-colors"
-                        title="Remove"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    )}
+              ) : logs.map((l, i) => {
+                const logPalette =
+                  l.log_type === "promotion" ? { bg: "rgba(34,197,94,0.12)", color: bx.success, border: "rgba(34,197,94,0.3)" } :
+                  l.log_type === "demotion" ? { bg: "rgba(245,90,74,0.12)", color: bx.coral, border: "rgba(245,90,74,0.3)" } :
+                  l.log_type === "warning" ? { bg: "rgba(245,158,11,0.12)", color: bx.warning, border: "rgba(245,158,11,0.3)" } :
+                  { bg: "rgba(59,130,246,0.12)", color: "#3b82f6", border: "rgba(59,130,246,0.3)" };
+                return (
+                  <div key={l.id} className="p-4" style={{ borderTop: i === 0 ? "none" : "1px solid #22222a" }}>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider" style={{ background: logPalette.bg, color: logPalette.color, border: `1px solid ${logPalette.border}` }}>{l.log_type}</span>
+                      <span className="text-xs" style={{ color: bx.textMuted }}>{new Date(l.created_at).toLocaleDateString()} · by {l.author_name}</span>
+                      {canManage && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm("Remove this entry?")) return;
+                            const { error } = await supabase.from("member_logs").delete().eq("id", l.id);
+                            if (error) { alert("Failed to remove: " + error.message); return; }
+                            setLogs(logs.filter((x) => x.id !== l.id));
+                          }}
+                          className="ml-auto text-[#7a7a7e] hover:text-[#f55a4a] transition-colors"
+                          title="Remove"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <div className="text-sm" style={{ color: bx.text }}>{l.content}</div>
                   </div>
-                  <div className="text-sm" style={{ color: bx.text }}>{l.content}</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

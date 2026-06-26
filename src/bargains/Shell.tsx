@@ -431,6 +431,8 @@ export const bx = {
   cardStyle: { background: "#1a1a1c", borderColor: "#26262a" } as const,
   cardInner: { background: "#141416", borderColor: "#22222a" } as const,
   coral: "#f55a4a",
+  success: "#22c55e",
+  warning: "#f59e0b",
   text: "#fafafa",
   textDim: "#8a8a8e",
   textMuted: "#6a6a6e",
