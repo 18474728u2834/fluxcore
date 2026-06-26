@@ -128,7 +128,12 @@ export default function MemberProfile() {
           body: { action: stepAction, workspace_id: workspaceId, roblox_user_id: member.roblox_user_id },
         });
         if (res.data?.success) {
-          toast.success(`Log added — ${member.roblox_username} moved to ${res.data.to?.name || "new rank"}`);
+          const newRoleName = res.data.to?.name as string | undefined;
+          if (newRoleName) {
+            await supabase.from("workspace_members").update({ role: newRoleName }).eq("id", member.id);
+            setMember({ ...member, role: newRoleName });
+          }
+          toast.success(`Log added — ${member.roblox_username} ${logType === "demotion" ? "demoted" : "promoted"} to ${newRoleName || "new rank"}`);
         } else {
           toast.warning(`Log saved, but Roblox rank wasn't changed: ${res.data?.error || res.error?.message || "unknown error"}`);
         }
