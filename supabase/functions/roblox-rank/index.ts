@@ -318,7 +318,7 @@ serve(async (req) => {
           status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
-      const nextIdx = action === "promote_one" ? curIdx + 1 : curIdx - 1;
+      const nextIdx = (action === "promote_one" || action === "promote") ? curIdx + 1 : curIdx - 1;
       if (nextIdx < 0 || nextIdx >= ladder.length) {
         return new Response(JSON.stringify({ error: `Cannot ${action.replace("_one", "")} further` }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
