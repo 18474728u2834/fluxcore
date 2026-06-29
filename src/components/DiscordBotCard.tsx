@@ -92,6 +92,21 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
         <a href={INVITE_URL} target="_blank" rel="noreferrer">
           <Button variant="secondary" size="sm"><ExternalLink className="w-3 h-3 mr-1" /> Invite bot to Discord</Button>
         </a>
+        {isOwner && (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={async () => {
+              const t = toast.loading("Registering slash commands…");
+              const { error } = await supabase.functions.invoke("discord-register-commands", { body: {} });
+              toast.dismiss(t);
+              if (error) toast.error("Failed: " + error.message);
+              else toast.success("Slash commands registered with Discord");
+            }}
+          >
+            Re-register slash commands
+          </Button>
+        )}
       </div>
 
       <div className="space-y-1.5">
