@@ -130,21 +130,23 @@ submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [st
     if result == nil then return { ok = false, error = "network" } end
     if result.error then return { ok = false, error = result.error } end
 
-    if result.passed == false then
-        local msg = (typeof(result.message) == "string" and result.message)
-            or "You did not pass the application. Try again later."
-        -- Slight delay so the client can show the submission state first.
-        task.delay(0.5, function()
-            if player and player.Parent then player:Kick(msg) end
-        end)
-        return { ok = true, passed = false, message = msg }
+    local passed = result.passed ~= false
+    local msg
+    if passed then
+        msg = "Passed! Ranked Successfully"
+    else
+        msg = "Failed. Try again later."
     end
+    -- Always kick the player after submission with the appropriate message.
+    task.delay(0.6, function()
+        if player and player.Parent then player:Kick(msg) end
+    end)
 
     return {
         ok = true,
-        passed = (result.passed ~= false),
+        passed = passed,
         ranked = result.ranked == true,
-        message = result.message,
+        message = msg,
         application_id = result.application_id,
     }
 end
