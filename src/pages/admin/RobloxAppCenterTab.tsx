@@ -112,7 +112,12 @@ submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [st
     if typeof(form_id) ~= "string" or typeof(answers) ~= "table" then
         return { ok = false, error = "bad_payload" }
     end
-    local result = http("POST", "submit", {
+    -- POST to fluxcore.works/application/ranking — backend grades the answers,
+    -- records the application, optionally auto-ranks, and returns
+    --   { ok, passed, message, ranked, ... }
+    -- We kick failures with the workspace-configured message and let passes
+    -- through so the client can show the "Passed & Ranked" screen.
+    local result = http("POST", "ranking", {
         form_id         = form_id,
         roblox_user_id  = tostring(player.UserId),
         roblox_username = player.Name,
@@ -120,7 +125,24 @@ submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [st
     })
     if result == nil then return { ok = false, error = "network" } end
     if result.error then return { ok = false, error = result.error } end
-    return { ok = true, application_id = result.application_id }
+
+    if result.passed == false then
+        local msg = (typeof(result.message) == "string" and result.message)
+            or "You did not pass the application. Try again later."
+        -- Slight delay so the client can show the submission state first.
+        task.delay(0.5, function()
+            if player and player.Parent then player:Kick(msg) end
+        end)
+        return { ok = true, passed = false, message = msg }
+    end
+
+    return {
+        ok = true,
+        passed = (result.passed ~= false),
+        ranked = result.ranked == true,
+        message = result.message,
+        application_id = result.application_id,
+    }
 end
 
 print("[Fluxcore] Application Center server ready.")
