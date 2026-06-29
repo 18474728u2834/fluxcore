@@ -112,6 +112,7 @@ export default function Admin() {
             <TabsTrigger value="portals">Partner Portals</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
             {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
+            {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
