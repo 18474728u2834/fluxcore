@@ -164,8 +164,20 @@ async function handleCommand(body: any): Promise<Response> {
   return ephemeral("Unknown command.");
 }
 
+const HEALTH_CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+};
+
 Deno.serve(async (req) => {
-  if (req.method !== "POST") return new Response("ok");
+  if (req.method === "OPTIONS") return new Response("ok", { headers: HEALTH_CORS });
+  if (req.method === "GET") {
+    return new Response(JSON.stringify({ status: "online", service: "discord-bot" }), {
+      headers: { ...HEALTH_CORS, "Content-Type": "application/json" },
+    });
+  }
+  if (req.method !== "POST") return new Response("ok", { headers: HEALTH_CORS });
   const raw = await req.text();
   if (!(await verifySignature(req, raw))) {
     return new Response("invalid request signature", { status: 401 });
