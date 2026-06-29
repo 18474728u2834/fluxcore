@@ -204,6 +204,179 @@ export type Database = {
           },
         ]
       }
+      application_form_questions: {
+        Row: {
+          created_at: string
+          form_id: string
+          help_text: string | null
+          id: string
+          label: string
+          options: Json
+          position: number
+          required: boolean
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          form_id: string
+          help_text?: string | null
+          id?: string
+          label: string
+          options?: Json
+          position?: number
+          required?: boolean
+          type: string
+        }
+        Update: {
+          created_at?: string
+          form_id?: string
+          help_text?: string | null
+          id?: string
+          label?: string
+          options?: Json
+          position?: number
+          required?: boolean
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_form_questions_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "application_forms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      application_forms: {
+        Row: {
+          auto_rank_on_accept: boolean
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_open: boolean
+          min_account_age_days: number
+          notify_webhook: string | null
+          require_group_member: boolean
+          scoring_rules: Json
+          slug: string
+          target_role_id: string | null
+          title: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          auto_rank_on_accept?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_open?: boolean
+          min_account_age_days?: number
+          notify_webhook?: string | null
+          require_group_member?: boolean
+          scoring_rules?: Json
+          slug: string
+          target_role_id?: string | null
+          title: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          auto_rank_on_accept?: boolean
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_open?: boolean
+          min_account_age_days?: number
+          notify_webhook?: string | null
+          require_group_member?: boolean
+          scoring_rules?: Json
+          slug?: string
+          target_role_id?: string | null
+          title?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_forms_target_role_id_fkey"
+            columns: ["target_role_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "application_forms_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      applications: {
+        Row: {
+          answers: Json
+          auto_score: number
+          created_at: string
+          form_id: string
+          id: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewer_id: string | null
+          roblox_user_id: string
+          roblox_username: string
+          status: string
+          workspace_id: string
+        }
+        Insert: {
+          answers?: Json
+          auto_score?: number
+          created_at?: string
+          form_id: string
+          id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          roblox_user_id: string
+          roblox_username: string
+          status?: string
+          workspace_id: string
+        }
+        Update: {
+          answers?: Json
+          auto_score?: number
+          created_at?: string
+          form_id?: string
+          id?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewer_id?: string | null
+          roblox_user_id?: string
+          roblox_username?: string
+          status?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "application_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "applications_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       data_export_requests: {
         Row: {
           created_at: string
@@ -349,6 +522,85 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "departments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discord_command_sessions: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          discord_user_id: string
+          discord_username: string | null
+          expires_at: string
+          guild_id: string
+          id: string
+          token: string
+          workspace_id: string | null
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          discord_user_id: string
+          discord_username?: string | null
+          expires_at: string
+          guild_id: string
+          id?: string
+          token: string
+          workspace_id?: string | null
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          discord_user_id?: string
+          discord_username?: string | null
+          expires_at?: string
+          guild_id?: string
+          id?: string
+          token?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discord_command_sessions_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      discord_links: {
+        Row: {
+          created_at: string
+          discord_user_id: string
+          discord_username: string | null
+          id: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          discord_user_id: string
+          discord_username?: string | null
+          id?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          discord_user_id?: string
+          discord_username?: string | null
+          id?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discord_links_workspace_id_fkey"
             columns: ["workspace_id"]
             isOneToOne: false
             referencedRelation: "workspaces"
@@ -1847,6 +2099,38 @@ export type Database = {
           },
         ]
       }
+      workspace_discord_guilds: {
+        Row: {
+          created_at: string
+          guild_id: string
+          id: string
+          installed_by: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          guild_id: string
+          id?: string
+          installed_by?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          guild_id?: string
+          id?: string
+          installed_by?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workspace_discord_guilds_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       workspace_documents: {
         Row: {
           assign_to: string
@@ -2253,6 +2537,7 @@ export type Database = {
         Args: { _grant_id: string; _workspace_id: string }
         Returns: boolean
       }
+      bind_discord_account: { Args: { _token: string }; Returns: Json }
       calculate_session_duration: {
         Args: { ws_id: string }
         Returns: undefined
@@ -2312,6 +2597,7 @@ export type Database = {
           verified_official: boolean
         }[]
       }
+      get_public_form: { Args: { _form_id: string }; Returns: Json }
       get_workspace_context: {
         Args: { _workspace_id: string }
         Returns: {
@@ -2368,6 +2654,17 @@ export type Database = {
         Returns: boolean
       }
       heartbeat_portal: { Args: { _workspace_id: string }; Returns: undefined }
+      internal_discord_resolve_user: {
+        Args: { _discord_user_id: string; _guild_id: string }
+        Returns: {
+          user_id: string
+          workspace_id: string
+        }[]
+      }
+      internal_discord_workspace_for_guild: {
+        Args: { _guild_id: string }
+        Returns: string
+      }
       internal_get_workspace_secrets: {
         Args: { _workspace_id: string }
         Returns: {
@@ -2377,6 +2674,10 @@ export type Database = {
           rankgun_api_key: string
           roblox_api_key: string
         }[]
+      }
+      internal_member_has_permission: {
+        Args: { _permission: string; _user_id: string; _workspace_id: string }
+        Returns: boolean
       }
       internal_workspace_id_by_api_key: {
         Args: { _api_key: string }
@@ -2419,6 +2720,15 @@ export type Database = {
       set_workspace_secrets: {
         Args: { _values: Json; _workspace_id: string }
         Returns: undefined
+      }
+      submit_application: {
+        Args: {
+          _answers: Json
+          _form_id: string
+          _roblox_user_id: string
+          _roblox_username: string
+        }
+        Returns: string
       }
       sweep_dormant_portals: { Args: never; Returns: number }
     }
