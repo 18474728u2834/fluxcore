@@ -62,10 +62,17 @@ export default function Applications() {
 
   const startNew = () => {
     setEditingId("new");
-    setDraft({ id: "new", slug: "", title: "", description: "", is_open: true, target_role_id: null, auto_rank_on_accept: false, notify_webhook: "" });
+    setDraft({
+      id: "new", slug: "", title: "", description: "", is_open: true,
+      target_role_id: null, auto_rank_on_accept: false, notify_webhook: "",
+      pass_threshold: 100,
+      pass_message: "Passed & Ranked - welcome aboard!",
+      fail_kick_message: "You did not pass the application. Try again later.",
+      pass_rank_number: null,
+    });
     setQuestions([
-      { label: "What's your timezone?", type: "timezone", options: [], required: true, position: 0 },
-      { label: "Why do you want to join?", type: "long_text", options: [], required: true, position: 1 },
+      { label: "What's your timezone?", type: "timezone", options: [], required: true, position: 0, correct_answer: "", match_mode: "any" },
+      { label: "Why do you want to join?", type: "long_text", options: [], required: true, position: 1, correct_answer: "", match_mode: "any" },
     ]);
   };
 
