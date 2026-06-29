@@ -66,6 +66,30 @@ function getOption(opts: any[] | undefined, name: string): any {
   return opts?.find((o: any) => o.name === name)?.value;
 }
 
+async function logCommand(entry: {
+  workspace_id: string | null;
+  guild_id: string;
+  discord_user_id: string;
+  discord_username?: string;
+  command: string;
+  options?: any;
+  result: string;
+  error?: string | null;
+}) {
+  try {
+    await admin.from("discord_bot_logs").insert({
+      workspace_id: entry.workspace_id,
+      guild_id: entry.guild_id,
+      discord_user_id: entry.discord_user_id,
+      discord_username: entry.discord_username ?? null,
+      command: entry.command,
+      options: entry.options ?? null,
+      result: entry.result,
+      error: entry.error ?? null,
+    });
+  } catch (_) { /* swallow log errors */ }
+}
+
 async function handleCommand(body: any): Promise<Response> {
   const cmd = body.data?.name as string;
   const opts = body.data?.options as any[] | undefined;
@@ -74,51 +98,74 @@ async function handleCommand(body: any): Promise<Response> {
   const discord_user_id = member?.id as string;
   const discord_username = member?.username as string;
 
-  if (!guild_id) return ephemeral("This command must be used in a server.");
+  const baseLog = {
+    guild_id: guild_id ?? "",
+    discord_user_id: discord_user_id ?? "",
+    discord_username,
+    command: cmd,
+    options: opts ?? null,
+  };
+
+  if (!guild_id) {
+    await logCommand({ ...baseLog, workspace_id: null, result: "denied", error: "no_guild" });
+    return ephemeral("This command must be used in a server.");
+  }
 
   // /verify — always allowed: generates a one-time link the user must click
   if (cmd === "verify") {
     const ws = await workspaceForGuild(guild_id);
-    if (!ws) return ephemeral("This server isn't linked to a Fluxcore workspace yet. Ask the owner to install the bot from Fluxcore → Settings → Integrations.");
+    if (!ws) {
+      await logCommand({ ...baseLog, workspace_id: null, result: "denied", error: "guild_not_linked" });
+      return ephemeral("This server isn't linked to a Fluxcore workspace yet. Ask the owner to install the bot from Fluxcore - Settings - Integrations.");
+    }
     const token = randomToken(10);
     const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString();
     await admin.from("discord_command_sessions").insert({
       token, discord_user_id, discord_username, guild_id, workspace_id: ws, expires_at: expires,
     });
-    return ephemeral(`🔐 Verify with Fluxcore: ${APP_ORIGIN}/#/discord/verification/${token}\n(Single-use link, expires in 15 minutes. Only you can see this message.)`);
+    await logCommand({ ...baseLog, workspace_id: ws, result: "ok" });
+    return ephemeral(`Verify with Fluxcore: ${APP_ORIGIN}/#/discord/verification/${token}\n(Single-use link, expires in 15 minutes. Only you can see this message.)`);
   }
 
   // Everything else requires the caller to be verified
   const caller = await resolveCaller(guild_id, discord_user_id);
-  if (!caller) return ephemeral("You need to verify first. Run `/verify` to link your Fluxcore account.");
+  if (!caller) {
+    await logCommand({ ...baseLog, workspace_id: null, result: "denied", error: "not_verified" });
+    return ephemeral("You need to verify first. Run `/verify` to link your Fluxcore account.");
+  }
+
+  const log = (result: string, error?: string | null) =>
+    logCommand({ ...baseLog, workspace_id: caller.workspace_id, result, error });
 
   if (cmd === "promote" || cmd === "demote") {
     const ok = await hasPerm(caller.user_id, caller.workspace_id, "promote_members");
-    if (!ok) return ephemeral("You don't have permission to run this command.");
+    if (!ok) { await log("denied", "no_permission"); return ephemeral("You don't have permission to run this command."); }
     const target = (getOption(opts, "user") as string)?.trim();
-    if (!target) return ephemeral("Usage: /" + cmd + " user:<roblox-username>");
+    if (!target) { await log("error", "missing_args"); return ephemeral("Usage: /" + cmd + " user:<roblox-username>"); }
     const { data, error } = await admin.functions.invoke("roblox-rank", {
       body: { workspace_id: caller.workspace_id, action: cmd, target_username: target, actor_user_id: caller.user_id },
     });
-    if (error) return ephemeral("Failed: " + error.message);
-    return ephemeral(`✅ ${cmd === "promote" ? "Promoted" : "Demoted"} ${target}. ${data?.from?.name ? `${data.from.name} → ${data.to?.name}` : ""}`);
+    if (error) { await log("error", error.message); return ephemeral("Failed: " + error.message); }
+    await log("ok");
+    return ephemeral(`${cmd === "promote" ? "Promoted" : "Demoted"} ${target}. ${data?.from?.name ? `${data.from.name} -> ${data.to?.name}` : ""}`);
   }
 
   if (cmd === "warn") {
     const ok = await hasPerm(caller.user_id, caller.workspace_id, "manage_members");
-    if (!ok) return ephemeral("You don't have permission to issue warnings.");
+    if (!ok) { await log("denied", "no_permission"); return ephemeral("You don't have permission to issue warnings."); }
     const target = getOption(opts, "user") as string;
     const reason = getOption(opts, "reason") as string;
-    if (!target || !reason) return ephemeral("Usage: /warn user:<name> reason:<text>");
+    if (!target || !reason) { await log("error", "missing_args"); return ephemeral("Usage: /warn user:<name> reason:<text>"); }
     const { data: members } = await admin.from("workspace_members")
       .select("id, roblox_username, role").eq("workspace_id", caller.workspace_id).ilike("roblox_username", target).limit(1);
     const m = members?.[0];
-    if (!m) return ephemeral(`No member named "${target}" found in this workspace.`);
+    if (!m) { await log("error", "member_not_found"); return ephemeral(`No member named "${target}" found in this workspace.`); }
     await admin.from("member_logs").insert({
       workspace_id: caller.workspace_id, member_id: m.id, action: "Warning", reason,
       actor_user_id: caller.user_id, role_at_time: m.role,
     });
-    return ephemeral(`⚠️ Warned ${m.roblox_username}: ${reason}`);
+    await log("ok");
+    return ephemeral(`Warned ${m.roblox_username}: ${reason}`);
   }
 
   if (cmd === "lookup") {
@@ -126,10 +173,11 @@ async function handleCommand(body: any): Promise<Response> {
     const { data: members } = await admin.from("workspace_members")
       .select("id, roblox_username, role, joined_at").eq("workspace_id", caller.workspace_id).ilike("roblox_username", target).limit(1);
     const m = members?.[0];
-    if (!m) return ephemeral(`No member named "${target}" found.`);
+    if (!m) { await log("error", "member_not_found"); return ephemeral(`No member named "${target}" found.`); }
     const { count: warns } = await admin.from("member_logs")
       .select("id", { count: "exact", head: true }).eq("member_id", m.id).eq("action", "Warning");
-    return ephemeral(`👤 **${m.roblox_username}**\nRank: ${m.role}\nWarnings: ${warns ?? 0}\nJoined: ${m.joined_at?.slice(0, 10) ?? "—"}`);
+    await log("ok");
+    return ephemeral(`**${m.roblox_username}**\nRank: ${m.role}\nWarnings: ${warns ?? 0}\nJoined: ${m.joined_at?.slice(0, 10) ?? "-"}`);
   }
 
   // Determine if caller is workspace owner — owners don't have a workspace_members row.
@@ -141,32 +189,35 @@ async function handleCommand(body: any): Promise<Response> {
     const start = getOption(opts, "start") as string;
     const end = getOption(opts, "end") as string;
     const reason = getOption(opts, "reason") as string;
-    if (!start || !end || !reason) return ephemeral("Usage: /loa start:<YYYY-MM-DD> end:<YYYY-MM-DD> reason:<text>");
-    if (isOwner) return ephemeral("Owners don't need to submit LOA requests — you're always considered active.");
+    if (!start || !end || !reason) { await log("error", "missing_args"); return ephemeral("Usage: /loa start:<YYYY-MM-DD> end:<YYYY-MM-DD> reason:<text>"); }
+    if (isOwner) { await log("noop", "owner"); return ephemeral("Owners don't need to submit LOA requests - you're always considered active."); }
     const { data: wm } = await admin.from("workspace_members")
       .select("id").eq("workspace_id", caller.workspace_id).eq("user_id", caller.user_id).limit(1);
     const memberId = wm?.[0]?.id;
-    if (!memberId) return ephemeral("Couldn't find your member record.");
+    if (!memberId) { await log("error", "no_member_row"); return ephemeral("Couldn't find your member record."); }
     await admin.from("loa_requests").insert({
       workspace_id: caller.workspace_id, member_id: memberId, user_id: caller.user_id,
       start_date: start, end_date: end, reason, status: "pending",
     });
-    return ephemeral(`📅 LOA submitted: ${start} → ${end}.`);
+    await log("ok");
+    return ephemeral(`LOA submitted: ${start} -> ${end}.`);
   }
 
   if (cmd === "quota") {
-    if (isOwner) return ephemeral("🎯 Owners aren't bound by quotas.");
+    if (isOwner) { await log("noop", "owner"); return ephemeral("🎯 Owners aren't bound by quotas."); }
     const { data: wm } = await admin.from("workspace_members")
       .select("id, role_id").eq("workspace_id", caller.workspace_id).eq("user_id", caller.user_id).limit(1);
     const m = wm?.[0];
-    if (!m) return ephemeral("You aren't a member of this workspace.");
+    if (!m) { await log("error", "not_member"); return ephemeral("You aren't a member of this workspace."); }
     const { data: q } = await admin.from("workspace_quotas")
       .select("*").eq("workspace_id", caller.workspace_id).eq("role_id", m.role_id).limit(1);
     const row = q?.[0];
-    if (!row) return ephemeral("No quota configured for your role.");
+    if (!row) { await log("ok", "no_quota"); return ephemeral("No quota configured for your role."); }
+    await log("ok");
     return ephemeral(`🎯 Quota for your role: ${row.min_sessions ?? 0} sessions, ${row.min_minutes ?? 0} min/week.`);
   }
 
+  await log("error", "unknown_command");
   return ephemeral("Unknown command.");
 }
 
