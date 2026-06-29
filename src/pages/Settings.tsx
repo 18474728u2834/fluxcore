@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { InviteSection } from "@/components/InviteSection";
 import SubdomainCard from "@/components/SubdomainCard";
 import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
+import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
