@@ -210,8 +210,8 @@ subtitle.Text = ""
 -- Catalog view
 local catalogView = Instance.new("Frame", content)
 catalogView.BackgroundTransparency = 1
-catalogView.Size = UDim2.new(1, 0, 1, -176)
-catalogView.Position = UDim2.new(0, 0, 0, 160)
+catalogView.Size = UDim2.new(1, 0, 1, -96)
+catalogView.Position = UDim2.new(0, 0, 0, 80)
 
 local catalogScroll = Instance.new("ScrollingFrame", catalogView)
 catalogScroll.Size = UDim2.new(1, 0, 1, 0)
