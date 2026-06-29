@@ -179,14 +179,14 @@ content.Size = UDim2.new(1, 0, 1, 0)
 content.BackgroundColor3 = Color3.fromRGB(14, 14, 20)
 content.BorderSizePixel = 0
 local pad = Instance.new("UIPadding", content)
-pad.PaddingTop = UDim.new(0, 96); pad.PaddingBottom = UDim.new(0, 28)
+pad.PaddingTop = UDim.new(0, 36); pad.PaddingBottom = UDim.new(0, 28)
 pad.PaddingLeft = UDim.new(0, 48); pad.PaddingRight = UDim.new(0, 48)
 
 -- Header
 local header = Instance.new("Frame", content)
 header.BackgroundTransparency = 1
 header.Size = UDim2.new(1, 0, 0, 64)
-header.Position = UDim2.new(0, 0, 0, 80)
+header.Position = UDim2.new(0, 0, 0, 0)
 
 local title = Instance.new("TextLabel", header)
 title.BackgroundTransparency = 1
@@ -210,8 +210,8 @@ subtitle.Text = ""
 -- Catalog view
 local catalogView = Instance.new("Frame", content)
 catalogView.BackgroundTransparency = 1
-catalogView.Size = UDim2.new(1, 0, 1, -176)
-catalogView.Position = UDim2.new(0, 0, 0, 160)
+catalogView.Size = UDim2.new(1, 0, 1, -96)
+catalogView.Position = UDim2.new(0, 0, 0, 80)
 
 local catalogScroll = Instance.new("ScrollingFrame", catalogView)
 catalogScroll.Size = UDim2.new(1, 0, 1, 0)
@@ -235,8 +235,8 @@ emptyLabel.Visible = false
 -- Form view (one question at a time)
 local formView = Instance.new("Frame", content)
 formView.BackgroundTransparency = 1
-formView.Size = UDim2.new(1, 0, 1, -176)
-formView.Position = UDim2.new(0, 0, 0, 160)
+formView.Size = UDim2.new(1, 0, 1, -96)
+formView.Position = UDim2.new(0, 0, 0, 80)
 formView.Visible = false
 
 -- progress bar
@@ -328,13 +328,16 @@ nextBtn.Font = Enum.Font.GothamBold; nextBtn.TextSize = 15
 nextBtn.Text = "Next >"; nextBtn.AutoButtonColor = true
 rounded(nextBtn, 10)
 
-local exitBtn = Instance.new("TextButton", formView)
-exitBtn.Size = UDim2.new(0, 110, 0, 28); exitBtn.Position = UDim2.new(1, -110, 0, 0)
-exitBtn.AnchorPoint = Vector2.new(0, 0)
+local exitBtn = Instance.new("TextButton", sg)
+exitBtn.AnchorPoint = Vector2.new(1, 0)
+exitBtn.Position = UDim2.new(1, -16, 0, 16)
+exitBtn.Size = UDim2.new(0, 120, 0, 32)
 exitBtn.BackgroundColor3 = Color3.fromRGB(45, 28, 32)
 exitBtn.TextColor3 = Color3.fromRGB(255, 180, 180)
-exitBtn.Font = Enum.Font.GothamMedium; exitBtn.TextSize = 12
+exitBtn.Font = Enum.Font.GothamMedium; exitBtn.TextSize = 13
 exitBtn.Text = "Exit to menu"
+exitBtn.AutoButtonColor = true
+exitBtn.ZIndex = 10
 rounded(exitBtn, 8)
 
 local activeForm = nil
