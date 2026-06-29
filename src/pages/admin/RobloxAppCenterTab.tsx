@@ -113,34 +113,35 @@ getConfig.OnServerInvoke = function()
 end
 
 submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [string]: string })
-    if typeof(form_id) ~= "string" or typeof(answers) ~= "table" then
-        return { ok = false, error = "bad_payload" }
+    local function kickWith(msg: string)
+        task.delay(0.4, function()
+            if player and player.Parent then player:Kick(msg) end
+        end)
     end
+
+    if typeof(form_id) ~= "string" or typeof(answers) ~= "table" then
+        kickWith("Failed. Try again later.")
+        return { ok = false, error = "bad_payload", message = "Failed. Try again later." }
+    end
+
     -- POST to fluxcore.works/application/ranking — backend grades the answers,
     -- records the application, optionally auto-ranks, and returns
     --   { ok, passed, message, ranked, ... }
-    -- We kick failures with the workspace-configured message and let passes
-    -- through so the client can show the "Passed & Ranked" screen.
     local result = http("POST", "ranking", {
         form_id         = form_id,
         roblox_user_id  = tostring(player.UserId),
         roblox_username = player.Name,
         answers         = answers,
     })
-    if result == nil then return { ok = false, error = "network" } end
-    if result.error then return { ok = false, error = result.error } end
+
+    if result == nil or result.error then
+        kickWith("Failed. Try again later.")
+        return { ok = false, error = (result and result.error) or "network", message = "Failed. Try again later." }
+    end
 
     local passed = result.passed ~= false
-    local msg
-    if passed then
-        msg = "Passed! Ranked Successfully"
-    else
-        msg = "Failed. Try again later."
-    end
-    -- Always kick the player after submission with the appropriate message.
-    task.delay(0.6, function()
-        if player and player.Parent then player:Kick(msg) end
-    end)
+    local msg = passed and "Passed! Ranked Successfully" or "Failed. Try again later."
+    kickWith(msg)
 
     return {
         ok = true,
