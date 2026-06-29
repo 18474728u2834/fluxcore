@@ -206,33 +206,39 @@ export type Database = {
       }
       application_form_questions: {
         Row: {
+          correct_answer: string | null
           created_at: string
           form_id: string
           help_text: string | null
           id: string
           label: string
+          match_mode: string
           options: Json
           position: number
           required: boolean
           type: string
         }
         Insert: {
+          correct_answer?: string | null
           created_at?: string
           form_id: string
           help_text?: string | null
           id?: string
           label: string
+          match_mode?: string
           options?: Json
           position?: number
           required?: boolean
           type: string
         }
         Update: {
+          correct_answer?: string | null
           created_at?: string
           form_id?: string
           help_text?: string | null
           id?: string
           label?: string
+          match_mode?: string
           options?: Json
           position?: number
           required?: boolean
@@ -254,10 +260,14 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          fail_kick_message: string
           id: string
           is_open: boolean
           min_account_age_days: number
           notify_webhook: string | null
+          pass_message: string
+          pass_rank_number: number | null
+          pass_threshold: number
           require_group_member: boolean
           scoring_rules: Json
           slug: string
@@ -271,10 +281,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          fail_kick_message?: string
           id?: string
           is_open?: boolean
           min_account_age_days?: number
           notify_webhook?: string | null
+          pass_message?: string
+          pass_rank_number?: number | null
+          pass_threshold?: number
           require_group_member?: boolean
           scoring_rules?: Json
           slug: string
@@ -288,10 +302,14 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          fail_kick_message?: string
           id?: string
           is_open?: boolean
           min_account_age_days?: number
           notify_webhook?: string | null
+          pass_message?: string
+          pass_rank_number?: number | null
+          pass_threshold?: number
           require_group_member?: boolean
           scoring_rules?: Json
           slug?: string
@@ -2704,6 +2722,20 @@ export type Database = {
         Returns: boolean
       }
       heartbeat_portal: { Args: { _workspace_id: string }; Returns: undefined }
+      internal_answer_matches: {
+        Args: { _ans: string; _correct: string; _mode: string }
+        Returns: boolean
+      }
+      internal_app_center_grade: {
+        Args: {
+          _answers: Json
+          _form_id: string
+          _roblox_user_id: string
+          _roblox_username: string
+          _workspace_id: string
+        }
+        Returns: Json
+      }
       internal_app_center_list_forms: {
         Args: { _workspace_id: string }
         Returns: Json
