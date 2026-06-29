@@ -87,6 +87,10 @@ const Status = lazy(() => import("./pages/Status"));
 const SecurityPage = lazy(() => import("./pages/Security"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
+const Applications = lazy(() => import("./pages/Applications"));
+const ApplicationQueue = lazy(() => import("./pages/ApplicationQueue"));
+const Apply = lazy(() => import("./pages/Apply"));
+const DiscordVerify = lazy(() => import("./pages/DiscordVerify"));
 
 
 const queryClient = new QueryClient();
@@ -128,6 +132,8 @@ function WorkspacePages() {
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="kudos" element={<Kudos />} />
         <Route path="promotions" element={<Promotions />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="applications/:formId/queue" element={<ApplicationQueue />} />
         <Route path="join" element={<JoinWorkspace />} />
       </Routes>
     </Suspense>
@@ -158,6 +164,8 @@ function BargainsWorkspacePages() {
         <Route path="message-logs" element={<MessageLogs />} />
         <Route path="kudos" element={<Kudos />} />
         <Route path="promotions" element={<Promotions />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="applications/:formId/queue" element={<ApplicationQueue />} />
         <Route path="join"      element={<JoinWorkspace />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
@@ -435,6 +443,8 @@ function AppRoutes() {
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="/newsletter" element={<Newsletter />} />
+        <Route path="/apply/:formId" element={<Apply />} />
+        <Route path="/discord/verification/:token" element={<DiscordVerify />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>

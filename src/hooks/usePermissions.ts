@@ -19,6 +19,7 @@ export const ALL_PERMISSIONS = [
   { key: "manage_loa", label: "Manage LOA", description: "Approve/decline leave requests" },
   { key: "manage_documents", label: "Manage Documents", description: "Create and manage policies/handbooks" },
   { key: "view_message_logs", label: "View Message Logs", description: "Read in-game chat messages logged by the workspace" },
+  { key: "manage_applications", label: "Manage Applications", description: "Create application forms and review submissions" },
 ] as const;
 
 export type PermissionKey = typeof ALL_PERMISSIONS[number]["key"];
