@@ -164,6 +164,8 @@ function BargainsWorkspacePages() {
         <Route path="message-logs" element={<MessageLogs />} />
         <Route path="kudos" element={<Kudos />} />
         <Route path="promotions" element={<Promotions />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="applications/:formId/queue" element={<ApplicationQueue />} />
         <Route path="join"      element={<JoinWorkspace />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
