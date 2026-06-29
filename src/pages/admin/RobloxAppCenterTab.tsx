@@ -44,7 +44,11 @@ const SERVER_SCRIPT = `--!strict
 local HttpService       = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local cfg = require(ReplicatedStorage:WaitForChild("FluxcoreAppConfig"))
+local cfgModule = ReplicatedStorage:WaitForChild("FluxcoreAppConfig", 10)
+if not cfgModule then
+    error("[Fluxcore] Missing ModuleScript 'FluxcoreAppConfig' in ReplicatedStorage. Paste Script 1 (Config) from the Fluxcore admin panel into a ModuleScript named exactly 'FluxcoreAppConfig' inside ReplicatedStorage.")
+end
+local cfg = require(cfgModule)
 local API_BASE  = cfg.API_BASE
 local API_KEY   = cfg.API_KEY
 local WORKSPACE = cfg.WORKSPACE_NAME
