@@ -81,6 +81,9 @@ async function rankRobloxUser(apiKey: string, groupId: string, robloxUserId: str
 
   const membership = await getGroupMembership(apiKey, groupId, robloxUserId);
   if (!membership?.path) return { ranked: false, error: "not_in_group", detail: `Roblox user ${robloxUserId} is not in group ${groupId}` };
+  const existingRoleIds = [membership.role, ...(Array.isArray(membership.roles) ? membership.roles : [])]
+    .map(shortRoleId)
+    .filter((id: string) => id && id !== targetRoleId);
 
   // Roblox deprecated PATCH for membership rank changes; assignRole is now the
   // supported endpoint. Roblox also documents that missing group:write can still
@@ -93,11 +96,22 @@ async function rankRobloxUser(apiKey: string, groupId: string, robloxUserId: str
     return { ranked: false, error: "assign_role_failed", detail: `${assignRes.status}: ${assignRes.text}` };
   }
 
+  for (const oldRoleId of Array.from(new Set(existingRoleIds))) {
+    const unassignRes = await robloxJson(`https://apis.roblox.com/cloud/v2/${membership.path}:unassignRole`, apiKey, {
+      method: "POST",
+      body: JSON.stringify({ role: `groups/${groupId}/roles/${oldRoleId}` }),
+    });
+    if (!unassignRes.ok) {
+      console.error("app-center old role unassign failed:", unassignRes.status, unassignRes.text);
+    }
+  }
+
   const verified = await getGroupMembership(apiKey, groupId, robloxUserId);
-  const verifiedRoleId = shortRoleId(verified?.role || verified?.roles?.[0]);
+  const verifiedRoleIds = [verified?.role, ...(Array.isArray(verified?.roles) ? verified.roles : [])].map(shortRoleId).filter(Boolean);
+  const verifiedRoleId = verifiedRoleIds.find((id: string) => id === targetRoleId) || verifiedRoleIds[0] || "";
   const verifiedRole = roles.find((r: any) => shortRoleId(r.id || r.path) === verifiedRoleId);
   const verifiedRank = verifiedRole?.rank ?? null;
-  const ranked = String(verifiedRoleId) === String(targetRoleId) || Number(verifiedRank) === Number(rankNumber);
+  const ranked = verifiedRoleIds.includes(targetRoleId) || Number(verifiedRank) === Number(rankNumber);
   if (!ranked) {
     return {
       ranked: false,
