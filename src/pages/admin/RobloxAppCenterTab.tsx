@@ -457,13 +457,16 @@ nextBtn.MouseButton1Click:Connect(function()
     -- Submit
     nextBtn.Text = "Submitting..."
     local res = folder:WaitForChild("Submit"):InvokeServer(activeForm.id, answers)
-    if res and res.ok then
-        nextBtn.Text = "Submitted - thank you"
-        task.wait(2)
+    if res and res.ok and res.passed ~= false then
+        nextBtn.Text = (typeof(res.message) == "string" and res.message) or "Passed & Ranked - welcome aboard!"
+        task.wait(3)
         activeForm = nil
         local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
         showCatalog(catalog)
         nextBtn.Text = "Next >"
+    elseif res and res.ok and res.passed == false then
+        -- Player will be kicked by the server with the configured message.
+        nextBtn.Text = "Reviewing your answers..."
     else
         nextBtn.Text = "Failed - try again"
         task.wait(2); renderStep()
