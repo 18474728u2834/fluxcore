@@ -431,6 +431,7 @@ export default function SettingsPage() {
               </div>
 
               {workspaceId && <DiscordBotCard workspaceId={workspaceId} isOwner={isOwner} />}
+              {isOwner && workspaceId && <WebhookTemplatesCard workspaceId={workspaceId} />}
             </>
           )}
 
