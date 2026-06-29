@@ -3,20 +3,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, Loader2, ExternalLink, Trash2 } from "lucide-react";
+import { MessageSquare, Loader2, ExternalLink, Trash2, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
+
+const INVITE_URL =
+  "https://discord.com/oauth2/authorize?client_id=1521224984259854489&permissions=8&integration_type=0&scope=bot+applications.commands";
+
+const INTERACTIONS_ENDPOINT = `${
+  (import.meta as any).env?.VITE_SUPABASE_URL || ""
+}/functions/v1/discord-bot`;
 
 export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; isOwner: boolean }) {
   const [guildId, setGuildId] = useState("");
   const [linked, setLinked] = useState<{ id: string; guild_id: string } | null>(null);
   const [busy, setBusy] = useState(false);
-
-  // Public Discord application id used to build the invite URL.
-  // Read at build time so we don't need a runtime fetch.
-  const appId = (import.meta as any).env?.VITE_DISCORD_APPLICATION_ID || "";
-  const inviteUrl = appId
-    ? `https://discord.com/oauth2/authorize?client_id=${appId}&permissions=0&scope=bot+applications.commands`
-    : "https://discord.com/developers";
+  const [online, setOnline] = useState<"checking" | "online" | "offline">("checking");
+  const [copied, setCopied] = useState(false);
 
   const load = async () => {
     const { data } = await supabase.from("workspace_discord_guilds" as any)
@@ -24,6 +26,30 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
     setLinked((data as any) || null);
   };
   useEffect(() => { load(); }, [workspaceId]);
+
+  // Ping the interactions endpoint to confirm the bot handler is live.
+  useEffect(() => {
+    let cancelled = false;
+    const ping = async () => {
+      if (!INTERACTIONS_ENDPOINT.startsWith("http")) { setOnline("offline"); return; }
+      try {
+        const res = await fetch(INTERACTIONS_ENDPOINT, { method: "GET" });
+        if (!cancelled) setOnline(res.ok ? "online" : "offline");
+      } catch {
+        if (!cancelled) setOnline("offline");
+      }
+    };
+    ping();
+    const id = setInterval(ping, 30_000);
+    return () => { cancelled = true; clearInterval(id); };
+  }, []);
+
+  const copyEndpoint = async () => {
+    await navigator.clipboard.writeText(INTERACTIONS_ENDPOINT);
+    setCopied(true);
+    toast.success("Interactions endpoint copied");
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   const save = async () => {
     if (!guildId.trim()) return;
@@ -41,20 +67,44 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
     load();
   };
 
+  const statusColor =
+    online === "online" ? "bg-emerald-500" : online === "offline" ? "bg-rose-500" : "bg-amber-400";
+  const statusLabel =
+    online === "online" ? "Online" : online === "offline" ? "Offline" : "Checking…";
+
   return (
     <div className="glass rounded-xl p-5 space-y-4">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="w-4 h-4 text-primary" />
-        <h2 className="font-semibold text-foreground text-sm">Discord Bot</h2>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="w-4 h-4 text-primary" />
+          <h2 className="font-semibold text-foreground text-sm">Discord Bot</h2>
+        </div>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className={`inline-block w-2 h-2 rounded-full ${statusColor} ${online === "online" ? "shadow-[0_0_8px_rgba(16,185,129,0.8)]" : ""} ${online === "checking" ? "animate-pulse" : ""}`} />
+          <span className="text-foreground">{statusLabel}</span>
+        </div>
       </div>
       <p className="text-xs text-muted-foreground">
         Run Fluxcore actions from Discord with <code className="text-foreground">/verify</code>, <code className="text-foreground">/promote</code>, <code className="text-foreground">/demote</code>, <code className="text-foreground">/warn</code>, <code className="text-foreground">/lookup</code>, <code className="text-foreground">/loa</code>, <code className="text-foreground">/quota</code>. Commands are rank-locked: each Discord user must run <code className="text-foreground">/verify</code> first and link their Fluxcore account.
       </p>
 
       <div className="flex flex-wrap gap-2">
-        <a href={inviteUrl} target="_blank" rel="noreferrer">
+        <a href={INVITE_URL} target="_blank" rel="noreferrer">
           <Button variant="secondary" size="sm"><ExternalLink className="w-3 h-3 mr-1" /> Invite bot to Discord</Button>
         </a>
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs">Interactions Endpoint URL</Label>
+        <div className="flex gap-2">
+          <Input readOnly value={INTERACTIONS_ENDPOINT} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
+          <Button variant="secondary" size="sm" onClick={copyEndpoint}>
+            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          </Button>
+        </div>
+        <p className="text-[11px] text-muted-foreground">
+          Paste this in the Discord Developer Portal → your application → <strong>General Information</strong> → <em>Interactions Endpoint URL</em>, then save. Discord will ping it to validate the signature.
+        </p>
       </div>
 
       {linked ? (
