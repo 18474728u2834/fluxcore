@@ -95,6 +95,10 @@ export default function Applications() {
       target_role_id: draft.target_role_id,
       auto_rank_on_accept: draft.auto_rank_on_accept,
       notify_webhook: draft.notify_webhook,
+      pass_threshold: Math.max(0, Math.min(100, Number(draft.pass_threshold) || 100)),
+      pass_message: draft.pass_message || "Passed & Ranked - welcome aboard!",
+      fail_kick_message: draft.fail_kick_message || "You did not pass the application. Try again later.",
+      pass_rank_number: draft.pass_rank_number ?? null,
     };
     if (formId === "new") {
       const { data, error } = await supabase.from("application_forms" as any).insert(payload).select("id").single();
@@ -107,7 +111,10 @@ export default function Applications() {
     }
     if (questions.length) {
       const rows = questions.map((q, i) => ({
-        form_id: formId, label: q.label, type: q.type, options: q.options, required: q.required, position: i,
+        form_id: formId, label: q.label, type: q.type, options: q.options,
+        required: q.required, position: i,
+        correct_answer: q.correct_answer || null,
+        match_mode: q.match_mode || "any",
       }));
       await supabase.from("application_form_questions" as any).insert(rows);
     }
