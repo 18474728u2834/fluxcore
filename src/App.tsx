@@ -443,6 +443,8 @@ function AppRoutes() {
         <Route path="/security" element={<SecurityPage />} />
         <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="/newsletter" element={<Newsletter />} />
+        <Route path="/apply/:formId" element={<Apply />} />
+        <Route path="/discord/verification/:token" element={<DiscordVerify />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
