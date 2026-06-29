@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { PremiumGrantManager } from "@/components/PremiumGrantManager";
 import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
 import StatusAdminTab from "@/pages/admin/StatusAdminTab";
+import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
 
 type WhoAmI = {
   user_id: string;
