@@ -414,10 +414,11 @@ export function RobloxAppCenterTab() {
             <Label className="text-xs">Application Center API key</Label>
             <div className="flex gap-2">
               <Input
-                value={apiKey ? (revealed ? apiKey : apiKey.slice(0, 8) + "•".repeat(Math.max(0, apiKey.length - 8))) : ""}
-                readOnly
-                placeholder="Click Generate to create"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="Paste the fxac_… key from Settings → Tracking & Scripts"
                 className="font-mono text-xs"
+                type={revealed ? "text" : "password"}
               />
               {apiKey && (
                 <Button variant="ghost" size="icon" onClick={() => setRevealed((r) => !r)} title={revealed ? "Hide" : "Show"}>
@@ -430,14 +431,13 @@ export function RobloxAppCenterTab() {
                 </Button>
               )}
             </div>
+            <p className="text-[11px] text-muted-foreground">
+              The owner generates / rotates this key in <strong>Settings → Tracking & Scripts → Application Center API Key</strong>. Paste it here to render the script.
+            </p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Button size="sm" onClick={rotate} disabled={!workspaceId || busy}>
-            {busy ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : apiKey ? <RefreshCw className="w-3 h-3 mr-1" /> : <KeyRound className="w-3 h-3 mr-1" />}
-            {apiKey ? "Rotate API key" : "Generate API key"}
-          </Button>
           <Button size="sm" variant="secondary" onClick={() => copy(script, "Script")} disabled={!apiKey}>
             <Copy className="w-3 h-3 mr-1" /> Copy script
           </Button>
