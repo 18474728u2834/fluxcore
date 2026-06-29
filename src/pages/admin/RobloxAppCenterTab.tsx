@@ -25,8 +25,8 @@ return {
     -- Shown in the welcome screen, e.g. "Shoply Shopping"
     WORKSPACE_NAME = "${ws}",
 
-    -- Your Roblox group ID. Applicants who are NOT in this group will be kicked
-    -- on join with the message below, so they can join the group first.
+    -- Your Roblox group ID. Must match Workspace Settings -> Group ID.
+    -- Applicants who are NOT in this group will be kicked on join.
     GROUP_ID = 0,
     NOT_IN_GROUP_MESSAGE = "You must join our Roblox group before applying. Join the group, then rejoin this game.",
 
@@ -145,7 +145,7 @@ submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [st
     end
 
     -- POST to fluxcore.works/application/ranking — backend grades the answers,
-    -- records the application, optionally auto-ranks, and returns
+    -- records the application, auto-ranks with the workspace Open Cloud key, and returns
     --   { ok, passed, message, ranked, ... }
     local result = http("POST", "ranking", {
         form_id         = form_id,
@@ -159,7 +159,11 @@ submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [st
         return { ok = false, error = (result and result.error) or "network", message = "Failed. Try again later." }
     end
 
-    local passed = result.passed ~= false
+    if result.rank_required == true and result.ranked ~= true then
+        warn("[Fluxcore] Application passed answers, but Roblox rank failed: " .. tostring(result.rank_error) .. " " .. tostring(result.rank_detail))
+    end
+
+    local passed = result.passed == true
     local msg = passed and "Passed! Ranked Successfully" or "Failed. Try again later."
     kickWith(msg)
 
