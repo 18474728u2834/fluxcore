@@ -94,27 +94,55 @@ Deno.serve(async (req) => {
           const secrets: any = Array.isArray(secretsRow) ? secretsRow[0] : secretsRow;
           const robloxKey = secrets?.roblox_api_key && String(secrets.roblox_api_key).trim();
           if (robloxKey && wsRow?.roblox_group_id) {
-            // Find role id for the configured rank number
-            const rolesRes = await fetch(
-              `https://apis.roblox.com/cloud/v2/groups/${String(wsRow.roblox_group_id).trim()}/roles?maxPageSize=50`,
-              { headers: { "x-api-key": robloxKey } },
-            );
-            if (rolesRes.ok) {
+            const groupId = String(wsRow.roblox_group_id).trim();
+            // Paginate group roles to find role matching the configured rank number
+            let role: any = null;
+            let pageToken: string | null = null;
+            for (let i = 0; i < 20; i++) {
+              let url = `https://apis.roblox.com/cloud/v2/groups/${groupId}/roles?maxPageSize=50`;
+              if (pageToken) url += `&pageToken=${pageToken}`;
+              const rolesRes = await fetch(url, { headers: { "x-api-key": robloxKey } });
+              if (!rolesRes.ok) {
+                console.error("app-center roles fetch failed:", rolesRes.status, await rolesRes.text());
+                break;
+              }
               const rolesData = await rolesRes.json();
-              const role = (rolesData.groupRoles || []).find((r: any) => r.rank === result.pass_rank_number);
-              if (role?.id) {
-                const roleId = String(role.id).split("/").pop();
-                const memUrl = `https://apis.roblox.com/cloud/v2/groups/${String(wsRow.roblox_group_id).trim()}/memberships/${roblox_user_id}`;
-                const rankRes = await fetch(memUrl, {
-                  method: "PATCH",
-                  headers: { "x-api-key": robloxKey, "Content-Type": "application/json" },
-                  body: JSON.stringify({ role: `groups/${String(wsRow.roblox_group_id).trim()}/roles/${roleId}` }),
-                });
-                ranked = rankRes.ok;
+              role = (rolesData.groupRoles || []).find((r: any) => Number(r.rank) === Number(result.pass_rank_number));
+              if (role) break;
+              if (!rolesData.nextPageToken) break;
+              pageToken = rolesData.nextPageToken;
+            }
+            if (!role?.id) {
+              console.error("app-center: no role found for rank", result.pass_rank_number);
+            } else {
+              const roleId = String(role.id).split("/").pop();
+              // Look up the user's membership row (Open Cloud needs the membership path, not the userId)
+              const memListUrl = `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=${encodeURIComponent(`user == 'users/${roblox_user_id}'`)}&maxPageSize=1`;
+              const memListRes = await fetch(memListUrl, { headers: { "x-api-key": robloxKey } });
+              if (!memListRes.ok) {
+                console.error("app-center membership lookup failed:", memListRes.status, await memListRes.text());
+              } else {
+                const memData = await memListRes.json();
+                const membership = memData.groupMemberships?.[0];
+                if (!membership?.path) {
+                  console.error("app-center: user not in group", roblox_user_id);
+                } else {
+                  const rankRes = await fetch(`https://apis.roblox.com/cloud/v2/${membership.path}`, {
+                    method: "PATCH",
+                    headers: { "x-api-key": robloxKey, "Content-Type": "application/json" },
+                    body: JSON.stringify({ role: `groups/${groupId}/roles/${roleId}` }),
+                  });
+                  ranked = rankRes.ok;
+                  if (!rankRes.ok) {
+                    console.error("app-center rank PATCH failed:", rankRes.status, await rankRes.text());
+                  }
+                }
               }
             }
+          } else {
+            console.error("app-center: missing roblox_api_key or roblox_group_id for workspace", ws.workspace_id);
           }
-        } catch (_e) { /* swallow */ }
+        } catch (e) { console.error("app-center rank error:", e); }
       }
 
       return json({
