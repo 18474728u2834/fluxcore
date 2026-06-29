@@ -45,6 +45,7 @@ const PAGE_INDEX: Array<{ label: string; to: string }> = [
   { label: "Wall", to: "wall" },
   { label: "Kudos", to: "kudos" },
   { label: "Promotions", to: "promotions" },
+  { label: "Applications", to: "applications" },
   { label: "Roles", to: "roles" },
   { label: "Blacklist", to: "staff" },
   { label: "Settings", to: "settings" },
