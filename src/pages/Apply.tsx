@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 
 interface Question {
@@ -24,15 +24,21 @@ export default function Apply() {
   const [verified, setVerified] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState<string | null>(null);
+  const [step, setStep] = useState(0);
 
   useEffect(() => {
     (async () => {
+      setLoading(true);
       const { data, error } = await supabase.rpc("get_public_form" as any, { _form_id: formId });
-      if (error || !data) { setForm(null); setLoading(false); return; }
-      setForm(data);
+      if (error) console.error("get_public_form", error);
+      setForm(error ? null : data);
       setLoading(false);
     })();
   }, [formId]);
+
+  const questions: Question[] = useMemo(() => (form?.questions || []) as Question[], [form]);
+  const total = questions.length;
+  const current = questions[step];
 
   const verifyRoblox = async () => {
     if (!robloxUsername.trim()) return;
@@ -55,10 +61,27 @@ export default function Apply() {
     setVerifying(false);
   };
 
+  const canAdvance = () => {
+    if (!current) return false;
+    if (current.required && !(answers[current.id] || "").trim()) {
+      toast.error(`"${current.label}" is required`);
+      return false;
+    }
+    return true;
+  };
+
+  const next = () => { if (canAdvance()) setStep(s => Math.min(s + 1, total - 1)); };
+  const back = () => setStep(s => Math.max(0, s - 1));
+
   const submit = async () => {
-    if (!verified) { toast.error("Verify your Roblox username first."); return; }
-    for (const q of (form.questions as Question[])) {
-      if (q.required && !answers[q.id]) { toast.error(`"${q.label}" is required`); return; }
+    for (const q of questions) {
+      if (q.required && !(answers[q.id] || "").trim()) {
+        toast.error(`"${q.label}" is required`);
+        // jump to the missing one
+        const idx = questions.findIndex(x => x.id === q.id);
+        if (idx >= 0) setStep(idx);
+        return;
+      }
     }
     setSubmitting(true);
     const { data, error } = await supabase.rpc("submit_application" as any, {
@@ -71,7 +94,7 @@ export default function Apply() {
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
   if (!form) return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <div className="glass rounded-xl p-10 text-center max-w-md">
         <h1 className="text-xl font-bold mb-2">Form not available</h1>
         <p className="text-sm text-muted-foreground">This application form is closed or doesn't exist.</p>
@@ -97,36 +120,72 @@ export default function Apply() {
           {form.description && <p className="text-muted-foreground mt-2 whitespace-pre-wrap">{form.description}</p>}
         </div>
 
-        <div className="glass rounded-xl p-5 space-y-3">
-          <h2 className="font-semibold text-sm">Identify yourself</h2>
-          <div className="flex gap-2">
-            <Input placeholder="Your Roblox username" value={robloxUsername} disabled={verified} onChange={e => setRobloxUsername(e.target.value)} />
-            {!verified && <Button onClick={verifyRoblox} disabled={verifying}>{verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}</Button>}
-            {verified && <span className="text-sm text-success flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Verified</span>}
+        {!verified ? (
+          <div className="glass rounded-xl p-5 space-y-3">
+            <h2 className="font-semibold text-sm">Identify yourself</h2>
+            <div className="flex gap-2">
+              <Input placeholder="Your Roblox username" value={robloxUsername} onChange={e => setRobloxUsername(e.target.value)} />
+              <Button onClick={verifyRoblox} disabled={verifying}>{verifying ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify"}</Button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="glass rounded-xl p-6 space-y-5">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
+              <span>Question {step + 1} of {total}</span>
+              <span className="text-success flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> {robloxUsername}</span>
+            </div>
+            <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="h-full bg-primary transition-all" style={{ width: `${((step + 1) / Math.max(1, total)) * 100}%` }} />
+            </div>
 
-        {verified && (
-          <div className="glass rounded-xl p-5 space-y-4">
-            {(form.questions as Question[]).map(q => (
-              <div key={q.id} className="space-y-1.5">
-                <label className="text-sm font-medium">{q.label}{q.required && <span className="text-destructive ml-1">*</span>}</label>
-                {q.help_text && <p className="text-xs text-muted-foreground">{q.help_text}</p>}
-                {q.type === "long_text" ? (
-                  <Textarea value={answers[q.id] || ""} onChange={e => setAnswers({ ...answers, [q.id]: e.target.value })} className="min-h-[100px]" />
-                ) : q.type === "choice" ? (
-                  <select className="w-full bg-background border border-border rounded-md h-9 px-2 text-sm" value={answers[q.id] || ""} onChange={e => setAnswers({ ...answers, [q.id]: e.target.value })}>
+            {current && (
+              <div className="space-y-2">
+                <label className="text-base font-semibold block">
+                  {current.label}{current.required && <span className="text-destructive ml-1">*</span>}
+                </label>
+                {current.help_text && <p className="text-xs text-muted-foreground">{current.help_text}</p>}
+                {current.type === "long_text" ? (
+                  <Textarea
+                    autoFocus
+                    value={answers[current.id] || ""}
+                    onChange={e => setAnswers({ ...answers, [current.id]: e.target.value })}
+                    className="min-h-[140px]"
+                  />
+                ) : current.type === "choice" ? (
+                  <select
+                    autoFocus
+                    className="w-full bg-background border border-border rounded-md h-10 px-2 text-sm"
+                    value={answers[current.id] || ""}
+                    onChange={e => setAnswers({ ...answers, [current.id]: e.target.value })}
+                  >
                     <option value="">— Select —</option>
-                    {q.options.map(o => <option key={o} value={o}>{o}</option>)}
+                    {current.options.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 ) : (
-                  <Input type={q.type === "age" ? "number" : "text"} value={answers[q.id] || ""} onChange={e => setAnswers({ ...answers, [q.id]: e.target.value })} />
+                  <Input
+                    autoFocus
+                    type={current.type === "age" ? "number" : "text"}
+                    value={answers[current.id] || ""}
+                    onChange={e => setAnswers({ ...answers, [current.id]: e.target.value })}
+                  />
                 )}
               </div>
-            ))}
-            <Button onClick={submit} disabled={submitting} className="w-full">
-              {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit application"}
-            </Button>
+            )}
+
+            <div className="flex items-center justify-between pt-2">
+              <Button variant="outline" onClick={back} disabled={step === 0}>
+                <ChevronLeft className="w-4 h-4 mr-1" /> Back
+              </Button>
+              {step < total - 1 ? (
+                <Button onClick={next}>Next <ChevronRight className="w-4 h-4 ml-1" /></Button>
+              ) : (
+                <Button onClick={submit} disabled={submitting}>
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Submit application"}
+                </Button>
+              )}
+            </div>
+
+            <p className="text-[11px] text-muted-foreground text-center">You can go back to any previous question at any time.</p>
           </div>
         )}
       </div>

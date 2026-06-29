@@ -7,24 +7,47 @@ import { Copy, Download, FileCode2, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 
 // Public proxy. Roblox servers hit fluxcore.works (Vercel rewrite) which
-// forwards to the application-center edge function. The Supabase host is
-// never written into the Lua source — only the Fluxcore domain is.
+// forwards to the application-center edge function.
 const API_BASE = "https://fluxcore.works/https/application/supabase";
 
-function buildServerScript(apiKey: string, workspaceName: string) {
+function buildConfigScript(apiKey: string, workspaceName: string) {
   const ws = workspaceName.replace(/"/g, '\\"');
   const key = apiKey.replace(/"/g, '\\"');
   return `--!strict
+-- Fluxcore Application Center — CONFIG
+-- Place this ModuleScript in ReplicatedStorage and name it "FluxcoreAppConfig".
+-- Edit the values below at any time without touching the server / client scripts.
+
+return {
+    -- Your Application Center API key (Settings -> Tracking & Scripts -> Application Center API Key)
+    API_KEY = "${key}",
+
+    -- Shown in the welcome screen, e.g. "Shoply Shopping"
+    WORKSPACE_NAME = "${ws}",
+
+    -- If true, applicants can navigate back to previously answered questions and edit them.
+    -- If false, once they press Next on a question it is locked in.
+    ALLOW_GO_BACK = true,
+
+    -- (Advanced) base URL. Leave as-is unless instructed by Fluxcore support.
+    API_BASE = "${API_BASE}",
+}
+`;
+}
+
+const SERVER_SCRIPT = `--!strict
 -- Fluxcore Application Center — SERVER
--- Workspace : ${ws || "<unset>"}
--- Place this Script in ServerScriptService. Requires HttpService enabled (Game Settings → Security → Allow HTTP Requests).
+-- Place this Script in ServerScriptService. Requires HttpService enabled
+-- (Game Settings -> Security -> Allow HTTP Requests).
+-- Reads its API key + workspace name from ReplicatedStorage.FluxcoreAppConfig.
 
 local HttpService       = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
-local API_BASE  = "${API_BASE}"
-local API_KEY   = "${key}"
-local WORKSPACE = "${ws}"
+local cfg = require(ReplicatedStorage:WaitForChild("FluxcoreAppConfig"))
+local API_BASE  = cfg.API_BASE
+local API_KEY   = cfg.API_KEY
+local WORKSPACE = cfg.WORKSPACE_NAME
 
 local folder = ReplicatedStorage:FindFirstChild("FluxcoreApp")
 if not folder then
@@ -36,6 +59,8 @@ local getCatalog = folder:FindFirstChild("GetCatalog") or Instance.new("RemoteFu
 getCatalog.Name = "GetCatalog"
 local submit = folder:FindFirstChild("Submit") or Instance.new("RemoteFunction", folder)
 submit.Name = "Submit"
+local getConfig = folder:FindFirstChild("GetConfig") or Instance.new("RemoteFunction", folder)
+getConfig.Name = "GetConfig"
 
 local function http(method: string, route: string, body: any?)
     local ok, res = pcall(function()
@@ -63,7 +88,7 @@ local catalog: any = nil
 local function loadCatalog()
     catalog = http("GET", "list")
     if catalog then
-        print(string.format("[Fluxcore] %s — %d open application(s)",
+        print(string.format("[Fluxcore] %s - %d open application(s)",
             catalog.workspace or WORKSPACE, #(catalog.forms or {})))
     else
         warn("[Fluxcore] Could not load application catalog.")
@@ -77,6 +102,10 @@ end)
 getCatalog.OnServerInvoke = function()
     if not catalog then loadCatalog() end
     return catalog or { workspace = WORKSPACE, forms = {} }
+end
+
+getConfig.OnServerInvoke = function()
+    return { workspace = WORKSPACE, allow_go_back = cfg.ALLOW_GO_BACK ~= false }
 end
 
 submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [string]: string })
@@ -96,12 +125,11 @@ end
 
 print("[Fluxcore] Application Center server ready.")
 `;
-}
 
 const CLIENT_SCRIPT = `--!strict
 -- Fluxcore Application Center — CLIENT
--- Place this LocalScript in StarterPlayer → StarterPlayerScripts.
--- Opens immediately on join, fills the entire screen (no launcher button, no inner card).
+-- Place this LocalScript in StarterPlayer -> StarterPlayerScripts.
+-- Opens immediately on join, full-screen, one question at a time.
 
 local Players = game:GetService("Players")
 local RS      = game:GetService("ReplicatedStorage")
@@ -117,10 +145,11 @@ sg.Parent = plr:WaitForChild("PlayerGui")
 
 local function rounded(parent, r) local c=Instance.new("UICorner",parent); c.CornerRadius=UDim.new(0,r); return c end
 
--- Full-screen panel — IS the UI. No dim layer, no inner card.
+local cfg = folder:WaitForChild("GetConfig"):InvokeServer() or { workspace = "", allow_go_back = true }
+local ALLOW_BACK = cfg.allow_go_back ~= false
+
 local content = Instance.new("Frame", sg)
 content.Size = UDim2.new(1, 0, 1, 0)
-content.Position = UDim2.new(0, 0, 0, 0)
 content.BackgroundColor3 = Color3.fromRGB(14, 14, 20)
 content.BorderSizePixel = 0
 local pad = Instance.new("UIPadding", content)
@@ -136,7 +165,6 @@ header.Position = UDim2.new(0, 0, 0, 80)
 local title = Instance.new("TextLabel", header)
 title.BackgroundTransparency = 1
 title.Size = UDim2.new(1, 0, 0, 34)
-title.Position = UDim2.new(0, 0, 0, 0)
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = Color3.fromRGB(240, 240, 250)
@@ -153,7 +181,7 @@ subtitle.TextColor3 = Color3.fromRGB(150, 150, 170)
 subtitle.TextSize = 14
 subtitle.Text = ""
 
--- Catalog view (welcome / list of forms)
+-- Catalog view
 local catalogView = Instance.new("Frame", content)
 catalogView.BackgroundTransparency = 1
 catalogView.Size = UDim2.new(1, 0, 1, -176)
@@ -175,42 +203,120 @@ emptyLabel.Font = Enum.Font.GothamMedium
 emptyLabel.TextSize = 20
 emptyLabel.TextWrapped = true
 emptyLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
-emptyLabel.Text = "Uh Oh — No applications yet, come back soon!"
+emptyLabel.Text = "Uh Oh - No applications yet, come back soon!"
 emptyLabel.Visible = false
 
--- Form view (selected application)
+-- Form view (one question at a time)
 local formView = Instance.new("Frame", content)
 formView.BackgroundTransparency = 1
 formView.Size = UDim2.new(1, 0, 1, -176)
 formView.Position = UDim2.new(0, 0, 0, 160)
 formView.Visible = false
 
-local back = Instance.new("TextButton", formView)
-back.Size = UDim2.new(0, 110, 0, 32); back.Position = UDim2.new(0, 0, 0, 0)
-back.BackgroundColor3 = Color3.fromRGB(35, 35, 45); back.TextColor3 = Color3.fromRGB(220, 220, 230)
-back.Font = Enum.Font.GothamMedium; back.TextSize = 13; back.Text = "< Back"
-rounded(back, 8)
+-- progress bar
+local progressBg = Instance.new("Frame", formView)
+progressBg.Size = UDim2.new(1, 0, 0, 6)
+progressBg.Position = UDim2.new(0, 0, 0, 0)
+progressBg.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+progressBg.BorderSizePixel = 0
+rounded(progressBg, 3)
+local progressFill = Instance.new("Frame", progressBg)
+progressFill.Size = UDim2.new(0, 0, 1, 0)
+progressFill.BackgroundColor3 = Color3.fromRGB(34, 211, 238)
+progressFill.BorderSizePixel = 0
+rounded(progressFill, 3)
 
-local formScroll = Instance.new("ScrollingFrame", formView)
-formScroll.Size = UDim2.new(1, 0, 1, -96)
-formScroll.Position = UDim2.new(0, 0, 0, 44)
-formScroll.BackgroundTransparency = 1
-formScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-formScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-formScroll.ScrollBarThickness = 6
-local formLayout = Instance.new("UIListLayout", formScroll)
-formLayout.Padding = UDim.new(0, 14)
+local progressLabel = Instance.new("TextLabel", formView)
+progressLabel.BackgroundTransparency = 1
+progressLabel.Position = UDim2.new(0, 0, 0, 16)
+progressLabel.Size = UDim2.new(1, 0, 0, 18)
+progressLabel.Font = Enum.Font.Gotham
+progressLabel.TextSize = 12
+progressLabel.TextXAlignment = Enum.TextXAlignment.Left
+progressLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+progressLabel.Text = ""
 
-local send = Instance.new("TextButton", formView)
-send.Size = UDim2.new(1, 0, 0, 46); send.Position = UDim2.new(0, 0, 1, -46)
-send.BackgroundColor3 = Color3.fromRGB(34, 211, 238); send.TextColor3 = Color3.fromRGB(10, 10, 12)
-send.Font = Enum.Font.GothamBold; send.TextSize = 15; send.Text = "Submit application"
-rounded(send, 10)
+-- Question label
+local qLabel = Instance.new("TextLabel", formView)
+qLabel.BackgroundTransparency = 1
+qLabel.Position = UDim2.new(0, 0, 0, 50)
+qLabel.Size = UDim2.new(1, 0, 0, 32)
+qLabel.Font = Enum.Font.GothamBold
+qLabel.TextSize = 22
+qLabel.TextXAlignment = Enum.TextXAlignment.Left
+qLabel.TextColor3 = Color3.fromRGB(240, 240, 250)
+qLabel.TextWrapped = true
+qLabel.Text = ""
+
+local qHelp = Instance.new("TextLabel", formView)
+qHelp.BackgroundTransparency = 1
+qHelp.Position = UDim2.new(0, 0, 0, 86)
+qHelp.Size = UDim2.new(1, 0, 0, 22)
+qHelp.Font = Enum.Font.Gotham
+qHelp.TextSize = 13
+qHelp.TextXAlignment = Enum.TextXAlignment.Left
+qHelp.TextColor3 = Color3.fromRGB(150, 150, 170)
+qHelp.TextWrapped = true
+qHelp.Text = ""
+
+-- Input box
+local qBox = Instance.new("TextBox", formView)
+qBox.Position = UDim2.new(0, 0, 0, 120)
+qBox.Size = UDim2.new(1, 0, 0, 180)
+qBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+qBox.TextColor3 = Color3.fromRGB(240, 240, 250)
+qBox.PlaceholderText = "Type your answer here..."
+qBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 130)
+qBox.Font = Enum.Font.Gotham
+qBox.TextSize = 15
+qBox.TextXAlignment = Enum.TextXAlignment.Left
+qBox.TextYAlignment = Enum.TextYAlignment.Top
+qBox.ClearTextOnFocus = false
+qBox.MultiLine = true
+qBox.TextWrapped = true
+qBox.Text = ""
+rounded(qBox, 10)
+local boxPad = Instance.new("UIPadding", qBox)
+boxPad.PaddingLeft = UDim.new(0, 14); boxPad.PaddingTop = UDim.new(0, 10)
+boxPad.PaddingRight = UDim.new(0, 14); boxPad.PaddingBottom = UDim.new(0, 10)
+
+-- Footer buttons
+local footer = Instance.new("Frame", formView)
+footer.BackgroundTransparency = 1
+footer.Position = UDim2.new(0, 0, 1, -56)
+footer.Size = UDim2.new(1, 0, 0, 46)
+
+local backBtn = Instance.new("TextButton", footer)
+backBtn.Size = UDim2.new(0, 140, 1, 0); backBtn.Position = UDim2.new(0, 0, 0, 0)
+backBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+backBtn.TextColor3 = Color3.fromRGB(220, 220, 230)
+backBtn.Font = Enum.Font.GothamMedium; backBtn.TextSize = 14
+backBtn.Text = "< Back"; backBtn.AutoButtonColor = true
+rounded(backBtn, 10)
+
+local nextBtn = Instance.new("TextButton", footer)
+nextBtn.Size = UDim2.new(0, 200, 1, 0); nextBtn.Position = UDim2.new(1, -200, 0, 0)
+nextBtn.BackgroundColor3 = Color3.fromRGB(34, 211, 238)
+nextBtn.TextColor3 = Color3.fromRGB(10, 10, 12)
+nextBtn.Font = Enum.Font.GothamBold; nextBtn.TextSize = 15
+nextBtn.Text = "Next >"; nextBtn.AutoButtonColor = true
+rounded(nextBtn, 10)
+
+local exitBtn = Instance.new("TextButton", formView)
+exitBtn.Size = UDim2.new(0, 110, 0, 28); exitBtn.Position = UDim2.new(1, -110, 0, 0)
+exitBtn.AnchorPoint = Vector2.new(0, 0)
+exitBtn.BackgroundColor3 = Color3.fromRGB(45, 28, 32)
+exitBtn.TextColor3 = Color3.fromRGB(255, 180, 180)
+exitBtn.Font = Enum.Font.GothamMedium; exitBtn.TextSize = 12
+exitBtn.Text = "Exit to menu"
+rounded(exitBtn, 8)
 
 local activeForm = nil
-local inputs = {}
+local answers = {}
+local stepIndex = 1
 
 local showForm  -- forward decl
+local renderStep  -- forward decl
 
 local function showCatalog(catalog)
     formView.Visible = false
@@ -218,7 +324,7 @@ local function showCatalog(catalog)
     for _, c in ipairs(catalogScroll:GetChildren()) do
         if c:IsA("TextButton") then c:Destroy() end
     end
-    local ws = catalog and catalog.workspace or ""
+    local ws = (catalog and catalog.workspace) or cfg.workspace or ""
     title.Text = "Welcome" .. (ws ~= "" and (" to " .. ws) or "")
     local forms = (catalog and catalog.forms) or {}
     if #forms == 0 then
@@ -234,8 +340,7 @@ local function showCatalog(catalog)
         local card = Instance.new("TextButton", catalogScroll)
         card.Size = UDim2.new(1, -8, 0, 86)
         card.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
-        card.AutoButtonColor = true
-        card.Text = ""
+        card.AutoButtonColor = true; card.Text = ""
         rounded(card, 12)
         local lab = Instance.new("TextLabel", card)
         lab.BackgroundTransparency = 1
@@ -257,69 +362,96 @@ local function showCatalog(catalog)
     end
 end
 
+renderStep = function()
+    if not activeForm then return end
+    local qs = activeForm.questions or {}
+    local total = #qs
+    if total == 0 then return end
+    if stepIndex < 1 then stepIndex = 1 end
+    if stepIndex > total then stepIndex = total end
+    local q = qs[stepIndex]
+    progressLabel.Text = "Question " .. stepIndex .. " of " .. total
+    progressFill.Size = UDim2.new(stepIndex / total, 0, 1, 0)
+    qLabel.Text = (q.required and "* " or "") .. (q.label or "")
+    qHelp.Text = q.help_text or ""
+    qBox.Text = answers[q.id] or ""
+    -- Back is enabled only if config allows AND not at first
+    backBtn.Visible = ALLOW_BACK and stepIndex > 1
+    if stepIndex == total then
+        nextBtn.Text = "Submit application"
+    else
+        nextBtn.Text = "Next >"
+    end
+end
+
 showForm = function(form)
     activeForm = form
+    answers = {}
+    stepIndex = 1
     catalogView.Visible = false
     formView.Visible = true
     title.Text = form.title or "Application"
     subtitle.Text = form.description or ""
-    for _, c in ipairs(formScroll:GetChildren()) do
-        if c:IsA("Frame") then c:Destroy() end
-    end
-    inputs = {}
-    for _, q in ipairs(form.questions or {}) do
-        local row = Instance.new("Frame", formScroll)
-        row.BackgroundTransparency = 1
-        row.Size = UDim2.new(1, -8, 0, 96)
-        row.AutomaticSize = Enum.AutomaticSize.Y
-        local lab = Instance.new("TextLabel", row)
-        lab.BackgroundTransparency = 1
-        lab.Size = UDim2.new(1, 0, 0, 22)
-        lab.Font = Enum.Font.GothamMedium; lab.TextSize = 14
-        lab.TextXAlignment = Enum.TextXAlignment.Left
-        lab.TextColor3 = Color3.fromRGB(220, 220, 230)
-        lab.Text = (q.required and "* " or "") .. (q.label or "")
-        local box = Instance.new("TextBox", row)
-        box.Position = UDim2.new(0, 0, 0, 26); box.Size = UDim2.new(1, 0, 0, 66)
-        box.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-        box.TextColor3 = Color3.fromRGB(240, 240, 250)
-        box.PlaceholderText = q.help_text or ""
-        box.PlaceholderColor3 = Color3.fromRGB(110, 110, 130)
-        box.Font = Enum.Font.Gotham; box.TextSize = 13
-        box.TextXAlignment = Enum.TextXAlignment.Left
-        box.TextYAlignment = Enum.TextYAlignment.Top
-        box.ClearTextOnFocus = false
-        box.MultiLine = true; box.TextWrapped = true
-        box.Text = ""
-        rounded(box, 8)
-        local pd = Instance.new("UIPadding", box)
-        pd.PaddingLeft = UDim.new(0, 12); pd.PaddingTop = UDim.new(0, 8)
-        pd.PaddingRight = UDim.new(0, 12); pd.PaddingBottom = UDim.new(0, 8)
-        table.insert(inputs, { id = q.id, box = box })
-    end
+    renderStep()
 end
 
-back.MouseButton1Click:Connect(function()
-    local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
-    showCatalog(catalog)
+local function saveCurrent()
+    if not activeForm then return end
+    local q = activeForm.questions[stepIndex]
+    if q then answers[q.id] = qBox.Text end
+end
+
+local function currentIsValid()
+    local q = activeForm.questions[stepIndex]
+    if q and q.required then
+        local v = qBox.Text or ""
+        if v:gsub("%s+", "") == "" then return false end
+    end
+    return true
+end
+
+backBtn.MouseButton1Click:Connect(function()
+    if not ALLOW_BACK then return end
+    saveCurrent()
+    stepIndex = math.max(1, stepIndex - 1)
+    renderStep()
 end)
 
-send.MouseButton1Click:Connect(function()
+nextBtn.MouseButton1Click:Connect(function()
     if not activeForm then return end
-    local answers = {}
-    for _, it in ipairs(inputs) do answers[it.id] = it.box.Text end
-    send.Text = "Submitting..."
+    if not currentIsValid() then
+        nextBtn.Text = "This question is required"
+        task.wait(1.2)
+        renderStep()
+        return
+    end
+    saveCurrent()
+    local total = #activeForm.questions
+    if stepIndex < total then
+        stepIndex += 1
+        renderStep()
+        return
+    end
+    -- Submit
+    nextBtn.Text = "Submitting..."
     local res = folder:WaitForChild("Submit"):InvokeServer(activeForm.id, answers)
     if res and res.ok then
-        send.Text = "Submitted — thank you"
+        nextBtn.Text = "Submitted - thank you"
         task.wait(2)
+        activeForm = nil
         local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
         showCatalog(catalog)
-        send.Text = "Submit application"
+        nextBtn.Text = "Next >"
     else
-        send.Text = "Failed — try again"
-        task.wait(2); send.Text = "Submit application"
+        nextBtn.Text = "Failed - try again"
+        task.wait(2); renderStep()
     end
+end)
+
+exitBtn.MouseButton1Click:Connect(function()
+    activeForm = nil
+    local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
+    showCatalog(catalog)
 end)
 
 -- Open immediately on join
@@ -342,8 +474,8 @@ export function RobloxAppCenterTab() {
     })();
   }, []);
 
-  const serverScript = useMemo(
-    () => buildServerScript(apiKey.trim() || "fxac_REPLACE_WITH_KEY", workspaceName.trim()),
+  const configScript = useMemo(
+    () => buildConfigScript(apiKey.trim() || "fxac_REPLACE_WITH_KEY", workspaceName.trim()),
     [apiKey, workspaceName],
   );
 
@@ -356,9 +488,7 @@ export function RobloxAppCenterTab() {
     const blob = new Blob([text], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = name;
-    a.click();
+    a.href = url; a.download = name; a.click();
     URL.revokeObjectURL(url);
   };
 
@@ -372,7 +502,7 @@ export function RobloxAppCenterTab() {
           <h2 className="font-semibold text-foreground text-sm">Roblox Application Center generator</h2>
         </div>
         <p className="text-xs text-muted-foreground">
-          Generates <strong>two Roblox scripts</strong> for the in-game Application Center. Requests are routed through <code>fluxcore.works/https/application/supabase</code> and authenticated with a workspace-specific API key — no Supabase URL or UUIDs are written into the Lua source.
+          Generates <strong>three Roblox scripts</strong>. The Config holds your API key and workspace name; the Server and Client are fixed — paste them once and never edit them again. All traffic is proxied through <code>fluxcore.works/https/application/supabase</code>.
         </p>
 
         <div className="grid sm:grid-cols-2 gap-3">
@@ -412,7 +542,7 @@ export function RobloxAppCenterTab() {
               )}
             </div>
             <p className="text-[11px] text-muted-foreground">
-              The owner generates / rotates this key in <strong>Settings → Tracking & Scripts → Application Center API Key</strong>.
+              Generate / rotate this key in <strong>Settings → Tracking & Scripts → Application Center API Key</strong>.
             </p>
           </div>
         </div>
@@ -420,30 +550,52 @@ export function RobloxAppCenterTab() {
         <div className="rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground space-y-1">
           <p className="text-foreground font-medium text-xs">Installation</p>
           <p>1. Enable <strong>HTTP Requests</strong>: Game Settings → Security → Allow HTTP Requests.</p>
-          <p>2. Paste <strong>Script 1 (Server)</strong> into a new <code>Script</code> in <code>ServerScriptService</code>.</p>
-          <p>3. Paste <strong>Script 2 (Client)</strong> into a new <code>LocalScript</code> in <code>StarterPlayer → StarterPlayerScripts</code>.</p>
-          <p>4. Publish & play — a full-screen "Apply for Staff" launcher appears for every player.</p>
+          <p>2. Paste <strong>Script 1 — Config</strong> into a <code>ModuleScript</code> in <code>ReplicatedStorage</code> named <code>FluxcoreAppConfig</code>.</p>
+          <p>3. Paste <strong>Script 2 — Server</strong> into a new <code>Script</code> in <code>ServerScriptService</code>.</p>
+          <p>4. Paste <strong>Script 3 — Client</strong> into a new <code>LocalScript</code> in <code>StarterPlayer → StarterPlayerScripts</code>.</p>
+          <p>5. Publish & play — questions appear one at a time. Set <code>ALLOW_GO_BACK</code> in the Config to control whether applicants can revisit answers.</p>
         </div>
+      </div>
+
+      {/* CONFIG SCRIPT */}
+      <div className="glass rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Script 1 — Config <span className="text-muted-foreground font-normal">(ModuleScript)</span></p>
+            <p className="text-[11px] text-muted-foreground">Place in <code>ReplicatedStorage</code> as a <code>ModuleScript</code> named <code>FluxcoreAppConfig</code>.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={() => copy(configScript, "Config script")} disabled={!apiKey}>
+              <Copy className="w-3 h-3 mr-1" /> Copy
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => download(configScript, `fluxcore-appcenter-config-${slug}.lua`)} disabled={!apiKey}>
+              <Download className="w-3 h-3 mr-1" /> .lua
+            </Button>
+          </div>
+        </div>
+        <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[360px] overflow-auto whitespace-pre text-foreground/90">
+{configScript}
+        </pre>
       </div>
 
       {/* SERVER SCRIPT */}
       <div className="glass rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
           <div>
-            <p className="text-sm font-semibold text-foreground">Script 1 — Server</p>
+            <p className="text-sm font-semibold text-foreground">Script 2 — Server</p>
             <p className="text-[11px] text-muted-foreground">Place in <code>ServerScriptService</code> as a <code>Script</code>.</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={() => copy(serverScript, "Server script")} disabled={!apiKey}>
+            <Button size="sm" variant="secondary" onClick={() => copy(SERVER_SCRIPT, "Server script")}>
               <Copy className="w-3 h-3 mr-1" /> Copy
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => download(serverScript, `fluxcore-appcenter-server-${slug}.lua`)} disabled={!apiKey}>
+            <Button size="sm" variant="secondary" onClick={() => download(SERVER_SCRIPT, `fluxcore-appcenter-server.lua`)}>
               <Download className="w-3 h-3 mr-1" /> .lua
             </Button>
           </div>
         </div>
         <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[420px] overflow-auto whitespace-pre text-foreground/90">
-{serverScript}
+{SERVER_SCRIPT}
         </pre>
       </div>
 
@@ -451,7 +603,7 @@ export function RobloxAppCenterTab() {
       <div className="glass rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
           <div>
-            <p className="text-sm font-semibold text-foreground">Script 2 — Client (full-screen UI)</p>
+            <p className="text-sm font-semibold text-foreground">Script 3 — Client (full-screen UI)</p>
             <p className="text-[11px] text-muted-foreground">Place in <code>StarterPlayer → StarterPlayerScripts</code> as a <code>LocalScript</code>.</p>
           </div>
           <div className="flex gap-2">
