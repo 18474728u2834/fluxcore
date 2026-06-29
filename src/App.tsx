@@ -132,6 +132,8 @@ function WorkspacePages() {
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="kudos" element={<Kudos />} />
         <Route path="promotions" element={<Promotions />} />
+        <Route path="applications" element={<Applications />} />
+        <Route path="applications/:formId/queue" element={<ApplicationQueue />} />
         <Route path="join" element={<JoinWorkspace />} />
       </Routes>
     </Suspense>
