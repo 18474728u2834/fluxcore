@@ -132,12 +132,17 @@ async function handleCommand(body: any): Promise<Response> {
     return ephemeral(`👤 **${m.roblox_username}**\nRank: ${m.role}\nWarnings: ${warns ?? 0}\nJoined: ${m.joined_at?.slice(0, 10) ?? "—"}`);
   }
 
+  // Determine if caller is workspace owner — owners don't have a workspace_members row.
+  const { data: wsRow } = await admin.from("workspaces")
+    .select("owner_id").eq("id", caller.workspace_id).maybeSingle();
+  const isOwner = wsRow?.owner_id === caller.user_id;
+
   if (cmd === "loa") {
     const start = getOption(opts, "start") as string;
     const end = getOption(opts, "end") as string;
     const reason = getOption(opts, "reason") as string;
     if (!start || !end || !reason) return ephemeral("Usage: /loa start:<YYYY-MM-DD> end:<YYYY-MM-DD> reason:<text>");
-    // find requester's workspace_member row
+    if (isOwner) return ephemeral("Owners don't need to submit LOA requests — you're always considered active.");
     const { data: wm } = await admin.from("workspace_members")
       .select("id").eq("workspace_id", caller.workspace_id).eq("user_id", caller.user_id).limit(1);
     const memberId = wm?.[0]?.id;
@@ -150,6 +155,7 @@ async function handleCommand(body: any): Promise<Response> {
   }
 
   if (cmd === "quota") {
+    if (isOwner) return ephemeral("🎯 Owners aren't bound by quotas.");
     const { data: wm } = await admin.from("workspace_members")
       .select("id, role_id").eq("workspace_id", caller.workspace_id).eq("user_id", caller.user_id).limit(1);
     const m = wm?.[0];
