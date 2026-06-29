@@ -235,8 +235,8 @@ emptyLabel.Visible = false
 -- Form view (one question at a time)
 local formView = Instance.new("Frame", content)
 formView.BackgroundTransparency = 1
-formView.Size = UDim2.new(1, 0, 1, -176)
-formView.Position = UDim2.new(0, 0, 0, 160)
+formView.Size = UDim2.new(1, 0, 1, -96)
+formView.Position = UDim2.new(0, 0, 0, 80)
 formView.Visible = false
 
 -- progress bar
