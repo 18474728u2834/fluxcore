@@ -181,8 +181,8 @@ emptyLabel.Visible = false
 -- Form view (selected application)
 local formView = Instance.new("Frame", content)
 formView.BackgroundTransparency = 1
-formView.Size = UDim2.new(1, 0, 1, -80)
-formView.Position = UDim2.new(0, 0, 0, 80)
+formView.Size = UDim2.new(1, 0, 1, -176)
+formView.Position = UDim2.new(0, 0, 0, 160)
 formView.Visible = false
 
 local back = Instance.new("TextButton", formView)
