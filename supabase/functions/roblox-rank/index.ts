@@ -21,16 +21,26 @@ serve(async (req) => {
       });
     }
 
-    // Get the requesting user
     const token = authHeader.replace("Bearer ", "");
+    // Trusted-service path: edge functions (Discord bot, cron) may call this
+    // with the service-role key. They supply `actor_user_id` in the body to
+    // identify the human on whose behalf the action runs.
+    const isServiceCall = token === serviceRoleKey;
     const sbUserClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
-    const { data: { user: reqUser } } = await sbUserClient.auth.getUser();
-    if (!reqUser) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    let reqUser: { id: string } | null = null;
+    if (isServiceCall) {
+      const actorId = (await req.clone().json().catch(() => ({})))?.actor_user_id;
+      if (actorId) reqUser = { id: actorId };
+    } else {
+      const { data: { user } } = await sbUserClient.auth.getUser();
+      reqUser = user as any;
+      if (!reqUser) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     const body = await req.json();
