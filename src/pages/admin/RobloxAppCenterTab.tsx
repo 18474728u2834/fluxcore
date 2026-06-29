@@ -57,6 +57,21 @@ local cfg = require(cfgModule)
 local API_BASE  = cfg.API_BASE
 local API_KEY   = cfg.API_KEY
 local WORKSPACE = cfg.WORKSPACE_NAME
+local GROUP_ID  = tonumber(cfg.GROUP_ID) or 0
+local NOT_IN_GROUP_MSG = cfg.NOT_IN_GROUP_MESSAGE or "You must join our Roblox group before applying."
+
+-- Enforce group membership: kick anyone who isn't in the configured group.
+-- Set GROUP_ID = 0 in the Config ModuleScript to disable this check.
+local Players = game:GetService("Players")
+local function enforceGroup(player: Player)
+    if GROUP_ID <= 0 then return end
+    local ok, inGroup = pcall(function() return player:IsInGroup(GROUP_ID) end)
+    if ok and not inGroup then
+        player:Kick(NOT_IN_GROUP_MSG)
+    end
+end
+Players.PlayerAdded:Connect(enforceGroup)
+for _, p in ipairs(Players:GetPlayers()) do task.spawn(enforceGroup, p) end
 
 local folder = ReplicatedStorage:FindFirstChild("FluxcoreApp")
 if not folder then
