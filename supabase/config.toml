@@ -49,3 +49,9 @@ verify_jwt = false
 
 [functions.handle-email-suppression]
 verify_jwt = false
+
+[functions.discord-bot]
+verify_jwt = false
+
+[functions.discord-register-commands]
+verify_jwt = false
