@@ -26,6 +26,7 @@ const NAV = [
   { to: "wall",       icon: Megaphone,   label: "Wall"      },
   { to: "kudos",      icon: Heart,       label: "Kudos"     },
   { to: "promotions", icon: ArrowUp,     label: "Promotions"},
+  { to: "applications", icon: ClipboardList, label: "Applications"},
   { to: "roles",      icon: ShieldCheck, label: "Roles"     },
   { to: "staff",      icon: Grid3x3,     label: "Blacklist" },
 ];
