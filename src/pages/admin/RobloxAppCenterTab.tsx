@@ -101,6 +101,7 @@ print("[Fluxcore] Application Center server ready.")
 const CLIENT_SCRIPT = `--!strict
 -- Fluxcore Application Center — CLIENT
 -- Place this LocalScript in StarterPlayer → StarterPlayerScripts.
+-- Opens immediately on join, fills the entire screen (no launcher button, no inner card).
 
 local Players = game:GetService("Players")
 local RS      = game:GetService("ReplicatedStorage")
@@ -116,102 +117,61 @@ sg.Parent = plr:WaitForChild("PlayerGui")
 
 local function rounded(parent, r) local c=Instance.new("UICorner",parent); c.CornerRadius=UDim.new(0,r); return c end
 
--- Floating launcher button (top-left)
-local btn = Instance.new("TextButton", sg)
-btn.Size = UDim2.new(0, 180, 0, 38)
-btn.Position = UDim2.new(0, 16, 0, 16)
-btn.BackgroundColor3 = Color3.fromRGB(34, 211, 238)
-btn.TextColor3 = Color3.fromRGB(10, 10, 12)
-btn.Font = Enum.Font.GothamBold
-btn.TextSize = 14
-btn.Text = "Apply for Staff"
-btn.AutoButtonColor = true
-rounded(btn, 10)
-
--- Full-screen dim background
-local dim = Instance.new("Frame", sg)
-dim.Size = UDim2.new(1, 0, 1, 0)
-dim.Position = UDim2.new(0, 0, 0, 0)
-dim.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-dim.BackgroundTransparency = 0.35
-dim.BorderSizePixel = 0
-dim.Visible = false
-
--- Full-screen panel (the application UI)
-local panel = Instance.new("Frame", dim)
-panel.Size = UDim2.new(1, 0, 1, 0)
-panel.Position = UDim2.new(0, 0, 0, 0)
-panel.BackgroundColor3 = Color3.fromRGB(14, 14, 20)
-panel.BorderSizePixel = 0
-
--- Inner content container, max 720px wide & centered
-local content = Instance.new("Frame", panel)
-content.AnchorPoint = Vector2.new(0.5, 0.5)
-content.Position = UDim2.new(0.5, 0, 0.5, 0)
-content.Size = UDim2.new(1, -48, 1, -48)
-content.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+-- Full-screen panel — IS the UI. No dim layer, no inner card.
+local content = Instance.new("Frame", sg)
+content.Size = UDim2.new(1, 0, 1, 0)
+content.Position = UDim2.new(0, 0, 0, 0)
+content.BackgroundColor3 = Color3.fromRGB(14, 14, 20)
 content.BorderSizePixel = 0
-rounded(content, 16)
-local maxW = Instance.new("UISizeConstraint", content)
-maxW.MaxSize = Vector2.new(820, 99999)
 local pad = Instance.new("UIPadding", content)
-pad.PaddingTop = UDim.new(0, 22); pad.PaddingBottom = UDim.new(0, 22)
-pad.PaddingLeft = UDim.new(0, 24); pad.PaddingRight = UDim.new(0, 24)
-local stroke = Instance.new("UIStroke", content)
-stroke.Color = Color3.fromRGB(45, 45, 60); stroke.Thickness = 1
+pad.PaddingTop = UDim.new(0, 28); pad.PaddingBottom = UDim.new(0, 28)
+pad.PaddingLeft = UDim.new(0, 48); pad.PaddingRight = UDim.new(0, 48)
 
 -- Header
 local header = Instance.new("Frame", content)
 header.BackgroundTransparency = 1
-header.Size = UDim2.new(1, 0, 0, 56)
+header.Size = UDim2.new(1, 0, 0, 64)
 
 local title = Instance.new("TextLabel", header)
 title.BackgroundTransparency = 1
-title.Size = UDim2.new(1, -50, 0, 28)
+title.Size = UDim2.new(1, 0, 0, 34)
 title.Position = UDim2.new(0, 0, 0, 0)
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = Color3.fromRGB(240, 240, 250)
-title.TextSize = 22
+title.TextSize = 28
 title.Text = "Welcome"
 
 local subtitle = Instance.new("TextLabel", header)
 subtitle.BackgroundTransparency = 1
-subtitle.Size = UDim2.new(1, -50, 0, 20)
-subtitle.Position = UDim2.new(0, 0, 0, 30)
+subtitle.Size = UDim2.new(1, 0, 0, 22)
+subtitle.Position = UDim2.new(0, 0, 0, 36)
 subtitle.Font = Enum.Font.Gotham
 subtitle.TextXAlignment = Enum.TextXAlignment.Left
 subtitle.TextColor3 = Color3.fromRGB(150, 150, 170)
-subtitle.TextSize = 13
+subtitle.TextSize = 14
 subtitle.Text = ""
-
-local close = Instance.new("TextButton", header)
-close.Size = UDim2.new(0, 36, 0, 36); close.Position = UDim2.new(1, -36, 0, 0)
-close.BackgroundColor3 = Color3.fromRGB(35, 35, 45); close.TextColor3 = Color3.fromRGB(220, 220, 230)
-close.Font = Enum.Font.GothamBold; close.TextSize = 16; close.Text = "X"
-rounded(close, 10)
-close.MouseButton1Click:Connect(function() dim.Visible = false end)
 
 -- Catalog view (welcome / list of forms)
 local catalogView = Instance.new("Frame", content)
 catalogView.BackgroundTransparency = 1
-catalogView.Size = UDim2.new(1, 0, 1, -72)
-catalogView.Position = UDim2.new(0, 0, 0, 72)
+catalogView.Size = UDim2.new(1, 0, 1, -80)
+catalogView.Position = UDim2.new(0, 0, 0, 80)
 
 local catalogScroll = Instance.new("ScrollingFrame", catalogView)
 catalogScroll.Size = UDim2.new(1, 0, 1, 0)
 catalogScroll.BackgroundTransparency = 1
 catalogScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 catalogScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-catalogScroll.ScrollBarThickness = 5
+catalogScroll.ScrollBarThickness = 6
 local catalogLayout = Instance.new("UIListLayout", catalogScroll)
-catalogLayout.Padding = UDim.new(0, 12)
+catalogLayout.Padding = UDim.new(0, 14)
 
 local emptyLabel = Instance.new("TextLabel", catalogView)
 emptyLabel.BackgroundTransparency = 1
 emptyLabel.Size = UDim2.new(1, 0, 1, 0)
 emptyLabel.Font = Enum.Font.GothamMedium
-emptyLabel.TextSize = 18
+emptyLabel.TextSize = 20
 emptyLabel.TextWrapped = true
 emptyLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
 emptyLabel.Text = "Uh Oh — No applications yet, come back soon!"
@@ -220,27 +180,28 @@ emptyLabel.Visible = false
 -- Form view (selected application)
 local formView = Instance.new("Frame", content)
 formView.BackgroundTransparency = 1
-formView.Size = UDim2.new(1, 0, 1, -72)
-formView.Position = UDim2.new(0, 0, 0, 72)
+formView.Size = UDim2.new(1, 0, 1, -80)
+formView.Position = UDim2.new(0, 0, 0, 80)
 formView.Visible = false
 
 local back = Instance.new("TextButton", formView)
-back.Size = UDim2.new(0, 100, 0, 30); back.Position = UDim2.new(0, 0, 0, 0)
+back.Size = UDim2.new(0, 110, 0, 32); back.Position = UDim2.new(0, 0, 0, 0)
 back.BackgroundColor3 = Color3.fromRGB(35, 35, 45); back.TextColor3 = Color3.fromRGB(220, 220, 230)
 back.Font = Enum.Font.GothamMedium; back.TextSize = 13; back.Text = "< Back"
 rounded(back, 8)
 
 local formScroll = Instance.new("ScrollingFrame", formView)
-formScroll.Size = UDim2.new(1, 0, 1, -92); formScroll.Position = UDim2.new(0, 0, 0, 40)
+formScroll.Size = UDim2.new(1, 0, 1, -96); fmScrollPos = nil
+formScroll.Position = UDim2.new(0, 0, 0, 44)
 formScroll.BackgroundTransparency = 1
 formScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 formScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
-formScroll.ScrollBarThickness = 5
+formScroll.ScrollBarThickness = 6
 local formLayout = Instance.new("UIListLayout", formScroll)
-formLayout.Padding = UDim.new(0, 12)
+formLayout.Padding = UDim.new(0, 14)
 
 local send = Instance.new("TextButton", formView)
-send.Size = UDim2.new(1, 0, 0, 42); send.Position = UDim2.new(0, 0, 1, -42)
+send.Size = UDim2.new(1, 0, 0, 46); send.Position = UDim2.new(0, 0, 1, -46)
 send.BackgroundColor3 = Color3.fromRGB(34, 211, 238); send.TextColor3 = Color3.fromRGB(10, 10, 12)
 send.Font = Enum.Font.GothamBold; send.TextSize = 15; send.Text = "Submit application"
 rounded(send, 10)
@@ -270,21 +231,21 @@ local function showCatalog(catalog)
     subtitle.Text = "Choose an application to get started."
     for _, f in ipairs(forms) do
         local card = Instance.new("TextButton", catalogScroll)
-        card.Size = UDim2.new(1, -8, 0, 78)
+        card.Size = UDim2.new(1, -8, 0, 86)
         card.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
         card.AutoButtonColor = true
         card.Text = ""
         rounded(card, 12)
         local lab = Instance.new("TextLabel", card)
         lab.BackgroundTransparency = 1
-        lab.Position = UDim2.new(0, 16, 0, 10); lab.Size = UDim2.new(1, -32, 0, 22)
-        lab.Font = Enum.Font.GothamBold; lab.TextSize = 16
+        lab.Position = UDim2.new(0, 18, 0, 12); lab.Size = UDim2.new(1, -36, 0, 24)
+        lab.Font = Enum.Font.GothamBold; lab.TextSize = 17
         lab.TextXAlignment = Enum.TextXAlignment.Left
         lab.TextColor3 = Color3.fromRGB(240, 240, 250)
         lab.Text = f.title or "Application"
         local desc = Instance.new("TextLabel", card)
         desc.BackgroundTransparency = 1
-        desc.Position = UDim2.new(0, 16, 0, 36); desc.Size = UDim2.new(1, -32, 0, 36)
+        desc.Position = UDim2.new(0, 18, 0, 40); desc.Size = UDim2.new(1, -36, 0, 40)
         desc.Font = Enum.Font.Gotham; desc.TextSize = 13
         desc.TextXAlignment = Enum.TextXAlignment.Left
         desc.TextYAlignment = Enum.TextYAlignment.Top
@@ -308,17 +269,17 @@ showForm = function(form)
     for _, q in ipairs(form.questions or {}) do
         local row = Instance.new("Frame", formScroll)
         row.BackgroundTransparency = 1
-        row.Size = UDim2.new(1, -8, 0, 86)
+        row.Size = UDim2.new(1, -8, 0, 96)
         row.AutomaticSize = Enum.AutomaticSize.Y
         local lab = Instance.new("TextLabel", row)
         lab.BackgroundTransparency = 1
-        lab.Size = UDim2.new(1, 0, 0, 20)
+        lab.Size = UDim2.new(1, 0, 0, 22)
         lab.Font = Enum.Font.GothamMedium; lab.TextSize = 14
         lab.TextXAlignment = Enum.TextXAlignment.Left
         lab.TextColor3 = Color3.fromRGB(220, 220, 230)
         lab.Text = (q.required and "* " or "") .. (q.label or "")
         local box = Instance.new("TextBox", row)
-        box.Position = UDim2.new(0, 0, 0, 24); box.Size = UDim2.new(1, 0, 0, 58)
+        box.Position = UDim2.new(0, 0, 0, 26); box.Size = UDim2.new(1, 0, 0, 66)
         box.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
         box.TextColor3 = Color3.fromRGB(240, 240, 250)
         box.PlaceholderText = q.help_text or ""
@@ -342,12 +303,6 @@ back.MouseButton1Click:Connect(function()
     showCatalog(catalog)
 end)
 
-btn.MouseButton1Click:Connect(function()
-    dim.Visible = true
-    local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
-    showCatalog(catalog)
-end)
-
 send.MouseButton1Click:Connect(function()
     if not activeForm then return end
     local answers = {}
@@ -356,12 +311,19 @@ send.MouseButton1Click:Connect(function()
     local res = folder:WaitForChild("Submit"):InvokeServer(activeForm.id, answers)
     if res and res.ok then
         send.Text = "Submitted — thank you"
-        task.wait(2); dim.Visible = false; send.Text = "Submit application"
+        task.wait(2)
+        local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
+        showCatalog(catalog)
+        send.Text = "Submit application"
     else
         send.Text = "Failed — try again"
         task.wait(2); send.Text = "Submit application"
     end
 end)
+
+-- Open immediately on join
+local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
+showCatalog(catalog)
 `;
 
 export function RobloxAppCenterTab() {
