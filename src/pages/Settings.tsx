@@ -46,6 +46,9 @@ export default function SettingsPage() {
   const [apiKey, setApiKey] = useState("");
   const [copied, setCopied] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [appCenterKey, setAppCenterKey] = useState("");
+  const [appCenterCopied, setAppCenterCopied] = useState(false);
+  const [rotatingAppCenter, setRotatingAppCenter] = useState(false);
   const [name, setName] = useState("");
   const [groupId, setGroupId] = useState("");
   const [robloxApiKey, setRobloxApiKey] = useState("");
