@@ -213,7 +213,7 @@ export default function Applications() {
           <div className="glass rounded-xl p-5 space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Questions</h2>
-              <Button size="sm" variant="secondary" onClick={() => setQuestions([...questions, { label: "", type: "short_text", options: [], required: true, position: questions.length }])}>
+              <Button size="sm" variant="secondary" onClick={() => setQuestions([...questions, { label: "", type: "short_text", options: [], required: true, position: questions.length, correct_answer: "", match_mode: "any" }])}>
                 <Plus className="w-3 h-3 mr-1" /> Add
               </Button>
             </div>
@@ -235,6 +235,30 @@ export default function Applications() {
                 {q.type === "choice" && (
                   <Input placeholder="Comma-separated options" value={q.options.join(", ")} onChange={e => { const c = [...questions]; c[i] = { ...q, options: e.target.value.split(",").map(s => s.trim()).filter(Boolean) }; setQuestions(c); }} />
                 )}
+                <div className="grid grid-cols-12 gap-2 items-center">
+                  <select
+                    className="col-span-3 bg-background border border-border rounded-md h-9 px-2 text-xs"
+                    value={q.match_mode || "any"}
+                    onChange={e => { const c = [...questions]; c[i] = { ...q, match_mode: e.target.value as any }; setQuestions(c); }}
+                    title="How Fluxcore decides if the applicant's answer is correct"
+                  >
+                    <option value="any">Don't grade</option>
+                    <option value="exact">Exact match</option>
+                    <option value="contains">Must contain</option>
+                    <option value="fuzzy">Fuzzy (50%+ words)</option>
+                  </select>
+                  <Input
+                    className="col-span-9"
+                    placeholder={
+                      (q.match_mode && q.match_mode !== "any")
+                        ? (q.type === "choice" ? "Exact correct option" : "Correct answer (or key phrase)")
+                        : "Not graded - applicants can answer anything"
+                    }
+                    disabled={!q.match_mode || q.match_mode === "any"}
+                    value={q.correct_answer || ""}
+                    onChange={e => { const c = [...questions]; c[i] = { ...q, correct_answer: e.target.value }; setQuestions(c); }}
+                  />
+                </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Switch checked={q.required} onCheckedChange={v => { const c = [...questions]; c[i] = { ...q, required: v }; setQuestions(c); }} /> Required
                 </div>
