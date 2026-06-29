@@ -360,17 +360,9 @@ export function RobloxAppCenterTab() {
     [apiKey, workspaceName],
   );
 
-  const rotate = async () => {
-    if (!workspaceId) return toast.error("Pick a workspace first");
-    if (apiKey && !confirm("Rotating will invalidate the existing key. Continue?")) return;
-    setBusy(true);
-    const { data, error } = await supabase.rpc("rotate_app_center_key", { _workspace_id: workspaceId });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    setApiKey(data as string);
-    setRevealed(true);
-    toast.success("Application Center API key generated — copy it now, it won't be shown again");
-  };
+  // API-key generation lives in Settings → Tracking & Scripts → Application Center API Key.
+  // This tab now only renders the Lua script using a key the owner pastes in.
+
 
   const copy = async (text: string, label: string) => {
     await navigator.clipboard.writeText(text);
