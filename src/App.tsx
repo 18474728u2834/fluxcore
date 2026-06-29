@@ -87,6 +87,10 @@ const Status = lazy(() => import("./pages/Status"));
 const SecurityPage = lazy(() => import("./pages/Security"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe"));
 const Newsletter = lazy(() => import("./pages/Newsletter"));
+const Applications = lazy(() => import("./pages/Applications"));
+const ApplicationQueue = lazy(() => import("./pages/ApplicationQueue"));
+const Apply = lazy(() => import("./pages/Apply"));
+const DiscordVerify = lazy(() => import("./pages/DiscordVerify"));
 
 
 const queryClient = new QueryClient();
