@@ -268,13 +268,29 @@ serve(async (req) => {
 
     // Action: step_rank — bump the target up or down by exactly one rank in
     // the Roblox group ladder. Used by the in-app "Demotion" logbook entry.
-    if (action === "promote_one" || action === "demote_one") {
-      const targetUserId: string | undefined = body.roblox_user_id;
+    if (action === "promote_one" || action === "demote_one" || action === "promote" || action === "demote") {
+      const stepAction = action.endsWith("_one") ? action : `${action}_one`;
+      let targetUserId: string | undefined = body.roblox_user_id;
+      const targetUsername: string | undefined = body.target_username;
+      if (!targetUserId && targetUsername) {
+        try {
+          const r = await fetch("https://users.roblox.com/v1/usernames/users", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ usernames: [targetUsername], excludeBannedUsers: false }),
+          });
+          const j = await r.json();
+          targetUserId = j?.data?.[0]?.id ? String(j.data[0].id) : undefined;
+        } catch (_) { /* ignore */ }
+      }
       if (!targetUserId) {
-        return new Response(JSON.stringify({ error: "Missing roblox_user_id" }), {
+        return new Response(JSON.stringify({ error: "Missing roblox_user_id or target_username (user not found)" }), {
           status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      // Normalize so the existing logic below treats it as promote_one/demote_one
+      (body as any).roblox_user_id = targetUserId;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const _action = stepAction; // kept for clarity
       const allRoles = await fetchAllRoles();
       const ladder = allRoles
         .filter((r: any) => (r.rank ?? 0) > 0)
