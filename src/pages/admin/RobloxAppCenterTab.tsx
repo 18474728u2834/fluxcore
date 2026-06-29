@@ -185,15 +185,16 @@ local pad = Instance.new("UIPadding", content)
 pad.PaddingTop = UDim.new(0, 36); pad.PaddingBottom = UDim.new(0, 28)
 pad.PaddingLeft = UDim.new(0, 48); pad.PaddingRight = UDim.new(0, 48)
 
--- Header
+-- Header (lowered; sits above center but not flush at top)
 local header = Instance.new("Frame", content)
 header.BackgroundTransparency = 1
 header.Size = UDim2.new(1, 0, 0, 64)
-header.Position = UDim2.new(0, 0, 0, 0)
+header.Position = UDim2.new(0, 0, 0, 80)
 
 local title = Instance.new("TextLabel", header)
 title.BackgroundTransparency = 1
 title.Size = UDim2.new(1, 0, 0, 34)
+title.Position = UDim2.new(0, 0, 0, 0)
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.TextColor3 = Color3.fromRGB(240, 240, 250)
@@ -213,8 +214,8 @@ subtitle.Text = ""
 -- Catalog view
 local catalogView = Instance.new("Frame", content)
 catalogView.BackgroundTransparency = 1
-catalogView.Size = UDim2.new(1, 0, 1, -96)
-catalogView.Position = UDim2.new(0, 0, 0, 80)
+catalogView.Size = UDim2.new(1, 0, 1, -160)
+catalogView.Position = UDim2.new(0, 0, 0, 150)
 
 local catalogScroll = Instance.new("ScrollingFrame", catalogView)
 catalogScroll.Size = UDim2.new(1, 0, 1, 0)
@@ -238,9 +239,10 @@ emptyLabel.Visible = false
 -- Form view (one question at a time)
 local formView = Instance.new("Frame", content)
 formView.BackgroundTransparency = 1
-formView.Size = UDim2.new(1, 0, 1, -96)
-formView.Position = UDim2.new(0, 0, 0, 80)
+formView.Size = UDim2.new(1, 0, 1, -160)
+formView.Position = UDim2.new(0, 0, 0, 150)
 formView.Visible = false
+
 
 -- progress bar
 local progressBg = Instance.new("Frame", formView)
