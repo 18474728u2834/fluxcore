@@ -20,6 +20,10 @@ interface FormRow {
   target_role_id: string | null;
   auto_rank_on_accept: boolean;
   notify_webhook: string | null;
+  pass_threshold: number;
+  pass_message: string;
+  fail_kick_message: string;
+  pass_rank_number: number | null;
 }
 interface Question {
   id?: string;
@@ -28,6 +32,8 @@ interface Question {
   options: string[];
   required: boolean;
   position: number;
+  correct_answer?: string | null;
+  match_mode?: "any" | "exact" | "contains" | "fuzzy";
 }
 
 export default function Applications() {
@@ -56,10 +62,17 @@ export default function Applications() {
 
   const startNew = () => {
     setEditingId("new");
-    setDraft({ id: "new", slug: "", title: "", description: "", is_open: true, target_role_id: null, auto_rank_on_accept: false, notify_webhook: "" });
+    setDraft({
+      id: "new", slug: "", title: "", description: "", is_open: true,
+      target_role_id: null, auto_rank_on_accept: false, notify_webhook: "",
+      pass_threshold: 100,
+      pass_message: "Passed & Ranked - welcome aboard!",
+      fail_kick_message: "You did not pass the application. Try again later.",
+      pass_rank_number: null,
+    });
     setQuestions([
-      { label: "What's your timezone?", type: "timezone", options: [], required: true, position: 0 },
-      { label: "Why do you want to join?", type: "long_text", options: [], required: true, position: 1 },
+      { label: "What's your timezone?", type: "timezone", options: [], required: true, position: 0, correct_answer: "", match_mode: "any" },
+      { label: "Why do you want to join?", type: "long_text", options: [], required: true, position: 1, correct_answer: "", match_mode: "any" },
     ]);
   };
 
@@ -82,6 +95,10 @@ export default function Applications() {
       target_role_id: draft.target_role_id,
       auto_rank_on_accept: draft.auto_rank_on_accept,
       notify_webhook: draft.notify_webhook,
+      pass_threshold: Math.max(0, Math.min(100, Number(draft.pass_threshold) || 100)),
+      pass_message: draft.pass_message || "Passed & Ranked - welcome aboard!",
+      fail_kick_message: draft.fail_kick_message || "You did not pass the application. Try again later.",
+      pass_rank_number: draft.pass_rank_number ?? null,
     };
     if (formId === "new") {
       const { data, error } = await supabase.from("application_forms" as any).insert(payload).select("id").single();
@@ -94,7 +111,10 @@ export default function Applications() {
     }
     if (questions.length) {
       const rows = questions.map((q, i) => ({
-        form_id: formId, label: q.label, type: q.type, options: q.options, required: q.required, position: i,
+        form_id: formId, label: q.label, type: q.type, options: q.options,
+        required: q.required, position: i,
+        correct_answer: q.correct_answer || null,
+        match_mode: q.match_mode || "any",
       }));
       await supabase.from("application_form_questions" as any).insert(rows);
     }
@@ -156,14 +176,44 @@ export default function Applications() {
               </div>
             </div>
             <div className="flex items-center gap-3"><Switch checked={draft.is_open} onCheckedChange={v => setDraft({ ...draft, is_open: v })} /> <span className="text-sm">Form is open for submissions</span></div>
-            <div className="flex items-center gap-3"><Switch checked={draft.auto_rank_on_accept} onCheckedChange={v => setDraft({ ...draft, auto_rank_on_accept: v })} /> <span className="text-sm">Auto-rank applicant on Accept</span></div>
+            <div className="flex items-center gap-3"><Switch checked={draft.auto_rank_on_accept} onCheckedChange={v => setDraft({ ...draft, auto_rank_on_accept: v })} /> <span className="text-sm">Auto-rank applicant on Accept (and on in-game pass)</span></div>
             <Input placeholder="Discord webhook (optional)" value={draft.notify_webhook || ""} onChange={e => setDraft({ ...draft, notify_webhook: e.target.value })} />
+          </div>
+
+          <div className="glass rounded-xl p-5 space-y-3">
+            <h2 className="font-semibold">Auto-grading & in-game outcome</h2>
+            <p className="text-xs text-muted-foreground">
+              Set a correct answer per question below. Fluxcore grades the in-game application
+              against your answers and, depending on the pass threshold, either ranks the player
+              up in Roblox or kicks them with the message you choose.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Pass threshold (% of graded questions correct)</label>
+                <Input type="number" min={0} max={100} value={draft.pass_threshold}
+                  onChange={e => setDraft({ ...draft, pass_threshold: Number(e.target.value) })} />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Roblox rank number on pass (optional)</label>
+                <Input type="number" min={1} max={255} placeholder="e.g. 10"
+                  value={draft.pass_rank_number ?? ""}
+                  onChange={e => setDraft({ ...draft, pass_rank_number: e.target.value === "" ? null : Number(e.target.value) })} />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Message shown on pass</label>
+              <Input value={draft.pass_message} onChange={e => setDraft({ ...draft, pass_message: e.target.value })} />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground">Kick message on fail</label>
+              <Input value={draft.fail_kick_message} onChange={e => setDraft({ ...draft, fail_kick_message: e.target.value })} />
+            </div>
           </div>
 
           <div className="glass rounded-xl p-5 space-y-3">
             <div className="flex items-center justify-between">
               <h2 className="font-semibold">Questions</h2>
-              <Button size="sm" variant="secondary" onClick={() => setQuestions([...questions, { label: "", type: "short_text", options: [], required: true, position: questions.length }])}>
+              <Button size="sm" variant="secondary" onClick={() => setQuestions([...questions, { label: "", type: "short_text", options: [], required: true, position: questions.length, correct_answer: "", match_mode: "any" }])}>
                 <Plus className="w-3 h-3 mr-1" /> Add
               </Button>
             </div>
@@ -185,6 +235,30 @@ export default function Applications() {
                 {q.type === "choice" && (
                   <Input placeholder="Comma-separated options" value={q.options.join(", ")} onChange={e => { const c = [...questions]; c[i] = { ...q, options: e.target.value.split(",").map(s => s.trim()).filter(Boolean) }; setQuestions(c); }} />
                 )}
+                <div className="grid grid-cols-12 gap-2 items-center">
+                  <select
+                    className="col-span-3 bg-background border border-border rounded-md h-9 px-2 text-xs"
+                    value={q.match_mode || "any"}
+                    onChange={e => { const c = [...questions]; c[i] = { ...q, match_mode: e.target.value as any }; setQuestions(c); }}
+                    title="How Fluxcore decides if the applicant's answer is correct"
+                  >
+                    <option value="any">Don't grade</option>
+                    <option value="exact">Exact match</option>
+                    <option value="contains">Must contain</option>
+                    <option value="fuzzy">Fuzzy (50%+ words)</option>
+                  </select>
+                  <Input
+                    className="col-span-9"
+                    placeholder={
+                      (q.match_mode && q.match_mode !== "any")
+                        ? (q.type === "choice" ? "Exact correct option" : "Correct answer (or key phrase)")
+                        : "Not graded - applicants can answer anything"
+                    }
+                    disabled={!q.match_mode || q.match_mode === "any"}
+                    value={q.correct_answer || ""}
+                    onChange={e => { const c = [...questions]; c[i] = { ...q, correct_answer: e.target.value }; setQuestions(c); }}
+                  />
+                </div>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <Switch checked={q.required} onCheckedChange={v => { const c = [...questions]; c[i] = { ...q, required: v }; setQuestions(c); }} /> Required
                 </div>
