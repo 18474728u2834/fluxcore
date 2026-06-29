@@ -529,6 +529,53 @@ export type Database = {
           },
         ]
       }
+      discord_bot_logs: {
+        Row: {
+          command: string
+          created_at: string
+          discord_user_id: string
+          discord_username: string | null
+          error: string | null
+          guild_id: string
+          id: string
+          options: Json | null
+          result: string
+          workspace_id: string | null
+        }
+        Insert: {
+          command: string
+          created_at?: string
+          discord_user_id: string
+          discord_username?: string | null
+          error?: string | null
+          guild_id: string
+          id?: string
+          options?: Json | null
+          result: string
+          workspace_id?: string | null
+        }
+        Update: {
+          command?: string
+          created_at?: string
+          discord_user_id?: string
+          discord_username?: string | null
+          error?: string | null
+          guild_id?: string
+          id?: string
+          options?: Json | null
+          result?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "discord_bot_logs_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       discord_command_sessions: {
         Row: {
           consumed_at: string | null
