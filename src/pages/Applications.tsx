@@ -20,6 +20,10 @@ interface FormRow {
   target_role_id: string | null;
   auto_rank_on_accept: boolean;
   notify_webhook: string | null;
+  pass_threshold: number;
+  pass_message: string;
+  fail_kick_message: string;
+  pass_rank_number: number | null;
 }
 interface Question {
   id?: string;
@@ -28,6 +32,8 @@ interface Question {
   options: string[];
   required: boolean;
   position: number;
+  correct_answer?: string | null;
+  match_mode?: "any" | "exact" | "contains" | "fuzzy";
 }
 
 export default function Applications() {
