@@ -191,7 +191,7 @@ back.Font = Enum.Font.GothamMedium; back.TextSize = 13; back.Text = "< Back"
 rounded(back, 8)
 
 local formScroll = Instance.new("ScrollingFrame", formView)
-formScroll.Size = UDim2.new(1, 0, 1, -96); fmScrollPos = nil
+formScroll.Size = UDim2.new(1, 0, 1, -96)
 formScroll.Position = UDim2.new(0, 0, 0, 44)
 formScroll.BackgroundTransparency = 1
 formScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
