@@ -27,6 +27,10 @@
     {
       "source": "/https/application/supabase/:path*",
       "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
+    },
+    {
+      "source": "/application/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
     }
   ],
   "redirects": [
