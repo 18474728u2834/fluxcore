@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { PremiumGrantManager } from "@/components/PremiumGrantManager";
 import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
 import StatusAdminTab from "@/pages/admin/StatusAdminTab";
+import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
 
 type WhoAmI = {
   user_id: string;
@@ -111,6 +112,7 @@ export default function Admin() {
             <TabsTrigger value="portals">Partner Portals</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
             {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
+            {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -129,6 +131,7 @@ export default function Admin() {
           <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
           {has("manage_status") && <TabsContent value="status"><StatusAdminTab /></TabsContent>}
           {has("send_admin_email") && <TabsContent value="email"><EmailSenderTab /></TabsContent>}
+          {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
