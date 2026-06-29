@@ -131,6 +131,7 @@ export default function Admin() {
           <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
           {has("manage_status") && <TabsContent value="status"><StatusAdminTab /></TabsContent>}
           {has("send_admin_email") && <TabsContent value="email"><EmailSenderTab /></TabsContent>}
+          {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
