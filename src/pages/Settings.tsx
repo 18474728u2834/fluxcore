@@ -458,6 +458,40 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+              <div className="glass rounded-xl p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Key className="w-4 h-4 text-primary" />
+                  <h2 className="font-semibold text-foreground text-sm">Application Center API Key</h2>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Used by the in-game Application Center Roblox script. Stored as a hash — the full key is only shown once when you rotate it. Keep it secret.
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all">
+                    {appCenterKey || "•••••••••••••••••••••••••  (rotate to generate a new key)"}
+                  </code>
+                  {appCenterKey && (
+                    <Button variant="secondary" size="sm" onClick={() => {
+                      navigator.clipboard.writeText(appCenterKey);
+                      setAppCenterCopied(true);
+                      setTimeout(() => setAppCenterCopied(false), 2000);
+                    }}>
+                      <Copy className="w-3 h-3 mr-1" /> {appCenterCopied ? "Copied" : "Copy"}
+                    </Button>
+                  )}
+                  <Button variant="secondary" size="sm" disabled={rotatingAppCenter} onClick={async () => {
+                    if (!workspaceId) return;
+                    setRotatingAppCenter(true);
+                    const { data, error } = await supabase.rpc("rotate_app_center_key", { _workspace_id: workspaceId });
+                    if (error) toast.error("Failed to rotate key");
+                    else { setAppCenterKey(data as string); toast.success("New App Center key generated — copy it now!"); }
+                    setRotatingAppCenter(false);
+                  }}>
+                    {rotatingAppCenter ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />} Rotate
+                  </Button>
+                </div>
+              </div>
+
               <Link
                 to="../setup-tracking"
                 relative="path"
