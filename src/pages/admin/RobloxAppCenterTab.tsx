@@ -25,6 +25,11 @@ return {
     -- Shown in the welcome screen, e.g. "Shoply Shopping"
     WORKSPACE_NAME = "${ws}",
 
+    -- Your Roblox group ID. Applicants who are NOT in this group will be kicked
+    -- on join with the message below, so they can join the group first.
+    GROUP_ID = 0,
+    NOT_IN_GROUP_MESSAGE = "You must join our Roblox group before applying. Join the group, then rejoin this game.",
+
     -- If true, applicants can navigate back to previously answered questions and edit them.
     -- If false, once they press Next on a question it is locked in.
     ALLOW_GO_BACK = true,
