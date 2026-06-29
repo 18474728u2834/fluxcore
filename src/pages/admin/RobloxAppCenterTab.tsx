@@ -328,13 +328,16 @@ nextBtn.Font = Enum.Font.GothamBold; nextBtn.TextSize = 15
 nextBtn.Text = "Next >"; nextBtn.AutoButtonColor = true
 rounded(nextBtn, 10)
 
-local exitBtn = Instance.new("TextButton", formView)
-exitBtn.Size = UDim2.new(0, 110, 0, 28); exitBtn.Position = UDim2.new(1, -110, 0, 0)
-exitBtn.AnchorPoint = Vector2.new(0, 0)
+local exitBtn = Instance.new("TextButton", sg)
+exitBtn.AnchorPoint = Vector2.new(1, 0)
+exitBtn.Position = UDim2.new(1, -16, 0, 16)
+exitBtn.Size = UDim2.new(0, 120, 0, 32)
 exitBtn.BackgroundColor3 = Color3.fromRGB(45, 28, 32)
 exitBtn.TextColor3 = Color3.fromRGB(255, 180, 180)
-exitBtn.Font = Enum.Font.GothamMedium; exitBtn.TextSize = 12
+exitBtn.Font = Enum.Font.GothamMedium; exitBtn.TextSize = 13
 exitBtn.Text = "Exit to menu"
+exitBtn.AutoButtonColor = true
+exitBtn.ZIndex = 10
 rounded(exitBtn, 8)
 
 local activeForm = nil
