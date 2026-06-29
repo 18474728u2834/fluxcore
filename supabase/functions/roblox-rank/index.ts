@@ -62,11 +62,15 @@ serve(async (req) => {
     }
 
     // Authorization: caller must own the workspace or have manage_members permission
-    const isOwner = ws.owner_id === reqUser.id;
+    const isOwner = reqUser && ws.owner_id === reqUser.id;
     if (!isOwner) {
-      const { data: hasPerm } = await sbUserClient.rpc("has_workspace_permission", {
-        _workspace_id: workspace_id, _permission: "manage_members",
-      });
+      const { data: hasPerm } = isServiceCall
+        ? await supabase.rpc("internal_member_has_permission", {
+            _user_id: reqUser!.id, _workspace_id: workspace_id, _permission: "manage_members",
+          })
+        : await sbUserClient.rpc("has_workspace_permission", {
+            _workspace_id: workspace_id, _permission: "manage_members",
+          });
       if (!hasPerm) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
