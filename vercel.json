@@ -19,6 +19,14 @@
     {
       "source": "/api/v1/ranking",
       "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-ranking"
+    },
+    {
+      "source": "/https/application/supabase",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center"
+    },
+    {
+      "source": "/https/application/supabase/:path*",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
     }
   ],
   "redirects": [
