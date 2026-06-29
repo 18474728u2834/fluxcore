@@ -2419,6 +2419,7 @@ export type Database = {
           afk_confirm_seconds: number | null
           api_key_enc: string | null
           api_key_hash: string | null
+          app_center_api_key_hash: string | null
           auto_rank_enabled: boolean | null
           background_color: string | null
           closed_at: string | null
@@ -2456,6 +2457,7 @@ export type Database = {
           afk_confirm_seconds?: number | null
           api_key_enc?: string | null
           api_key_hash?: string | null
+          app_center_api_key_hash?: string | null
           auto_rank_enabled?: boolean | null
           background_color?: string | null
           closed_at?: string | null
@@ -2493,6 +2495,7 @@ export type Database = {
           afk_confirm_seconds?: number | null
           api_key_enc?: string | null
           api_key_hash?: string | null
+          app_center_api_key_hash?: string | null
           auto_rank_enabled?: boolean | null
           background_color?: string | null
           closed_at?: string | null
@@ -2654,6 +2657,10 @@ export type Database = {
         Returns: boolean
       }
       heartbeat_portal: { Args: { _workspace_id: string }; Returns: undefined }
+      internal_app_center_list_forms: {
+        Args: { _workspace_id: string }
+        Returns: Json
+      }
       internal_discord_resolve_user: {
         Args: { _discord_user_id: string; _guild_id: string }
         Returns: {
@@ -2678,6 +2685,13 @@ export type Database = {
       internal_member_has_permission: {
         Args: { _permission: string; _user_id: string; _workspace_id: string }
         Returns: boolean
+      }
+      internal_workspace_by_app_center_key: {
+        Args: { _api_key: string }
+        Returns: {
+          workspace_id: string
+          workspace_name: string
+        }[]
       }
       internal_workspace_id_by_api_key: {
         Args: { _api_key: string }
@@ -2716,6 +2730,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      rotate_app_center_key: {
+        Args: { _workspace_id: string }
+        Returns: string
       }
       set_workspace_secrets: {
         Args: { _values: Json; _workspace_id: string }
