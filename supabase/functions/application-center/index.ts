@@ -20,6 +20,96 @@ const json = (body: unknown, status = 200) =>
     headers: { ...cors, "Content-Type": "application/json" },
   });
 
+type RankOutcome = {
+  ranked: boolean;
+  verified_rank?: number | null;
+  verified_role_id?: string | null;
+  error?: string;
+  detail?: string;
+};
+
+function shortRoleId(value: unknown): string {
+  return String(value || "").split("/").filter(Boolean).pop() || "";
+}
+
+async function robloxJson(url: string, apiKey: string, init: RequestInit = {}) {
+  const res = await fetch(url, {
+    ...init,
+    headers: {
+      "x-api-key": apiKey,
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      ...(init.headers || {}),
+    },
+  });
+  const text = await res.text();
+  let data: any = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  return { ok: res.ok, status: res.status, text, data };
+}
+
+async function listGroupRoles(apiKey: string, groupId: string): Promise<any[]> {
+  const roles: any[] = [];
+  let pageToken: string | null = null;
+  for (let i = 0; i < 50; i++) {
+    let url = `https://apis.roblox.com/cloud/v2/groups/${groupId}/roles?maxPageSize=20`;
+    if (pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+    const res = await robloxJson(url, apiKey);
+    if (!res.ok) throw new Error(`roles_fetch_failed:${res.status}:${res.text}`);
+    roles.push(...(res.data?.groupRoles || []));
+    if (!res.data?.nextPageToken) break;
+    pageToken = res.data.nextPageToken;
+  }
+  return roles;
+}
+
+async function getGroupMembership(apiKey: string, groupId: string, robloxUserId: string) {
+  const filter = encodeURIComponent(`user == 'users/${robloxUserId}'`);
+  const url = `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=${filter}&maxPageSize=1`;
+  const res = await robloxJson(url, apiKey);
+  if (!res.ok) throw new Error(`membership_lookup_failed:${res.status}:${res.text}`);
+  return res.data?.groupMemberships?.[0] || null;
+}
+
+async function rankRobloxUser(apiKey: string, groupId: string, robloxUserId: string, rankNumber: number): Promise<RankOutcome> {
+  const roles = await listGroupRoles(apiKey, groupId);
+  const role = roles.find((r: any) => Number(r.rank) === Number(rankNumber));
+  if (!role) return { ranked: false, error: "role_not_found", detail: `No Roblox role exists at rank ${rankNumber}` };
+
+  const targetRoleId = shortRoleId(role.id || role.path);
+  if (!targetRoleId) return { ranked: false, error: "role_id_missing" };
+  const targetRolePath = `groups/${groupId}/roles/${targetRoleId}`;
+
+  const membership = await getGroupMembership(apiKey, groupId, robloxUserId);
+  if (!membership?.path) return { ranked: false, error: "not_in_group", detail: `Roblox user ${robloxUserId} is not in group ${groupId}` };
+
+  // Roblox deprecated PATCH for membership rank changes; assignRole is now the
+  // supported endpoint. Roblox also documents that missing group:write can still
+  // return success without changing the rank, so we always verify afterwards.
+  const assignRes = await robloxJson(`https://apis.roblox.com/cloud/v2/${membership.path}:assignRole`, apiKey, {
+    method: "POST",
+    body: JSON.stringify({ role: targetRolePath }),
+  });
+  if (!assignRes.ok) {
+    return { ranked: false, error: "assign_role_failed", detail: `${assignRes.status}: ${assignRes.text}` };
+  }
+
+  const verified = await getGroupMembership(apiKey, groupId, robloxUserId);
+  const verifiedRoleId = shortRoleId(verified?.role || verified?.roles?.[0]);
+  const verifiedRole = roles.find((r: any) => shortRoleId(r.id || r.path) === verifiedRoleId);
+  const verifiedRank = verifiedRole?.rank ?? null;
+  const ranked = String(verifiedRoleId) === String(targetRoleId) || Number(verifiedRank) === Number(rankNumber);
+  if (!ranked) {
+    return {
+      ranked: false,
+      verified_rank: verifiedRank,
+      verified_role_id: verifiedRoleId || null,
+      error: "rank_verification_failed",
+      detail: "Roblox accepted the request but the member's rank did not change. Check the Open Cloud key has group:write and the key owner can manage that target rank.",
+    };
+  }
+  return { ranked: true, verified_rank: verifiedRank, verified_role_id: verifiedRoleId };
+}
+
 async function resolveWorkspace(req: Request) {
   const key = req.headers.get("x-api-key") || "";
   if (!key.startsWith("fxac_")) return null;
@@ -81,7 +171,11 @@ Deno.serve(async (req) => {
       // and the form's auto_rank_on_accept flag. Best-effort; failures don't
       // break the response so the Roblox server still kicks/congratulates.
       let ranked = false;
-      if (passed && result.auto_rank_on_accept && result.pass_rank_number) {
+      let rankError: string | null = null;
+      let rankDetail: string | null = null;
+      let verifiedRank: number | null = null;
+      const rankRequired = !!(passed && result.auto_rank_on_accept && result.pass_rank_number);
+      if (rankRequired) {
         try {
           const { data: wsRow } = await admin
             .from("workspaces")
@@ -95,66 +189,41 @@ Deno.serve(async (req) => {
           const robloxKey = secrets?.roblox_api_key && String(secrets.roblox_api_key).trim();
           if (robloxKey && wsRow?.roblox_group_id) {
             const groupId = String(wsRow.roblox_group_id).trim();
-            // Paginate group roles to find role matching the configured rank number
-            let role: any = null;
-            let pageToken: string | null = null;
-            for (let i = 0; i < 20; i++) {
-              let url = `https://apis.roblox.com/cloud/v2/groups/${groupId}/roles?maxPageSize=50`;
-              if (pageToken) url += `&pageToken=${pageToken}`;
-              const rolesRes = await fetch(url, { headers: { "x-api-key": robloxKey } });
-              if (!rolesRes.ok) {
-                console.error("app-center roles fetch failed:", rolesRes.status, await rolesRes.text());
-                break;
-              }
-              const rolesData = await rolesRes.json();
-              role = (rolesData.groupRoles || []).find((r: any) => Number(r.rank) === Number(result.pass_rank_number));
-              if (role) break;
-              if (!rolesData.nextPageToken) break;
-              pageToken = rolesData.nextPageToken;
-            }
-            if (!role?.id) {
-              console.error("app-center: no role found for rank", result.pass_rank_number);
-            } else {
-              const roleId = String(role.id).split("/").pop();
-              // Look up the user's membership row (Open Cloud needs the membership path, not the userId)
-              const memListUrl = `https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=${encodeURIComponent(`user == 'users/${roblox_user_id}'`)}&maxPageSize=1`;
-              const memListRes = await fetch(memListUrl, { headers: { "x-api-key": robloxKey } });
-              if (!memListRes.ok) {
-                console.error("app-center membership lookup failed:", memListRes.status, await memListRes.text());
-              } else {
-                const memData = await memListRes.json();
-                const membership = memData.groupMemberships?.[0];
-                if (!membership?.path) {
-                  console.error("app-center: user not in group", roblox_user_id);
-                } else {
-                  const rankRes = await fetch(`https://apis.roblox.com/cloud/v2/${membership.path}`, {
-                    method: "PATCH",
-                    headers: { "x-api-key": robloxKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ role: `groups/${groupId}/roles/${roleId}` }),
-                  });
-                  ranked = rankRes.ok;
-                  if (!rankRes.ok) {
-                    console.error("app-center rank PATCH failed:", rankRes.status, await rankRes.text());
-                  }
-                }
-              }
-            }
+            const outcome = await rankRobloxUser(robloxKey, groupId, String(roblox_user_id), Number(result.pass_rank_number));
+            ranked = outcome.ranked;
+            verifiedRank = outcome.verified_rank ?? null;
+            rankError = outcome.error || null;
+            rankDetail = outcome.detail || null;
+            if (!ranked) console.error("app-center rank failed:", rankError, rankDetail || "");
           } else {
+            rankError = "missing_roblox_config";
+            rankDetail = "Missing Roblox Open Cloud API key or group ID for workspace.";
             console.error("app-center: missing roblox_api_key or roblox_group_id for workspace", ws.workspace_id);
           }
-        } catch (e) { console.error("app-center rank error:", e); }
+        } catch (e) {
+          rankError = "rank_exception";
+          rankDetail = e instanceof Error ? e.message : String(e);
+          console.error("app-center rank error:", e);
+        }
       }
+
+      const finalPassed = passed && (!rankRequired || ranked);
 
       return json({
         ok: true,
-        passed,
+        passed: finalPassed,
+        answers_passed: passed,
         ranked,
+        rank_required: rankRequired,
+        rank_error: rankError,
+        rank_detail: rankDetail,
+        verified_rank: verifiedRank,
         application_id: result.application_id,
         correct: result.correct,
         gradeable_total: result.gradeable_total,
         ratio_pct: result.ratio_pct,
         pass_threshold: result.pass_threshold,
-        message: passed ? (result.pass_message || "Passed & Ranked") : (result.fail_kick_message || "You did not pass."),
+        message: finalPassed ? (result.pass_message || "Passed & Ranked") : (result.fail_kick_message || "Failed. Try again later."),
       });
     }
 
