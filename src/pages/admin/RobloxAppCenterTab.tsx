@@ -124,13 +124,14 @@ content.Position = UDim2.new(0, 0, 0, 0)
 content.BackgroundColor3 = Color3.fromRGB(14, 14, 20)
 content.BorderSizePixel = 0
 local pad = Instance.new("UIPadding", content)
-pad.PaddingTop = UDim.new(0, 28); pad.PaddingBottom = UDim.new(0, 28)
+pad.PaddingTop = UDim.new(0, 96); pad.PaddingBottom = UDim.new(0, 28)
 pad.PaddingLeft = UDim.new(0, 48); pad.PaddingRight = UDim.new(0, 48)
 
 -- Header
 local header = Instance.new("Frame", content)
 header.BackgroundTransparency = 1
 header.Size = UDim2.new(1, 0, 0, 64)
+header.Position = UDim2.new(0, 0, 0, 80)
 
 local title = Instance.new("TextLabel", header)
 title.BackgroundTransparency = 1
@@ -155,8 +156,8 @@ subtitle.Text = ""
 -- Catalog view (welcome / list of forms)
 local catalogView = Instance.new("Frame", content)
 catalogView.BackgroundTransparency = 1
-catalogView.Size = UDim2.new(1, 0, 1, -80)
-catalogView.Position = UDim2.new(0, 0, 0, 80)
+catalogView.Size = UDim2.new(1, 0, 1, -176)
+catalogView.Position = UDim2.new(0, 0, 0, 160)
 
 local catalogScroll = Instance.new("ScrollingFrame", catalogView)
 catalogScroll.Size = UDim2.new(1, 0, 1, 0)
