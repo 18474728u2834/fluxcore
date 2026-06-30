@@ -20,6 +20,7 @@ import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import appCenterPlaceFile from "@/assets/fluxcore-application-center.rbxl.asset.json";
 
 type SectionId = "general" | "integrations" | "tracking" | "sessions";
 
