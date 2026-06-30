@@ -7,7 +7,7 @@ import {
   Copy, RefreshCw, Key, Save, Loader2, Palette, Globe, Grid3X3,
   MessageSquare, Bot, ShieldCheck, Lock, Trophy, Target,
   Image as ImageIcon, Upload, X, Sliders, Plug, Code, CalendarDays,
-  ExternalLink, ChevronRight,
+  ExternalLink, ChevronRight, Download,
 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useState, useEffect, useRef, useMemo } from "react";
