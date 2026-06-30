@@ -20,7 +20,6 @@ import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import appCenterPlaceFile from "@/assets/fluxcore-application-center.rbxl.asset.json";
 
 type SectionId = "general" | "integrations" | "tracking" | "sessions";
 
@@ -492,7 +491,7 @@ export default function SettingsPage() {
                   </Button>
                 </div>
                 <a
-                  href={appCenterPlaceFile.url}
+                  href="/Fluxcore_application_centerv2.rbxl"
                   download="Fluxcore_application_centerv2.rbxl"
                   className="flex items-center justify-between p-3 rounded-lg bg-muted hover:bg-muted/70 transition-colors group"
                 >
