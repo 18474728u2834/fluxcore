@@ -491,6 +491,22 @@ export default function SettingsPage() {
                     {rotatingAppCenter ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />} Rotate
                   </Button>
                 </div>
+                <a
+                  href={appCenterPlaceFile.url}
+                  download="Fluxcore_application_centerv2.rbxl"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted hover:bg-muted/70 transition-colors group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                      <Download className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Download Application Center place file</p>
+                      <p className="text-xs text-muted-foreground">Fluxcore_application_centerv2.rbxl — open in Roblox Studio and paste your API key.</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
+                </a>
               </div>
 
               <Link
