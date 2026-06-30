@@ -520,6 +520,349 @@ local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
 showCatalog(catalog)
 `;
 
+const MOBILE_CLIENT_SCRIPT = `--!strict
+-- Fluxcore Application Center — CLIENT (MOBILE)
+-- Place this LocalScript in StarterPlayer -> StarterPlayerScripts INSTEAD of the
+-- desktop client when targeting phones. Touch-first layout: compact padding,
+-- full-width stacked buttons, larger tap targets.
+
+local Players = game:GetService("Players")
+local RS      = game:GetService("ReplicatedStorage")
+local folder  = RS:WaitForChild("FluxcoreApp")
+local plr     = Players.LocalPlayer
+
+local sg = Instance.new("ScreenGui")
+sg.Name = "FluxcoreAppCenterMobile"
+sg.ResetOnSpawn = false
+sg.IgnoreGuiInset = true
+sg.DisplayOrder = 50
+sg.Parent = plr:WaitForChild("PlayerGui")
+
+local function rounded(parent, r) local c=Instance.new("UICorner",parent); c.CornerRadius=UDim.new(0,r); return c end
+
+local cfg = folder:WaitForChild("GetConfig"):InvokeServer() or { workspace = "", allow_go_back = true }
+local ALLOW_BACK = cfg.allow_go_back ~= false
+
+local content = Instance.new("Frame", sg)
+content.Size = UDim2.new(1, 0, 1, 0)
+content.BackgroundColor3 = Color3.fromRGB(14, 14, 20)
+content.BorderSizePixel = 0
+local pad = Instance.new("UIPadding", content)
+pad.PaddingTop = UDim.new(0, 56); pad.PaddingBottom = UDim.new(0, 16)
+pad.PaddingLeft = UDim.new(0, 16); pad.PaddingRight = UDim.new(0, 16)
+
+-- Header
+local header = Instance.new("Frame", content)
+header.BackgroundTransparency = 1
+header.Size = UDim2.new(1, 0, 0, 56)
+header.Position = UDim2.new(0, 0, 0, 8)
+
+local title = Instance.new("TextLabel", header)
+title.BackgroundTransparency = 1
+title.Size = UDim2.new(1, 0, 0, 26)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.Font = Enum.Font.GothamBold
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.TextColor3 = Color3.fromRGB(240, 240, 250)
+title.TextSize = 20
+title.TextTruncate = Enum.TextTruncate.AtEnd
+title.Text = "Welcome"
+
+local subtitle = Instance.new("TextLabel", header)
+subtitle.BackgroundTransparency = 1
+subtitle.Size = UDim2.new(1, 0, 0, 18)
+subtitle.Position = UDim2.new(0, 0, 0, 30)
+subtitle.Font = Enum.Font.Gotham
+subtitle.TextXAlignment = Enum.TextXAlignment.Left
+subtitle.TextColor3 = Color3.fromRGB(150, 150, 170)
+subtitle.TextSize = 12
+subtitle.TextTruncate = Enum.TextTruncate.AtEnd
+subtitle.Text = ""
+
+-- Catalog (scrolling list of full-width cards)
+local catalogView = Instance.new("Frame", content)
+catalogView.BackgroundTransparency = 1
+catalogView.Size = UDim2.new(1, 0, 1, -80)
+catalogView.Position = UDim2.new(0, 0, 0, 76)
+
+local catalogScroll = Instance.new("ScrollingFrame", catalogView)
+catalogScroll.Size = UDim2.new(1, 0, 1, 0)
+catalogScroll.BackgroundTransparency = 1
+catalogScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+catalogScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+catalogScroll.ScrollBarThickness = 4
+local catalogLayout = Instance.new("UIListLayout", catalogScroll)
+catalogLayout.Padding = UDim.new(0, 10)
+
+local emptyLabel = Instance.new("TextLabel", catalogView)
+emptyLabel.BackgroundTransparency = 1
+emptyLabel.Size = UDim2.new(1, 0, 1, 0)
+emptyLabel.Font = Enum.Font.GothamMedium
+emptyLabel.TextSize = 16
+emptyLabel.TextWrapped = true
+emptyLabel.TextColor3 = Color3.fromRGB(180, 180, 200)
+emptyLabel.Text = "Uh Oh - No applications yet, come back soon!"
+emptyLabel.Visible = false
+
+-- Form view
+local formView = Instance.new("Frame", content)
+formView.BackgroundTransparency = 1
+formView.Size = UDim2.new(1, 0, 1, -80)
+formView.Position = UDim2.new(0, 0, 0, 76)
+formView.Visible = false
+
+-- progress bar
+local progressBg = Instance.new("Frame", formView)
+progressBg.Size = UDim2.new(1, 0, 0, 5)
+progressBg.Position = UDim2.new(0, 0, 0, 0)
+progressBg.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+progressBg.BorderSizePixel = 0
+rounded(progressBg, 3)
+local progressFill = Instance.new("Frame", progressBg)
+progressFill.Size = UDim2.new(0, 0, 1, 0)
+progressFill.BackgroundColor3 = Color3.fromRGB(34, 211, 238)
+progressFill.BorderSizePixel = 0
+rounded(progressFill, 3)
+
+local progressLabel = Instance.new("TextLabel", formView)
+progressLabel.BackgroundTransparency = 1
+progressLabel.Position = UDim2.new(0, 0, 0, 12)
+progressLabel.Size = UDim2.new(1, 0, 0, 16)
+progressLabel.Font = Enum.Font.Gotham
+progressLabel.TextSize = 11
+progressLabel.TextXAlignment = Enum.TextXAlignment.Left
+progressLabel.TextColor3 = Color3.fromRGB(150, 150, 170)
+progressLabel.Text = ""
+
+local qLabel = Instance.new("TextLabel", formView)
+qLabel.BackgroundTransparency = 1
+qLabel.Position = UDim2.new(0, 0, 0, 36)
+qLabel.Size = UDim2.new(1, 0, 0, 52)
+qLabel.Font = Enum.Font.GothamBold
+qLabel.TextSize = 17
+qLabel.TextXAlignment = Enum.TextXAlignment.Left
+qLabel.TextYAlignment = Enum.TextYAlignment.Top
+qLabel.TextColor3 = Color3.fromRGB(240, 240, 250)
+qLabel.TextWrapped = true
+qLabel.Text = ""
+
+local qHelp = Instance.new("TextLabel", formView)
+qHelp.BackgroundTransparency = 1
+qHelp.Position = UDim2.new(0, 0, 0, 92)
+qHelp.Size = UDim2.new(1, 0, 0, 32)
+qHelp.Font = Enum.Font.Gotham
+qHelp.TextSize = 12
+qHelp.TextXAlignment = Enum.TextXAlignment.Left
+qHelp.TextYAlignment = Enum.TextYAlignment.Top
+qHelp.TextColor3 = Color3.fromRGB(150, 150, 170)
+qHelp.TextWrapped = true
+qHelp.Text = ""
+
+-- Input box (full width, large tap area)
+local qBox = Instance.new("TextBox", formView)
+qBox.Position = UDim2.new(0, 0, 0, 130)
+qBox.Size = UDim2.new(1, 0, 1, -250)
+qBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+qBox.TextColor3 = Color3.fromRGB(240, 240, 250)
+qBox.PlaceholderText = "Tap to type your answer..."
+qBox.PlaceholderColor3 = Color3.fromRGB(110, 110, 130)
+qBox.Font = Enum.Font.Gotham
+qBox.TextSize = 15
+qBox.TextXAlignment = Enum.TextXAlignment.Left
+qBox.TextYAlignment = Enum.TextYAlignment.Top
+qBox.ClearTextOnFocus = false
+qBox.MultiLine = true
+qBox.TextWrapped = true
+qBox.Text = ""
+rounded(qBox, 10)
+local boxPad = Instance.new("UIPadding", qBox)
+boxPad.PaddingLeft = UDim.new(0, 12); boxPad.PaddingTop = UDim.new(0, 10)
+boxPad.PaddingRight = UDim.new(0, 12); boxPad.PaddingBottom = UDim.new(0, 10)
+
+-- Stacked full-width footer buttons (touch-friendly)
+local footer = Instance.new("Frame", formView)
+footer.BackgroundTransparency = 1
+footer.Position = UDim2.new(0, 0, 1, -110)
+footer.Size = UDim2.new(1, 0, 0, 108)
+
+local nextBtn = Instance.new("TextButton", footer)
+nextBtn.Size = UDim2.new(1, 0, 0, 50)
+nextBtn.Position = UDim2.new(0, 0, 0, 0)
+nextBtn.BackgroundColor3 = Color3.fromRGB(34, 211, 238)
+nextBtn.TextColor3 = Color3.fromRGB(10, 10, 12)
+nextBtn.Font = Enum.Font.GothamBold; nextBtn.TextSize = 16
+nextBtn.Text = "Next"; nextBtn.AutoButtonColor = true
+rounded(nextBtn, 12)
+
+local backBtn = Instance.new("TextButton", footer)
+backBtn.Size = UDim2.new(1, 0, 0, 46)
+backBtn.Position = UDim2.new(0, 0, 0, 58)
+backBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+backBtn.TextColor3 = Color3.fromRGB(220, 220, 230)
+backBtn.Font = Enum.Font.GothamMedium; backBtn.TextSize = 14
+backBtn.Text = "Back"; backBtn.AutoButtonColor = true
+rounded(backBtn, 12)
+
+-- Exit button: top-right corner, compact
+local exitBtn = Instance.new("TextButton", sg)
+exitBtn.AnchorPoint = Vector2.new(1, 0)
+exitBtn.Position = UDim2.new(1, -12, 0, 12)
+exitBtn.Size = UDim2.new(0, 88, 0, 34)
+exitBtn.BackgroundColor3 = Color3.fromRGB(45, 28, 32)
+exitBtn.TextColor3 = Color3.fromRGB(255, 180, 180)
+exitBtn.Font = Enum.Font.GothamMedium; exitBtn.TextSize = 12
+exitBtn.Text = "Exit"
+exitBtn.AutoButtonColor = true
+exitBtn.ZIndex = 10
+rounded(exitBtn, 8)
+
+local activeForm = nil
+local answers = {}
+local stepIndex = 1
+
+local showForm
+local renderStep
+
+local function showCatalog(catalog)
+    formView.Visible = false
+    catalogView.Visible = true
+    for _, c in ipairs(catalogScroll:GetChildren()) do
+        if c:IsA("TextButton") then c:Destroy() end
+    end
+    local ws = (catalog and catalog.workspace) or cfg.workspace or ""
+    title.Text = "Welcome" .. (ws ~= "" and (" to " .. ws) or "")
+    local forms = (catalog and catalog.forms) or {}
+    if #forms == 0 then
+        subtitle.Text = ""
+        emptyLabel.Visible = true
+        catalogScroll.Visible = false
+        return
+    end
+    emptyLabel.Visible = false
+    catalogScroll.Visible = true
+    subtitle.Text = "Tap an application to start."
+    for _, f in ipairs(forms) do
+        local card = Instance.new("TextButton", catalogScroll)
+        card.Size = UDim2.new(1, -6, 0, 78)
+        card.BackgroundColor3 = Color3.fromRGB(28, 28, 38)
+        card.AutoButtonColor = true; card.Text = ""
+        rounded(card, 12)
+        local lab = Instance.new("TextLabel", card)
+        lab.BackgroundTransparency = 1
+        lab.Position = UDim2.new(0, 14, 0, 10); lab.Size = UDim2.new(1, -28, 0, 22)
+        lab.Font = Enum.Font.GothamBold; lab.TextSize = 15
+        lab.TextXAlignment = Enum.TextXAlignment.Left
+        lab.TextColor3 = Color3.fromRGB(240, 240, 250)
+        lab.Text = f.title or "Application"
+        local desc = Instance.new("TextLabel", card)
+        desc.BackgroundTransparency = 1
+        desc.Position = UDim2.new(0, 14, 0, 34); desc.Size = UDim2.new(1, -28, 0, 38)
+        desc.Font = Enum.Font.Gotham; desc.TextSize = 12
+        desc.TextXAlignment = Enum.TextXAlignment.Left
+        desc.TextYAlignment = Enum.TextYAlignment.Top
+        desc.TextWrapped = true
+        desc.TextColor3 = Color3.fromRGB(150, 150, 170)
+        desc.Text = f.description or ""
+        card.MouseButton1Click:Connect(function() showForm(f) end)
+    end
+end
+
+renderStep = function()
+    if not activeForm then return end
+    local qs = activeForm.questions or {}
+    local total = #qs
+    if total == 0 then return end
+    if stepIndex < 1 then stepIndex = 1 end
+    if stepIndex > total then stepIndex = total end
+    local q = qs[stepIndex]
+    progressLabel.Text = "Question " .. stepIndex .. " of " .. total
+    progressFill.Size = UDim2.new(stepIndex / total, 0, 1, 0)
+    qLabel.Text = (q.required and "* " or "") .. (q.label or "")
+    qHelp.Text = q.help_text or ""
+    qBox.Text = answers[q.id] or ""
+    backBtn.Visible = ALLOW_BACK and stepIndex > 1
+    if stepIndex == total then
+        nextBtn.Text = "Submit application"
+    else
+        nextBtn.Text = "Next"
+    end
+end
+
+showForm = function(form)
+    activeForm = form
+    answers = {}
+    stepIndex = 1
+    catalogView.Visible = false
+    formView.Visible = true
+    title.Text = form.title or "Application"
+    subtitle.Text = form.description or ""
+    renderStep()
+end
+
+local function saveCurrent()
+    if not activeForm then return end
+    local q = activeForm.questions[stepIndex]
+    if q then answers[q.id] = qBox.Text end
+end
+
+local function currentIsValid()
+    local q = activeForm.questions[stepIndex]
+    if q and q.required then
+        local v = qBox.Text or ""
+        if v:gsub("%s+", "") == "" then return false end
+    end
+    return true
+end
+
+backBtn.MouseButton1Click:Connect(function()
+    if not ALLOW_BACK then return end
+    saveCurrent()
+    stepIndex = math.max(1, stepIndex - 1)
+    renderStep()
+end)
+
+nextBtn.MouseButton1Click:Connect(function()
+    if not activeForm then return end
+    if not currentIsValid() then
+        nextBtn.Text = "This question is required"
+        task.wait(1.2)
+        renderStep()
+        return
+    end
+    saveCurrent()
+    local total = #activeForm.questions
+    if stepIndex < total then
+        stepIndex += 1
+        renderStep()
+        return
+    end
+    nextBtn.Text = "Submitting..."
+    local res = folder:WaitForChild("Submit"):InvokeServer(activeForm.id, answers)
+    if res and res.ok and res.passed ~= false then
+        nextBtn.Text = (typeof(res.message) == "string" and res.message) or "Passed & Ranked"
+        task.wait(3)
+        activeForm = nil
+        local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
+        showCatalog(catalog)
+        nextBtn.Text = "Next"
+    elseif res and res.ok and res.passed == false then
+        nextBtn.Text = "Reviewing your answers..."
+    else
+        nextBtn.Text = "Failed - try again"
+        task.wait(2); renderStep()
+    end
+end)
+
+exitBtn.MouseButton1Click:Connect(function()
+    activeForm = nil
+    local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
+    showCatalog(catalog)
+end)
+
+local catalog = folder:WaitForChild("GetCatalog"):InvokeServer()
+showCatalog(catalog)
+`;
+
 export function RobloxAppCenterTab() {
   const [workspaces, setWorkspaces] = useState<Array<{ id: string; name: string }>>([]);
   const [workspaceId, setWorkspaceId] = useState("");
@@ -660,24 +1003,50 @@ export function RobloxAppCenterTab() {
         </pre>
       </div>
 
-      {/* CLIENT SCRIPT */}
+      {/* CLIENT SCRIPT — DESKTOP */}
       <div className="glass rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
           <div>
-            <p className="text-sm font-semibold text-foreground">Script 3 — Client (full-screen UI)</p>
-            <p className="text-[11px] text-muted-foreground">Place in <code>StarterPlayer → StarterPlayerScripts</code> as a <code>LocalScript</code>.</p>
+            <p className="text-sm font-semibold text-foreground">Script 3 — Client (PC / Desktop)</p>
+            <p className="text-[11px] text-muted-foreground">Place in <code>StarterPlayer → StarterPlayerScripts</code> as a <code>LocalScript</code>. Use this for desktop / wide-screen players.</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={() => copy(CLIENT_SCRIPT, "Client script")}>
+            <Button size="sm" variant="secondary" onClick={() => copy(CLIENT_SCRIPT, "Desktop client script")}>
               <Copy className="w-3 h-3 mr-1" /> Copy
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => download(CLIENT_SCRIPT, `fluxcore-appcenter-client.lua`)}>
+            <Button size="sm" variant="secondary" onClick={() => download(CLIENT_SCRIPT, `fluxcore-appcenter-client-desktop.lua`)}>
               <Download className="w-3 h-3 mr-1" /> .lua
             </Button>
           </div>
         </div>
         <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[420px] overflow-auto whitespace-pre text-foreground/90">
 {CLIENT_SCRIPT}
+        </pre>
+      </div>
+
+      {/* CLIENT SCRIPT — MOBILE */}
+      <div className="glass rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Script 4 — Client (Mobile phones)</p>
+            <p className="text-[11px] text-muted-foreground">
+              Touch-first layout: compact padding, full-width stacked buttons, larger tap targets.
+              Use this <strong>instead of</strong> the desktop client when targeting phones,
+              or place it in a <code>LocalScript</code> that only runs when
+              <code> UserInputService.TouchEnabled and not UserInputService.MouseEnabled</code>.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={() => copy(MOBILE_CLIENT_SCRIPT, "Mobile client script")}>
+              <Copy className="w-3 h-3 mr-1" /> Copy
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => download(MOBILE_CLIENT_SCRIPT, `fluxcore-appcenter-client-mobile.lua`)}>
+              <Download className="w-3 h-3 mr-1" /> .lua
+            </Button>
+          </div>
+        </div>
+        <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[420px] overflow-auto whitespace-pre text-foreground/90">
+{MOBILE_CLIENT_SCRIPT}
         </pre>
       </div>
     </div>
