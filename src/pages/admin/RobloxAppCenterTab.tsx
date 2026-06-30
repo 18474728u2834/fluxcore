@@ -1003,24 +1003,50 @@ export function RobloxAppCenterTab() {
         </pre>
       </div>
 
-      {/* CLIENT SCRIPT */}
+      {/* CLIENT SCRIPT — DESKTOP */}
       <div className="glass rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
           <div>
-            <p className="text-sm font-semibold text-foreground">Script 3 — Client (full-screen UI)</p>
-            <p className="text-[11px] text-muted-foreground">Place in <code>StarterPlayer → StarterPlayerScripts</code> as a <code>LocalScript</code>.</p>
+            <p className="text-sm font-semibold text-foreground">Script 3 — Client (PC / Desktop)</p>
+            <p className="text-[11px] text-muted-foreground">Place in <code>StarterPlayer → StarterPlayerScripts</code> as a <code>LocalScript</code>. Use this for desktop / wide-screen players.</p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" variant="secondary" onClick={() => copy(CLIENT_SCRIPT, "Client script")}>
+            <Button size="sm" variant="secondary" onClick={() => copy(CLIENT_SCRIPT, "Desktop client script")}>
               <Copy className="w-3 h-3 mr-1" /> Copy
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => download(CLIENT_SCRIPT, `fluxcore-appcenter-client.lua`)}>
+            <Button size="sm" variant="secondary" onClick={() => download(CLIENT_SCRIPT, `fluxcore-appcenter-client-desktop.lua`)}>
               <Download className="w-3 h-3 mr-1" /> .lua
             </Button>
           </div>
         </div>
         <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[420px] overflow-auto whitespace-pre text-foreground/90">
 {CLIENT_SCRIPT}
+        </pre>
+      </div>
+
+      {/* CLIENT SCRIPT — MOBILE */}
+      <div className="glass rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Script 4 — Client (Mobile phones)</p>
+            <p className="text-[11px] text-muted-foreground">
+              Touch-first layout: compact padding, full-width stacked buttons, larger tap targets.
+              Use this <strong>instead of</strong> the desktop client when targeting phones,
+              or place it in a <code>LocalScript</code> that only runs when
+              <code> UserInputService.TouchEnabled and not UserInputService.MouseEnabled</code>.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={() => copy(MOBILE_CLIENT_SCRIPT, "Mobile client script")}>
+              <Copy className="w-3 h-3 mr-1" /> Copy
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => download(MOBILE_CLIENT_SCRIPT, `fluxcore-appcenter-client-mobile.lua`)}>
+              <Download className="w-3 h-3 mr-1" /> .lua
+            </Button>
+          </div>
+        </div>
+        <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[420px] overflow-auto whitespace-pre text-foreground/90">
+{MOBILE_CLIENT_SCRIPT}
         </pre>
       </div>
     </div>
