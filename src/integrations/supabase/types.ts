@@ -2625,6 +2625,10 @@ export type Database = {
           grant_id: string
         }[]
       }
+      cron_invoke_edge: {
+        Args: { body?: Json; fn_name: string }
+        Returns: number
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
