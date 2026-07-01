@@ -276,10 +276,14 @@ export function BargainsShell({ children }: ShellProps) {
         }
         .font-bargains *::-webkit-scrollbar { width: 8px; height: 8px; }
         .font-bargains *::-webkit-scrollbar-thumb { background: #2a2a2c; border-radius: 2px; }
+        @media (max-width: 767px) {
+          .font-bargains table { display: block; overflow-x: auto; white-space: nowrap; }
+          .font-bargains .hide-on-mobile { display: none !important; }
+        }
       `}</style>
 
-      {/* Slim icon rail */}
-      <aside className="w-[60px] shrink-0 flex flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+      {/* Slim icon rail — desktop only */}
+      <aside className="hidden md:flex w-[60px] shrink-0 flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
         <NavLink to={navBase + "/dashboard"} className="w-9 h-9 rounded-md flex items-center justify-center mb-3 overflow-hidden" style={{ background: activeDept?.primary_color || accentColor }}>
           {groupIcon ? <img src={groupIcon} className="w-9 h-9 object-cover" /> : <span className="text-white font-bold text-sm">{wsInitials}</span>}
         </NavLink>
