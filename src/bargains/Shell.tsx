@@ -408,6 +408,7 @@ export function BargainsShell({ children }: ShellProps) {
                 onBlur={() => setTimeout(() => setSearchOpen(false), 150)}
                 onKeyDown={onSearchKey}
                 placeholder="Search…"
+                aria-label="Search members, sessions, documents"
                 className="w-full h-9 pl-9 pr-3 rounded-md text-[13px] outline-none border"
                 style={{ background: "#161618", borderColor: "#1f1f22", color: "#e5e5e7" }}
               />
