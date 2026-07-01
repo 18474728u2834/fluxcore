@@ -44,12 +44,8 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
     return () => { cancelled = true; clearInterval(id); };
   }, []);
 
-  const copyEndpoint = async () => {
-    await navigator.clipboard.writeText(INTERACTIONS_ENDPOINT);
-    setCopied(true);
-    toast.success("Interactions endpoint copied");
-    setTimeout(() => setCopied(false), 1500);
-  };
+
+
 
   const save = async () => {
     if (!guildId.trim()) return;
