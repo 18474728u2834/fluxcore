@@ -434,8 +434,81 @@ export function BargainsShell({ children }: ShellProps) {
           <div className="w-[140px]" />
         </header>
 
-        <main className="flex-1 overflow-auto p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8 pb-20 md:pb-8">{children}</main>
+
+        {/* Mobile bottom navigation */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t h-14" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+          {[NAV[0], NAV[4], NAV[5], NAV[2]].map(({ to, icon: Icon, label }) => {
+            const active = pathname.startsWith(`${navBase}/${to}`);
+            return (
+              <NavLink key={to} to={`${navBase}/${to}`} className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
+                style={{ color: active ? "#fff" : "#7a7a7e" }}>
+                <Icon className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                <span className="text-[10px]">{label}</span>
+              </NavLink>
+            );
+          })}
+          <button onClick={() => setMobileNavOpen(true)} className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-[#7a7a7e]">
+            <MoreHorizontal className="w-[18px] h-[18px]" strokeWidth={1.8} />
+            <span className="text-[10px]">More</span>
+          </button>
+        </nav>
       </div>
+
+      {/* Mobile drawer */}
+      {mobileNavOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setMobileNavOpen(false)} />
+          <div className="relative w-72 max-w-[85%] h-full flex flex-col" style={{ background: "#0a0a0b", borderRight: "1px solid #1a1a1c" }}>
+            <div className="h-14 flex items-center justify-between px-4 border-b" style={{ borderColor: "#1a1a1c" }}>
+              <div className="flex items-center gap-2">
+                {groupIcon ? (
+                  <img src={groupIcon} className="w-7 h-7 rounded-md object-cover" />
+                ) : (
+                  <div className="w-7 h-7 rounded-md flex items-center justify-center text-white font-bold text-[10px]" style={{ background: accentColor }}>{wsInitials}</div>
+                )}
+                <span className="text-sm font-semibold truncate">{workspace?.name || "Workspace"}</span>
+              </div>
+              <button onClick={() => setMobileNavOpen(false)} className="w-8 h-8 rounded-md flex items-center justify-center hover:bg-[#1a1a1c]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <nav className="flex-1 overflow-auto py-2">
+              {navItems.map(({ to, icon: Icon, label }) => {
+                const active = pathname.startsWith(`${navBase}/${to}`);
+                return (
+                  <NavLink key={to} to={`${navBase}/${to}`} onClick={() => setMobileNavOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3 text-sm"
+                    style={{ background: active ? "#1f1f22" : "transparent", color: active ? "#fff" : "#cfcfd1" }}>
+                    <Icon className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                    <span>{label}</span>
+                  </NavLink>
+                );
+              })}
+              <div className="my-2 mx-4 border-t" style={{ borderColor: "#1f1f22" }} />
+              <NavLink to={`${navBase}/settings`} onClick={() => setMobileNavOpen(false)} className="flex items-center gap-3 px-4 py-3 text-sm text-[#cfcfd1]">
+                <Settings className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                <span>Settings</span>
+              </NavLink>
+              {myDepartments.length > 0 && (
+                <>
+                  <div className="px-4 pt-3 pb-1 text-[10px] uppercase tracking-wider text-[#6a6a6e]">Departments</div>
+                  {myDepartments.map((d) => (
+                    <NavLink key={d.id} to={`${base}/d/${d.slug}/dashboard`} onClick={() => setMobileNavOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-[#cfcfd1]">
+                      <span className="w-[18px] text-center">{d.icon || "•"}</span>
+                      <span>{d.name}</span>
+                    </NavLink>
+                  ))}
+                </>
+              )}
+            </nav>
+            <button onClick={async () => { await signOut(); navigate("/login"); }} className="flex items-center gap-3 px-4 py-3 text-sm border-t text-[#f55a4a]" style={{ borderColor: "#1a1a1c" }}>
+              <LogOut className="w-4 h-4" /> Sign out
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
