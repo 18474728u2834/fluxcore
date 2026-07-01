@@ -117,6 +117,26 @@ serve(async (req) => {
       const apiKey = String((secrets as any).roblox_api_key || "").trim();
       if (!groupId || !apiKey) continue;
 
+      // Resolve the TRUE Roblox group owner (Roblox 2026: rank 255 / role name "Owner" can be
+      // assigned to anyone, so we must trust groups.roblox.com's `owner.userId` field instead).
+      let trueOwnerRobloxId: string | null = null;
+      try {
+        const gRes = await fetch(`https://groups.roblox.com/v1/groups/${groupId}`);
+        if (gRes.ok) {
+          const gJson = await gRes.json();
+          if (gJson?.owner?.userId) trueOwnerRobloxId = String(gJson.owner.userId);
+        }
+      } catch (_) { /* ignore — sync continues without owner-dedupe if lookup fails */ }
+
+      // Purge any duplicate rows previously imported for the real owner so the virtual owner
+      // shown in the app doesn't appear twice.
+      if (trueOwnerRobloxId) {
+        await sb.from("workspace_members")
+          .delete()
+          .eq("workspace_id", ws.id)
+          .eq("roblox_user_id", trueOwnerRobloxId);
+      }
+
       // Roles with mapping
       const { data: roles } = await sb
         .from("workspace_roles")
