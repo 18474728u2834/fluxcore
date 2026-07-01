@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, Loader2, ExternalLink, Trash2, Copy, Check } from "lucide-react";
+import { MessageSquare, Loader2, ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const INVITE_URL =
@@ -18,7 +18,7 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
   const [linked, setLinked] = useState<{ id: string; guild_id: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [online, setOnline] = useState<"checking" | "online" | "offline">("checking");
-  const [copied, setCopied] = useState(false);
+  
 
   const load = async () => {
     const { data } = await supabase.from("workspace_discord_guilds" as any)
@@ -44,12 +44,8 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
     return () => { cancelled = true; clearInterval(id); };
   }, []);
 
-  const copyEndpoint = async () => {
-    await navigator.clipboard.writeText(INTERACTIONS_ENDPOINT);
-    setCopied(true);
-    toast.success("Interactions endpoint copied");
-    setTimeout(() => setCopied(false), 1500);
-  };
+
+
 
   const save = async () => {
     if (!guildId.trim()) return;
@@ -109,18 +105,6 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-xs">Interactions Endpoint URL</Label>
-        <div className="flex gap-2">
-          <Input readOnly value={INTERACTIONS_ENDPOINT} className="font-mono text-xs" onFocus={(e) => e.currentTarget.select()} />
-          <Button variant="secondary" size="sm" onClick={copyEndpoint}>
-            {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-          </Button>
-        </div>
-        <p className="text-[11px] text-muted-foreground">
-          Paste this in the Discord Developer Portal → your application → <strong>General Information</strong> → <em>Interactions Endpoint URL</em>, then save. Discord will ping it to validate the signature.
-        </p>
-      </div>
 
       {linked ? (
         <div className="flex items-center justify-between bg-muted/40 rounded-lg px-3 py-2">
