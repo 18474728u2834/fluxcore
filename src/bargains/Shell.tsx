@@ -3,7 +3,7 @@ import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
   Search, ChevronDown, Calendar, Target, ShieldCheck, Megaphone, Sparkles,
-  Building2, Heart, ArrowUp, ClipboardList,
+  Building2, Heart, ArrowUp, ClipboardList, Menu, X, MoreHorizontal,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
