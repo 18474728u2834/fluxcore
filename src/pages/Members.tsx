@@ -69,23 +69,30 @@ export default function Members() {
       .eq("workspace_id", workspaceId)
       .order("joined_at", { ascending: true });
 
-    const membersList = data || [];
+    let membersList = data || [];
 
     if (workspace) {
-      const ownerInList = membersList.some(m => m.user_id === workspace.owner_id);
-      if (!ownerInList) {
-        const { data: ownerData } = await supabase
-          .from("verified_users")
-          .select("roblox_username, roblox_user_id")
-          .eq("user_id", workspace.owner_id)
-          .maybeSingle();
-        if (ownerData) {
-          membersList.unshift({
-            id: "owner-virtual", roblox_username: ownerData.roblox_username,
-            roblox_user_id: ownerData.roblox_user_id, role: "Owner",
-            role_id: null, verified: true, joined_at: new Date().toISOString(), user_id: workspace.owner_id,
-          } as any);
-        }
+      const { data: ownerData } = await supabase
+        .from("verified_users")
+        .select("roblox_username, roblox_user_id")
+        .eq("user_id", workspace.owner_id)
+        .maybeSingle();
+
+      // Deduplicate: Roblox's 2026 update lets any rank be named "Owner" and any user hold rank 255,
+      // so we identify the true owner by workspace.owner_id / their verified roblox_user_id and
+      // strip any duplicate rows that the group-sync may have imported for that same person.
+      if (ownerData) {
+        membersList = membersList.filter(
+          (m) => m.user_id !== workspace.owner_id
+              && String(m.roblox_user_id) !== String(ownerData.roblox_user_id),
+        );
+        membersList.unshift({
+          id: "owner-virtual", roblox_username: ownerData.roblox_username,
+          roblox_user_id: ownerData.roblox_user_id, role: "Owner",
+          role_id: null, verified: true, joined_at: new Date().toISOString(), user_id: workspace.owner_id,
+        } as any);
+      } else {
+        membersList = membersList.filter((m) => m.user_id !== workspace.owner_id);
       }
     }
 
