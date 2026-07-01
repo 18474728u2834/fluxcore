@@ -26,9 +26,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      // Skip no-op updates (TOKEN_REFRESHED with same user) so downstream
+      // effects that depend on `user` don't re-run on every token refresh.
+      setSession((prev) => (prev?.access_token === nextSession?.access_token ? prev : nextSession));
+      setUser((prev) => {
+        const nextUser = nextSession?.user ?? null;
+        if (prev?.id === nextUser?.id) return prev;
+        return nextUser;
+      });
       setLoading(false);
     });
 
