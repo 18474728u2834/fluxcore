@@ -18,7 +18,7 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
   const [linked, setLinked] = useState<{ id: string; guild_id: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [online, setOnline] = useState<"checking" | "online" | "offline">("checking");
-  const [copied, setCopied] = useState(false);
+  
 
   const load = async () => {
     const { data } = await supabase.from("workspace_discord_guilds" as any)
