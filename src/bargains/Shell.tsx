@@ -431,7 +431,7 @@ export function BargainsShell({ children }: ShellProps) {
             </div>
           </div>
 
-          <div className="w-[140px]" />
+          <div className="w-[140px] hide-on-mobile" />
         </header>
 
         <main className="flex-1 overflow-auto p-4 md:p-8 pb-20 md:pb-8">{children}</main>
