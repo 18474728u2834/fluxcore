@@ -3,7 +3,7 @@ import { AppSidebar } from "@/components/AppSidebar";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { ReleaseModal } from "@/components/ReleaseModal";
 import { SetupTutorial } from "@/components/SetupTutorial";
-import { BadgeCheck, Loader2 } from "lucide-react";
+import { AlertTriangle, BadgeCheck, Loader2, RefreshCw } from "lucide-react";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { MinimalLayout } from "@/components/MinimalLayout";
 import { BargainsShell } from "@/bargains/Shell";
@@ -11,13 +11,34 @@ import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { QuotaSetupPrompt } from "@/components/QuotaSetupPrompt";
 
 export function DashboardLayout({ children, title }: { children: React.ReactNode; title?: string }) {
-  const { loading, workspace } = useWorkspace();
+  const { loading, workspace, error } = useWorkspace();
   const { version } = useUIVersion();
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-6 h-6 text-primary animate-spin" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-4">
+        <div className="glass rounded-xl border border-border/50 p-6 max-w-md w-full text-center space-y-4">
+          <AlertTriangle className="w-8 h-8 text-warning mx-auto" />
+          <div className="space-y-1">
+            <h1 className="text-lg font-semibold text-foreground">Workspace is taking too long</h1>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-border bg-muted px-4 py-2 text-sm font-medium text-foreground hover:bg-muted/80"
+          >
+            <RefreshCw className="w-4 h-4" />
+            Try again
+          </button>
+        </div>
       </div>
     );
   }

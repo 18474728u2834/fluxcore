@@ -95,6 +95,22 @@ const DiscordVerify = lazy(() => import("./pages/DiscordVerify"));
 
 const queryClient = new QueryClient();
 
+function withTimeout<T>(promise: PromiseLike<T>, ms = 8_000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error("Request timed out")), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 function PageLoader() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
@@ -275,23 +291,24 @@ function AppRoutes() {
     let active = true;
     // Always preload portals that opt into Hyra UI so workspaces on the main
     // domain (no subdomain) also get the Bargains UI when admins enable it.
-    supabase
+    withTimeout(supabase
       .from("partner_portals")
       .select("workspace_id,use_hyra_ui")
-      .eq("use_hyra_ui", true)
+      .eq("use_hyra_ui", true), 6_000)
       .then(({ data }) => {
         if (!active || !data) return;
         for (const row of data) {
           if (row.workspace_id) HYRA_UI_WORKSPACE_IDS.add(row.workspace_id);
         }
-      });
+      })
+      .catch(() => {});
 
     if (isMainHost || isHardcoded) return;
-    supabase
+    withTimeout(supabase
       .from("partner_portals")
       .select("*")
       .ilike("subdomain", subdomain)
-      .maybeSingle()
+      .maybeSingle(), 8_000)
       .then(({ data }) => {
         if (!active) return;
         if (data) {
@@ -300,6 +317,9 @@ function AppRoutes() {
         } else {
           setPartner(null);
         }
+      })
+      .catch(() => {
+        if (active) setPartner(null);
       });
     return () => { active = false; };
   }, [subdomain, isMainHost, isHardcoded]);

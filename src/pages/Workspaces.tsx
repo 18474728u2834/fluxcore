@@ -29,6 +29,22 @@ const onMainDomain = () => {
   return HARDCODED_HOSTS.includes(h) || h.endsWith(".lovable.app") || h.endsWith(".lovableproject.com") || h === "localhost" || h.startsWith("127.0.0.1");
 };
 
+function withTimeout<T>(promise: PromiseLike<T>, label: string, ms = 10_000): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error(`${label} timed out`)), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 
 export default function Workspaces() {
   const navigate = useNavigate();
@@ -69,7 +85,7 @@ export default function Workspaces() {
       ]);
       setIsStaff(!!sa || vu?.roblox_username?.toLowerCase() === "novavoff");
     })();
-  }, [user, authLoading]);
+  }, [user?.id, authLoading]);
 
   const claimPendingGrant = async () => {
     const token = localStorage.getItem("fluxcore_pending_grant");
@@ -112,24 +128,33 @@ export default function Workspaces() {
 
     try {
       // Single RPC call — much faster and avoids N+1 .single() failures
-      const { data: rpcData, error: rpcErr } = await supabase.rpc("get_accessible_workspaces");
+      const { data: rpcData, error: rpcErr } = await withTimeout(
+        supabase.rpc("get_accessible_workspaces"),
+        "Workspace list",
+      );
 
       if (rpcErr) {
         console.error("get_accessible_workspaces failed, falling back:", rpcErr);
         // Fallback to direct queries
-        const { data: owned } = await supabase
-          .from("workspaces")
-          .select("id, name, roblox_group_id, verified_official")
-          .eq("owner_id", user.id);
+        const { data: owned } = await withTimeout(
+          supabase
+            .from("workspaces")
+            .select("id, name, roblox_group_id, verified_official")
+            .eq("owner_id", user.id),
+          "Owned workspaces",
+        );
         if (owned) {
           for (const w of owned) {
             ws.push({ id: w.id, name: w.name, role: "Owner", roblox_group_id: w.roblox_group_id, verified_official: !!w.verified_official });
           }
         }
-        const { data: memberships } = await supabase
-          .from("workspace_members")
-          .select("workspace_id, role, workspaces(id, name, roblox_group_id, verified_official)")
-          .eq("user_id", user.id);
+        const { data: memberships } = await withTimeout(
+          supabase
+            .from("workspace_members")
+            .select("workspace_id, role, workspaces(id, name, roblox_group_id, verified_official)")
+            .eq("user_id", user.id),
+          "Workspace memberships",
+        );
         if (memberships) {
           const ownedIds = new Set(ws.map(w => w.id));
           for (const m of memberships as any[]) {
@@ -157,8 +182,8 @@ export default function Workspaces() {
       if (ws.length > 0) {
         const ids = ws.map(w => w.id);
         const [{ data: portals }, { data: wsRows }] = await Promise.all([
-          supabase.from("partner_portals").select("workspace_id,subdomain,status,auto_created").in("workspace_id", ids),
-          supabase.from("workspaces").select("id, subdomain_grace_until, closed_at, closed_reason").in("id", ids),
+          withTimeout(supabase.from("partner_portals").select("workspace_id,subdomain,status,auto_created").in("workspace_id", ids), "Workspace portals", 8_000),
+          withTimeout(supabase.from("workspaces").select("id, subdomain_grace_until, closed_at, closed_reason").in("id", ids), "Workspace grace", 8_000),
         ]);
         const pMap = new Map<string, any>();
         for (const p of (portals as any[]) || []) pMap.set(p.workspace_id, p);
