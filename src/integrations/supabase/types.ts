@@ -2606,6 +2606,7 @@ export type Database = {
         Returns: boolean
       }
       bind_discord_account: { Args: { _token: string }; Returns: Json }
+      bootstrap_service_role_key: { Args: { _key: string }; Returns: undefined }
       calculate_session_duration: {
         Args: { ws_id: string }
         Returns: undefined
