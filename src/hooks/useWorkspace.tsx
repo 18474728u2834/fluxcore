@@ -145,7 +145,11 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
 
     fetchWorkspace();
     return () => { cancelled = true; };
-  }, [workspaceId, user, authLoading]);
+    // Depend on user?.id (stable) rather than the user object, whose reference
+    // changes on every Supabase token refresh. That churn was cancelling the
+    // in-flight get_workspace_context fetch before setLoading(false) ran,
+    // leaving mobile users stuck on the loading spinner.
+  }, [workspaceId, user?.id, authLoading]);
 
   const refreshWorkspace = async () => {
     if (!workspaceId) return;
