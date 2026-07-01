@@ -167,6 +167,7 @@ serve(async (req) => {
         }
         const missing: string[] = [];
         for (const { userId } of inRole) {
+          if (trueOwnerRobloxId && userId === trueOwnerRobloxId) continue; // never import the real group owner as a member
           if (!memberByUid.has(userId)) missing.push(userId);
         }
         if (missing.length > 0) {
