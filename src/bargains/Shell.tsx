@@ -351,7 +351,7 @@ export function BargainsShell({ children }: ShellProps) {
           >
             <Menu className="w-5 h-5" />
           </button>
-          <div className="relative">
+          <div className="relative hide-on-mobile">
             <button
               onClick={() => setMenuOpen(m => !m)}
               className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-[#1a1a1c] transition-colors"
