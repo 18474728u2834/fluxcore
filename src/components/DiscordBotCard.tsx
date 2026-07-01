@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MessageSquare, Loader2, ExternalLink, Trash2, Copy, Check } from "lucide-react";
+import { MessageSquare, Loader2, ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const INVITE_URL =
