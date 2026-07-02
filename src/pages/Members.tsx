@@ -61,6 +61,10 @@ export default function Members() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const canManage = isOwner || hasPermission("manage_members");
+  const canEditRoles = isOwner || hasPermission("edit_roles");
+  const canPromote = isOwner || hasPermission("promote_members");
+  const canDemote = isOwner || hasPermission("demote_members");
+  const canAnyBulk = canManage || canEditRoles || canPromote || canDemote;
 
   const fetchMembers = async () => {
     const { data } = await supabase
@@ -444,6 +448,9 @@ export default function Members() {
           selectedCount={selected.size}
           roles={roles}
           canManage={canManage}
+          canEditRoles={canEditRoles}
+          canPromote={canPromote}
+          canDemote={canDemote}
           onClear={() => setSelected(new Set())}
           onRun={runBulk}
         />
