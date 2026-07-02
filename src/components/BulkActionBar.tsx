@@ -62,28 +62,38 @@ export function BulkActionBar({ selectedCount, roles, canManage, canEditRoles, c
           <span className="text-sm font-semibold text-foreground mr-1">
             {selectedCount} selected
           </span>
-          {canManage && (
+          {showAny && (
             <>
-              <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running}
-                onClick={() => setConfirm("promote")}>
-                <ShieldCheck className="w-3 h-3 mr-1" /> Promote
-              </Button>
-              <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running}
-                onClick={() => setConfirm("demote")}>
-                <ShieldAlert className="w-3 h-3 mr-1" /> Demote
-              </Button>
-              <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running || roles.length === 0}
-                onClick={() => setAssignOpen(true)}>
-                <Tag className="w-3 h-3 mr-1" /> Assign Role
-              </Button>
-              <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running}
-                onClick={() => setWarnOpen(true)}>
-                <AlertTriangle className="w-3 h-3 mr-1" /> Warn
-              </Button>
-              <Button size="sm" variant="destructive" className="h-8 text-xs" disabled={running}
-                onClick={() => setConfirm("remove")}>
-                <Trash2 className="w-3 h-3 mr-1" /> Remove
-              </Button>
+              {allowPromote && (
+                <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running}
+                  onClick={() => setConfirm("promote")}>
+                  <ShieldCheck className="w-3 h-3 mr-1" /> Promote
+                </Button>
+              )}
+              {allowDemote && (
+                <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running}
+                  onClick={() => setConfirm("demote")}>
+                  <ShieldAlert className="w-3 h-3 mr-1" /> Demote
+                </Button>
+              )}
+              {allowEditRoles && (
+                <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running || roles.length === 0}
+                  onClick={() => setAssignOpen(true)}>
+                  <Tag className="w-3 h-3 mr-1" /> Assign Role
+                </Button>
+              )}
+              {canManage && (
+                <>
+                  <Button size="sm" variant="outline" className="h-8 text-xs" disabled={running}
+                    onClick={() => setWarnOpen(true)}>
+                    <AlertTriangle className="w-3 h-3 mr-1" /> Warn
+                  </Button>
+                  <Button size="sm" variant="destructive" className="h-8 text-xs" disabled={running}
+                    onClick={() => setConfirm("remove")}>
+                    <Trash2 className="w-3 h-3 mr-1" /> Remove
+                  </Button>
+                </>
+              )}
             </>
           )}
           <div className="flex-1" />
