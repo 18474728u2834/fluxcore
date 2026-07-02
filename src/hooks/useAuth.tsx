@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -35,20 +35,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const aliveRef = useRef(true);
+  const sessionRef = useRef<Session | null>(null);
+
+  const applySession = (nextSession: Session | null, preserveExistingOnNull = false) => {
+    if (!aliveRef.current) return;
+
+    if (!nextSession && preserveExistingOnNull && sessionRef.current) {
+      setLoading(false);
+      return;
+    }
+
+    sessionRef.current = nextSession;
+    setSession((prev) => (prev?.access_token === nextSession?.access_token ? prev : nextSession));
+    setUser((prev) => {
+      const nextUser = nextSession?.user ?? null;
+      if (prev?.id === nextUser?.id) return prev;
+      return nextUser;
+    });
+    setLoading(false);
+  };
 
   useEffect(() => {
-    let alive = true;
-
-    const applySession = (nextSession: Session | null) => {
-      if (!alive) return;
-      setSession((prev) => (prev?.access_token === nextSession?.access_token ? prev : nextSession));
-      setUser((prev) => {
-        const nextUser = nextSession?.user ?? null;
-        if (prev?.id === nextUser?.id) return prev;
-        return nextUser;
-      });
-      setLoading(false);
-    };
+    aliveRef.current = true;
 
     const initTimeout = window.setTimeout(() => {
       // Mobile browsers can leave auth restoration waiting forever after app wake.
@@ -59,21 +68,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession()
       .then(({ data: { session } }) => {
         window.clearTimeout(initTimeout);
-        applySession(session);
+        // A SIGNED_IN event can arrive before this promise resolves. Do not let
+        // a stale null initial read erase the fresh session and bounce routes.
+        applySession(session, true);
       })
       .catch(() => {
         window.clearTimeout(initTimeout);
-        applySession(getCachedSessionFromStorage());
+        applySession(getCachedSessionFromStorage(), true);
       });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
       // Skip no-op updates (TOKEN_REFRESHED with same user) so downstream
       // effects that depend on `user` don't re-run on every token refresh.
-      applySession(nextSession);
+      if (event === "INITIAL_SESSION" && !nextSession) {
+        return;
+      }
+      if (event === "SIGNED_OUT") {
+        applySession(null);
+        return;
+      }
+      applySession(nextSession, event === "INITIAL_SESSION");
     });
 
     return () => {
-      alive = false;
+      aliveRef.current = false;
       window.clearTimeout(initTimeout);
       subscription.unsubscribe();
     };
@@ -83,10 +101,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const robloxUserId = user?.user_metadata?.roblox_user_id ?? null;
 
   const setSessionFromToken = async (tokenHash: string, email: string) => {
-    const { error } = await supabase.auth.verifyOtp({
+    const { data, error } = await supabase.auth.verifyOtp({
       token_hash: tokenHash,
       type: "magiclink",
     });
+    if (!error) {
+      if (data.session) {
+        applySession(data.session);
+      } else {
+        const { data: sessionData } = await supabase.auth.getSession();
+        applySession(sessionData.session, true);
+      }
+    }
     return { error: error as Error | null };
   };
 
