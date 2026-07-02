@@ -1095,7 +1095,7 @@ function SentEmailsList() {
             <div>
               <div className="text-xs text-muted-foreground mb-1">Body</div>
               <div className="rounded-lg border border-border p-3 bg-white text-black prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: selected.details?.body_html || "<em>(no body stored)</em>" }} />
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selected.details?.body_html || "<em>(no body stored)</em>", { USE_PROFILES: { html: true } }) }} />
             </div>
             {selected.details?.images?.length ? (
               <div className="flex flex-wrap gap-2">
