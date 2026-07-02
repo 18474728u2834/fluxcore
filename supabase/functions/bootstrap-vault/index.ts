@@ -6,11 +6,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-serve(async () => {
+serve(async (req) => {
   try {
     const url = Deno.env.get("SUPABASE_URL")!;
     const srk = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     if (!srk) return new Response("no key", { status: 500 });
+
+    // Require service-role auth to prevent unauthenticated invocation.
+    const auth = req.headers.get("authorization") || "";
+    if (auth !== `Bearer ${srk}`) {
+      return new Response("unauthorized", { status: 401 });
+    }
+
 
     const admin = createClient(url, srk, { auth: { persistSession: false } });
 
