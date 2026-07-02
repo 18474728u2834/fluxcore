@@ -19,11 +19,19 @@ interface Props {
   selectedCount: number;
   roles: Role[];
   canManage: boolean;
+  canEditRoles?: boolean;
+  canPromote?: boolean;
+  canDemote?: boolean;
   onClear: () => void;
   onRun: (action: BulkAction, payload?: { roleId?: string; reason?: string }) => Promise<void>;
 }
 
-export function BulkActionBar({ selectedCount, roles, canManage, onClear, onRun }: Props) {
+export function BulkActionBar({ selectedCount, roles, canManage, canEditRoles, canPromote, canDemote, onClear, onRun }: Props) {
+  // Backwards-compat: if the fine-grained flags aren't provided, fall back to canManage.
+  const allowEditRoles = canEditRoles ?? canManage;
+  const allowPromote = canPromote ?? canManage;
+  const allowDemote = canDemote ?? canManage;
+  const showAny = canManage || allowEditRoles || allowPromote || allowDemote;
   const [confirm, setConfirm] = useState<BulkAction | null>(null);
   const [running, setRunning] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
