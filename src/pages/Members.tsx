@@ -448,6 +448,9 @@ export default function Members() {
           selectedCount={selected.size}
           roles={roles}
           canManage={canManage}
+          canEditRoles={canEditRoles}
+          canPromote={canPromote}
+          canDemote={canDemote}
           onClear={() => setSelected(new Set())}
           onRun={runBulk}
         />
