@@ -80,6 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
       // Skip no-op updates (TOKEN_REFRESHED with same user) so downstream
       // effects that depend on `user` don't re-run on every token refresh.
+      if (event === "INITIAL_SESSION" && !nextSession) {
+        return;
+      }
       if (event === "SIGNED_OUT") {
         applySession(null);
         return;
