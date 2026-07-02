@@ -37,21 +37,9 @@ async function getCaller(req: Request) {
     .eq("user_id", u.user.id)
     .maybeSingle();
 
-  // Fall-through: legacy Novavoff via verified_users
-  let isOwnerAdmin = staff?.role === "owner_admin";
-  let resolved = staff;
-  if (!resolved) {
-    const { data: vu } = await sb
-      .from("verified_users")
-      .select("user_id, roblox_username")
-      .eq("user_id", u.user.id)
-      .maybeSingle();
-    if (vu && vu.roblox_username?.toLowerCase() === "novavoff") {
-      isOwnerAdmin = true;
-      resolved = { id: "", role: "owner_admin", user_id: u.user.id, roblox_username: vu.roblox_username } as any;
-    }
-  }
-
+  // Staff status is determined solely by the staff_admins table.
+  const isOwnerAdmin = staff?.role === "owner_admin";
+  const resolved = staff;
   if (!resolved) return null;
 
   // Load permissions

@@ -172,17 +172,18 @@ serve(async (req) => {
       const reqRoleId = String(reqMembership?.role || "").split("/").pop();
       reqRole = ladder.find((r: any) => String(r.id || "").split("/").pop() === reqRoleId);
     }
-    const isOwner = reqVerified?.user_id === ws.owner_id;
-    if (!isOwner) {
-      if (!reqRole) {
-        return json({ error: "You must be in the Roblox group to rank others" }, 403);
-      }
-      if ((currentRole.rank ?? 0) >= (reqRole.rank ?? 0)) {
-        return json({ error: "You can't rank someone at or above your own rank" }, 403);
-      }
-      if ((newRole.rank ?? 0) >= (reqRole.rank ?? 0)) {
-        return json({ error: "You can't rank a user to a position equal to or above your own" }, 403);
-      }
+    // Rank-ladder check is always enforced — even claimed owners must have
+    // a real Roblox group rank that outranks both the target's current and
+    // new rank. This prevents anyone holding the workspace API key from
+    // spoofing `requester_user_id` to impersonate the workspace owner.
+    if (!reqRole) {
+      return json({ error: "You must be in the Roblox group to rank others" }, 403);
+    }
+    if ((currentRole.rank ?? 0) >= (reqRole.rank ?? 0)) {
+      return json({ error: "You can't rank someone at or above your own rank" }, 403);
+    }
+    if ((newRole.rank ?? 0) >= (reqRole.rank ?? 0)) {
+      return json({ error: "You can't rank a user to a position equal to or above your own" }, 403);
     }
 
     const newRoleId = String(newRole.id || "").split("/").pop();
