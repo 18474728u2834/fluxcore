@@ -21,7 +21,7 @@ const PERM_GROUPS: { title: string; keys: string[] }[] = [
   { title: "GENERAL", keys: ["view_activity", "view_config", "view_message_logs"] },
   { title: "SESSIONS", keys: ["host_shift", "host_training", "host_event", "create_shift", "create_training", "create_event"] },
   { title: "MEMBERS", keys: ["manage_members", "promote_members", "demote_members"] },
-  { title: "CONTENT", keys: ["post_wall", "delete_wall", "manage_documents", "manage_loa"] },
+  { title: "CONTENT", keys: ["post_wall", "delete_wall", "manage_documents", "manage_loa", "manage_applications"] },
 ];
 
 function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
