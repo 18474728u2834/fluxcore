@@ -41,6 +41,8 @@ function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
 
 export default function BRoles() {
   const { workspaceId, isOwner } = useWorkspace();
+  const { hasPermission } = usePermissions();
+  const canEditRoles = isOwner || hasPermission("edit_roles");
   const { scope, newRowDepartmentId, department } = useDepartment();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
