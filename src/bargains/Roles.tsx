@@ -5,7 +5,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
 import { Plus, Download, Loader2, Trash2, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { ALL_PERMISSIONS } from "@/hooks/usePermissions";
+import { ALL_PERMISSIONS, usePermissions } from "@/hooks/usePermissions";
 
 interface Role {
   id: string;
