@@ -350,6 +350,7 @@ function AppRoutes() {
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/link-discord" element={<LinkDiscord />} />
+            <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
             {/* Legacy /w/:id/* links redirect to clean URLs */}
             <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
@@ -371,6 +372,7 @@ function AppRoutes() {
           <Route path="/login" element={<PartnerLogin config={partner} />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/link-discord" element={<LinkDiscord />} />
+          <Route path="/apply/:formId" element={<Apply />} />
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
