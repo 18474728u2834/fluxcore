@@ -12,77 +12,18 @@ interface UIVersionContextType {
 
 const UIVersionContext = createContext<UIVersionContextType | undefined>(undefined);
 
-const LS_KEY = "fluxcore-ui-version";
-const DEFAULT_VERSION: UIVersion = "classic";
-
-function isValid(v: any): v is UIVersion {
-  return v === "classic" || v === "minimal" || v === "nexus";
-}
-
+// Only Nexus UI is supported. Legacy classic/minimal have been removed.
 export function UIVersionProvider({ children }: { children: ReactNode }) {
-  const { user } = useAuth();
-  const [version, setVersionState] = useState<UIVersion>(() => {
-    if (typeof window === "undefined") return DEFAULT_VERSION;
-    const stored = localStorage.getItem(LS_KEY);
-    return isValid(stored) ? stored : DEFAULT_VERSION;
-  });
-  const [loading, setLoading] = useState(false);
+  const version: UIVersion = "nexus";
+  const setVersion = useCallback(async (_v: UIVersion) => {}, []);
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-ui", version);
-    localStorage.setItem(LS_KEY, version);
-  }, [version]);
-
-  useEffect(() => {
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const stored = typeof window !== "undefined" ? localStorage.getItem(LS_KEY) : null;
-    if (isValid(stored)) {
-      setLoading(false);
-      return;
-    }
-
-    let active = true;
-    const fallback = window.setTimeout(() => {
-      if (active) setLoading(false);
-    }, 1200);
-    setLoading(true);
-    supabase
-      .from("user_preferences")
-      .select("ui_version")
-      .eq("user_id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!active) return;
-        window.clearTimeout(fallback);
-        if (isValid(data?.ui_version)) {
-          setVersionState(data!.ui_version as UIVersion);
-        }
-        setLoading(false);
-      });
-    return () => {
-      active = false;
-      window.clearTimeout(fallback);
-    };
-  }, [user]);
-
-  const setVersion = useCallback(
-    async (v: UIVersion) => {
-      setVersionState(v);
-      try { localStorage.setItem(LS_KEY, v); } catch {}
-      if (!user) return;
-      await supabase
-        .from("user_preferences")
-        .upsert({ user_id: user.id, ui_version: v }, { onConflict: "user_id" });
-    },
-    [user]
-  );
+    document.documentElement.setAttribute("data-ui", "nexus");
+    try { localStorage.setItem("fluxcore-ui-version", "nexus"); } catch {}
+  }, []);
 
   return (
-    <UIVersionContext.Provider value={{ version, setVersion, loading }}>
+    <UIVersionContext.Provider value={{ version, setVersion, loading: false }}>
       {children}
     </UIVersionContext.Provider>
   );
