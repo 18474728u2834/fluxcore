@@ -132,12 +132,12 @@ export default function BRoles() {
     toast.success(next ? "Auto-add members enabled" : "Auto-add disabled");
   };
 
-  if (!isOwner) {
+  if (!canEditRoles) {
     return (
       <BargainsShell>
         <div className="max-w-md mx-auto mt-20 rounded-md border p-8 text-center" style={bx.cardStyle}>
           <Shield className="w-8 h-8 mx-auto mb-3" style={{ color: bx.textMuted }} />
-          <p className="text-sm" style={{ color: bx.textDim }}>Only the workspace owner can manage roles.</p>
+          <p className="text-sm" style={{ color: bx.textDim }}>You need the Edit Roles permission to manage roles.</p>
         </div>
       </BargainsShell>
     );
