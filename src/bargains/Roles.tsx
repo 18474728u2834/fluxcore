@@ -5,7 +5,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
 import { Plus, Download, Loader2, Trash2, Shield } from "lucide-react";
 import { toast } from "sonner";
-import { ALL_PERMISSIONS } from "@/hooks/usePermissions";
+import { ALL_PERMISSIONS, usePermissions } from "@/hooks/usePermissions";
 
 interface Role {
   id: string;
@@ -41,6 +41,8 @@ function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
 
 export default function BRoles() {
   const { workspaceId, isOwner } = useWorkspace();
+  const { hasPermission } = usePermissions();
+  const canEditRoles = isOwner || hasPermission("edit_roles");
   const { scope, newRowDepartmentId, department } = useDepartment();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -130,12 +132,12 @@ export default function BRoles() {
     toast.success(next ? "Auto-add members enabled" : "Auto-add disabled");
   };
 
-  if (!isOwner) {
+  if (!canEditRoles) {
     return (
       <BargainsShell>
         <div className="max-w-md mx-auto mt-20 rounded-md border p-8 text-center" style={bx.cardStyle}>
           <Shield className="w-8 h-8 mx-auto mb-3" style={{ color: bx.textMuted }} />
-          <p className="text-sm" style={{ color: bx.textDim }}>Only the workspace owner can manage roles.</p>
+          <p className="text-sm" style={{ color: bx.textDim }}>You need the Edit Roles permission to manage roles.</p>
         </div>
       </BargainsShell>
     );

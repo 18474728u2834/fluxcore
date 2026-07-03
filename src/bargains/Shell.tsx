@@ -383,13 +383,6 @@ export function BargainsShell({ children }: ShellProps) {
                   <button onClick={() => { navigate(`${base}/departments`); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Manage departments</button>
                 )}
                 <div className="my-1 border-t" style={{ borderColor: "#22222a" }} />
-                <div className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-[#6a6a6e]">UI Style</div>
-                <button onClick={() => { setVersion("nexus"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22] flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5" /> Nexus UI <span className="ml-auto text-[10px] text-[#6a6a6e]">current</span>
-                </button>
-                <button onClick={() => { setVersion("classic"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Classic UI</button>
-                <button onClick={() => { setVersion("minimal"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Fluxcore New UI</button>
-                <div className="my-1 border-t" style={{ borderColor: "#22222a" }} />
                 <button onClick={async () => { await signOut(); navigate("/login"); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22] text-[#f55a4a] flex items-center gap-2">
                   <LogOut className="w-3.5 h-3.5" /> Sign out
                 </button>
