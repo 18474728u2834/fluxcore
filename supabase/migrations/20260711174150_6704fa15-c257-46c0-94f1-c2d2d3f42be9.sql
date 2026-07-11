@@ -1,0 +1,2 @@
+ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS marquee_featured boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS idx_workspaces_marquee_featured ON public.workspaces(marquee_featured) WHERE marquee_featured = true;

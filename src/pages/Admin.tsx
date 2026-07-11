@@ -16,6 +16,7 @@ import { PremiumGrantManager } from "@/components/PremiumGrantManager";
 import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
 import StatusAdminTab from "@/pages/admin/StatusAdminTab";
 import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
+import MarqueeTab from "@/pages/admin/MarqueeTab";
 import DOMPurify from "dompurify";
 
 type WhoAmI = {
@@ -112,6 +113,7 @@ export default function Admin() {
             {has("manage_blacklist") && <TabsTrigger value="blacklist">FC Blacklist</TabsTrigger>}
             <TabsTrigger value="portals">Partner Portals</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
+            {has("manage_status") && <TabsTrigger value="marquee">Homepage Marquee</TabsTrigger>}
             {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
@@ -131,6 +133,7 @@ export default function Admin() {
           {has("manage_blacklist") && <TabsContent value="blacklist"><BlacklistTab /></TabsContent>}
           <TabsContent value="portals"><PartnerPortalsTab /></TabsContent>
           {has("manage_status") && <TabsContent value="status"><StatusAdminTab /></TabsContent>}
+          {has("manage_status") && <TabsContent value="marquee"><MarqueeTab /></TabsContent>}
           {has("send_admin_email") && <TabsContent value="email"><EmailSenderTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>

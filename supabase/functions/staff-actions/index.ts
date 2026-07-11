@@ -619,6 +619,36 @@ Deno.serve(async (req) => {
         return json({ ok: true, recipients: list.length, ...results });
       }
 
+      case "list_marquee_workspaces": {
+        if (!caller.has("manage_status") && !caller.isOwnerAdmin) return json({ error: "forbidden" }, 403);
+        const q = String(body.query || "").trim();
+        const featuredOnly = !!body.featured_only;
+        let qb = sb
+          .from("workspaces")
+          .select("id, name, roblox_group_id, verified_official, marquee_featured")
+          .not("roblox_group_id", "is", null)
+          .neq("roblox_group_id", "")
+          .order("marquee_featured", { ascending: false })
+          .order("name")
+          .limit(200);
+        if (q) qb = qb.ilike("name", `%${q}%`);
+        if (featuredOnly) qb = qb.eq("marquee_featured", true);
+        const { data, error } = await qb;
+        if (error) return json({ error: error.message }, 400);
+        return json({ workspaces: data || [] });
+      }
+
+      case "set_marquee_featured": {
+        if (!caller.has("manage_status") && !caller.isOwnerAdmin) return json({ error: "forbidden" }, 403);
+        const workspace_id = String(body.workspace_id || "");
+        const featured = !!body.featured;
+        if (!workspace_id) return json({ error: "missing_workspace_id" }, 400);
+        const { error } = await sb.from("workspaces").update({ marquee_featured: featured }).eq("id", workspace_id);
+        if (error) return json({ error: error.message }, 400);
+        await audit(caller, "set_marquee_featured", "workspace", workspace_id, { featured });
+        return json({ ok: true });
+      }
+
       default:
         return json({ error: "unknown_action" }, 400);
     }
