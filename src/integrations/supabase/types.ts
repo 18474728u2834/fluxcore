@@ -2496,6 +2496,7 @@ export type Database = {
           id: string
           invite_code: string
           leaderboard_categories: Json
+          marquee_featured: boolean
           message_logger_enabled: boolean | null
           name: string
           nexus_hero_image_url: string | null
@@ -2534,6 +2535,7 @@ export type Database = {
           id?: string
           invite_code?: string
           leaderboard_categories?: Json
+          marquee_featured?: boolean
           message_logger_enabled?: boolean | null
           name: string
           nexus_hero_image_url?: string | null
@@ -2572,6 +2574,7 @@ export type Database = {
           id?: string
           invite_code?: string
           leaderboard_categories?: Json
+          marquee_featured?: boolean
           message_logger_enabled?: boolean | null
           name?: string
           nexus_hero_image_url?: string | null
