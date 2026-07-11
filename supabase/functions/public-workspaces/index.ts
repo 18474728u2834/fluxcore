@@ -19,17 +19,32 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    const { data, error } = await supabase
+    // Prefer explicitly featured workspaces chosen by staff in the admin panel.
+    const { data: featured, error: featuredErr } = await supabase
       .from("workspaces")
       .select("id, name, roblox_group_id, verified_official, premium")
+      .eq("marquee_featured", true)
       .not("roblox_group_id", "is", null)
       .neq("roblox_group_id", "")
-      .order("verified_official", { ascending: false })
-      .order("premium", { ascending: false })
-      .order("created_at", { ascending: false })
+      .order("name")
       .limit(30);
+    if (featuredErr) throw featuredErr;
 
-    if (error) throw error;
+    let data = featured ?? [];
+    if (data.length === 0) {
+      // Fallback: verified/premium/newest so the marquee never looks empty
+      const { data: fallback, error } = await supabase
+        .from("workspaces")
+        .select("id, name, roblox_group_id, verified_official, premium")
+        .not("roblox_group_id", "is", null)
+        .neq("roblox_group_id", "")
+        .order("verified_official", { ascending: false })
+        .order("premium", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      data = fallback ?? [];
+    }
 
     return new Response(
       JSON.stringify({ workspaces: data ?? [] }),
