@@ -6,10 +6,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import {
   Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle,
-  Gamepad2, Sparkles, Users,
+  Sparkles, Users,
 } from "lucide-react";
+import { RobloxLogo } from "@/components/RobloxLogo";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
 import type { PartnerConfig } from "./PartnerPortal";
+
 
 const SUPABASE_URL = (import.meta as any).env.VITE_SUPABASE_URL as string;
 
@@ -170,8 +172,9 @@ export default function PartnerLogin({ config }: { config: PartnerConfig }) {
                     boxShadow: `0 15px 50px -10px rgba(${accentRgb},0.7)`,
                   }}
                 >
-                  <Gamepad2 className="w-5 h-5 mr-2" /> Sign in with Roblox
+                  <RobloxLogo className="w-5 h-5 mr-2" /> Sign in with Roblox
                 </Button>
+
                 <DiscordSignInButton />
 
                 <div className="relative py-1">

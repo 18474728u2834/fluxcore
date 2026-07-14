@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
+import { RobloxLogo } from "@/components/RobloxLogo";
 import {
   Loader2,
   User,
@@ -13,11 +14,11 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
-  Gamepad2,
   ShoppingBag,
   Sparkles,
   Users,
 } from "lucide-react";
+
 
 const WORKSPACE_ID = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
 const ROBLOX_GROUP_ID = "11877226";
@@ -167,9 +168,10 @@ export default function BargainsLogin() {
                   onClick={handleRobloxOAuth}
                   className="w-full h-12 text-base bg-sky-500 hover:bg-sky-400 text-sky-950 font-semibold shadow-[0_10px_40px_-10px_rgba(56,189,248,0.6)] hover:shadow-[0_15px_50px_-10px_rgba(56,189,248,0.8)] hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  <Gamepad2 className="w-5 h-5 mr-2" />
+                  <RobloxLogo className="w-5 h-5 mr-2" />
                   Sign in with Roblox
                 </Button>
+
                 <DiscordSignInButton />
 
                 <div className="relative py-1">

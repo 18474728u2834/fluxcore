@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
+import { RobloxLogo } from "@/components/RobloxLogo";
 import {
   Loader2,
   User,
@@ -13,12 +14,12 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
-  Gamepad2,
   ShoppingBasket,
   Sparkles,
   Users,
   Leaf,
 } from "lucide-react";
+
 
 const WORKSPACE_ID = "9f2c9234-c02f-492b-8121-74324e0df624";
 const ROBLOX_GROUP_ID = "495300212";
@@ -176,9 +177,10 @@ export default function ShoplyLogin() {
                   onClick={handleRobloxOAuth}
                   className="w-full h-12 text-base bg-gradient-to-br from-sky-300 to-sky-500 hover:from-sky-200 hover:to-sky-400 text-sky-950 font-semibold shadow-[0_15px_50px_-10px_rgba(56,189,248,0.7)] hover:scale-[1.02] active:scale-[0.98] transition-all"
                 >
-                  <Gamepad2 className="w-5 h-5 mr-2" />
+                  <RobloxLogo className="w-5 h-5 mr-2" />
                   Sign in with Roblox
                 </Button>
+
                 <DiscordSignInButton />
 
                 <div className="relative py-1">

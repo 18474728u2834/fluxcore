@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
+import { RobloxLogo } from "@/components/RobloxLogo";
 import {
   Loader2,
   User,
@@ -13,11 +14,11 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
-  Gamepad2,
   ShoppingBag,
   Leaf,
   Sparkles,
 } from "lucide-react";
+
 
 const ROBLOX_GROUP_ID = "16109128";
 const SUPABASE_URL = (import.meta as any).env.VITE_SUPABASE_URL as string;
@@ -161,9 +162,10 @@ export default function AlmoreLogin() {
                   onClick={handleRobloxOAuth}
                   className="w-full h-12 text-base bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-semibold shadow-[0_10px_40px_-10px_rgba(16,185,129,0.6)]"
                 >
-                  <Gamepad2 className="w-5 h-5 mr-2" />
+                  <RobloxLogo className="w-5 h-5 mr-2" />
                   Sign in with Roblox
                 </Button>
+
                 <DiscordSignInButton />
 
                 <div className="relative py-1">
