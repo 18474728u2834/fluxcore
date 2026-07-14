@@ -431,7 +431,7 @@ function AppRoutes() {
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/workspaces" element={<Workspaces />} />
-          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+          <Route path="/w/:workspaceId/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<BloxyBargains />} />
         </Routes>
       </Suspense>
