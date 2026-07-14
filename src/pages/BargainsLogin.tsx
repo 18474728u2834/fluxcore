@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
+import { RobloxLogo } from "@/components/RobloxLogo";
 import {
   Loader2,
   User,
@@ -13,11 +14,11 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
-  Gamepad2,
   ShoppingBag,
   Sparkles,
   Users,
 } from "lucide-react";
+
 
 const WORKSPACE_ID = "b4de7ffa-81e6-4d05-8e9d-8ce0a4904630";
 const ROBLOX_GROUP_ID = "11877226";

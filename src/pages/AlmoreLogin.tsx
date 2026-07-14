@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
+import { RobloxLogo } from "@/components/RobloxLogo";
 import {
   Loader2,
   User,
@@ -13,11 +14,11 @@ import {
   ArrowRight,
   CheckCircle2,
   XCircle,
-  Gamepad2,
   ShoppingBag,
   Leaf,
   Sparkles,
 } from "lucide-react";
+
 
 const ROBLOX_GROUP_ID = "16109128";
 const SUPABASE_URL = (import.meta as any).env.VITE_SUPABASE_URL as string;
