@@ -121,9 +121,10 @@ export default function Login() {
 
               <div className="space-y-3">
                 <Button onClick={handleRobloxOAuth} variant="hero" className="w-full h-12 text-base">
-                  <Gamepad2 className="w-5 h-5 mr-2" />
+                  <RobloxLogo className="w-5 h-5 mr-2" />
                   Sign in with Roblox
                 </Button>
+
 
                 <Button
                   onClick={handleDiscordOAuth}
