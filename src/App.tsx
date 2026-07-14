@@ -93,7 +93,16 @@ const Apply = lazy(() => import("./pages/Apply"));
 const DiscordVerify = lazy(() => import("./pages/DiscordVerify"));
 
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function withTimeout<T>(promise: PromiseLike<T>, ms = 8_000): Promise<T> {
   return new Promise((resolve, reject) => {
