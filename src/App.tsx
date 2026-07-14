@@ -394,7 +394,7 @@ function AppRoutes() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/workspaces" element={<Workspaces />} />
-          <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
+          <Route path="/w/:workspaceId/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<Almore />} />
         </Routes>
       </Suspense>
