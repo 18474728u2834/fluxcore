@@ -1,4 +1,4 @@
-import robloxLogo from "@/assets/roblox-logo-clean.png.asset.json";
+import robloxLogo from "@/assets/roblox-logo-v2.png.asset.json";
 
 export function RobloxLogo({ className }: { className?: string }) {
   return (
