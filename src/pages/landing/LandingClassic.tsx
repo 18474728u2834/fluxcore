@@ -44,6 +44,8 @@ export default function LandingClassic() {
   const { user, loading: authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = !authLoading && !!user;
+  const isMobile = useIsMobile();
+
 
   const features = [
     { icon: Activity, title: "Activity tracking", desc: "Live heartbeats every 30 seconds with idle detection. Know exactly who's in-game and for how long." },
