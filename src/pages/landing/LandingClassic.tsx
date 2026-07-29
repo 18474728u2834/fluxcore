@@ -191,10 +191,61 @@ export default function LandingClassic() {
 
         {/* Real-UI dashboard mockup — mirrors Nexus (BargainsShell) */}
         <div id="showcase" className="relative mt-20 mx-auto max-w-6xl px-6" style={{ perspective: "2400px" }}>
+          {isMobile ? (
+            /* Phone frame — the real mobile workspace UI */
+            <div className="mx-auto w-[280px] rounded-[2.2rem] border-[6px] border-[#1a1a1c] bg-[#0f0f10] shadow-[0_40px_100px_-25px_hsl(var(--primary)/0.5)] overflow-hidden">
+              <div className="relative h-6 bg-[#0a0a0b] flex items-center justify-center">
+                <div className="w-20 h-3.5 rounded-full bg-[#0f0f10]" />
+              </div>
+              <div className="text-white" style={{ background: "#0f0f10" }}>
+                {/* App bar */}
+                <div className="h-11 px-3 flex items-center justify-between border-b" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 rounded-[5px]" style={{ background: "#f55a4a" }} />
+                    <span className="text-[12px] font-semibold">Staff Team</span>
+                  </div>
+                  <Command className="w-4 h-4 text-white/40" />
+                </div>
+                <div className="p-3 space-y-3">
+                  <div className="rounded-lg h-[92px] p-3 flex flex-col justify-end" style={{ background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" }}>
+                    <div className="text-[8px] font-semibold uppercase tracking-wider text-white/85">Welcome back</div>
+                    <div className="text-white text-[15px] font-bold leading-tight">Novavoff</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[["Online now", "8", "live"], ["Hours today", "142h", "▲ +12h"]].map(([l, v, s]) => (
+                      <div key={l} className="rounded-lg border p-2.5" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                        <div className="text-[8px] text-white/50 uppercase tracking-wider">{l}</div>
+                        <div className="text-lg font-bold">{v}</div>
+                        <div className="text-[8px] text-emerald-400 font-mono">{s}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="space-y-1.5">
+                    {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h in-game"]].map(([n, a]) => (
+                      <div key={n} className="flex items-center gap-2 rounded-lg border px-2.5 py-2" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                        <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary/60 to-violet-500/60 shrink-0" />
+                        <div className="min-w-0">
+                          <div className="text-[10px] font-semibold">{n}</div>
+                          <div className="text-[9px] text-white/50 truncate">{a}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                {/* Bottom tab bar */}
+                <div className="flex items-center justify-around border-t py-2" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
+                  {[LayoutDashboard, Users, Clock, CalendarDays, Settings].map((Icon, i) => (
+                    <Icon key={i} className="w-[16px] h-[16px]" strokeWidth={1.8} style={{ color: i === 0 ? "#fff" : "#7a7a7e" }} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
           <div
             className="relative rounded-2xl border border-border/40 shadow-[0_50px_140px_-20px_hsl(var(--primary)/0.4)] overflow-hidden"
             style={{ transform: "rotateX(6deg)", transformStyle: "preserve-3d", background: "#0f0f10" }}
           >
+
             {/* Browser chrome */}
             <div className="flex items-center gap-1.5 px-4 py-2.5 border-b" style={{ borderColor: "#1a1a1c", background: "#0a0a0b" }}>
               <div className="w-2.5 h-2.5 rounded-full bg-rose-400/60" />
