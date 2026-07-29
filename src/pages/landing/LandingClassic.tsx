@@ -36,6 +36,7 @@ import {
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
 import { SiteBanner } from "@/components/SiteBanner";
+import { useIsMobile } from "@/hooks/use-mobile";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
 
 export default function LandingClassic() {
@@ -360,6 +361,8 @@ export default function LandingClassic() {
               <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#0f0f10] to-transparent pointer-events-none" />
             </div>
           </div>
+          )}
+
 
           {/* Reflection / glow under */}
           <div className="absolute inset-x-12 -bottom-10 h-40 bg-primary/30 blur-[80px] rounded-full opacity-60 pointer-events-none" />
