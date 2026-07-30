@@ -265,7 +265,14 @@ export function BargainsShell({ children }: ShellProps) {
 
   // When in a department, page paths sit under /d/<slug>/
   const navBase = activeDeptSlug ? `${base}/d/${activeDeptSlug}` : base;
-  const navItems = NAV;
+  // Nexus UI 2.0: the owner decides which pages exist for everyone.
+  const navItems = useMemo(
+    () => nexusConfig.version === "v2"
+      ? NAV.filter(n => n.to === "dashboard" || !nexusConfig.hiddenNav.includes(n.to))
+      : NAV,
+    [nexusConfig],
+  );
+
 
   return (
     <div className="min-h-screen w-full flex font-bargains" style={{ background: "#0f0f10", color: "#fafafa" }}>
