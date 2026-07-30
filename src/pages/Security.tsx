@@ -46,9 +46,14 @@ export default function Security() {
       body: "Your data is processed by Fluxcore and these third parties only when needed for a feature you enabled: Roblox (auth, group ranking, avatars), Discord (webhooks you configured), and our hosting/database providers. We don't sell data and we don't ship it to ad networks.",
     },
     {
+      icon: ShieldCheck,
+      title: "Daily breach & fault scanning",
+      body: "Every single day an automated scan runs across the platform. It probes our own public API as an anonymous visitor to prove no private table can be read without signing in, checks for access-control drift (blacklisted accounts still holding workspaces, duplicate identity links, excessive admin privileges), verifies credentials are still encrypted at rest, and flags integration or delivery faults from the last 24 hours. Results are logged and reviewed by our security staff, and anything critical is acted on immediately.",
+    },
+    {
       icon: FileCheck2,
       title: "Your data, your control",
-      body: "Workspace owners can export workspace data and request deletion at any time from the Staff Dashboard or by contacting support. We honour GDPR and CCPA-style requests.",
+      body: "Workspace owners can export workspace data and request deletion at any time from the Staff Dashboard or by contacting support. We honour GDPR and CCPA-style requests — and our daily scan alerts us if any request has gone unanswered.",
     },
   ];
 
