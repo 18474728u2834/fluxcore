@@ -21,14 +21,16 @@ import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-type SectionId = "general" | "integrations" | "tracking" | "sessions";
+type SectionId = "general" | "nexus" | "integrations" | "tracking" | "sessions";
 
 const SECTIONS: { id: SectionId; label: string; icon: any; desc: string }[] = [
   { id: "general",      label: "General & Appearance", icon: Sliders, desc: "Workspace identity, branding, dashboard look" },
+  { id: "nexus",        label: "Nexus UI",             icon: Palette, desc: "Choose V1 or design your own V2 layout" },
   { id: "integrations", label: "Integrations",          icon: Plug,    desc: "Discord webhooks, Roblox Open Cloud" },
   { id: "tracking",     label: "Tracking & Scripts",    icon: Code,    desc: "Activity tracker, API key, in-game features" },
   { id: "sessions",     label: "Sessions & Quotas",     icon: CalendarDays, desc: "Role labels, leaderboards, quota logging" },
 ];
+
 
 export default function SettingsPage() {
   const { workspace, isOwner, workspaceId, loading } = useWorkspace();
