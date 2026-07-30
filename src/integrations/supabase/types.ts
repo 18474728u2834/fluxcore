@@ -2559,6 +2559,7 @@ export type Database = {
           marquee_featured: boolean
           message_logger_enabled: boolean | null
           name: string
+          nexus_config: Json
           nexus_hero_image_url: string | null
           owner_id: string
           premium: boolean
@@ -2598,6 +2599,7 @@ export type Database = {
           marquee_featured?: boolean
           message_logger_enabled?: boolean | null
           name: string
+          nexus_config?: Json
           nexus_hero_image_url?: string | null
           owner_id: string
           premium?: boolean
@@ -2637,6 +2639,7 @@ export type Database = {
           marquee_featured?: boolean
           message_logger_enabled?: boolean | null
           name?: string
+          nexus_config?: Json
           nexus_hero_image_url?: string | null
           owner_id?: string
           premium?: boolean
@@ -2734,6 +2737,7 @@ export type Database = {
           verified_official: boolean
         }[]
       }
+      get_nexus_config: { Args: { _workspace_id: string }; Returns: Json }
       get_public_form: { Args: { _form_id: string }; Returns: Json }
       get_workspace_context: {
         Args: { _workspace_id: string }
@@ -2882,6 +2886,10 @@ export type Database = {
       rotate_app_center_key: {
         Args: { _workspace_id: string }
         Returns: string
+      }
+      set_nexus_config: {
+        Args: { _config: Json; _workspace_id: string }
+        Returns: Json
       }
       set_workspace_secrets: {
         Args: { _values: Json; _workspace_id: string }

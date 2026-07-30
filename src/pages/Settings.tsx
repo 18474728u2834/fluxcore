@@ -18,17 +18,21 @@ import { InviteSection } from "@/components/InviteSection";
 import SubdomainCard from "@/components/SubdomainCard";
 import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
+import { NexusDesigner } from "@/components/NexusDesigner";
+
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-type SectionId = "general" | "integrations" | "tracking" | "sessions";
+type SectionId = "general" | "nexus" | "integrations" | "tracking" | "sessions";
 
 const SECTIONS: { id: SectionId; label: string; icon: any; desc: string }[] = [
   { id: "general",      label: "General & Appearance", icon: Sliders, desc: "Workspace identity, branding, dashboard look" },
+  { id: "nexus",        label: "Nexus UI",             icon: Palette, desc: "Choose V1 or design your own V2 layout" },
   { id: "integrations", label: "Integrations",          icon: Plug,    desc: "Discord webhooks, Roblox Open Cloud" },
   { id: "tracking",     label: "Tracking & Scripts",    icon: Code,    desc: "Activity tracker, API key, in-game features" },
   { id: "sessions",     label: "Sessions & Quotas",     icon: CalendarDays, desc: "Role labels, leaderboards, quota logging" },
 ];
+
 
 export default function SettingsPage() {
   const { workspace, isOwner, workspaceId, loading } = useWorkspace();
@@ -263,8 +267,15 @@ export default function SettingsPage() {
 
         {/* Right pane */}
         <div className="flex-1 min-w-0 space-y-6 max-w-2xl w-full">
+          {active === "nexus" && (
+            <>
+              <SectionHeader title="Nexus UI" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
+              <NexusDesigner />
+            </>
+          )}
           {active === "general" && (
             <>
+
               <SectionHeader title="General & Appearance" sub="Workspace identity, branding, and dashboard look." />
 
               <InviteSection />

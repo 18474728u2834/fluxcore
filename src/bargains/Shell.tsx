@@ -8,6 +8,8 @@ import {
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIVersion } from "@/hooks/useUIVersion";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
+
 import { supabase } from "@/integrations/supabase/client";
 import bargainsLogo from "@/assets/bargains-logo.png";
 
@@ -55,8 +57,10 @@ const PAGE_INDEX: Array<{ label: string; to: string }> = [
 
 export function BargainsShell({ children }: ShellProps) {
   const { workspace, workspaceId, isOwner } = useWorkspace();
+  const { config: nexusConfig } = useNexusConfig(workspaceId);
   const { user, signOut } = useAuth();
   const { setVersion } = useUIVersion();
+
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -237,7 +241,9 @@ export function BargainsShell({ children }: ShellProps) {
       }));
       const ql = q.toLowerCase();
       PAGE_INDEX
+        .filter((p) => nexusConfig.version !== "v2" || p.to === "dashboard" || !nexusConfig.hiddenNav.includes(p.to))
         .filter((p) => p.label.toLowerCase().includes(ql))
+
         .slice(0, 4)
         .forEach((p) => hits.push({ type: "page", id: p.to, label: p.label, to: `${base}/${p.to}` }));
       setSearchHits(hits.slice(0, 12));
@@ -265,7 +271,14 @@ export function BargainsShell({ children }: ShellProps) {
 
   // When in a department, page paths sit under /d/<slug>/
   const navBase = activeDeptSlug ? `${base}/d/${activeDeptSlug}` : base;
-  const navItems = NAV;
+  // Nexus UI 2.0: the owner decides which pages exist for everyone.
+  const navItems = useMemo(
+    () => nexusConfig.version === "v2"
+      ? NAV.filter(n => n.to === "dashboard" || !nexusConfig.hiddenNav.includes(n.to))
+      : NAV,
+    [nexusConfig],
+  );
+
 
   return (
     <div className="min-h-screen w-full flex font-bargains" style={{ background: "#0f0f10", color: "#fafafa" }}>
