@@ -1455,6 +1455,45 @@ export type Database = {
           },
         ]
       }
+      security_scans: {
+        Row: {
+          created_at: string
+          critical_count: number
+          duration_ms: number | null
+          findings: Json
+          id: string
+          info_count: number
+          scan_type: string
+          status: string
+          triggered_by: string
+          warning_count: number
+        }
+        Insert: {
+          created_at?: string
+          critical_count?: number
+          duration_ms?: number | null
+          findings?: Json
+          id?: string
+          info_count?: number
+          scan_type?: string
+          status?: string
+          triggered_by?: string
+          warning_count?: number
+        }
+        Update: {
+          created_at?: string
+          critical_count?: number
+          duration_ms?: number | null
+          findings?: Json
+          id?: string
+          info_count?: number
+          scan_type?: string
+          status?: string
+          triggered_by?: string
+          warning_count?: number
+        }
+        Relationships: []
+      }
       session_notifications: {
         Row: {
           action: string

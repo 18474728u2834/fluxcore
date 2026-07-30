@@ -17,6 +17,7 @@ import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
 import StatusAdminTab from "@/pages/admin/StatusAdminTab";
 import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
 import MarqueeTab from "@/pages/admin/MarqueeTab";
+import SecurityScansTab from "@/pages/admin/SecurityScansTab";
 import DOMPurify from "dompurify";
 
 type WhoAmI = {
@@ -40,6 +41,7 @@ const ALL_PERMS = [
   { key: "manage_blacklist", label: "Manage Fluxcore blacklist" },
   { key: "manage_status", label: "Manage status page & banners" },
   { key: "send_admin_email", label: "Send admin emails (to users or all owners)" },
+  { key: "view_security_scans", label: "View daily breach & fault scans" },
 ];
 
 async function callStaff<T = any>(action: string, payload: Record<string, unknown> = {}): Promise<T> {
@@ -115,6 +117,7 @@ export default function Admin() {
             {has("manage_status") && <TabsTrigger value="status">Status & Banners</TabsTrigger>}
             {has("manage_status") && <TabsTrigger value="marquee">Homepage Marquee</TabsTrigger>}
             {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
+            {has("view_security_scans") && <TabsTrigger value="security">Security Scans</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
@@ -135,6 +138,7 @@ export default function Admin() {
           {has("manage_status") && <TabsContent value="status"><StatusAdminTab /></TabsContent>}
           {has("manage_status") && <TabsContent value="marquee"><MarqueeTab /></TabsContent>}
           {has("send_admin_email") && <TabsContent value="email"><EmailSenderTab /></TabsContent>}
+          {has("view_security_scans") && <TabsContent value="security"><SecurityScansTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
