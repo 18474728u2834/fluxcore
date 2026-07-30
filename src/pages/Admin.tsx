@@ -17,6 +17,7 @@ import PartnerPortalsTab from "@/pages/admin/PartnerPortalsTab";
 import StatusAdminTab from "@/pages/admin/StatusAdminTab";
 import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
 import MarqueeTab from "@/pages/admin/MarqueeTab";
+import SecurityScansTab from "@/pages/admin/SecurityScansTab";
 import DOMPurify from "dompurify";
 
 type WhoAmI = {
