@@ -1,11 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { BargainsShell, bx } from "./Shell";
 import { BirthdayPrompt } from "./BirthdayPrompt";
+import { NexusCard, type CardData } from "./NexusCards";
 import { Play, Cake, Hand } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
+
 
 interface Birthday { user_id: string; roblox_username: string; roblox_user_id: string; birthday_month: number; birthday_day: number; }
 interface NewMember { user_id: string; roblox_username: string; roblox_user_id: string; joined_at: string; }
