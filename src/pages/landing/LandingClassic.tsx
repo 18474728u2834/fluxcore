@@ -223,8 +223,17 @@ export default function LandingClassic() {
                       </div>
                     ))}
                   </div>
+                  <div className="rounded-lg border p-2.5 space-y-1.5" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                    <div className="flex items-center justify-between">
+                      <div className="text-[8px] text-white/50 uppercase tracking-wider">Weekly quota</div>
+                      <div className="text-[8px] font-mono text-primary">78%</div>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-full w-[78%] rounded-full bg-gradient-to-r from-primary to-violet-400" />
+                    </div>
+                  </div>
                   <div className="space-y-1.5">
-                    {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h in-game"]].map(([n, a]) => (
+                    {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h in-game"], ["aven", "Session hosted · 24 attended"], ["noel", "LOA approved · 3 days"]].map(([n, a]) => (
                       <div key={n} className="flex items-center gap-2 rounded-lg border px-2.5 py-2" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
                         <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary/60 to-violet-500/60 shrink-0" />
                         <div className="min-w-0">
@@ -235,6 +244,7 @@ export default function LandingClassic() {
                     ))}
                   </div>
                 </div>
+
                 {/* Bottom tab bar */}
                 <div className="flex items-center justify-around border-t py-2" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
                   {[LayoutDashboard, Users, Clock, CalendarDays, Settings].map((Icon, i) => (
@@ -418,6 +428,48 @@ export default function LandingClassic() {
           </div>
         </div>
       </section>
+
+      {/* SECURITY */}
+      <section id="security" className="py-28 relative">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary mb-3">Security</p>
+            <h2 className="text-4xl sm:text-5xl font-black tracking-[-0.025em] leading-[1.05] mb-4">
+              Your data is encrypted and never leaves our database.
+            </h2>
+            <p className="text-[16px] text-muted-foreground">
+              Every workspace is isolated at the database level — not just in the app. Here's exactly what's protected.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {[
+              { icon: Shield, title: "Encrypted in transit", desc: "Every request — browser, Roblox game server, Open Cloud — runs over HTTPS/TLS 1.2+ with OCSP stapling." },
+              { icon: ShieldCheck, title: "Encrypted at rest", desc: "Managed Postgres encrypts every disk page and every automated backup. Uploads are encrypted the same way." },
+              { icon: KeyRound, title: "Secrets double-encrypted", desc: "API keys, Open Cloud keys and Discord webhooks get a second pgcrypto layer. Only audited functions can decrypt — for the owner only." },
+              { icon: Users, title: "Row-Level Security everywhere", desc: "Postgres RLS gates every table. One workspace can never read another's members, sessions, logs or quotas." },
+              { icon: BadgeCheck, title: "Roblox OAuth — no passwords", desc: "OAuth 2.0 + PKCE with leaked-password protection on email accounts. We never see or store your Roblox password." },
+              { icon: FileText, title: "Your data, your control", desc: "Export or delete your workspace data any time. No selling, no ad networks, GDPR & CCPA requests honoured." },
+            ].map((s) => (
+              <div key={s.title} className="rounded-2xl border border-border/30 bg-card/40 backdrop-blur-sm p-6 hover:border-primary/40 transition-all duration-300">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4">
+                  <s.icon className="w-[18px] h-[18px] text-emerald-400" strokeWidth={2.2} />
+                </div>
+                <h3 className="text-[15px] font-bold mb-1.5">{s.title}</h3>
+                <p className="text-[13px] text-muted-foreground leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 text-center">
+            <button onClick={() => navigate("/security")} className="inline-flex items-center gap-2 text-sm text-primary hover:underline font-semibold">
+              Read the full security overview <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      </section>
+
+
 
       {/* PRICING */}
       <section className="py-28 relative">
