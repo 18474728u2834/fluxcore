@@ -40,6 +40,7 @@ export const DEFAULT_NEXUS_CONFIG: NexusConfig = {
   cards: ["game", "birthdays", "new_members", "sessions", "activity"],
   showHero: true,
   heroTitle: "",
+  railMode: "hover",
 };
 
 export function normalizeNexusConfig(raw: any): NexusConfig {
@@ -52,6 +53,7 @@ export function normalizeNexusConfig(raw: any): NexusConfig {
       : DEFAULT_NEXUS_CONFIG.cards,
     showHero: c.showHero !== false,
     heroTitle: typeof c.heroTitle === "string" ? c.heroTitle : "",
+    railMode: c.railMode === "icons" ? "icons" : "hover",
   };
 }
 
