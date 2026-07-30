@@ -95,6 +95,31 @@ export function NexusDesigner() {
         </div>
       </div>
 
+      <div className="glass rounded-xl border border-border/50 p-6 space-y-3">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Sidebar rail</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">Applies to both versions on desktop.</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {([
+            { v: "hover" as const, title: "Expand on hover", desc: "Icons only until you hover the rail, then it slides open with page names." },
+            { v: "icons" as const, title: "Icons only", desc: "Keep the compact rail exactly as it is today." },
+          ]).map(o => (
+            <button
+              key={o.v}
+              onClick={() => set({ railMode: o.v })}
+              className={`text-left rounded-lg border p-4 transition-colors ${
+                draft.railMode === o.v ? "border-primary bg-primary/10" : "border-border/60 hover:bg-muted/40"
+              }`}
+            >
+              <div className="text-sm font-semibold text-foreground">{o.title}</div>
+              <div className="text-xs text-muted-foreground mt-1">{o.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+
       {draft.version === "v2" && (
         <>
           <div className="glass rounded-xl border border-border/50 p-6 space-y-4">
