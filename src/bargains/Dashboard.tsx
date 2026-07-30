@@ -124,26 +124,40 @@ export default function BDashboard() {
     return (
       <BargainsShell>
         <BirthdayPrompt />
-        <div className="max-w-5xl mx-auto -mt-2 space-y-4">
+        <div className="max-w-6xl mx-auto -mt-2 space-y-6">
           {config.showHero && (
-            <div className="rounded-2xl overflow-hidden relative min-h-[190px] flex flex-col justify-end p-5 sm:p-6" style={heroStyle}>
-              <span className="inline-flex items-center gap-1.5 self-start text-[11px] font-semibold rounded-full px-2.5 py-1 mb-2 bg-white/20 text-white backdrop-blur">
-                <Hand className="w-3 h-3" /> {greeting}, {name}
-              </span>
-              <h1 className="text-white text-[1.6rem] sm:text-[2rem] leading-[1.1] font-bold tracking-[-0.025em] max-w-2xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
-                {config.heroTitle || heroLine}
-              </h1>
+            <div className="rounded-xl border overflow-hidden relative min-h-[180px] flex flex-col justify-end p-6" style={{ ...heroStyle, borderColor: "#232326" }}>
+              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.55) 100%)" }} />
+              <div className="relative">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.09em] text-white/70 flex items-center gap-1.5 mb-1.5">
+                  <Hand className="w-3 h-3" /> {greeting}, {name}
+                </div>
+                <h1 className="text-white text-[1.75rem] sm:text-[2.1rem] leading-[1.08] font-bold tracking-[-0.03em] max-w-2xl">
+                  {config.heroTitle || heroLine}
+                </h1>
+              </div>
             </div>
           )}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
-            {config.cards.map((id) => <NexusCard key={id} id={id} data={cardData} />)}
+
+          <div>
+            <div className="flex items-baseline justify-between mb-3">
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.09em]" style={{ color: bx.textMuted }}>
+                Overview
+              </h2>
+              <span className="text-[11px]" style={{ color: bx.textMuted }}>{workspace?.name}</span>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+              {config.cards.map((id) => <NexusCard key={id} id={id} data={cardData} />)}
+            </div>
           </div>
+
           {config.cards.length === 0 && !config.showHero && (
-            <div className="rounded-2xl border px-5 py-8 text-sm text-center" style={{ ...bx.cardStyle, color: bx.textDim }}>
+            <div className="rounded-xl border px-5 py-10 text-sm text-center" style={{ background: "#131315", borderColor: "#232326", color: bx.textDim }}>
               This dashboard has no cards yet. The workspace owner can add them in Settings → Nexus UI.
             </div>
           )}
         </div>
+
 
       </BargainsShell>
     );
