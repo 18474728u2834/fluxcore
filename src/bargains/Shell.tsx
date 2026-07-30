@@ -295,63 +295,92 @@ export function BargainsShell({ children }: ShellProps) {
         }
       `}</style>
 
-      {/* Slim icon rail — desktop only */}
-      <aside className="hidden md:flex w-[60px] shrink-0 flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-        <NavLink to={navBase + "/dashboard"} className="w-9 h-9 rounded-md flex items-center justify-center mb-3 overflow-hidden" style={{ background: activeDept?.primary_color || accentColor }}>
-          {groupIcon ? <img src={groupIcon} className="w-9 h-9 object-cover" /> : <span className="text-white font-bold text-sm">{wsInitials}</span>}
-        </NavLink>
-        <nav className="flex flex-col gap-1 flex-1">
-          {navItems.map(({ to, icon: Icon, label }) => {
-            const active = pathname.startsWith(`${navBase}/${to}`);
-            return (
-              <NavLink key={to} to={`${navBase}/${to}`} title={label}
-                className="w-9 h-9 rounded-md flex items-center justify-center transition-colors"
-                style={{
-                  background: active ? "#1f1f22" : "transparent",
-                  color: active ? "#fff" : "#7a7a7e",
-                }}>
-                <Icon className="w-[18px] h-[18px]" strokeWidth={1.8} />
+      {/* Slim icon rail — desktop only. Expands with labels on hover when enabled. */}
+      {(() => {
+        const expandable = nexusConfig.railMode !== "icons";
+        const rowBase = "group/row h-9 rounded-md flex items-center transition-colors overflow-hidden";
+        const rowSize = expandable ? "w-9 group-hover/rail:w-[188px]" : "w-9";
+        const labelCls = expandable
+          ? "ml-2 text-[13px] whitespace-nowrap opacity-0 group-hover/rail:opacity-100 transition-opacity duration-150"
+          : "hidden";
+        return (
+          <aside className="hidden md:block w-[60px] shrink-0 relative z-40">
+            <div
+              className="group/rail absolute inset-y-0 left-0 w-[60px] hover:w-[212px] transition-[width] duration-200 flex flex-col items-center py-3 border-r overflow-hidden"
+              style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}
+            >
+              <NavLink to={navBase + "/dashboard"} className={`${rowBase} ${rowSize} justify-start mb-3 shrink-0`}>
+                <span className="w-9 h-9 rounded-md flex items-center justify-center overflow-hidden shrink-0" style={{ background: activeDept?.primary_color || accentColor }}>
+                  {groupIcon ? <img src={groupIcon} className="w-9 h-9 object-cover" alt="" /> : <span className="text-white font-bold text-sm">{wsInitials}</span>}
+                </span>
+                <span className={`${labelCls} font-semibold text-white`}>{workspace?.name || "Workspace"}</span>
               </NavLink>
-            );
-          })}
+              <nav className="flex flex-col gap-1 flex-1 w-full items-center overflow-y-auto overflow-x-hidden">
+                {navItems.map(({ to, icon: Icon, label }) => {
+                  const active = pathname.startsWith(`${navBase}/${to}`);
+                  return (
+                    <NavLink key={to} to={`${navBase}/${to}`} title={label}
+                      className={`${rowBase} ${rowSize} shrink-0`}
+                      style={{
+                        background: active ? "#1f1f22" : "transparent",
+                        color: active ? "#fff" : "#7a7a7e",
+                      }}>
+                      <span className="w-9 h-9 flex items-center justify-center shrink-0">
+                        <Icon className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                      </span>
+                      <span className={labelCls}>{label}</span>
+                    </NavLink>
+                  );
+                })}
 
-          {myDepartments.length > 0 && (
-            <>
-              <div className="my-2 w-6 mx-auto border-t" style={{ borderColor: "#1f1f22" }} />
-              {myDepartments.map((d) => {
-                const active = activeDeptSlug === d.slug;
-                const initials = d.name.trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join("").toUpperCase();
-                return (
-                  <NavLink
-                    key={d.id}
-                    to={`${base}/d/${d.slug}/dashboard`}
-                    title={`${d.name} department`}
-                    className="w-9 h-9 rounded-md flex items-center justify-center transition-colors text-[10px] font-bold"
-                    style={{
-                      background: active ? (d.primary_color || accentColor) : "#1a1a1c",
-                      color: active ? "#fff" : "#cfcfd1",
-                    }}
-                  >
-                    {d.icon ? <span style={{ fontSize: 14 }}>{d.icon}</span> : (initials || <Building2 className="w-4 h-4" />)}
-                  </NavLink>
-                );
-              })}
-              {activeDeptSlug && (
-                <button
-                  title="Back to workspace"
-                  onClick={() => navigate(`${base}/dashboard`)}
-                  className="w-9 h-9 rounded-md flex items-center justify-center text-[#7a7a7e] hover:bg-[#1a1a1c]"
-                >
-                  ↺
-                </button>
-              )}
-            </>
-          )}
-        </nav>
-        <NavLink to={navBase + "/settings"} className="w-9 h-9 rounded-md flex items-center justify-center hover:bg-[#1a1a1c]" style={{ color: "#7a7a7e" }}>
-          <Settings className="w-[18px] h-[18px]" strokeWidth={1.8} />
-        </NavLink>
-      </aside>
+                {myDepartments.length > 0 && (
+                  <>
+                    <div className="my-2 w-6 border-t" style={{ borderColor: "#1f1f22" }} />
+                    {myDepartments.map((d) => {
+                      const active = activeDeptSlug === d.slug;
+                      const initials = d.name.trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0,2).join("").toUpperCase();
+                      return (
+                        <NavLink
+                          key={d.id}
+                          to={`${base}/d/${d.slug}/dashboard`}
+                          title={`${d.name} department`}
+                          className={`${rowBase} ${rowSize} shrink-0`}
+                          style={{ color: active ? "#fff" : "#cfcfd1" }}
+                        >
+                          <span
+                            className="w-9 h-9 rounded-md flex items-center justify-center text-[10px] font-bold shrink-0"
+                            style={{ background: active ? (d.primary_color || accentColor) : "#1a1a1c" }}
+                          >
+                            {d.icon ? <span style={{ fontSize: 14 }}>{d.icon}</span> : (initials || <Building2 className="w-4 h-4" />)}
+                          </span>
+                          <span className={labelCls}>{d.name}</span>
+                        </NavLink>
+                      );
+                    })}
+                    {activeDeptSlug && (
+                      <button
+                        title="Back to workspace"
+                        onClick={() => navigate(`${base}/dashboard`)}
+                        className={`${rowBase} ${rowSize} shrink-0 text-[#7a7a7e] hover:bg-[#1a1a1c]`}
+                      >
+                        <span className="w-9 h-9 flex items-center justify-center shrink-0">↺</span>
+                        <span className={labelCls}>Back to workspace</span>
+                      </button>
+                    )}
+                  </>
+                )}
+              </nav>
+              <NavLink to={navBase + "/settings"} className={`${rowBase} ${rowSize} shrink-0 hover:bg-[#1a1a1c]`} style={{ color: "#7a7a7e" }}>
+                <span className="w-9 h-9 flex items-center justify-center shrink-0">
+                  <Settings className="w-[18px] h-[18px]" strokeWidth={1.8} />
+                </span>
+                <span className={labelCls}>Settings</span>
+              </NavLink>
+            </div>
+          </aside>
+        );
+      })()}
+
 
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0">
