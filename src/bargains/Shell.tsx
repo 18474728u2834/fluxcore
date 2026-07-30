@@ -55,8 +55,10 @@ const PAGE_INDEX: Array<{ label: string; to: string }> = [
 
 export function BargainsShell({ children }: ShellProps) {
   const { workspace, workspaceId, isOwner } = useWorkspace();
+  const { config: nexusConfig } = useNexusConfig(workspaceId);
   const { user, signOut } = useAuth();
   const { setVersion } = useUIVersion();
+
 
   const navigate = useNavigate();
   const { pathname } = useLocation();
