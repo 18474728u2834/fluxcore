@@ -8,6 +8,8 @@ import {
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIVersion } from "@/hooks/useUIVersion";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
+
 import { supabase } from "@/integrations/supabase/client";
 import bargainsLogo from "@/assets/bargains-logo.png";
 
