@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type NexusVersion = "v1" | "v2";
+export type NexusRailMode = "hover" | "icons";
 
 export interface NexusConfig {
   version: NexusVersion;
@@ -13,6 +14,8 @@ export interface NexusConfig {
   showHero: boolean;
   /** Optional custom hero headline in V2 */
   heroTitle: string;
+  /** Sidebar rail: expand with labels on hover, or stay icon-only */
+  railMode: NexusRailMode;
 }
 
 export const NEXUS_NAV_KEYS = [
