@@ -241,7 +241,9 @@ export function BargainsShell({ children }: ShellProps) {
       }));
       const ql = q.toLowerCase();
       PAGE_INDEX
+        .filter((p) => nexusConfig.version !== "v2" || p.to === "dashboard" || !nexusConfig.hiddenNav.includes(p.to))
         .filter((p) => p.label.toLowerCase().includes(ql))
+
         .slice(0, 4)
         .forEach((p) => hits.push({ type: "page", id: p.to, label: p.label, to: `${base}/${p.to}` }));
       setSearchHits(hits.slice(0, 12));
