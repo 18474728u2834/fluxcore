@@ -265,8 +265,15 @@ export default function SettingsPage() {
 
         {/* Right pane */}
         <div className="flex-1 min-w-0 space-y-6 max-w-2xl w-full">
+          {active === "nexus" && (
+            <>
+              <SectionHeader title="Nexus UI" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
+              <NexusDesigner />
+            </>
+          )}
           {active === "general" && (
             <>
+
               <SectionHeader title="General & Appearance" sub="Workspace identity, branding, and dashboard look." />
 
               <InviteSection />
