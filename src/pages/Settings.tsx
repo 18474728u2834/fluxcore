@@ -18,6 +18,8 @@ import { InviteSection } from "@/components/InviteSection";
 import SubdomainCard from "@/components/SubdomainCard";
 import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
+import { NexusDesigner } from "@/components/NexusDesigner";
+
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
