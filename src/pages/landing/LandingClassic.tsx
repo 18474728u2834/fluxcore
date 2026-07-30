@@ -223,8 +223,17 @@ export default function LandingClassic() {
                       </div>
                     ))}
                   </div>
+                  <div className="rounded-lg border p-2.5 space-y-1.5" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
+                    <div className="flex items-center justify-between">
+                      <div className="text-[8px] text-white/50 uppercase tracking-wider">Weekly quota</div>
+                      <div className="text-[8px] font-mono text-primary">78%</div>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                      <div className="h-full w-[78%] rounded-full bg-gradient-to-r from-primary to-violet-400" />
+                    </div>
+                  </div>
                   <div className="space-y-1.5">
-                    {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h in-game"]].map(([n, a]) => (
+                    {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h in-game"], ["aven", "Session hosted · 24 attended"], ["noel", "LOA approved · 3 days"]].map(([n, a]) => (
                       <div key={n} className="flex items-center gap-2 rounded-lg border px-2.5 py-2" style={{ background: "#1a1a1c", borderColor: "#26262a" }}>
                         <div className="w-6 h-6 rounded-md bg-gradient-to-br from-primary/60 to-violet-500/60 shrink-0" />
                         <div className="min-w-0">
@@ -235,6 +244,7 @@ export default function LandingClassic() {
                     ))}
                   </div>
                 </div>
+
                 {/* Bottom tab bar */}
                 <div className="flex items-center justify-around border-t py-2" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
                   {[LayoutDashboard, Users, Clock, CalendarDays, Settings].map((Icon, i) => (
