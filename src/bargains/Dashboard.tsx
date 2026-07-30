@@ -91,27 +91,56 @@ export default function BDashboard() {
       .catch(() => {});
   }, [(workspace as any)?.game_url]);
 
+  const heroImg = (workspace as any)?.nexus_hero_image_url as string | undefined;
+  const heroStyle: React.CSSProperties = heroImg
+    ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : { background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" };
+
+  const Hero = ({ title }: { title?: string }) => (
+    <div className="rounded-md overflow-hidden relative h-[280px] flex flex-col justify-end p-8" style={heroStyle}>
+      <div className="text-xs font-semibold uppercase tracking-wider text-white/80 flex items-center gap-1.5 mb-2">
+        <Hand className="w-3.5 h-3.5" /> {greeting}, {name}
+      </div>
+      <h1 className="text-white text-[2.5rem] leading-[1.05] font-bold tracking-[-0.025em] max-w-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
+        {title || heroLine}
+      </h1>
+    </div>
+  );
+
+  // ---- Nexus UI 2.0: owner-designed dashboard -------------------------------
+  if (config.version === "v2") {
+    const cardData: CardData = {
+      birthdays, newMembers, gameThumb,
+      gameUrl: (workspace as any)?.game_url ?? null,
+      workspaceName: workspace?.name,
+      workspaceId: workspaceId || "",
+      base: `/w/${workspaceId}`,
+    };
+    return (
+      <BargainsShell>
+        <BirthdayPrompt />
+        <div className="max-w-7xl mx-auto -mt-2 space-y-5">
+          {config.showHero && <Hero title={config.heroTitle || undefined} />}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
+            {config.cards.map((id) => <NexusCard key={id} id={id} data={cardData} />)}
+          </div>
+          {config.cards.length === 0 && !config.showHero && (
+            <div className="rounded-md border px-5 py-8 text-sm" style={{ ...bx.cardStyle, color: bx.textDim }}>
+              This dashboard has no cards yet. The workspace owner can add them in Settings → Nexus UI.
+            </div>
+          )}
+        </div>
+      </BargainsShell>
+    );
+  }
+
   return (
     <BargainsShell>
       <BirthdayPrompt />
       <div className="max-w-7xl mx-auto -mt-2">
-        {/* Hero banner — uses custom image if owner uploaded one, otherwise default blue gradient */}
-        {(() => {
-          const heroImg = (workspace as any)?.nexus_hero_image_url as string | undefined;
-          const heroStyle: React.CSSProperties = heroImg
-            ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center" }
-            : { background: "linear-gradient(135deg, #6ea8ff 0%, #88b8ff 40%, #b6d2ff 100%)" };
-          return (
-            <div className="rounded-md overflow-hidden relative h-[280px] flex flex-col justify-end p-8" style={heroStyle}>
-              <div className="text-xs font-semibold uppercase tracking-wider text-white/80 flex items-center gap-1.5 mb-2">
-                <Hand className="w-3.5 h-3.5" /> {greeting}, {name}
-              </div>
-              <h1 className="text-white text-[2.5rem] leading-[1.05] font-bold tracking-[-0.025em] max-w-3xl drop-shadow-[0_2px_8px_rgba(0,0,0,0.25)]">
-                {heroLine}
-              </h1>
-            </div>
-          );
-        })()}
+        <Hero />
+
+
 
 
         {/* Quick play tiles */}
