@@ -17,10 +17,13 @@ export interface CardData {
 
 function Panel({ title, icon: Icon, action, children }: { title: string; icon: any; action?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <section className="rounded-md border p-5" style={bx.cardStyle}>
+    <section className="rounded-2xl border p-4 sm:p-5 transition-colors" style={bx.cardStyle}>
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold flex items-center gap-1.5" style={{ color: bx.text }}>
-          <Icon className="w-3.5 h-3.5" /> {title}
+        <h3 className="text-[13px] font-semibold flex items-center gap-2" style={{ color: bx.text }}>
+          <span className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#232326" }}>
+            <Icon className="w-3.5 h-3.5" style={{ color: bx.textDim }} />
+          </span>
+          {title}
         </h3>
         {action}
       </div>
@@ -30,12 +33,31 @@ function Panel({ title, icon: Icon, action, children }: { title: string; icon: a
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="text-sm py-3" style={{ color: bx.textDim }}>{children}</div>;
+  return (
+    <div className="rounded-xl px-4 py-5 text-[13px] text-center" style={{ background: "#141416", color: bx.textDim }}>
+      {children}
+    </div>
+  );
+}
+
+/** Tappable, mobile-style list row */
+function Row({ children, to }: { children: React.ReactNode; to?: string }) {
+  const cls = "flex items-center gap-3 rounded-xl px-3 py-2.5 min-h-[52px] transition-colors active:scale-[0.99]";
+  const style = { background: "#141416" } as React.CSSProperties;
+  return to
+    ? <Link to={to} className={cls + " hover:brightness-125"} style={style}>{children}</Link>
+    : <div className={cls} style={style}>{children}</div>;
 }
 
 function LinkAction({ to, label }: { to: string; label: string }) {
-  return <Link to={to} className="text-[11px] font-medium" style={{ color: bx.textDim }}>{label}</Link>;
+  return (
+    <Link to={to} className="text-[11px] font-medium rounded-full px-2.5 py-1"
+      style={{ color: bx.textDim, background: "#232326" }}>
+      {label}
+    </Link>
+  );
 }
+
 
 export function NexusCard({ id, data }: { id: string; data: CardData }) {
   switch (id) {
