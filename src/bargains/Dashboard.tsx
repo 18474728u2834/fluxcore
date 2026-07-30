@@ -24,7 +24,9 @@ const HERO_LINES = (n: string) => [
 
 export default function BDashboard() {
   const { workspaceId, workspace } = useWorkspace();
+  const { config } = useNexusConfig(workspaceId);
   const { robloxUsername } = useAuth();
+
   const name = robloxUsername || "friend";
 
   const [greeting] = useState(() => GREETINGS[Math.floor(Math.random() * GREETINGS.length)]);
