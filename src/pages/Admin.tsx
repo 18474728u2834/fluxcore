@@ -119,6 +119,7 @@ export default function Admin() {
             {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
             {has("view_security_scans") && <TabsTrigger value="security">Security Scans</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
+            <TabsTrigger value="session_board">Session Board</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
