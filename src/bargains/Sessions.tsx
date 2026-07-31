@@ -26,6 +26,12 @@ interface Session {
   game_url: string | null;
   slots: SessionSlot[] | null;
   occurrence_assignments: Record<string, (string | null)[][]> | null;
+  route_number: string | null;
+  aircraft_model: string | null;
+  tail_number: string | null;
+  origin: string | null;
+  destination: string | null;
+
 }
 
 const DAY_KEYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
