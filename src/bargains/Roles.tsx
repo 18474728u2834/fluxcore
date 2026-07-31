@@ -255,6 +255,6 @@ export default function BRoles({ embedded = false }: { embedded?: boolean } = {}
           </div>
         )}
       </div>
-    </BargainsShell>
+    </Wrap>
   );
 }
