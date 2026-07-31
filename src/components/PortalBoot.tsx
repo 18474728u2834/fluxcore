@@ -20,23 +20,39 @@ function randomId(len: number) {
 
 interface PortalBootProps {
   label?: string;
+  /** Loop the sequence forever, regenerating ids on each replay (test mode). */
+  replay?: boolean;
 }
 
 /**
  * Fake "booting up" screen shown while a partner portal resolves.
  * Purely cosmetic — the atom / node ids are generated client-side.
  */
-export default function PortalBoot({ label }: PortalBootProps) {
+export default function PortalBoot({ label, replay = false }: PortalBootProps) {
   const [stage, setStage] = useState(0);
-  const atomId = useMemo(() => `${randomId(8)}-${randomId(4)}-${randomId(4)}-${randomId(12)}`, []);
-  const node = useMemo(() => `eu-fra-${Math.floor(Math.random() * 9) + 1}`, []);
+  const [cycle, setCycle] = useState(0);
+  const atomId = useMemo(
+    () => `${randomId(8)}-${randomId(4)}-${randomId(4)}-${randomId(12)}`,
+    [cycle]
+  );
+  const node = useMemo(() => `eu-fra-${Math.floor(Math.random() * 9) + 1}`, [cycle]);
+  const rev = useMemo(() => randomId(6), [cycle]);
+  const build = useMemo(() => randomId(4), [cycle]);
 
   useEffect(() => {
     const t = window.setInterval(() => {
-      setStage((s) => (s < STAGES.length - 1 ? s + 1 : s));
+      setStage((s) => {
+        if (s < STAGES.length - 1) return s + 1;
+        if (replay) {
+          setCycle((c) => c + 1);
+          return 0;
+        }
+        return s;
+      });
     }, 1200);
     return () => window.clearInterval(t);
-  }, []);
+  }, [replay]);
+
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black flex flex-col items-center justify-center">
