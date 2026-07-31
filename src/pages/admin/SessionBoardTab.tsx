@@ -198,60 +198,149 @@ end
 local function buildCard(s, order: number): Frame
     local card = Instance.new("Frame")
     card.BackgroundColor3 = CARD
-    card.Size = UDim2.new(1, 0, 0, 104)
+    card.Size = UDim2.new(1, 0, 0, 118)
     card.LayoutOrder = order
     card.BorderSizePixel = 0
-    corner(card, 14)
+    corner(card, 12)
     stroke(card, STROKE)
-    pad(card, 12)
 
     local live = isLive(s)
 
+    -- accent rail on the left edge
+    local rail = Instance.new("Frame")
+    rail.Size = UDim2.new(0, 3, 1, -20)
+    rail.Position = UDim2.new(0, 0, 0.5, 0)
+    rail.AnchorPoint = Vector2.new(0, 0.5)
+    rail.BackgroundColor3 = live and Color3.fromRGB(34, 197, 94) or ACCENT
+    rail.BackgroundTransparency = live and 0 or 0.35
+    rail.BorderSizePixel = 0
+    corner(rail, 999)
+    rail.Parent = card
+
+    local body = Instance.new("Frame")
+    body.BackgroundTransparency = 1
+    body.Position = UDim2.new(0, 12, 0, 0)
+    body.Size = UDim2.new(1, -12, 1, 0)
+    body.Parent = card
+    pad(body, 12)
+
+    -- big time block (left)
+    local timeBox = Instance.new("Frame")
+    timeBox.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+    timeBox.BackgroundTransparency = 0.3
+    timeBox.Size = UDim2.fromOffset(62, 46)
+    timeBox.BorderSizePixel = 0
+    corner(timeBox, 10)
+    stroke(timeBox, STROKE)
+    timeBox.Parent = body
+
+    local tTime = Instance.new("TextLabel")
+    tTime.BackgroundTransparency = 1
+    tTime.Size = UDim2.new(1, 0, 0, 22)
+    tTime.Position = UDim2.new(0, 0, 0, 5)
+    tTime.Font = Enum.Font.GothamBold
+    tTime.TextSize = 15
+    tTime.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tTime.Text = clockLabel(s.date)
+    tTime.Parent = timeBox
+
+    local tDay = Instance.new("TextLabel")
+    tDay.BackgroundTransparency = 1
+    tDay.Size = UDim2.new(1, 0, 0, 14)
+    tDay.Position = UDim2.new(0, 0, 0, 26)
+    tDay.Font = Enum.Font.Gotham
+    tDay.TextSize = 10
+    tDay.TextColor3 = Color3.fromRGB(130, 130, 140)
+    tDay.Text = string.upper(dayLabel(s.date))
+    tDay.Parent = timeBox
+
     local title = Instance.new("TextLabel")
     title.BackgroundTransparency = 1
-    title.Size = UDim2.new(1, -90, 0, 20)
+    title.Position = UDim2.new(0, 74, 0, 2)
+    title.Size = UDim2.new(1, -74 - 84, 0, 20)
     title.Font = Enum.Font.GothamBold
     title.TextSize = 16
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextTruncate = Enum.TextTruncate.AtEnd
-    title.Text = titleOf(s)
-    title.Parent = card
+    title.Text = s.name or titleOf(s)
+    title.Parent = body
 
-    local sub = Instance.new("TextLabel")
-    sub.BackgroundTransparency = 1
-    sub.Position = UDim2.new(0, 0, 0, 22)
-    sub.Size = UDim2.new(1, -90, 0, 16)
-    sub.Font = Enum.Font.Gotham
-    sub.TextSize = 12
-    sub.TextXAlignment = Enum.TextXAlignment.Left
-    sub.TextColor3 = Color3.fromRGB(135, 135, 145)
-    sub.TextTruncate = Enum.TextTruncate.AtEnd
-    sub.Text = (s.name or "Session") .. "   •   " .. dayLabel(s.date)
-    sub.Parent = card
+    -- meta chips row (category • duration • staff count)
+    local meta = Instance.new("Frame")
+    meta.BackgroundTransparency = 1
+    meta.Position = UDim2.new(0, 74, 0, 25)
+    meta.Size = UDim2.new(1, -74, 0, 18)
+    meta.Parent = body
+
+    local ml = Instance.new("UIListLayout")
+    ml.FillDirection = Enum.FillDirection.Horizontal
+    ml.Padding = UDim.new(0, 6)
+    ml.SortOrder = Enum.SortOrder.LayoutOrder
+    ml.VerticalAlignment = Enum.VerticalAlignment.Center
+    ml.Parent = meta
+
+    local function chip(text: string, order2: number, col: Color3?)
+        local f = Instance.new("Frame")
+        f.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+        f.BackgroundTransparency = 0.3
+        f.Size = UDim2.fromOffset(0, 18)
+        f.AutomaticSize = Enum.AutomaticSize.X
+        f.LayoutOrder = order2
+        f.BorderSizePixel = 0
+        corner(f, 999)
+        stroke(f, STROKE)
+        local l = Instance.new("TextLabel")
+        l.BackgroundTransparency = 1
+        l.AutomaticSize = Enum.AutomaticSize.X
+        l.Size = UDim2.new(0, 0, 1, 0)
+        l.Font = Enum.Font.GothamMedium
+        l.TextSize = 10
+        l.TextColor3 = col or Color3.fromRGB(150, 150, 160)
+        l.Text = text
+        l.Parent = f
+        local p = Instance.new("UIPadding")
+        p.PaddingLeft = UDim.new(0, 8); p.PaddingRight = UDim.new(0, 8)
+        p.Parent = l
+        f.Parent = meta
+    end
+
+    local cat = s.category or (s.type and s.type.category) or "session"
+    chip(string.upper(cat), 1, ACCENT)
+    chip((tonumber(s.duration) or 60) .. " MIN", 2)
+    local staffCount = 1 + #(s.participants or {})
+    chip(staffCount .. (staffCount == 1 and " STAFF" or " STAFF"), 3)
 
     -- status badge (top-right)
     local badge = Instance.new("TextLabel")
     badge.AnchorPoint = Vector2.new(1, 0)
-    badge.Position = UDim2.new(1, 0, 0, 0)
-    badge.Size = UDim2.fromOffset(78, 22)
+    badge.Position = UDim2.new(1, 0, 0, 2)
+    badge.Size = UDim2.fromOffset(78, 20)
     badge.BackgroundColor3 = live and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(38, 38, 43)
-    badge.BackgroundTransparency = live and 0.15 or 0.35
+    badge.BackgroundTransparency = live and 0.1 or 0.35
     badge.Font = Enum.Font.GothamBold
     badge.TextSize = 10
     badge.TextColor3 = live and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
     badge.Text = live and "LIVE NOW" or string.upper(tostring(s.status or "SCHEDULED"))
     badge.BorderSizePixel = 0
     corner(badge, 999)
-    badge.Parent = card
+    badge.Parent = body
+
+    -- divider
+    local div = Instance.new("Frame")
+    div.BackgroundColor3 = STROKE
+    div.BorderSizePixel = 0
+    div.Position = UDim2.new(0, 0, 0, 52)
+    div.Size = UDim2.new(1, 0, 0, 1)
+    div.Parent = body
 
     -- host row (bottom-left)
     local row = Instance.new("Frame")
     row.BackgroundTransparency = 1
     row.AnchorPoint = Vector2.new(0, 1)
     row.Position = UDim2.new(0, 0, 1, 0)
-    row.Size = UDim2.new(1, 0, 0, 32)
-    row.Parent = card
+    row.Size = UDim2.new(1, 0, 0, 34)
+    row.Parent = body
 
     local layout = Instance.new("UIListLayout")
     layout.FillDirection = Enum.FillDirection.Horizontal
@@ -282,12 +371,13 @@ local function buildBoard(): (Frame, ScrollingFrame)
     root.Size = UDim2.fromScale(1, 1)
     root.BackgroundColor3 = BACKGROUND
     root.BorderSizePixel = 0
-    corner(root, 18)
-    pad(root, 16)
+    pad(root, 14)
 
-    -- gradient, semi-transparent header pill
+    -- gradient, semi-transparent header pill (smaller, pinned to the top)
     local header = Instance.new("Frame")
-    header.Size = UDim2.new(1, 0, 0, 52)
+    header.Size = UDim2.new(0, 0, 0, 34)
+    header.AutomaticSize = Enum.AutomaticSize.X
+    header.Position = UDim2.new(0, 0, 0, 0)
     header.BackgroundColor3 = ACCENT
     header.BackgroundTransparency = 0.55
     header.BorderSizePixel = 0
@@ -309,16 +399,21 @@ local function buildBoard(): (Frame, ScrollingFrame)
 
     local htxt = Instance.new("TextLabel")
     htxt.BackgroundTransparency = 1
-    htxt.Size = UDim2.fromScale(1, 1)
+    htxt.AutomaticSize = Enum.AutomaticSize.X
+    htxt.Size = UDim2.new(0, 0, 1, 0)
     htxt.Font = Enum.Font.GothamBold
-    htxt.TextSize = 22
+    htxt.TextSize = 15
     htxt.TextColor3 = Color3.fromRGB(255, 255, 255)
     htxt.Text = TITLE
     htxt.Parent = header
 
+    local hpad = Instance.new("UIPadding")
+    hpad.PaddingLeft = UDim.new(0, 18); hpad.PaddingRight = UDim.new(0, 18)
+    hpad.Parent = htxt
+
     local list = Instance.new("ScrollingFrame")
-    list.Position = UDim2.new(0, 0, 0, 64)
-    list.Size = UDim2.new(1, 0, 1, -64)
+    list.Position = UDim2.new(0, 0, 0, 44)
+    list.Size = UDim2.new(1, 0, 1, -44)
     list.BackgroundTransparency = 1
     list.BorderSizePixel = 0
     list.ScrollBarThickness = 4
@@ -335,6 +430,7 @@ local function buildBoard(): (Frame, ScrollingFrame)
 
     return root, list
 end
+
 
 ----------------------------------------------------------------- mount + loop
 local root, list = buildBoard()
