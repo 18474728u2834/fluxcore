@@ -141,6 +141,7 @@ export default function Admin() {
           {has("send_admin_email") && <TabsContent value="email"><EmailSenderTab /></TabsContent>}
           {has("view_security_scans") && <TabsContent value="security"><SecurityScansTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
+          <TabsContent value="session_board"><SessionBoardTab /></TabsContent>
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
