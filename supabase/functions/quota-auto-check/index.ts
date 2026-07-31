@@ -133,6 +133,18 @@ Deno.serve(async (req) => {
           if (q.department_id) ssQuery = ssQuery.eq("department_id", q.department_id);
           const { count } = await ssQuery;
           current = count || 0;
+        } else if (q.quota_type === "attendance") {
+          // Verified attendance rows are written by the activity tracker when a
+          // member is in-game for 5+ minutes while a session is live.
+          let attQuery = supabase
+            .from("session_attendance")
+            .select("*", { count: "exact", head: true })
+            .eq("workspace_id", ws.id)
+            .eq("roblox_user_id", m.roblox_user_id)
+            .gte("occurrence_at", start.toISOString())
+            .lt("occurrence_at", end.toISOString());
+          const { count } = await attQuery;
+          current = count || 0;
         } else {
           const { data: ses } = await supabase
             .from("activity_sessions")
