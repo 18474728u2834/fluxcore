@@ -19,15 +19,17 @@ import SubdomainCard from "@/components/SubdomainCard";
 import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { NexusDesigner } from "@/components/NexusDesigner";
+import BRoles from "@/bargains/Roles";
 
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-type SectionId = "general" | "nexus" | "integrations" | "tracking" | "sessions";
+type SectionId = "general" | "nexus" | "roles" | "integrations" | "tracking" | "sessions";
 
 const SECTIONS: { id: SectionId; label: string; icon: any; desc: string }[] = [
   { id: "general",      label: "General & Appearance", icon: Sliders, desc: "Workspace identity, branding, dashboard look" },
-  { id: "nexus",        label: "Nexus UI",             icon: Palette, desc: "Choose V1 or design your own V2 layout" },
+  { id: "nexus",        label: "Theme",                icon: Palette, desc: "Choose V1 or design your own V2 layout" },
+  { id: "roles",        label: "Roles & Permissions",  icon: ShieldCheck, desc: "Custom roles, permissions, Roblox rank import" },
   { id: "integrations", label: "Integrations",          icon: Plug,    desc: "Discord webhooks, Roblox Open Cloud" },
   { id: "tracking",     label: "Tracking & Scripts",    icon: Code,    desc: "Activity tracker, API key, in-game features" },
   { id: "sessions",     label: "Sessions & Quotas",     icon: CalendarDays, desc: "Role labels, leaderboards, quota logging" },
@@ -266,13 +268,20 @@ export default function SettingsPage() {
         </aside>
 
         {/* Right pane */}
-        <div className="flex-1 min-w-0 space-y-6 max-w-2xl w-full">
+        <div className={cn("flex-1 min-w-0 space-y-6 w-full", active === "roles" ? "max-w-5xl" : "max-w-2xl")}>
           {active === "nexus" && (
             <>
-              <SectionHeader title="Nexus UI" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
+              <SectionHeader title="Theme" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
               <NexusDesigner />
             </>
           )}
+          {active === "roles" && (
+            <>
+              <SectionHeader title="Roles & Permissions" sub="Create roles, set permissions and import Roblox group ranks." />
+              <BRoles embedded />
+            </>
+          )}
+
           {active === "general" && (
             <>
 
@@ -709,7 +718,7 @@ export default function SettingsPage() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
                 </Link>
-                <Link to="../roles" relative="path" className="glass rounded-xl p-4 flex items-center justify-between hover:bg-muted/40 transition-colors group">
+                <button type="button" onClick={() => setSection("roles")} className="glass rounded-xl p-4 flex items-center justify-between hover:bg-muted/40 transition-colors group text-left">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
                       <ShieldCheck className="w-4 h-4 text-primary" />
@@ -720,7 +729,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-                </Link>
+                </button>
               </div>
             </>
           )}

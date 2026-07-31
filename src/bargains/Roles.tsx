@@ -39,7 +39,7 @@ function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
   );
 }
 
-export default function BRoles() {
+export default function BRoles({ embedded = false }: { embedded?: boolean } = {} as any) {
   const { workspaceId, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
   const canEditRoles = isOwner || hasPermission("edit_roles");
@@ -132,23 +132,26 @@ export default function BRoles() {
     toast.success(next ? "Auto-add members enabled" : "Auto-add disabled");
   };
 
+  const Wrap = ({ children }: { children: React.ReactNode }) =>
+    embedded ? <>{children}</> : <BargainsShell>{children}</BargainsShell>;
+
   if (!canEditRoles) {
     return (
-      <BargainsShell>
+      <Wrap>
         <div className="max-w-md mx-auto mt-20 rounded-md border p-8 text-center" style={bx.cardStyle}>
           <Shield className="w-8 h-8 mx-auto mb-3" style={{ color: bx.textMuted }} />
           <p className="text-sm" style={{ color: bx.textDim }}>You need the Edit Roles permission to manage roles.</p>
         </div>
-      </BargainsShell>
+      </Wrap>
     );
   }
 
   return (
-    <BargainsShell>
+    <Wrap>
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-5">
-          <h1 className="text-[2rem] font-bold tracking-[-0.03em] leading-none" style={{ color: bx.text }}>Roles</h1>
-          <div className="flex items-center gap-3">
+          {!embedded && <h1 className="text-[2rem] font-bold tracking-[-0.03em] leading-none" style={{ color: bx.text }}>Roles</h1>}
+          <div className="flex items-center gap-3 ml-auto">
             <label className="flex items-center gap-2 text-xs" style={{ color: bx.textDim }}>
               <PermSwitch on={autoSync} onChange={toggleAutoSync} />
               Auto-add new members every minute
@@ -252,6 +255,6 @@ export default function BRoles() {
           </div>
         )}
       </div>
-    </BargainsShell>
+    </Wrap>
   );
 }
