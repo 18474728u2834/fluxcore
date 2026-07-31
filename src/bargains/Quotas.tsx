@@ -115,6 +115,8 @@ export default function BQuotas() {
         role: m.role,
         minutes: minutesMap.get(m.roblox_user_id) || 0,
         sessionsHosted: hostedMap.get(m.user_id) || 0,
+        sessionsAttended: attendedMap.get(m.roblox_user_id) || 0,
+
         warnings: 0,
         messages: 0,
         lastSeen: lastSeen.get(m.roblox_user_id) || null,
