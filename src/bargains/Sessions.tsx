@@ -349,7 +349,7 @@ export default function BSessions() {
                       {sessionSlots.map((sl, slIdx) => (
                         <div key={slIdx}>
                           <div className="text-[10px] uppercase tracking-wider font-semibold mb-1.5" style={{ color: bx.textMuted }}>
-                            {t(sl.label)}
+                            {sl.label}
                           </div>
                           <div className="space-y-1.5">
                             {sl.assigned.map((name, seatIdx) => {

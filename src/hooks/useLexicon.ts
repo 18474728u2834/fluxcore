@@ -28,11 +28,8 @@ export const AVIATION_TERMS: Record<string, string> = {
   Meeting: "Briefing",
   Meetings: "Briefings",
 
-  // Roles / slots
-  Host: "Captain",
-  "Co-host": "First Officer",
-  Trainer: "Instructor",
-  "Co-trainer": "Second Instructor",
+  // NOTE: Slot/role names (Host, Co-host, Trainer, ...) are intentionally NOT
+  // translated — they come from what the owner types when creating a session.
 
   // Quotas
   "Sessions hosted": "Flights operated",
