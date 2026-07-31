@@ -1,0 +1,2 @@
+select cron.unschedule('quota-auto-check-daily');
+select cron.schedule('quota-auto-check-daily', '0 9 * * *', $$select public.cron_invoke_edge('quota-auto-check', jsonb_build_object('scheduled_at', now()));$$);
