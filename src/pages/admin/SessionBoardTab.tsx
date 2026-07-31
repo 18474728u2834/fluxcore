@@ -161,18 +161,16 @@ end
 
 local function avatarChip(parent: Instance, order: number, role: string, name: string, userId): Frame
     local chip = Instance.new("Frame")
-    chip.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-    chip.BackgroundTransparency = 0.25
-    chip.Size = UDim2.new(0, 148, 1, 0)
+    chip.BackgroundTransparency = 1
+    chip.AutomaticSize = Enum.AutomaticSize.X
+    chip.Size = UDim2.new(0, 0, 1, 0)
     chip.LayoutOrder = order
     chip.BorderSizePixel = 0
-    corner(chip, 999)
-    stroke(chip, STROKE)
 
     local img = Instance.new("ImageLabel")
     img.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
-    img.Size = UDim2.fromOffset(26, 26)
-    img.Position = UDim2.new(0, 3, 0.5, 0)
+    img.Size = UDim2.fromOffset(20, 20)
+    img.Position = UDim2.new(0, 0, 0.5, 0)
     img.AnchorPoint = Vector2.new(0, 0.5)
     img.Image = headshot(userId)
     img.BorderSizePixel = 0
@@ -181,15 +179,24 @@ local function avatarChip(parent: Instance, order: number, role: string, name: s
 
     local lbl = Instance.new("TextLabel")
     lbl.BackgroundTransparency = 1
-    lbl.Position = UDim2.new(0, 35, 0, 0)
-    lbl.Size = UDim2.new(1, -42, 1, 0)
+    lbl.AutomaticSize = Enum.AutomaticSize.X
+    lbl.Position = UDim2.new(0, 26, 0, 0)
+    lbl.Size = UDim2.new(0, 0, 1, 0)
     lbl.Font = Enum.Font.GothamMedium
     lbl.TextXAlignment = Enum.TextXAlignment.Left
     lbl.TextSize = 11
-    lbl.TextColor3 = Color3.fromRGB(215, 215, 220)
-    lbl.TextTruncate = Enum.TextTruncate.AtEnd
-    lbl.Text = role .. "  " .. (name or "—")
+    lbl.TextColor3 = Color3.fromRGB(200, 200, 208)
+    lbl.Text = name or "—"
     lbl.Parent = chip
+
+    local rl = Instance.new("TextLabel")
+    rl.BackgroundTransparency = 1
+    rl.AutomaticSize = Enum.AutomaticSize.X
+    rl.Position = UDim2.new(0, 26, 0, 0)
+    rl.Size = UDim2.new(0, 0, 1, 0)
+    rl.Visible = false
+    rl.Text = role
+    rl.Parent = chip
 
     chip.Parent = parent
     return chip
@@ -198,153 +205,89 @@ end
 local function buildCard(s, order: number): Frame
     local card = Instance.new("Frame")
     card.BackgroundColor3 = CARD
-    card.Size = UDim2.new(1, 0, 0, 118)
+    card.Size = UDim2.new(1, 0, 0, 74)
     card.LayoutOrder = order
     card.BorderSizePixel = 0
-    corner(card, 12)
+    corner(card, 10)
     stroke(card, STROKE)
+    pad(card, 10)
 
     local live = isLive(s)
 
-    -- accent rail on the left edge
-    local rail = Instance.new("Frame")
-    rail.Size = UDim2.new(0, 3, 1, -20)
-    rail.Position = UDim2.new(0, 0, 0.5, 0)
-    rail.AnchorPoint = Vector2.new(0, 0.5)
-    rail.BackgroundColor3 = live and Color3.fromRGB(34, 197, 94) or ACCENT
-    rail.BackgroundTransparency = live and 0 or 0.35
-    rail.BorderSizePixel = 0
-    corner(rail, 999)
-    rail.Parent = card
+    -- time column
+    local time = Instance.new("TextLabel")
+    time.BackgroundTransparency = 1
+    time.Size = UDim2.fromOffset(56, 18)
+    time.Font = Enum.Font.GothamBold
+    time.TextSize = 14
+    time.TextXAlignment = Enum.TextXAlignment.Left
+    time.TextColor3 = live and Color3.fromRGB(74, 222, 128) or Color3.fromRGB(255, 255, 255)
+    time.Text = clockLabel(s.date)
+    time.Parent = card
 
-    local body = Instance.new("Frame")
-    body.BackgroundTransparency = 1
-    body.Position = UDim2.new(0, 12, 0, 0)
-    body.Size = UDim2.new(1, -12, 1, 0)
-    body.Parent = card
-    pad(body, 12)
+    local day = Instance.new("TextLabel")
+    day.BackgroundTransparency = 1
+    day.Position = UDim2.new(0, 0, 0, 18)
+    day.Size = UDim2.fromOffset(56, 14)
+    day.Font = Enum.Font.Gotham
+    day.TextSize = 10
+    day.TextXAlignment = Enum.TextXAlignment.Left
+    day.TextColor3 = Color3.fromRGB(120, 120, 130)
+    day.Text = string.upper(dayLabel(s.date))
+    day.Parent = card
 
-    -- big time block (left)
-    local timeBox = Instance.new("Frame")
-    timeBox.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-    timeBox.BackgroundTransparency = 0.3
-    timeBox.Size = UDim2.fromOffset(62, 46)
-    timeBox.BorderSizePixel = 0
-    corner(timeBox, 10)
-    stroke(timeBox, STROKE)
-    timeBox.Parent = body
-
-    local tTime = Instance.new("TextLabel")
-    tTime.BackgroundTransparency = 1
-    tTime.Size = UDim2.new(1, 0, 0, 22)
-    tTime.Position = UDim2.new(0, 0, 0, 5)
-    tTime.Font = Enum.Font.GothamBold
-    tTime.TextSize = 15
-    tTime.TextColor3 = Color3.fromRGB(255, 255, 255)
-    tTime.Text = clockLabel(s.date)
-    tTime.Parent = timeBox
-
-    local tDay = Instance.new("TextLabel")
-    tDay.BackgroundTransparency = 1
-    tDay.Size = UDim2.new(1, 0, 0, 14)
-    tDay.Position = UDim2.new(0, 0, 0, 26)
-    tDay.Font = Enum.Font.Gotham
-    tDay.TextSize = 10
-    tDay.TextColor3 = Color3.fromRGB(130, 130, 140)
-    tDay.Text = string.upper(dayLabel(s.date))
-    tDay.Parent = timeBox
-
+    -- title + category
+    local cat = tostring(s.category or (s.type and s.type.category) or "session")
     local title = Instance.new("TextLabel")
     title.BackgroundTransparency = 1
-    title.Position = UDim2.new(0, 74, 0, 2)
-    title.Size = UDim2.new(1, -74 - 84, 0, 20)
+    title.Position = UDim2.new(0, 64, 0, 0)
+    title.Size = UDim2.new(1, -64 - 66, 0, 18)
     title.Font = Enum.Font.GothamBold
-    title.TextSize = 16
+    title.TextSize = 14
     title.TextXAlignment = Enum.TextXAlignment.Left
     title.TextColor3 = Color3.fromRGB(255, 255, 255)
     title.TextTruncate = Enum.TextTruncate.AtEnd
-    title.Text = s.name or titleOf(s)
-    title.Parent = body
+    title.Text = s.name or (string.upper(string.sub(cat, 1, 1)) .. string.sub(cat, 2))
+    title.Parent = card
 
-    -- meta chips row (category • duration • staff count)
-    local meta = Instance.new("Frame")
-    meta.BackgroundTransparency = 1
-    meta.Position = UDim2.new(0, 74, 0, 25)
-    meta.Size = UDim2.new(1, -74, 0, 18)
-    meta.Parent = body
+    local sub = Instance.new("TextLabel")
+    sub.BackgroundTransparency = 1
+    sub.Position = UDim2.new(0, 64, 0, 18)
+    sub.Size = UDim2.new(1, -64 - 66, 0, 14)
+    sub.Font = Enum.Font.Gotham
+    sub.TextSize = 10
+    sub.TextXAlignment = Enum.TextXAlignment.Left
+    sub.TextColor3 = ACCENT
+    sub.TextTruncate = Enum.TextTruncate.AtEnd
+    sub.Text = string.upper(cat)
+    sub.Parent = card
 
-    local ml = Instance.new("UIListLayout")
-    ml.FillDirection = Enum.FillDirection.Horizontal
-    ml.Padding = UDim.new(0, 6)
-    ml.SortOrder = Enum.SortOrder.LayoutOrder
-    ml.VerticalAlignment = Enum.VerticalAlignment.Center
-    ml.Parent = meta
-
-    local function chip(text: string, order2: number, col: Color3?)
-        local f = Instance.new("Frame")
-        f.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-        f.BackgroundTransparency = 0.3
-        f.Size = UDim2.fromOffset(0, 18)
-        f.AutomaticSize = Enum.AutomaticSize.X
-        f.LayoutOrder = order2
-        f.BorderSizePixel = 0
-        corner(f, 999)
-        stroke(f, STROKE)
-        local l = Instance.new("TextLabel")
-        l.BackgroundTransparency = 1
-        l.AutomaticSize = Enum.AutomaticSize.X
-        l.Size = UDim2.new(0, 0, 1, 0)
-        l.Font = Enum.Font.GothamMedium
-        l.TextSize = 10
-        l.TextColor3 = col or Color3.fromRGB(150, 150, 160)
-        l.Text = text
-        l.Parent = f
-        local p = Instance.new("UIPadding")
-        p.PaddingLeft = UDim.new(0, 8); p.PaddingRight = UDim.new(0, 8)
-        p.Parent = l
-        f.Parent = meta
-    end
-
-    local cat = s.category or (s.type and s.type.category) or "session"
-    chip(string.upper(cat), 1, ACCENT)
-    chip((tonumber(s.duration) or 60) .. " MIN", 2)
-    local staffCount = 1 + #(s.participants or {})
-    chip(staffCount .. (staffCount == 1 and " STAFF" or " STAFF"), 3)
-
-    -- status badge (top-right)
+    -- status badge
     local badge = Instance.new("TextLabel")
     badge.AnchorPoint = Vector2.new(1, 0)
-    badge.Position = UDim2.new(1, 0, 0, 2)
-    badge.Size = UDim2.fromOffset(78, 20)
+    badge.Position = UDim2.new(1, 0, 0, 0)
+    badge.Size = UDim2.fromOffset(64, 18)
     badge.BackgroundColor3 = live and Color3.fromRGB(34, 197, 94) or Color3.fromRGB(38, 38, 43)
-    badge.BackgroundTransparency = live and 0.1 or 0.35
+    badge.BackgroundTransparency = live and 0.1 or 0.4
     badge.Font = Enum.Font.GothamBold
-    badge.TextSize = 10
-    badge.TextColor3 = live and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(160, 160, 170)
-    badge.Text = live and "LIVE NOW" or string.upper(tostring(s.status or "SCHEDULED"))
+    badge.TextSize = 9
+    badge.TextColor3 = live and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(150, 150, 160)
+    badge.Text = live and "LIVE" or string.upper(tostring(s.status or "SCHEDULED"))
     badge.BorderSizePixel = 0
     corner(badge, 999)
-    badge.Parent = body
+    badge.Parent = card
 
-    -- divider
-    local div = Instance.new("Frame")
-    div.BackgroundColor3 = STROKE
-    div.BorderSizePixel = 0
-    div.Position = UDim2.new(0, 0, 0, 52)
-    div.Size = UDim2.new(1, 0, 0, 1)
-    div.Parent = body
-
-    -- host row (bottom-left)
+    -- staff row (bottom)
     local row = Instance.new("Frame")
     row.BackgroundTransparency = 1
     row.AnchorPoint = Vector2.new(0, 1)
     row.Position = UDim2.new(0, 0, 1, 0)
-    row.Size = UDim2.new(1, 0, 0, 34)
-    row.Parent = body
+    row.Size = UDim2.new(1, 0, 0, 22)
+    row.Parent = card
 
     local layout = Instance.new("UIListLayout")
     layout.FillDirection = Enum.FillDirection.Horizontal
-    layout.Padding = UDim.new(0, 6)
+    layout.Padding = UDim.new(0, 14)
     layout.SortOrder = Enum.SortOrder.LayoutOrder
     layout.VerticalAlignment = Enum.VerticalAlignment.Center
     layout.Parent = row
@@ -354,17 +297,15 @@ local function buildCard(s, order: number): Frame
 
     local n = 2
     for _, p in ipairs(s.participants or {}) do
-        local role = tostring(p.role or "")
-        local pretty = (role == "co_host" and "Co-Host")
-            or (role == "" and "Staff")
-            or (string.upper(string.sub(role, 1, 1)) .. string.gsub(string.sub(role, 2), "_", " "))
-        avatarChip(row, n, pretty, p.username or "—", p.userId)
+        avatarChip(row, n, "", p.username or "—", p.userId)
         n += 1
         if n > 4 then break end
     end
 
     return card
 end
+
+
 
 local function buildBoard(): (Frame, ScrollingFrame)
     local root = Instance.new("Frame")
