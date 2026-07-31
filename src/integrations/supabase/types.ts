@@ -1364,75 +1364,90 @@ export type Database = {
       }
       scheduled_sessions: {
         Row: {
+          aircraft_model: string | null
           category: string
           co_host_name: string | null
           created_at: string
           department_id: string | null
           description: string | null
+          destination: string | null
           duration_minutes: number
           game_url: string | null
           host_id: string | null
           host_name: string
           id: string
           occurrence_assignments: Json
+          origin: string | null
           recurring: string | null
           recurring_days: string[] | null
           recurring_time: string | null
           role_labels: Json | null
+          route_number: string | null
           scheduled_at: string
           slots: Json | null
           status: string
           tag_ids: string[] | null
+          tail_number: string | null
           title: string
           trainer_name: string | null
           updated_at: string
           workspace_id: string
         }
         Insert: {
+          aircraft_model?: string | null
           category?: string
           co_host_name?: string | null
           created_at?: string
           department_id?: string | null
           description?: string | null
+          destination?: string | null
           duration_minutes?: number
           game_url?: string | null
           host_id?: string | null
           host_name: string
           id?: string
           occurrence_assignments?: Json
+          origin?: string | null
           recurring?: string | null
           recurring_days?: string[] | null
           recurring_time?: string | null
           role_labels?: Json | null
+          route_number?: string | null
           scheduled_at: string
           slots?: Json | null
           status?: string
           tag_ids?: string[] | null
+          tail_number?: string | null
           title: string
           trainer_name?: string | null
           updated_at?: string
           workspace_id: string
         }
         Update: {
+          aircraft_model?: string | null
           category?: string
           co_host_name?: string | null
           created_at?: string
           department_id?: string | null
           description?: string | null
+          destination?: string | null
           duration_minutes?: number
           game_url?: string | null
           host_id?: string | null
           host_name?: string
           id?: string
           occurrence_assignments?: Json
+          origin?: string | null
           recurring?: string | null
           recurring_days?: string[] | null
           recurring_time?: string | null
           role_labels?: Json | null
+          route_number?: string | null
           scheduled_at?: string
           slots?: Json | null
           status?: string
           tag_ids?: string[] | null
+          tail_number?: string | null
           title?: string
           trainer_name?: string | null
           updated_at?: string

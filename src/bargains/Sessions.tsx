@@ -26,6 +26,12 @@ interface Session {
   game_url: string | null;
   slots: SessionSlot[] | null;
   occurrence_assignments: Record<string, (string | null)[][]> | null;
+  route_number: string | null;
+  aircraft_model: string | null;
+  tail_number: string | null;
+  origin: string | null;
+  destination: string | null;
+
 }
 
 const DAY_KEYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
@@ -78,13 +84,19 @@ export default function BSessions() {
   const [description, setDescription] = useState("");
   const [gameUrl, setGameUrl] = useState("");
   const [slots, setSlots] = useState<SessionSlot[]>(DEFAULT_SLOTS.Shift);
+  const [routeNumber, setRouteNumber] = useState("");
+  const [aircraftModel, setAircraftModel] = useState("");
+  const [tailNumber, setTailNumber] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
   const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     if (!workspaceId) return;
     const q = supabase.from("scheduled_sessions")
-      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments")
+      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments, route_number, aircraft_model, tail_number, origin, destination")
       .eq("workspace_id", workspaceId)
       .order("scheduled_at", { ascending: true });
     scope(q).then(({ data }: any) => setSessions((data as any) || []));
@@ -216,6 +228,11 @@ export default function BSessions() {
       description: description.trim() || null,
       game_url: gameUrl.trim() || null,
       slots: cleanSlots,
+      route_number: routeNumber.trim() || null,
+      aircraft_model: aircraftModel.trim() || null,
+      tail_number: tailNumber.trim() || null,
+      origin: origin.trim() || null,
+      destination: destination.trim() || null,
       tag_ids: [],
     };
     if (recurring !== "none") {
@@ -336,7 +353,24 @@ export default function BSessions() {
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
                     {groupLabel(d)} at {time} · {s.duration_minutes}m · {t(s.category)}{isRecurring ? " · Recurring" : ""}
                   </div>
-                  <div className="text-lg font-bold mb-4" style={{ color: bx.text }}>{s.title}</div>
+                  <div className="text-lg font-bold mb-2" style={{ color: bx.text }}>
+                    {s.route_number ? <span style={{ color: bx.coral }}>{s.route_number} · </span> : null}{s.title}
+                  </div>
+                  {(s.origin || s.destination || s.aircraft_model || s.tail_number) && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {(s.origin || s.destination) && (
+                        <span className="text-[10px] px-2 py-1 rounded" style={{ background: "#1c1c20", color: bx.textDim }}>
+                          {s.origin || "—"} → {s.destination || "—"}
+                        </span>
+                      )}
+                      {s.aircraft_model && (
+                        <span className="text-[10px] px-2 py-1 rounded" style={{ background: "#1c1c20", color: bx.textDim }}>{s.aircraft_model}</span>
+                      )}
+                      {s.tail_number && (
+                        <span className="text-[10px] px-2 py-1 rounded" style={{ background: "#1c1c20", color: bx.textDim }}>{s.tail_number}</span>
+                      )}
+                    </div>
+                  )}
                   {s.game_url && (
                     <a href={s.game_url} target="_blank" rel="noopener noreferrer"
                       className="text-xs underline mb-3 inline-block" style={{ color: bx.coral }}>
@@ -446,6 +480,51 @@ export default function BSessions() {
                   className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                   style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
               </div>
+
+              {aviation && (
+                <div className="rounded-md p-3 space-y-3" style={{ background: "#131315", border: `1px solid ${bx.borderColor}` }}>
+                  <div className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: bx.textMuted }}>Flight details</div>
+                  <div>
+                    <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Route number</label>
+                    <input value={routeNumber} onChange={(e) => setRouteNumber(e.target.value)}
+                      placeholder="FX 204"
+                      className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                      style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Origin (optional)</label>
+                      <input value={origin} onChange={(e) => setOrigin(e.target.value)}
+                        placeholder="LHR"
+                        className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                        style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Destination (optional)</label>
+                      <input value={destination} onChange={(e) => setDestination(e.target.value)}
+                        placeholder="JFK"
+                        className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                        style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Plane model (optional)</label>
+                      <input value={aircraftModel} onChange={(e) => setAircraftModel(e.target.value)}
+                        placeholder="Boeing 737-800"
+                        className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                        style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Tail number (optional)</label>
+                      <input value={tailNumber} onChange={(e) => setTailNumber(e.target.value)}
+                        placeholder="G-FLUX"
+                        className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
+                        style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Repeat</label>
