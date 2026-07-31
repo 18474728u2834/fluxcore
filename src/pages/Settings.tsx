@@ -718,7 +718,7 @@ export default function SettingsPage() {
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
                 </Link>
-                <Link to="../roles" relative="path" className="glass rounded-xl p-4 flex items-center justify-between hover:bg-muted/40 transition-colors group">
+                <button type="button" onClick={() => setSection("roles")} className="glass rounded-xl p-4 flex items-center justify-between hover:bg-muted/40 transition-colors group text-left">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
                       <ShieldCheck className="w-4 h-4 text-primary" />
@@ -729,7 +729,7 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground" />
-                </Link>
+                </button>
               </div>
             </>
           )}
