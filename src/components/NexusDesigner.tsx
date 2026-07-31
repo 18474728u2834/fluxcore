@@ -119,6 +119,37 @@ export function NexusDesigner() {
         </div>
       </div>
 
+      <div className="glass rounded-xl border border-border/50 p-6 space-y-3">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <Plane className="w-4 h-4 text-primary" /> Fluxcore For Aviation
+          </h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Rewrites the wording across the workspace for airlines — Sessions become Flights,
+            Shifts become Departures, Hosts become Captains, and quotas read like "Attend 1 flight".
+          </p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {([
+            { v: "general" as const, title: "Standard wording", desc: "Sessions, shifts, hosts and members — the default Fluxcore vocabulary." },
+            { v: "aviation" as const, title: "Aviation wording", desc: "Flights, departures, captains and crew across every page and card." },
+          ]).map(o => (
+            <button
+              key={o.v}
+              onClick={() => set({ industry: o.v })}
+              className={`text-left rounded-lg border p-4 transition-colors ${
+                draft.industry === o.v ? "border-primary bg-primary/10" : "border-border/60 hover:bg-muted/40"
+              }`}
+            >
+              <div className="text-sm font-semibold text-foreground">{o.title}</div>
+              <div className="text-xs text-muted-foreground mt-1">{o.desc}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+
+
 
       {draft.version === "v2" && (
         <>
