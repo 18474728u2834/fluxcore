@@ -84,8 +84,14 @@ export default function BSessions() {
   const [description, setDescription] = useState("");
   const [gameUrl, setGameUrl] = useState("");
   const [slots, setSlots] = useState<SessionSlot[]>(DEFAULT_SLOTS.Shift);
+  const [routeNumber, setRouteNumber] = useState("");
+  const [aircraftModel, setAircraftModel] = useState("");
+  const [tailNumber, setTailNumber] = useState("");
+  const [origin, setOrigin] = useState("");
+  const [destination, setDestination] = useState("");
   const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
+
 
   useEffect(() => {
     if (!workspaceId) return;
