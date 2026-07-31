@@ -327,6 +327,11 @@ function AppRoutes() {
         if (!active) return;
         if (data) {
           if ((data as any).use_hyra_ui) HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
+          // Only cold portals (dormant = no visits for 2+ days) get the boot screen.
+          if ((data as any).status === "dormant") {
+            setBooting(true);
+            window.setTimeout(() => { if (active) setBooting(false); }, 3_600);
+          }
           setPartner(data);
         } else {
           setPartner(null);
@@ -339,6 +344,10 @@ function AppRoutes() {
   }, [subdomain, isMainHost, isHardcoded]);
 
   if (partner === undefined) {
+    return <PageLoader />;
+  }
+
+  if (booting) {
     return <PortalBoot label={subdomain ? `${subdomain}.fluxcore.works` : undefined} />;
   }
 
