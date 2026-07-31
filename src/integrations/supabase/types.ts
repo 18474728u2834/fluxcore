@@ -1494,6 +1494,67 @@ export type Database = {
         }
         Relationships: []
       }
+      session_attendance: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string | null
+          minutes_present: number
+          occurrence_at: string
+          roblox_user_id: string
+          roblox_username: string | null
+          session_id: string
+          verified_at: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          minutes_present?: number
+          occurrence_at: string
+          roblox_user_id: string
+          roblox_username?: string | null
+          session_id: string
+          verified_at?: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          minutes_present?: number
+          occurrence_at?: string
+          roblox_user_id?: string
+          roblox_username?: string | null
+          session_id?: string
+          verified_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_attendance_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_attendance_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_attendance_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_notifications: {
         Row: {
           action: string
