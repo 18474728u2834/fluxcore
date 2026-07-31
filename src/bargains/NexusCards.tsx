@@ -4,6 +4,7 @@ import { Play, Cake, Hand, Calendar, Clock, Target, Megaphone, Heart, ChevronRig
 import { supabase } from "@/integrations/supabase/client";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { bx } from "./Shell";
+import { useLexicon } from "@/hooks/useLexicon";
 
 export interface CardData {
   birthdays: { user_id: string; roblox_username: string; roblox_user_id: string }[];
@@ -141,7 +142,7 @@ function SessionsCard({ data }: { data: CardData }) {
       .then(({ data: d }) => setRows(d || []));
   }, [data.workspaceId]);
   return (
-    <Panel title="Upcoming sessions" icon={Calendar} action={<LinkAction to={`${data.base}/sessions`} label="View all" />}>
+    <Panel title={phrase("Upcoming sessions")} icon={Calendar} action={<LinkAction to={`${data.base}/sessions`} label="View all" />}>
       {rows.length === 0 ? <Empty>Nothing scheduled right now.</Empty> : (
         <div className="space-y-0.5">
           {rows.map(s => (
@@ -174,7 +175,7 @@ function ActivityCard({ data }: { data: CardData }) {
       .then(({ data: d }) => setRows(d || []));
   }, [data.workspaceId]);
   return (
-    <Panel title="Session activity" icon={Clock} action={<LinkAction to={`${data.base}/activity`} label="View all" />}>
+    <Panel title={phrase("Session activity")} icon={Clock} action={<LinkAction to={`${data.base}/activity`} label="View all" />}>
       {rows.length === 0 ? <Empty>No tracked activity yet.</Empty> : (
         <div className="space-y-0.5">
           {rows.map(r => (
