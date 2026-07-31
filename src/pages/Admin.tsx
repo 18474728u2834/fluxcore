@@ -18,6 +18,7 @@ import StatusAdminTab from "@/pages/admin/StatusAdminTab";
 import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
 import MarqueeTab from "@/pages/admin/MarqueeTab";
 import SecurityScansTab from "@/pages/admin/SecurityScansTab";
+import SessionBoardTab from "@/pages/admin/SessionBoardTab";
 import DOMPurify from "dompurify";
 
 type WhoAmI = {
@@ -119,6 +120,7 @@ export default function Admin() {
             {has("send_admin_email") && <TabsTrigger value="email">Email Sender</TabsTrigger>}
             {has("view_security_scans") && <TabsTrigger value="security">Security Scans</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
+            <TabsTrigger value="session_board">Session Board</TabsTrigger>
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -140,6 +142,7 @@ export default function Admin() {
           {has("send_admin_email") && <TabsContent value="email"><EmailSenderTab /></TabsContent>}
           {has("view_security_scans") && <TabsContent value="security"><SecurityScansTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
+          <TabsContent value="session_board"><SessionBoardTab /></TabsContent>
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
