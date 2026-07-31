@@ -21,6 +21,7 @@ interface MemberRow {
   role: string;
   minutes: number;
   sessionsHosted: number;
+  sessionsAttended: number;
   warnings: number;
   messages: number;
   lastSeen: string | null;
@@ -304,7 +305,7 @@ export default function BQuotas() {
                 {[
                   { v: r.minutes,        l: "Last Week's Minutes" },
                   { v: r.sessionsHosted, l: t("Sessions Hosted") },
-                  { v: 0,                l: t("Last Week's Sessions") },
+                  { v: r.sessionsAttended, l: t("Sessions Attended") },
                 ].map((s, i) => (
                   <div key={i} className="rounded-md p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
                     <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: bx.text }}>{s.v}</div>
