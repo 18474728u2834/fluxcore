@@ -12,6 +12,7 @@ import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useLexicon } from "@/hooks/useLexicon";
 
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import bargainsLogo from "@/assets/bargains-logo.png";
 
 interface ShellProps {
@@ -310,7 +311,10 @@ export function BargainsShell({ children }: ShellProps) {
         return (
           <aside className="hidden md:block w-[60px] shrink-0 relative z-40">
             <div
-              className="group/rail absolute inset-y-0 left-0 w-[60px] hover:w-[212px] transition-[width] duration-200 flex flex-col items-center py-3 border-r overflow-hidden"
+              className={cn(
+                "group/rail absolute inset-y-0 left-0 w-[60px] flex flex-col items-center py-3 border-r overflow-hidden transition-[width] duration-200",
+                expandable && "hover:w-[212px]"
+              )}
               style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}
             >
               <NavLink to={navBase + "/dashboard"} className={`${rowBase} ${rowSize} justify-start mb-3 shrink-0`}>
