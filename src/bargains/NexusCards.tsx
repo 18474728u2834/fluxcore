@@ -130,6 +130,7 @@ function NewMembersCard({ data }: { data: CardData }) {
 }
 
 function SessionsCard({ data }: { data: CardData }) {
+  const { t, phrase } = useLexicon(data.workspaceId);
   const [rows, setRows] = useState<any[]>([]);
   useEffect(() => {
     if (!data.workspaceId) return;
@@ -149,7 +150,7 @@ function SessionsCard({ data }: { data: CardData }) {
             <Row key={s.id}>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{s.title}</div>
-                <div className="text-xs" style={{ color: bx.textMuted }}>{s.host_name} · {s.category}</div>
+                <div className="text-xs" style={{ color: bx.textMuted }}>{s.host_name} · {t(s.category)}</div>
               </div>
               <div className="text-xs whitespace-nowrap" style={{ color: bx.textDim }}>
                 {new Date(s.scheduled_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -163,6 +164,7 @@ function SessionsCard({ data }: { data: CardData }) {
 }
 
 function ActivityCard({ data }: { data: CardData }) {
+  const { phrase } = useLexicon(data.workspaceId);
   const [rows, setRows] = useState<any[]>([]);
   useEffect(() => {
     if (!data.workspaceId) return;
