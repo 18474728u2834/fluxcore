@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
+import { useLexicon } from "@/hooks/useLexicon";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { toast } from "sonner";
 
@@ -57,6 +58,7 @@ export default function BSessions() {
   const { workspaceId } = useWorkspace();
   const { scope, newRowDepartmentId } = useDepartment();
   const { user, robloxUsername } = useAuth();
+  const { t, phrase, aviation } = useLexicon(workspaceId);
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - d.getDay()); return d;
   });
@@ -309,7 +311,7 @@ export default function BSessions() {
         {dayOccurrences.length === 0 ? (
           <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
             <CalIcon className="w-10 h-10 mx-auto mb-3" style={{ color: bx.textMuted }} />
-            <p className="text-sm" style={{ color: bx.textDim }}>No sessions scheduled for this day.</p>
+            <p className="text-sm" style={{ color: bx.textDim }}>{phrase("No sessions scheduled for this day.")}</p>
             <button onClick={openScheduler}
               className="mt-4 inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold"
               style={{ background: bx.coral, color: "#fff" }}>
@@ -332,7 +334,7 @@ export default function BSessions() {
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
-                    {groupLabel(d)} at {time} · {s.duration_minutes}m · {s.category}{isRecurring ? " · Recurring" : ""}
+                    {groupLabel(d)} at {time} · {s.duration_minutes}m · {t(s.category)}{isRecurring ? " · Recurring" : ""}
                   </div>
                   <div className="text-lg font-bold mb-4" style={{ color: bx.text }}>{s.title}</div>
                   {s.game_url && (
@@ -347,7 +349,7 @@ export default function BSessions() {
                       {sessionSlots.map((sl, slIdx) => (
                         <div key={slIdx}>
                           <div className="text-[10px] uppercase tracking-wider font-semibold mb-1.5" style={{ color: bx.textMuted }}>
-                            {sl.label}
+                            {t(sl.label)}
                           </div>
                           <div className="space-y-1.5">
                             {sl.assigned.map((name, seatIdx) => {
@@ -399,14 +401,14 @@ export default function BSessions() {
               className="absolute top-4 right-4 hover:text-white" style={{ color: bx.textDim }} aria-label="Close">
               <X className="w-4 h-4" />
             </button>
-            <h2 className="text-lg font-bold" style={{ color: bx.text }}>Schedule session</h2>
-            <p className="text-xs mt-1" style={{ color: bx.textDim }}>Add a session to the calendar.</p>
+            <h2 className="text-lg font-bold" style={{ color: bx.text }}>{phrase("Schedule session")}</h2>
+            <p className="text-xs mt-1" style={{ color: bx.textDim }}>{phrase("Add a session to the calendar.")}</p>
 
             <div className="mt-5 space-y-4">
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Title</label>
                 <input value={title} onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Friday night shift"
+                  placeholder={aviation ? "Friday evening departure" : "Friday night shift"}
                   className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none focus:ring-1"
                   style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
               </div>
@@ -417,10 +419,9 @@ export default function BSessions() {
                   <select value={category} onChange={(e) => onCategoryChange(e.target.value)}
                     className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                     style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
-                    <option>Shift</option>
-                    <option>Training</option>
-                    <option>Event</option>
-                    <option>Meeting</option>
+                    {["Shift", "Training", "Event", "Meeting"].map((c) => (
+                      <option key={c} value={c}>{t(c)}</option>
+                    ))}
                   </select>
                 </div>
                 <div>
