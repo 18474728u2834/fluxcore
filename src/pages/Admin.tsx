@@ -18,6 +18,7 @@ import StatusAdminTab from "@/pages/admin/StatusAdminTab";
 import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
 import MarqueeTab from "@/pages/admin/MarqueeTab";
 import SecurityScansTab from "@/pages/admin/SecurityScansTab";
+import SessionBoardTab from "@/pages/admin/SessionBoardTab";
 import DOMPurify from "dompurify";
 
 type WhoAmI = {
