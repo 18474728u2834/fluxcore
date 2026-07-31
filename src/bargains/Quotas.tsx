@@ -252,7 +252,7 @@ export default function BQuotas() {
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{q.title}</div>
                       <div className="text-xs mt-0.5" style={{ color: bx.textDim }}>
-                        {q.target_value} {q.quota_type === "sessions" ? t("sessions") : "minutes"} · {q.period} · {roleName(q.role_id)}
+                        {q.target_value} {q.quota_type === "sessions" ? t("sessions") + " hosted" : q.quota_type === "attendance" ? t("sessions") + " attended" : "minutes"} · {q.period} · {roleName(q.role_id)}
                       </div>
                     </div>
                     <button
