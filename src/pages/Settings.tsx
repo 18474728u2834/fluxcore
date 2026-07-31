@@ -270,10 +270,17 @@ export default function SettingsPage() {
         <div className="flex-1 min-w-0 space-y-6 max-w-2xl w-full">
           {active === "nexus" && (
             <>
-              <SectionHeader title="Nexus UI" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
+              <SectionHeader title="Theme" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
               <NexusDesigner />
             </>
           )}
+          {active === "roles" && (
+            <>
+              <SectionHeader title="Roles & Permissions" sub="Create roles, set permissions and import Roblox group ranks." />
+              <BRoles embedded />
+            </>
+          )}
+
           {active === "general" && (
             <>
 
