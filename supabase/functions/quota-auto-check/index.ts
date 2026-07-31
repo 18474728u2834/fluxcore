@@ -179,7 +179,7 @@ Deno.serve(async (req) => {
           .eq("workspace_id", ws.id)
           .eq("member_id", member.id)
           .eq("log_type", "warning")
-          .eq("author_name", "Quota Check")
+          .in("author_name", ["Fluxcore Systems", "Quota Check"])
           .gte("created_at", earliestStart.toISOString())
           .limit(1);
         if (existing && existing.length) continue;
@@ -188,7 +188,7 @@ Deno.serve(async (req) => {
           department_id: entries[0].q.department_id ?? null,
           member_id: member.id,
           author_id: (member.user_id ?? (ws as any).owner_id) as string,
-          author_name: "Quota Check",
+          author_name: "Fluxcore Systems",
           log_type: "warning",
           content: "Missed quota: " + entries.map((e) => `${e.q.title} (${e.current}/${e.q.target_value}, ${e.q.period})`).join(", "),
         });
