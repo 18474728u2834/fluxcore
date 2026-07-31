@@ -353,7 +353,24 @@ export default function BSessions() {
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
                     {groupLabel(d)} at {time} · {s.duration_minutes}m · {t(s.category)}{isRecurring ? " · Recurring" : ""}
                   </div>
-                  <div className="text-lg font-bold mb-4" style={{ color: bx.text }}>{s.title}</div>
+                  <div className="text-lg font-bold mb-2" style={{ color: bx.text }}>
+                    {s.route_number ? <span style={{ color: bx.coral }}>{s.route_number} · </span> : null}{s.title}
+                  </div>
+                  {(s.origin || s.destination || s.aircraft_model || s.tail_number) && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {(s.origin || s.destination) && (
+                        <span className="text-[10px] px-2 py-1 rounded" style={{ background: "#1c1c20", color: bx.textDim }}>
+                          {s.origin || "—"} → {s.destination || "—"}
+                        </span>
+                      )}
+                      {s.aircraft_model && (
+                        <span className="text-[10px] px-2 py-1 rounded" style={{ background: "#1c1c20", color: bx.textDim }}>{s.aircraft_model}</span>
+                      )}
+                      {s.tail_number && (
+                        <span className="text-[10px] px-2 py-1 rounded" style={{ background: "#1c1c20", color: bx.textDim }}>{s.tail_number}</span>
+                      )}
+                    </div>
+                  )}
                   {s.game_url && (
                     <a href={s.game_url} target="_blank" rel="noopener noreferrer"
                       className="text-xs underline mb-3 inline-block" style={{ color: bx.coral }}>
