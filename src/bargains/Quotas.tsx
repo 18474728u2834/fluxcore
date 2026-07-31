@@ -21,6 +21,7 @@ interface MemberRow {
   role: string;
   minutes: number;
   sessionsHosted: number;
+  sessionsAttended: number;
   warnings: number;
   messages: number;
   lastSeen: string | null;
@@ -79,10 +80,11 @@ export default function BQuotas() {
         deptMemberIds = new Set((dm || []).map((r: any) => r.workspace_members?.id).filter(Boolean));
       }
 
-      const [mem, act, hosted] = await Promise.all([
+      const [mem, act, hosted, attended] = await Promise.all([
         supabase.from("workspace_members").select("id, user_id, role, roblox_username, roblox_user_id").eq("workspace_id", workspaceId),
         supabase.from("activity_sessions").select("roblox_user_id, duration_seconds, idle_seconds, joined_at, left_at").eq("workspace_id", workspaceId).eq("discarded", false).gte("joined_at", weekStart.toISOString()),
         supabase.from("scheduled_sessions").select("host_id").eq("workspace_id", workspaceId).eq("status", "completed").gte("scheduled_at", weekStart.toISOString()),
+        supabase.from("session_attendance").select("roblox_user_id").eq("workspace_id", workspaceId).gte("occurrence_at", weekStart.toISOString()),
       ]);
 
       const minutesMap = new Map<string, number>();
@@ -100,6 +102,11 @@ export default function BQuotas() {
       for (const h of (hosted.data || []) as any[]) {
         if (h.host_id) hostedMap.set(h.host_id, (hostedMap.get(h.host_id) || 0) + 1);
       }
+      const attendedMap = new Map<string, number>();
+      for (const a of (attended.data || []) as any[]) {
+        attendedMap.set(a.roblox_user_id, (attendedMap.get(a.roblox_user_id) || 0) + 1);
+      }
+
 
       const filteredMem = (mem.data || []).filter((m: any) => !deptMemberIds || deptMemberIds.has(m.id));
       const out: MemberRow[] = filteredMem.map((m: any) => ({
@@ -109,6 +116,8 @@ export default function BQuotas() {
         role: m.role,
         minutes: minutesMap.get(m.roblox_user_id) || 0,
         sessionsHosted: hostedMap.get(m.user_id) || 0,
+        sessionsAttended: attendedMap.get(m.roblox_user_id) || 0,
+
         warnings: 0,
         messages: 0,
         lastSeen: lastSeen.get(m.roblox_user_id) || null,
@@ -296,7 +305,7 @@ export default function BQuotas() {
                 {[
                   { v: r.minutes,        l: "Last Week's Minutes" },
                   { v: r.sessionsHosted, l: t("Sessions Hosted") },
-                  { v: 0,                l: t("Last Week's Sessions") },
+                  { v: r.sessionsAttended, l: t("Sessions Attended") },
                 ].map((s, i) => (
                   <div key={i} className="rounded-md p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
                     <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: bx.text }}>{s.v}</div>
