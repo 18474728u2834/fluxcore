@@ -338,7 +338,7 @@ function AppRoutes() {
   }, [subdomain, isMainHost, isHardcoded]);
 
   if (partner === undefined) {
-    return <PageLoader />;
+    return <PortalBoot label={subdomain ? `${subdomain}.fluxcore.works` : undefined} />;
   }
 
   if (partner) {
