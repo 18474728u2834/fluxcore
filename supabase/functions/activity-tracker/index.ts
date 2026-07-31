@@ -401,15 +401,18 @@ serve(async (req) => {
         event_data: { message_count: message_count || 0, idle_seconds: idle_seconds || 0 },
       });
 
+      // Final attendance check: if a shift is live and they stayed 5+ minutes, credit it.
+      const leaveAttendance = await verifyShiftAttendance(String(roblox_user_id), roblox_username || null, session_id || null);
+
       return new Response(
-        JSON.stringify({ success: true }),
+        JSON.stringify({ success: true, shift_attendance: leaveAttendance }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
     // HEARTBEAT
     if (action === 'heartbeat') {
-      const { roblox_user_id, session_id, is_idle, message_count, idle_seconds } = body;
+      const { roblox_user_id, roblox_username, session_id, is_idle, message_count, idle_seconds } = body;
 
       if (session_id) {
         // Update session with latest counts
@@ -425,9 +428,16 @@ serve(async (req) => {
         }
       }
 
+      // Shift attendance: 5+ minutes in-server while a session is running = attended.
+      let attendance = null;
+      if (roblox_user_id && !is_idle) {
+        attendance = await verifyShiftAttendance(String(roblox_user_id), roblox_username || null, session_id || null);
+      }
+
       return new Response(
-        JSON.stringify({ success: true }),
+        JSON.stringify({ success: true, shift_attendance: attendance }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+
       );
     }
 
