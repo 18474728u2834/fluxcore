@@ -468,7 +468,7 @@ export default function SettingsPage() {
                   <Key className="w-4 h-4 text-primary" />
                   <h2 className="font-semibold text-foreground text-sm">Fluxcore API Key</h2>
                 </div>
-                <p className="text-xs text-muted-foreground">Used by the Lua tracker module.</p>
+                <p className="text-xs text-muted-foreground">Used by the Lua tracker module <span className="text-foreground">and the Sessions API</span> — paste this into the Session Board Config as <code className="font-mono">API_KEY</code>.</p>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 bg-muted rounded-lg px-3 py-2.5 text-xs font-mono text-foreground break-all select-all">{apiKey}</code>
                   <Button variant="secondary" size="sm" onClick={copyKey}><Copy className="w-3 h-3 mr-1" /> {copied ? "Copied" : "Copy"}</Button>
