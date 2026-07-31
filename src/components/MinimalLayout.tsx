@@ -11,6 +11,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { usePermissions } from "@/hooks/usePermissions";
 import { useTheme } from "@/hooks/useTheme";
 import { useUIVersion } from "@/hooks/useUIVersion";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ReleaseModal } from "@/components/ReleaseModal";
@@ -29,6 +30,7 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
   const { hasPermission } = usePermissions();
   const { theme, toggleTheme } = useTheme();
   const { setVersion } = useUIVersion();
+  const { config: nexusConfig } = useNexusConfig(workspaceId);
   const [hovered, setHovered] = useState(false);
 
   const base = `/w/${workspaceId}`;
@@ -65,7 +67,7 @@ export function MinimalLayout({ children, title }: { children: React.ReactNode; 
 
   // Hover-expand rail style nav (Raycast/Vercel hybrid). Icon-only by default,
   // expands a labeled flyout on hover for a unique, ultra-clean feel.
-  const expanded = hovered;
+  const expanded = nexusConfig.railMode !== "icons" && hovered;
   const railWidth = expanded ? 240 : 64;
 
   const RailItem = ({ to, icon: Icon, label }: { to: string; icon: any; label: string }) => (
