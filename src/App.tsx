@@ -286,6 +286,7 @@ function AppRoutes() {
   const [partner, setPartner] = useState<any | undefined>(
     isMainHost || isHardcoded || isStatusHost ? null : undefined
   );
+  const [booting, setBooting] = useState(false);
 
   if (isStatusHost) {
     return (
