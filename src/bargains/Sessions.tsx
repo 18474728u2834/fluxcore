@@ -228,6 +228,11 @@ export default function BSessions() {
       description: description.trim() || null,
       game_url: gameUrl.trim() || null,
       slots: cleanSlots,
+      route_number: routeNumber.trim() || null,
+      aircraft_model: aircraftModel.trim() || null,
+      tail_number: tailNumber.trim() || null,
+      origin: origin.trim() || null,
+      destination: destination.trim() || null,
       tag_ids: [],
     };
     if (recurring !== "none") {
