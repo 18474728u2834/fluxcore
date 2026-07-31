@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type NexusVersion = "v1" | "v2";
 export type NexusRailMode = "hover" | "icons";
+export type NexusIndustry = "general" | "aviation";
 
 export interface NexusConfig {
   version: NexusVersion;
@@ -16,6 +17,8 @@ export interface NexusConfig {
   heroTitle: string;
   /** Sidebar rail: expand with labels on hover, or stay icon-only */
   railMode: NexusRailMode;
+  /** Wording pack: general workspace terms, or aviation terms */
+  industry: NexusIndustry;
 }
 
 export const NEXUS_NAV_KEYS = [
@@ -41,6 +44,7 @@ export const DEFAULT_NEXUS_CONFIG: NexusConfig = {
   showHero: true,
   heroTitle: "",
   railMode: "hover",
+  industry: "general",
 };
 
 export function normalizeNexusConfig(raw: any): NexusConfig {
@@ -54,6 +58,7 @@ export function normalizeNexusConfig(raw: any): NexusConfig {
     showHero: c.showHero !== false,
     heroTitle: typeof c.heroTitle === "string" ? c.heroTitle : "",
     railMode: c.railMode === "icons" ? "icons" : "hover",
+    industry: c.industry === "aviation" ? "aviation" : "general",
   };
 }
 

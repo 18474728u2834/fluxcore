@@ -4,6 +4,7 @@ import { Play, Cake, Hand, Calendar, Clock, Target, Megaphone, Heart, ChevronRig
 import { supabase } from "@/integrations/supabase/client";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { bx } from "./Shell";
+import { useLexicon } from "@/hooks/useLexicon";
 
 export interface CardData {
   birthdays: { user_id: string; roblox_username: string; roblox_user_id: string }[];
@@ -129,6 +130,7 @@ function NewMembersCard({ data }: { data: CardData }) {
 }
 
 function SessionsCard({ data }: { data: CardData }) {
+  const { t, phrase } = useLexicon(data.workspaceId);
   const [rows, setRows] = useState<any[]>([]);
   useEffect(() => {
     if (!data.workspaceId) return;
@@ -141,14 +143,14 @@ function SessionsCard({ data }: { data: CardData }) {
       .then(({ data: d }) => setRows(d || []));
   }, [data.workspaceId]);
   return (
-    <Panel title="Upcoming sessions" icon={Calendar} action={<LinkAction to={`${data.base}/sessions`} label="View all" />}>
+    <Panel title={phrase("Upcoming sessions")} icon={Calendar} action={<LinkAction to={`${data.base}/sessions`} label="View all" />}>
       {rows.length === 0 ? <Empty>Nothing scheduled right now.</Empty> : (
         <div className="space-y-0.5">
           {rows.map(s => (
             <Row key={s.id}>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{s.title}</div>
-                <div className="text-xs" style={{ color: bx.textMuted }}>{s.host_name} · {s.category}</div>
+                <div className="text-xs" style={{ color: bx.textMuted }}>{s.host_name} · {t(s.category)}</div>
               </div>
               <div className="text-xs whitespace-nowrap" style={{ color: bx.textDim }}>
                 {new Date(s.scheduled_at).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -162,6 +164,7 @@ function SessionsCard({ data }: { data: CardData }) {
 }
 
 function ActivityCard({ data }: { data: CardData }) {
+  const { phrase } = useLexicon(data.workspaceId);
   const [rows, setRows] = useState<any[]>([]);
   useEffect(() => {
     if (!data.workspaceId) return;
@@ -174,7 +177,7 @@ function ActivityCard({ data }: { data: CardData }) {
       .then(({ data: d }) => setRows(d || []));
   }, [data.workspaceId]);
   return (
-    <Panel title="Session activity" icon={Clock} action={<LinkAction to={`${data.base}/activity`} label="View all" />}>
+    <Panel title={phrase("Session activity")} icon={Clock} action={<LinkAction to={`${data.base}/activity`} label="View all" />}>
       {rows.length === 0 ? <Empty>No tracked activity yet.</Empty> : (
         <div className="space-y-0.5">
           {rows.map(r => (

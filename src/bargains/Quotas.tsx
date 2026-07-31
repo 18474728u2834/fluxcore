@@ -6,6 +6,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useLexicon } from "@/hooks/useLexicon";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -40,6 +41,7 @@ export default function BQuotas() {
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { department, scope, newRowDepartmentId } = useDepartment();
   const { hasPermission } = usePermissions();
+  const { t, phrase, aviation } = useLexicon(workspaceId);
   const canManage = isOwner || hasPermission("manage_members");
   const isPremium = !!workspace?.premium;
 
@@ -165,15 +167,15 @@ export default function BQuotas() {
               <DialogContent className="max-w-sm" style={{ background: "#1a1a1c", borderColor: bx.borderColor, color: bx.text }}>
                 <DialogHeader><DialogTitle style={{ color: bx.text }}>Create quota</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
-                  <Input placeholder="e.g. Host 2 sessions" value={title} onChange={(e) => setTitle(e.target.value)} />
+                  <Input placeholder={aviation ? "e.g. Attend 1 flight" : "e.g. Host 2 sessions"} value={title} onChange={(e) => setTitle(e.target.value)} />
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label className="text-xs" style={{ color: bx.textDim }}>Type</Label>
                       <Select value={quotaType} onValueChange={setQuotaType}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="sessions">Sessions hosted</SelectItem>
-                          <SelectItem value="minutes">In-game minutes</SelectItem>
+                          <SelectItem value="sessions">{t("Sessions hosted")}</SelectItem>
+                          <SelectItem value="minutes">{t("In-game minutes")}</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -231,7 +233,7 @@ export default function BQuotas() {
             </div>
             {quotas.length === 0 ? (
               <div className="p-8 text-center text-sm" style={{ color: bx.textDim }}>
-                No quotas yet. Create one to start tracking activity.
+                {phrase("No quotas yet. Create one to start tracking activity.")}
               </div>
             ) : (
               <div className="divide-y" style={{ borderColor: bx.borderColor }}>
@@ -240,7 +242,7 @@ export default function BQuotas() {
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{q.title}</div>
                       <div className="text-xs mt-0.5" style={{ color: bx.textDim }}>
-                        {q.target_value} {q.quota_type === "sessions" ? "sessions" : "minutes"} · {q.period} · {roleName(q.role_id)}
+                        {q.target_value} {q.quota_type === "sessions" ? t("sessions") : "minutes"} · {q.period} · {roleName(q.role_id)}
                       </div>
                     </div>
                     <button
@@ -293,8 +295,8 @@ export default function BQuotas() {
               <div className="px-5 grid grid-cols-3 gap-2">
                 {[
                   { v: r.minutes,        l: "Last Week's Minutes" },
-                  { v: r.sessionsHosted, l: "Sessions Hosted" },
-                  { v: 0,                l: "Last Week's Sessions" },
+                  { v: r.sessionsHosted, l: t("Sessions Hosted") },
+                  { v: 0,                l: t("Last Week's Sessions") },
                 ].map((s, i) => (
                   <div key={i} className="rounded-md p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
                     <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: bx.text }}>{s.v}</div>
