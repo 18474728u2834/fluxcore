@@ -282,11 +282,17 @@ function AppRoutes() {
     hostname.includes("bloxy-bargains");
 
   const isStatusHost = hostname.startsWith("status.fluxcore") || hostname === "status.fluxcore.works";
+  // Demo host: always shows the boot screen, looping with fresh ids each replay.
+  const isBootTestHost = subdomain === "boottest";
 
   const [partner, setPartner] = useState<any | undefined>(
-    isMainHost || isHardcoded || isStatusHost ? null : undefined
+    isMainHost || isHardcoded || isStatusHost || isBootTestHost ? null : undefined
   );
   const [booting, setBooting] = useState(false);
+
+  if (isBootTestHost) {
+    return <PortalBoot label="boottest.fluxcore.works" replay />;
+  }
 
   if (isStatusHost) {
     return (
@@ -297,6 +303,7 @@ function AppRoutes() {
       </Suspense>
     );
   }
+
 
   useEffect(() => {
     let active = true;
