@@ -99,11 +99,12 @@ export default function PortalBoot({ label, replay = false }: PortalBootProps) {
 
       <div className="absolute bottom-5 left-0 right-0 z-10 px-6">
         <p className="text-center font-mono text-[10px] leading-relaxed text-white/20">
-          rev {randomId(6)}
+          rev {rev}
           <span className="mx-2 opacity-40">•</span>
           secure channel established
           <span className="mx-2 opacity-40">•</span>
-          fluxcore {randomId(4)}
+          fluxcore {build}
+
         </p>
       </div>
     </div>
