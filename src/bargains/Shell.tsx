@@ -12,6 +12,7 @@ import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useLexicon } from "@/hooks/useLexicon";
 
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 import bargainsLogo from "@/assets/bargains-logo.png";
 
 interface ShellProps {
