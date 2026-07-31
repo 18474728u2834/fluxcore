@@ -386,7 +386,7 @@ if target then
         gui.Adornee = part
         gui.Face = Enum.NormalId.Front
         gui.SizingMode = Enum.SurfaceGuiSizingMode.PixelsPerStud
-        gui.PixelsPerStud = 50
+        gui.PixelsPerStud = 100
         gui.AlwaysOnTop = false
         gui.Parent = part
         for _, c in ipairs(gui:GetChildren()) do
