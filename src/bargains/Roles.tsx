@@ -39,7 +39,7 @@ function PermSwitch({ on, onChange }: { on: boolean; onChange: () => void }) {
   );
 }
 
-export default function BRoles() {
+export default function BRoles({ embedded = false }: { embedded?: boolean } = {} as any) {
   const { workspaceId, isOwner } = useWorkspace();
   const { hasPermission } = usePermissions();
   const canEditRoles = isOwner || hasPermission("edit_roles");
