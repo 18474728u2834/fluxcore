@@ -183,7 +183,7 @@ export default function BQuotas() {
                       <Select value={quotaType} onValueChange={setQuotaType}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
-                        <SelectSItem value="sessions">{t("Sessions hosted")}</SelectSItem>
+                        <SelectItem value="sessions">{t("Sessions hosted")}</SelectItem>
                           <SelectItem value="attendance">{aviation ? "Flights attended" : "Sessions attended"}</SelectItem>
                           <SelectItem value="minutes">{t("In-game minutes")}</SelectItem>
                         </SelectContent>
