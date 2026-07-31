@@ -268,7 +268,7 @@ export default function SettingsPage() {
         </aside>
 
         {/* Right pane */}
-        <div className="flex-1 min-w-0 space-y-6 max-w-2xl w-full">
+        <div className={cn("flex-1 min-w-0 space-y-6 w-full", active === "roles" ? "max-w-5xl" : "max-w-2xl")}>
           {active === "nexus" && (
             <>
               <SectionHeader title="Theme" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
