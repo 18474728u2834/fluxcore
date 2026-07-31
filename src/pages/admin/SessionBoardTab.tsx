@@ -150,7 +150,7 @@ local function corner(p: Instance, r: number)
     local c = Instance.new("UICorner"); c.CornerRadius = UDim.new(0, r); c.Parent = p
 end
 local function stroke(p: Instance, col: Color3, t: number?)
-    local s = Instance.new("UIStroke"); s.Color = col; s.Thickness = t or 1; s.Parent = s and p
+    local s = Instance.new("UIStroke"); s.Color = col; s.Thickness = t or 1; s.Parent = p
 end
 local function pad(p: Instance, v: number)
     local u = Instance.new("UIPadding")
