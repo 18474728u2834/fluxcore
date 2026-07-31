@@ -9,6 +9,7 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useLexicon } from "@/hooks/useLexicon";
 
 import { supabase } from "@/integrations/supabase/client";
 import bargainsLogo from "@/assets/bargains-logo.png";
@@ -245,7 +246,7 @@ export function BargainsShell({ children }: ShellProps) {
         .filter((p) => p.label.toLowerCase().includes(ql))
 
         .slice(0, 4)
-        .forEach((p) => hits.push({ type: "page", id: p.to, label: p.label, to: `${base}/${p.to}` }));
+        .forEach((p) => hits.push({ type: "page", id: p.to, label: t(p.label), to: `${base}/${p.to}` }));
       setSearchHits(hits.slice(0, 12));
       setHighlight(0);
     }, 200);
@@ -273,10 +274,11 @@ export function BargainsShell({ children }: ShellProps) {
   const navBase = activeDeptSlug ? `${base}/d/${activeDeptSlug}` : base;
   // Nexus UI 2.0: the owner decides which pages exist for everyone.
   const navItems = useMemo(
-    () => nexusConfig.version === "v2"
+    () => (nexusConfig.version === "v2"
       ? NAV.filter(n => n.to === "dashboard" || !nexusConfig.hiddenNav.includes(n.to))
-      : NAV,
-    [nexusConfig],
+      : NAV
+    ).map(n => ({ ...n, label: t(n.label) })),
+    [nexusConfig, t],
   );
 
 
@@ -474,7 +476,8 @@ export function BargainsShell({ children }: ShellProps) {
 
         {/* Mobile bottom navigation */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t h-14" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-          {[NAV[0], NAV[4], NAV[5], NAV[2]].map(({ to, icon: Icon, label }) => {
+          {[NAV[0], NAV[4], NAV[5], NAV[2]].map(({ to, icon: Icon, label: rawLabel }) => {
+            const label = t(rawLabel);
             const active = pathname.startsWith(`${navBase}/${to}`);
             return (
               <NavLink key={to} to={`${navBase}/${to}`} className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full"
