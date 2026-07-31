@@ -18,6 +18,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { NexusSkeleton, ClassicSkeleton } from "@/components/PageSkeletons";
+import PortalBoot from "@/components/PortalBoot";
 
 // Lazy load every route — each gets its own JS chunk so devtools
 // only ever sees code for the page that's currently rendered.
@@ -338,7 +339,7 @@ function AppRoutes() {
   }, [subdomain, isMainHost, isHardcoded]);
 
   if (partner === undefined) {
-    return <PageLoader />;
+    return <PortalBoot label={subdomain ? `${subdomain}.fluxcore.works` : undefined} />;
   }
 
   if (partner) {
