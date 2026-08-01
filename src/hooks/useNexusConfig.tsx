@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type NexusVersion = "v1" | "v2";
 export type NexusRailMode = "hover" | "icons";
-export type NexusIndustry = "general" | "aviation";
+export type NexusIndustry = "general" | "aviation" | "maritime";
 
 export interface NexusConfig {
   version: NexusVersion;
