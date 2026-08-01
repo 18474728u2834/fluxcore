@@ -58,7 +58,7 @@ export function normalizeNexusConfig(raw: any): NexusConfig {
     showHero: c.showHero !== false,
     heroTitle: typeof c.heroTitle === "string" ? c.heroTitle : "",
     railMode: c.railMode === "icons" ? "icons" : "hover",
-    industry: c.industry === "aviation" ? "aviation" : "general",
+    industry: c.industry === "aviation" || c.industry === "maritime" ? c.industry : "general",
   };
 }
 
