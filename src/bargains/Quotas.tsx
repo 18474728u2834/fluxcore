@@ -184,7 +184,7 @@ export default function BQuotas() {
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                         <SelectItem value="sessions">{t("Sessions hosted")}</SelectItem>
-                          <SelectItem value="attendance">{aviation ? "Flights attended" : "Sessions attended"}</SelectItem>
+                          <SelectItem value="attendance">{aviation ? "Flights attended" : maritime ? "Voyages attended" : "Sessions attended"}</SelectItem>
                           <SelectItem value="minutes">{t("In-game minutes")}</SelectItem>
                         </SelectContent>
                       </Select>
