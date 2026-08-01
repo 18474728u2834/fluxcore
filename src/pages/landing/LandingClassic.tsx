@@ -393,6 +393,10 @@ export default function LandingClassic() {
               <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-7 h-7 rounded-md object-cover" />
               <span className="text-sm font-bold">Bloxy Bargains</span>
             </div>
+            <div className="flex items-center gap-2.5 transition-all">
+              <img src={redFunnelBadge.url} alt="Red Funnel Group" className="w-7 h-7 rounded-md object-cover" />
+              <span className="text-sm font-bold">Red Funnel Group</span>
+            </div>
             <span className="text-sm font-bold text-muted-foreground/40">+ a growing list of groups</span>
           </div>
           <WorkspaceMarquee />
