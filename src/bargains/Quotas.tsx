@@ -42,7 +42,7 @@ export default function BQuotas() {
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { department, scope, newRowDepartmentId } = useDepartment();
   const { hasPermission } = usePermissions();
-  const { t, phrase, aviation } = useLexicon(workspaceId);
+  const { t, phrase, aviation, maritime } = useLexicon(workspaceId);
   const canManage = isOwner || hasPermission("manage_members");
   const isPremium = !!workspace?.premium;
 
@@ -176,7 +176,7 @@ export default function BQuotas() {
               <DialogContent className="max-w-sm" style={{ background: "#1a1a1c", borderColor: bx.borderColor, color: bx.text }}>
                 <DialogHeader><DialogTitle style={{ color: bx.text }}>Create quota</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
-                  <Input placeholder={aviation ? "e.g. Attend 1 flight" : "e.g. Host 2 sessions"} value={title} onChange={(e) => setTitle(e.target.value)} />
+                  <Input placeholder={aviation ? "e.g. Attend 1 flight" : maritime ? "e.g. Attend 1 voyage" : "e.g. Host 2 sessions"} value={title} onChange={(e) => setTitle(e.target.value)} />
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label className="text-xs" style={{ color: bx.textDim }}>Type</Label>
@@ -184,7 +184,7 @@ export default function BQuotas() {
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
                         <SelectItem value="sessions">{t("Sessions hosted")}</SelectItem>
-                          <SelectItem value="attendance">{aviation ? "Flights attended" : "Sessions attended"}</SelectItem>
+                          <SelectItem value="attendance">{aviation ? "Flights attended" : maritime ? "Voyages attended" : "Sessions attended"}</SelectItem>
                           <SelectItem value="minutes">{t("In-game minutes")}</SelectItem>
                         </SelectContent>
                       </Select>

@@ -122,17 +122,18 @@ export function NexusDesigner() {
       <div className="glass rounded-xl border border-border/50 p-6 space-y-3">
         <div>
           <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
-            <Plane className="w-4 h-4 text-primary" /> Fluxcore For Aviation
+            <Plane className="w-4 h-4 text-primary" /> Industry wording
           </h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Rewrites the wording across the workspace for airlines — Sessions become Flights,
-            Shifts become Departures, Hosts become Captains, and quotas read like "Attend 1 flight".
+            Rewrites the wording across the workspace. Aviation turns sessions into flights and
+            shifts into departures; Maritime turns them into voyages and watches.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {([
             { v: "general" as const, title: "Standard wording", desc: "Sessions, shifts, hosts and members — the default Fluxcore vocabulary." },
-            { v: "aviation" as const, title: "Aviation wording", desc: "Flights, departures, captains and crew across every page and card." },
+            { v: "aviation" as const, title: "Fluxcore For Aviation", desc: "Flights, departures and crew, plus route, aircraft and tail number fields." },
+            { v: "maritime" as const, title: "Fluxcore For Maritime", desc: "Voyages, watches, drills and crew, plus ports, vessel class and IMO fields." },
           ]).map(o => (
             <button
               key={o.v}
@@ -147,6 +148,7 @@ export function NexusDesigner() {
           ))}
         </div>
       </div>
+
 
 
 

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export type NexusVersion = "v1" | "v2";
 export type NexusRailMode = "hover" | "icons";
-export type NexusIndustry = "general" | "aviation";
+export type NexusIndustry = "general" | "aviation" | "maritime";
 
 export interface NexusConfig {
   version: NexusVersion;
@@ -58,7 +58,7 @@ export function normalizeNexusConfig(raw: any): NexusConfig {
     showHero: c.showHero !== false,
     heroTitle: typeof c.heroTitle === "string" ? c.heroTitle : "",
     railMode: c.railMode === "icons" ? "icons" : "hover",
-    industry: c.industry === "aviation" ? "aviation" : "general",
+    industry: c.industry === "aviation" || c.industry === "maritime" ? c.industry : "general",
   };
 }
 
