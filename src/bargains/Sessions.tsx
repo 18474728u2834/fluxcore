@@ -442,7 +442,7 @@ export default function BSessions() {
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Title</label>
                 <input value={title} onChange={(e) => setTitle(e.target.value)}
-                  placeholder={aviation ? "Friday evening departure" : "Friday night shift"}
+                  placeholder={aviation ? "Friday evening departure" : maritime ? "Friday evening crossing" : "Friday night shift"}
                   className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none focus:ring-1"
                   style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
               </div>
