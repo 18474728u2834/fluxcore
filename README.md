@@ -3,4 +3,4 @@
 Fluxcore DO NOT support custom made websites anymore. 
 Contact Nova Regarding Custom Domains.
 Thank You!
-Push Update 1
+Push Update 2
