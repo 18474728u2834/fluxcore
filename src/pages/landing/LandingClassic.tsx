@@ -38,7 +38,7 @@ import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
 import { SiteBanner } from "@/components/SiteBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
-import redFunnelBadge from "@/assets/red-funnel-badge.png.asset.json";
+import redFunnelBadge from "@/assets/red-funnel-badge.png";
 
 export default function LandingClassic() {
   const navigate = useNavigate();
@@ -395,7 +395,7 @@ export default function LandingClassic() {
               <span className="text-sm font-bold">Bloxy Bargains</span>
             </div>
             <div className="flex items-center gap-2.5 transition-all">
-              <img src={redFunnelBadge.url} alt="Red Funnel Group" className="w-7 h-7 rounded-md object-cover" />
+              <img src={redFunnelBadge} alt="Red Funnel Group" className="w-7 h-7 rounded-md object-cover" />
               <span className="text-sm font-bold">Red Funnel Group</span>
             </div>
             <span className="text-sm font-bold text-muted-foreground/40">+ a growing list of groups</span>
