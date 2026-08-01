@@ -42,7 +42,7 @@ export default function BQuotas() {
   const { workspaceId, workspace, isOwner } = useWorkspace();
   const { department, scope, newRowDepartmentId } = useDepartment();
   const { hasPermission } = usePermissions();
-  const { t, phrase, aviation } = useLexicon(workspaceId);
+  const { t, phrase, aviation, maritime } = useLexicon(workspaceId);
   const canManage = isOwner || hasPermission("manage_members");
   const isPremium = !!workspace?.premium;
 
