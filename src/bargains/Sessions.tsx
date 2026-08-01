@@ -481,50 +481,51 @@ export default function BSessions() {
                   style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
               </div>
 
-              {aviation && (
+              {trip && (
                 <div className="rounded-md p-3 space-y-3" style={{ background: "#131315", border: `1px solid ${bx.borderColor}` }}>
-                  <div className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: bx.textMuted }}>Flight details</div>
+                  <div className="text-[10px] uppercase tracking-wider font-semibold" style={{ color: bx.textMuted }}>{trip.heading}</div>
                   <div>
-                    <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Route number</label>
+                    <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>{trip.route}</label>
                     <input value={routeNumber} onChange={(e) => setRouteNumber(e.target.value)}
-                      placeholder="FX 204"
+                      placeholder={trip.routePlaceholder}
                       className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                       style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Origin (optional)</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>{trip.origin}</label>
                       <input value={origin} onChange={(e) => setOrigin(e.target.value)}
-                        placeholder="LHR"
+                        placeholder={trip.originPlaceholder}
                         className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                         style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Destination (optional)</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>{trip.destination}</label>
                       <input value={destination} onChange={(e) => setDestination(e.target.value)}
-                        placeholder="JFK"
+                        placeholder={trip.destinationPlaceholder}
                         className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                         style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Plane model (optional)</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>{trip.vehicle}</label>
                       <input value={aircraftModel} onChange={(e) => setAircraftModel(e.target.value)}
-                        placeholder="Boeing 737-800"
+                        placeholder={trip.vehiclePlaceholder}
                         className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                         style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Tail number (optional)</label>
+                      <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>{trip.identifier}</label>
                       <input value={tailNumber} onChange={(e) => setTailNumber(e.target.value)}
-                        placeholder="G-FLUX"
+                        placeholder={trip.identifierPlaceholder}
                         className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                         style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
                     </div>
                   </div>
                 </div>
               )}
+
 
               <div>
                 <label className="text-xs font-semibold uppercase tracking-wider" style={{ color: bx.textDim }}>Repeat</label>
