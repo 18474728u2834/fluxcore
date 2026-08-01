@@ -38,6 +38,7 @@ import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
 import { SiteBanner } from "@/components/SiteBanner";
 import { useIsMobile } from "@/hooks/use-mobile";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
+import redFunnelBadge from "@/assets/red-funnel-badge.png.asset.json";
 
 export default function LandingClassic() {
   const navigate = useNavigate();
