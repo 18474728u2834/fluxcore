@@ -64,7 +64,7 @@ export default function BSessions() {
   const { workspaceId } = useWorkspace();
   const { scope, newRowDepartmentId } = useDepartment();
   const { user, robloxUsername } = useAuth();
-  const { t, phrase, aviation } = useLexicon(workspaceId);
+  const { t, phrase, aviation, maritime, trip } = useLexicon(workspaceId);
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - d.getDay()); return d;
   });
