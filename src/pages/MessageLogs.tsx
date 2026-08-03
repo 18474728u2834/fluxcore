@@ -15,7 +15,7 @@ interface LogRow {
   event_data: any;
 }
 
-export default function MessageLogs() {
+export default function MessageLogs({ embedded = false }: { embedded?: boolean }) {
   const { workspaceId, workspace } = useWorkspace();
   const { hasPermission, isOwner, loading: permLoading } = usePermissions();
   const [rows, setRows] = useState<LogRow[]>([]);
