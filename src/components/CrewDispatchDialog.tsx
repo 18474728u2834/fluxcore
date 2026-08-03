@@ -21,17 +21,20 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [discordIds, setDiscordIds] = useState<Record<string, string>>({}); // member id -> discord user id
 
   useEffect(() => {
     (async () => {
       const [{ data: ms }, { data: ws }, { data: existing }] = await Promise.all([
-        supabase.from("workspace_members").select("id, roblox_username")
+        supabase.from("workspace_members").select("id, roblox_username, discord_user_id")
           .eq("workspace_id", workspaceId).order("roblox_username"),
         supabase.from("workspaces").select("dispatch_roles").eq("id", workspaceId).maybeSingle(),
         supabase.from("session_crew_assignments").select("roblox_username, crew_role")
           .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
       ]);
-      setMembers((ms as any) || []);
+      const list = ((ms as any[]) || []) as Member[];
+      setMembers(list);
+      setDiscordIds(Object.fromEntries(list.map(m => [m.id, m.discord_user_id || ""])));
       const dr = (ws as any)?.dispatch_roles;
       setRoles(Array.isArray(dr) && dr.length ? dr : ["Pilot", "First Officer", "Cabin Crew", "Ground Crew"]);
       const map: Record<string, string> = {};
@@ -40,6 +43,17 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
       setLoading(false);
     })();
   }, [workspaceId, session.id, occursAt]);
+
+  const saveDiscordId = async (m: Member) => {
+    const value = (discordIds[m.id] || "").trim();
+    if (value === (m.discord_user_id || "")) return;
+    const { error } = await supabase.from("workspace_members")
+      .update({ discord_user_id: value || null } as any).eq("id", m.id);
+    if (error) { toast.error("Couldn't save that Discord ID"); return; }
+    setMembers(ms => ms.map(x => x.id === m.id ? { ...x, discord_user_id: value || null } : x));
+    toast.success(`Discord ID saved for ${m.roblox_username}`);
+  };
+
 
   const setPick = async (m: Member, role: string) => {
     if (!role) {
