@@ -1570,6 +1570,76 @@ export type Database = {
           },
         ]
       }
+      session_crew_assignments: {
+        Row: {
+          assigned_by: string | null
+          assigned_by_name: string | null
+          created_at: string
+          crew_role: string
+          id: string
+          member_id: string | null
+          notified_at: string | null
+          notify_error: string | null
+          occurrence_at: string
+          roblox_username: string
+          session_id: string
+          updated_at: string
+          workspace_id: string
+        }
+        Insert: {
+          assigned_by?: string | null
+          assigned_by_name?: string | null
+          created_at?: string
+          crew_role: string
+          id?: string
+          member_id?: string | null
+          notified_at?: string | null
+          notify_error?: string | null
+          occurrence_at: string
+          roblox_username: string
+          session_id: string
+          updated_at?: string
+          workspace_id: string
+        }
+        Update: {
+          assigned_by?: string | null
+          assigned_by_name?: string | null
+          created_at?: string
+          crew_role?: string
+          id?: string
+          member_id?: string | null
+          notified_at?: string | null
+          notify_error?: string | null
+          occurrence_at?: string
+          roblox_username?: string
+          session_id?: string
+          updated_at?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_crew_assignments_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_crew_assignments_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_crew_assignments_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_notifications: {
         Row: {
           action: string
@@ -2627,6 +2697,8 @@ export type Database = {
           closed_reason: string | null
           created_at: string
           discord_webhook_url_enc: string | null
+          dispatch_enabled: boolean
+          dispatch_roles: Json
           game_url: string | null
           gamepass_id: string | null
           id: string
@@ -2667,6 +2739,8 @@ export type Database = {
           closed_reason?: string | null
           created_at?: string
           discord_webhook_url_enc?: string | null
+          dispatch_enabled?: boolean
+          dispatch_roles?: Json
           game_url?: string | null
           gamepass_id?: string | null
           id?: string
@@ -2707,6 +2781,8 @@ export type Database = {
           closed_reason?: string | null
           created_at?: string
           discord_webhook_url_enc?: string | null
+          dispatch_enabled?: boolean
+          dispatch_roles?: Json
           game_url?: string | null
           gamepass_id?: string | null
           id?: string

@@ -20,6 +20,7 @@ import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { NexusDesigner } from "@/components/NexusDesigner";
 import BRoles from "@/bargains/Roles";
+import { CrewDispatchSettings } from "@/components/CrewDispatchSettings";
 import MessageLogsView from "@/pages/MessageLogs";
 
 import { Link, useSearchParams } from "react-router-dom";
@@ -623,6 +624,9 @@ export default function SettingsPage() {
           {active === "sessions" && (
             <>
               <SectionHeader title="Sessions & Quotas" sub="Customize session role names, leaderboards, and quota logging." />
+
+              <CrewDispatchSettings />
+
 
               <div className="glass rounded-xl p-5 space-y-4">
                 <div className="flex items-center gap-2">

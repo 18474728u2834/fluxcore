@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus, Radio } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { CrewDispatchDialog } from "@/components/CrewDispatchDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
@@ -62,6 +64,10 @@ const DEFAULT_SLOTS: Record<string, SessionSlot[]> = {
 
 export default function BSessions() {
   const { workspaceId } = useWorkspace();
+  const { hasPermission, isOwner } = usePermissions();
+  const [dispatchEnabled, setDispatchEnabled] = useState(false);
+  const [dispatchTarget, setDispatchTarget] = useState<{ session: Session; occursAt: Date } | null>(null);
+  const canDispatch = isOwner || hasPermission("flight_dispatch" as any);
   const { scope, newRowDepartmentId } = useDepartment();
   const { user, robloxUsername } = useAuth();
   const { t, phrase, aviation, maritime, trip } = useLexicon(workspaceId);
@@ -91,6 +97,12 @@ export default function BSessions() {
   const [destination, setDestination] = useState("");
   const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!workspaceId) return;
+    supabase.from("workspaces").select("dispatch_enabled").eq("id", workspaceId).maybeSingle()
+      .then(({ data }) => setDispatchEnabled(!!(data as any)?.dispatch_enabled));
+  }, [workspaceId]);
 
 
   useEffect(() => {
@@ -350,6 +362,14 @@ export default function BSessions() {
                     aria-label="Delete session">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
+                  {dispatchEnabled && canDispatch && (
+                    <button onClick={() => setDispatchTarget({ session: s, occursAt: d })}
+                      className="absolute top-3 right-11 opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold hover:bg-[#2a2a2e]"
+                      style={{ color: bx.coral }}
+                      aria-label="Dispatch crew">
+                      <Radio className="w-3.5 h-3.5" /> Dispatch
+                    </button>
+                  )}
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
                     {groupLabel(d)} at {time} · {s.duration_minutes}m · {t(s.category)}{isRecurring ? " · Recurring" : ""}
                   </div>
@@ -425,6 +445,15 @@ export default function BSessions() {
           </div>
         )}
       </div>
+
+      {dispatchTarget && (
+        <CrewDispatchDialog
+          workspaceId={workspaceId!}
+          session={dispatchTarget.session}
+          occursAt={dispatchTarget.occursAt}
+          onClose={() => setDispatchTarget(null)}
+        />
+      )}
 
       {/* Schedule modal */}
       {open && (
