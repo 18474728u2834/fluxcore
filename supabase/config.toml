@@ -58,3 +58,6 @@ verify_jwt = false
 
 [functions.application-center]
 verify_jwt = false
+
+[functions.dispatch-crew]
+verify_jwt = false
