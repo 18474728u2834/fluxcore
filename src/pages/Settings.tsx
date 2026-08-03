@@ -20,6 +20,7 @@ import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { NexusDesigner } from "@/components/NexusDesigner";
 import BRoles from "@/bargains/Roles";
+import { CrewDispatchSettings } from "@/components/CrewDispatchSettings";
 import MessageLogsView from "@/pages/MessageLogs";
 
 import { Link, useSearchParams } from "react-router-dom";
