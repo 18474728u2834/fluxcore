@@ -98,6 +98,12 @@ export default function BSessions() {
   const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (!workspaceId) return;
+    supabase.from("workspaces").select("dispatch_enabled").eq("id", workspaceId).maybeSingle()
+      .then(({ data }) => setDispatchEnabled(!!(data as any)?.dispatch_enabled));
+  }, [workspaceId]);
+
 
   useEffect(() => {
     if (!workspaceId) return;
