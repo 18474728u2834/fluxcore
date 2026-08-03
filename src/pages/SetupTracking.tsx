@@ -155,10 +155,27 @@ InputEvent.OnServerEvent:Connect(function(player, kind)
   end
 end)
 
+-- Server-side fallback: if the player's character moves, count that as activity.
+function Fluxcore:CheckMovement(userId, session)
+  local player = Players:GetPlayerByUserId(userId)
+  if not player then return end
+  local char = player.Character
+  local root = char and char:FindFirstChild("HumanoidRootPart")
+  if not root then return end
+  local pos = root.Position
+  local last = session.last_pos
+  if not last or (pos - last).Magnitude > 3 then
+    session.last_input = tick()
+    session.focused = true
+  end
+  session.last_pos = pos
+end
+
 function Fluxcore:RunHeartbeats()
   while true do
     wait(self.HEARTBEAT_INTERVAL)
     for userId, session in pairs(self.Sessions) do
+      self:CheckMovement(userId, session)
       local idleTime = tick() - session.last_input
       local isIdle = (not session.focused) or (idleTime >= self.IDLE_THRESHOLD)
       if isIdle then
@@ -187,13 +204,35 @@ function Fluxcore:Init()
     self:HookChat(p)
   end
   spawn(function() self:RunHeartbeats() end)
-  print("[Fluxcore] Tracker v5 initialized")
+  print("[Fluxcore] Tracker v6 initialized")
 end
 
 Fluxcore:Init()
 return Fluxcore`;
 
-  // (client beacon source now lives inside the v5 server script above)
+  const luaBeaconScript = `-- Fluxcore Input Beacon (optional). Silent, no GUI.
+-- Create a LocalScript named "FluxcoreInputBeacon" in StarterPlayer > StarterPlayerScripts.
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local InputEvent = ReplicatedStorage:WaitForChild("FluxcoreInput")
+local PING_INTERVAL = 5
+local lastPing = 0
+local function pingActive()
+  local now = tick()
+  if now - lastPing < PING_INTERVAL then return end
+  lastPing = now
+  pcall(function() InputEvent:FireServer("input") end)
+end
+UserInputService.InputBegan:Connect(function(_, gpe) if gpe then return end pingActive() end)
+UserInputService.WindowFocused:Connect(function()
+  lastPing = 0
+  pcall(function() InputEvent:FireServer("focus") end)
+end)
+UserInputService.WindowFocusReleased:Connect(function()
+  pcall(function() InputEvent:FireServer("blur") end)
+end)
+`;
+
 
   const luaRankingScript = `-- Fluxcore In-Game Ranking v1
 -- Place in ServerScriptService as a Script named "FluxcoreRanking"
