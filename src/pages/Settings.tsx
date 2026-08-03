@@ -20,11 +20,12 @@ import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { NexusDesigner } from "@/components/NexusDesigner";
 import BRoles from "@/bargains/Roles";
+import MessageLogsView from "@/pages/MessageLogs";
 
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-type SectionId = "general" | "nexus" | "roles" | "integrations" | "tracking" | "sessions";
+type SectionId = "general" | "nexus" | "roles" | "integrations" | "tracking" | "sessions" | "messages";
 
 const SECTIONS: { id: SectionId; label: string; icon: any; desc: string }[] = [
   { id: "general",      label: "General & Appearance", icon: Sliders, desc: "Workspace identity, branding, dashboard look" },
@@ -33,6 +34,7 @@ const SECTIONS: { id: SectionId; label: string; icon: any; desc: string }[] = [
   { id: "integrations", label: "Integrations",          icon: Plug,    desc: "Discord webhooks, Roblox Open Cloud" },
   { id: "tracking",     label: "Tracking & Scripts",    icon: Code,    desc: "Activity tracker, API key, in-game features" },
   { id: "sessions",     label: "Sessions & Quotas",     icon: CalendarDays, desc: "Role labels, leaderboards, quota logging" },
+  { id: "messages",     label: "Message Logger",        icon: MessageSquare, desc: "In-game chat logging and searchable history" },
 ];
 
 
@@ -273,6 +275,24 @@ export default function SettingsPage() {
             <>
               <SectionHeader title="Theme" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
               <NexusDesigner />
+            </>
+          )}
+          {active === "messages" && (
+            <>
+              <SectionHeader title="Message Logger" sub="In-game chat messages logged by your workspace." />
+              <div className="glass rounded-xl p-5">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-muted-foreground" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Message Logger</p>
+                      <p className="text-xs text-muted-foreground">Log what messages staff send in-game</p>
+                    </div>
+                  </div>
+                  <Switch checked={messageLogger} onCheckedChange={setMessageLogger} />
+                </div>
+              </div>
+              <MessageLogsView embedded />
             </>
           )}
           {active === "roles" && (
