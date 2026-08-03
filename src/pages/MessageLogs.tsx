@@ -132,6 +132,6 @@ export default function MessageLogs({ embedded = false }: { embedded?: boolean }
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </Wrap>
   );
 }
