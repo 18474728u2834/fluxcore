@@ -25,14 +25,27 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
 
   useEffect(() => {
     (async () => {
-      const [{ data: ms }, { data: ws }, { data: existing }] = await Promise.all([
+      const [{ data: ms }, { data: ws }, { data: existing }, { data: auth }] = await Promise.all([
         supabase.from("workspace_members").select("id, roblox_username, discord_user_id")
           .eq("workspace_id", workspaceId).order("roblox_username"),
         supabase.from("workspaces").select("dispatch_roles").eq("id", workspaceId).maybeSingle(),
         supabase.from("session_crew_assignments").select("roblox_username, crew_role")
           .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
+        supabase.auth.getUser(),
       ]);
-      const list = ((ms as any[]) || []) as Member[];
+      let list = ((ms as any[]) || []) as Member[];
+
+      // The workspace owner may not have a member row — let them assign themselves too.
+      const uid = auth?.user?.id;
+      if (uid) {
+        const { data: me } = await supabase.from("verified_users")
+          .select("roblox_username, discord_user_id").eq("user_id", uid).maybeSingle();
+        const myName = (me as any)?.roblox_username as string | undefined;
+        if (myName && !list.some(m => m.roblox_username.toLowerCase() === myName.toLowerCase())) {
+          list = [{ id: `self:${uid}`, roblox_username: myName, discord_user_id: (me as any)?.discord_user_id || null }, ...list];
+        }
+      }
+
       setMembers(list);
       setDiscordIds(Object.fromEntries(list.map(m => [m.id, m.discord_user_id || ""])));
       const dr = (ws as any)?.dispatch_roles;
@@ -43,6 +56,7 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
       setLoading(false);
     })();
   }, [workspaceId, session.id, occursAt]);
+
 
   const saveDiscordId = async (m: Member) => {
     const value = (discordIds[m.id] || "").trim();
