@@ -21,6 +21,7 @@ export const ALL_PERMISSIONS = [
   { key: "manage_documents", label: "Manage Documents", description: "Create and manage policies/handbooks" },
   { key: "view_message_logs", label: "View Message Logs", description: "Read in-game chat messages logged by the workspace" },
   { key: "manage_applications", label: "Manage Applications", description: "Create application forms and review submissions" },
+  { key: "flight_dispatch", label: "Flight Dispatcher", description: "Assign crew roles on scheduled sessions and DM members on Discord" },
 ] as const;
 
 export type PermissionKey = typeof ALL_PERMISSIONS[number]["key"];
