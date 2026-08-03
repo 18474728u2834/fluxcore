@@ -31,6 +31,17 @@ async function sendDm(discordUserId: string, content: string) {
   return null;
 }
 
+async function isInLinkedGuild(discordUserId: string, guildIds: string[]) {
+  if (!BOT_TOKEN) return false;
+  for (const gid of guildIds) {
+    const res = await fetch(`https://discord.com/api/v10/guilds/${gid}/members/${discordUserId}`, {
+      headers: { Authorization: `Bot ${BOT_TOKEN}` },
+    });
+    if (res.ok) return true;
+  }
+  return false;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -75,6 +86,10 @@ Deno.serve(async (req) => {
     const { data: ws } = await admin
       .from("workspaces").select("name").eq("id", workspace_id).maybeSingle();
 
+    const { data: guilds } = await admin
+      .from("workspace_discord_guilds").select("guild_id").eq("workspace_id", workspace_id);
+    const guildIds = ((guilds as any[]) || []).map((g) => String(g.guild_id));
+
     const when = new Date(occurrence_at);
     const results: any[] = [];
 
@@ -108,12 +123,24 @@ Deno.serve(async (req) => {
         let discordUserId: string | null = null;
         if (a?.member_id) {
           const { data: member } = await admin
-            .from("workspace_members").select("user_id").eq("id", a.member_id).maybeSingle();
+            .from("workspace_members").select("user_id, discord_user_id").eq("id", a.member_id).maybeSingle();
           if (member?.user_id) {
             const { data: link } = await admin
               .from("discord_links").select("discord_user_id")
               .eq("workspace_id", workspace_id).eq("user_id", member.user_id).maybeSingle();
             discordUserId = link?.discord_user_id ?? null;
+          }
+          // Fallback: a Discord ID assigned manually by staff. Only DM it when
+          // that user is actually in a guild this workspace has the bot in.
+          if (!discordUserId && (member as any)?.discord_user_id) {
+            const manual = String((member as any).discord_user_id);
+            if (guildIds.length === 0) {
+              dmError = "No Discord server linked to this workspace";
+            } else if (await isInLinkedGuild(manual, guildIds)) {
+              discordUserId = manual;
+            } else {
+              dmError = "That Discord user isn't in the linked Discord server";
+            }
           }
         }
 
