@@ -362,14 +362,15 @@ export default function BSessions() {
                     aria-label="Delete session">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
-                  {dispatchEnabled && canDispatch && (
+                  {canDispatch && (
                     <button onClick={() => setDispatchTarget({ session: s, occursAt: d })}
-                      className="absolute top-3 right-11 opacity-0 group-hover:opacity-100 transition-opacity h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold hover:bg-[#2a2a2e]"
-                      style={{ color: bx.coral }}
+                      className="absolute top-3 right-11 h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]"
+                      style={{ color: bx.coral, borderColor: bx.borderColor }}
                       aria-label="Dispatch crew">
                       <Radio className="w-3.5 h-3.5" /> Dispatch
                     </button>
                   )}
+
                   <div className="text-xs mb-1.5" style={{ color: bx.textDim }}>
                     {groupLabel(d)} at {time} · {s.duration_minutes}m · {t(s.category)}{isRecurring ? " · Recurring" : ""}
                   </div>
