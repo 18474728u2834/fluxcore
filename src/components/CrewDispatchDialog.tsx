@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Loader2, Radio, Send, X, Search } from "lucide-react";
 import { bx } from "@/bargains/Shell";
 
-interface Member { id: string; roblox_username: string; }
+interface Member { id: string; roblox_username: string; discord_user_id?: string | null; }
 
 interface Props {
   workspaceId: string;
@@ -21,17 +21,20 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
+  const [discordIds, setDiscordIds] = useState<Record<string, string>>({}); // member id -> discord user id
 
   useEffect(() => {
     (async () => {
       const [{ data: ms }, { data: ws }, { data: existing }] = await Promise.all([
-        supabase.from("workspace_members").select("id, roblox_username")
+        supabase.from("workspace_members").select("id, roblox_username, discord_user_id")
           .eq("workspace_id", workspaceId).order("roblox_username"),
         supabase.from("workspaces").select("dispatch_roles").eq("id", workspaceId).maybeSingle(),
         supabase.from("session_crew_assignments").select("roblox_username, crew_role")
           .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
       ]);
-      setMembers((ms as any) || []);
+      const list = ((ms as any[]) || []) as Member[];
+      setMembers(list);
+      setDiscordIds(Object.fromEntries(list.map(m => [m.id, m.discord_user_id || ""])));
       const dr = (ws as any)?.dispatch_roles;
       setRoles(Array.isArray(dr) && dr.length ? dr : ["Pilot", "First Officer", "Cabin Crew", "Ground Crew"]);
       const map: Record<string, string> = {};
@@ -40,6 +43,17 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
       setLoading(false);
     })();
   }, [workspaceId, session.id, occursAt]);
+
+  const saveDiscordId = async (m: Member) => {
+    const value = (discordIds[m.id] || "").trim();
+    if (value === (m.discord_user_id || "")) return;
+    const { error } = await supabase.from("workspace_members")
+      .update({ discord_user_id: value || null } as any).eq("id", m.id);
+    if (error) { toast.error("Couldn't save that Discord ID"); return; }
+    setMembers(ms => ms.map(x => x.id === m.id ? { ...x, discord_user_id: value || null } : x));
+    toast.success(`Discord ID saved for ${m.roblox_username}`);
+  };
+
 
   const setPick = async (m: Member, role: string) => {
     if (!role) {
@@ -107,17 +121,29 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                 <p className="text-xs py-6 text-center" style={{ color: bx.textMuted }}>No members found.</p>
               )}
               {shown.map(m => (
-                <div key={m.id} className="flex items-center gap-2 py-1.5">
-                  <RobloxAvatar username={m.roblox_username} className="w-7 h-7 rounded-md flex-shrink-0" />
-                  <span className="text-xs font-medium flex-1 truncate" style={{ color: bx.text }}>{m.roblox_username}</span>
-                  <select
-                    value={picks[m.roblox_username] || ""}
-                    onChange={(e) => setPick(m, e.target.value)}
-                    className="h-8 px-2 rounded-md text-xs outline-none"
-                    style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
-                    <option value="">Unassigned</option>
-                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
+                <div key={m.id} className="py-1.5 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <RobloxAvatar username={m.roblox_username} className="w-7 h-7 rounded-md flex-shrink-0" />
+                    <span className="text-xs font-medium flex-1 truncate" style={{ color: bx.text }}>{m.roblox_username}</span>
+                    <select
+                      value={picks[m.roblox_username] || ""}
+                      onChange={(e) => setPick(m, e.target.value)}
+                      className="h-8 px-2 rounded-md text-xs outline-none"
+                      style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
+                      <option value="">Unassigned</option>
+                      {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  {picks[m.roblox_username] && (
+                    <input
+                      value={discordIds[m.id] ?? ""}
+                      onChange={(e) => setDiscordIds(d => ({ ...d, [m.id]: e.target.value.replace(/[^0-9]/g, "") }))}
+                      onBlur={() => saveDiscordId(m)}
+                      placeholder="Discord user ID (optional)"
+                      inputMode="numeric"
+                      className="w-full h-8 px-2 ml-9 rounded-md text-[11px] outline-none"
+                      style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text, width: "calc(100% - 2.25rem)" }} />
+                  )}
                 </div>
               ))}
             </div>
@@ -129,8 +155,9 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
               Dispatch & notify on Discord
             </button>
             <p className="text-[11px] mt-2 text-center" style={{ color: bx.textMuted }}>
-              Members without a linked Discord account are still assigned, just not DM'd.
+              A member's own linked Discord account is used first. Otherwise the Discord ID you set here is DM'd, as long as that user shares the server the Fluxcore bot is in.
             </p>
+
           </>
         )}
       </div>

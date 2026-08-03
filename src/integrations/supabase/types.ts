@@ -2473,6 +2473,7 @@ export type Database = {
           access_key: string
           birthday_day: number | null
           birthday_month: number | null
+          discord_user_id: string | null
           id: string
           joined_at: string
           roblox_group_rank: number | null
@@ -2489,6 +2490,7 @@ export type Database = {
           access_key?: string
           birthday_day?: number | null
           birthday_month?: number | null
+          discord_user_id?: string | null
           id?: string
           joined_at?: string
           roblox_group_rank?: number | null
@@ -2505,6 +2507,7 @@ export type Database = {
           access_key?: string
           birthday_day?: number | null
           birthday_month?: number | null
+          discord_user_id?: string | null
           id?: string
           joined_at?: string
           roblox_group_rank?: number | null
