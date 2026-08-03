@@ -61,12 +61,18 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
   const saveDiscordId = async (m: Member) => {
     const value = (discordIds[m.id] || "").trim();
     if (value === (m.discord_user_id || "")) return;
+    if (m.id.startsWith("self:")) {
+      // No member row (owner) — keep the ID for this dispatch only.
+      setMembers(ms => ms.map(x => x.id === m.id ? { ...x, discord_user_id: value || null } : x));
+      return;
+    }
     const { error } = await supabase.from("workspace_members")
       .update({ discord_user_id: value || null } as any).eq("id", m.id);
     if (error) { toast.error("Couldn't save that Discord ID"); return; }
     setMembers(ms => ms.map(x => x.id === m.id ? { ...x, discord_user_id: value || null } : x));
     toast.success(`Discord ID saved for ${m.roblox_username}`);
   };
+
 
 
   const setPick = async (m: Member, role: string) => {
