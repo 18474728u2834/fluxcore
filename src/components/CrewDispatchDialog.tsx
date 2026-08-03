@@ -90,7 +90,12 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
   const dispatchNow = async () => {
     const assignments = members
       .filter(m => picks[m.roblox_username])
-      .map(m => ({ roblox_username: m.roblox_username, member_id: m.id, crew_role: picks[m.roblox_username] }));
+      .map(m => ({
+        roblox_username: m.roblox_username,
+        member_id: m.id.startsWith("self:") ? null : m.id,
+        discord_user_id: (discordIds[m.id] || "").trim() || m.discord_user_id || null,
+        crew_role: picks[m.roblox_username],
+      }));
     if (!assignments.length) { toast.error("Assign at least one crew position first"); return; }
 
     setSending(true);
