@@ -98,6 +98,18 @@ Deno.serve(async (req) => {
       const crewRole = String(a?.crew_role || "").trim();
       if (!username || !crewRole) continue;
 
+      // Already dispatched for this exact departure? Only re-notify when the
+      // crew role actually changed — never DM the same person twice.
+      const { data: prev } = await admin
+        .from("session_crew_assignments")
+        .select("id, crew_role, notified_at")
+        .eq("session_id", session_id)
+        .eq("occurrence_at", when.toISOString())
+        .eq("roblox_username", username)
+        .maybeSingle();
+
+      const alreadyNotified = !!prev?.notified_at && prev.crew_role === crewRole;
+
       const { data: row, error: upErr } = await admin
         .from("session_crew_assignments")
         .upsert({
@@ -118,8 +130,14 @@ Deno.serve(async (req) => {
         continue;
       }
 
+      if (alreadyNotified) {
+        results.push({ roblox_username: username, ok: true, notified: false, skipped: true, reason: "Already dispatched for this departure" });
+        continue;
+      }
+
       let dmError: string | null = "No linked Discord account";
       if (notify) {
+
         let discordUserId: string | null = null;
         if (a?.member_id) {
           const { data: member } = await admin
