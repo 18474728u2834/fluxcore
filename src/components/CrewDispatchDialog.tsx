@@ -25,14 +25,27 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
 
   useEffect(() => {
     (async () => {
-      const [{ data: ms }, { data: ws }, { data: existing }] = await Promise.all([
+      const [{ data: ms }, { data: ws }, { data: existing }, { data: auth }] = await Promise.all([
         supabase.from("workspace_members").select("id, roblox_username, discord_user_id")
           .eq("workspace_id", workspaceId).order("roblox_username"),
         supabase.from("workspaces").select("dispatch_roles").eq("id", workspaceId).maybeSingle(),
         supabase.from("session_crew_assignments").select("roblox_username, crew_role")
           .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
+        supabase.auth.getUser(),
       ]);
-      const list = ((ms as any[]) || []) as Member[];
+      let list = ((ms as any[]) || []) as Member[];
+
+      // The workspace owner may not have a member row — let them assign themselves too.
+      const uid = auth?.user?.id;
+      if (uid) {
+        const { data: me } = await supabase.from("verified_users")
+          .select("roblox_username, discord_user_id").eq("user_id", uid).maybeSingle();
+        const myName = (me as any)?.roblox_username as string | undefined;
+        if (myName && !list.some(m => m.roblox_username.toLowerCase() === myName.toLowerCase())) {
+          list = [{ id: `self:${uid}`, roblox_username: myName, discord_user_id: (me as any)?.discord_user_id || null }, ...list];
+        }
+      }
+
       setMembers(list);
       setDiscordIds(Object.fromEntries(list.map(m => [m.id, m.discord_user_id || ""])));
       const dr = (ws as any)?.dispatch_roles;
@@ -44,15 +57,22 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
     })();
   }, [workspaceId, session.id, occursAt]);
 
+
   const saveDiscordId = async (m: Member) => {
     const value = (discordIds[m.id] || "").trim();
     if (value === (m.discord_user_id || "")) return;
+    if (m.id.startsWith("self:")) {
+      // No member row (owner) — keep the ID for this dispatch only.
+      setMembers(ms => ms.map(x => x.id === m.id ? { ...x, discord_user_id: value || null } : x));
+      return;
+    }
     const { error } = await supabase.from("workspace_members")
       .update({ discord_user_id: value || null } as any).eq("id", m.id);
     if (error) { toast.error("Couldn't save that Discord ID"); return; }
     setMembers(ms => ms.map(x => x.id === m.id ? { ...x, discord_user_id: value || null } : x));
     toast.success(`Discord ID saved for ${m.roblox_username}`);
   };
+
 
 
   const setPick = async (m: Member, role: string) => {
@@ -70,7 +90,12 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
   const dispatchNow = async () => {
     const assignments = members
       .filter(m => picks[m.roblox_username])
-      .map(m => ({ roblox_username: m.roblox_username, member_id: m.id, crew_role: picks[m.roblox_username] }));
+      .map(m => ({
+        roblox_username: m.roblox_username,
+        member_id: m.id.startsWith("self:") ? null : m.id,
+        discord_user_id: (discordIds[m.id] || "").trim() || m.discord_user_id || null,
+        crew_role: picks[m.roblox_username],
+      }));
     if (!assignments.length) { toast.error("Assign at least one crew position first"); return; }
 
     setSending(true);
