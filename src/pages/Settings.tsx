@@ -624,6 +624,9 @@ export default function SettingsPage() {
             <>
               <SectionHeader title="Sessions & Quotas" sub="Customize session role names, leaderboards, and quota logging." />
 
+              <CrewDispatchSettings />
+
+
               <div className="glass rounded-xl p-5 space-y-4">
                 <div className="flex items-center gap-2">
                   <Bot className="w-4 h-4 text-primary" />
