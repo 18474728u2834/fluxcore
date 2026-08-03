@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Loader2, Radio, Send, X, Search } from "lucide-react";
 import { bx } from "@/bargains/Shell";
 
-interface Member { id: string; roblox_username: string; }
+interface Member { id: string; roblox_username: string; discord_user_id?: string | null; }
 
 interface Props {
   workspaceId: string;
