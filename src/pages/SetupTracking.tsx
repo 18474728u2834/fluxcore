@@ -455,7 +455,7 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
 
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
             <h2 className="font-semibold text-foreground text-sm">In-Game Ranking (optional)</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
@@ -473,11 +473,11 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
 
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
             <h2 className="font-semibold text-foreground text-sm">Test It</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
-            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v5 initialized</code>. Activity will appear in the dashboard immediately.
+            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v6 initialized</code>. Activity will appear in the dashboard immediately.
           </p>
         </div>
       </div>
