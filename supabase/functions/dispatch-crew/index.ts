@@ -142,7 +142,27 @@ Deno.serve(async (req) => {
               dmError = "That Discord user isn't in the linked Discord server";
             }
           }
+        } else if (a?.member_id == null) {
+          // Self-assignment by an owner with no member row: use their own
+          // linked Discord account, else the ID supplied in the dialog.
+          const { data: link } = await admin
+            .from("discord_links").select("discord_user_id")
+            .eq("workspace_id", workspace_id).eq("user_id", user.id).maybeSingle();
+          discordUserId = link?.discord_user_id ?? null;
+          if (!discordUserId && a?.discord_user_id) {
+            const manual = String(a.discord_user_id).replace(/[^0-9]/g, "");
+            if (!manual) {
+              // nothing to DM
+            } else if (guildIds.length === 0) {
+              dmError = "No Discord server linked to this workspace";
+            } else if (await isInLinkedGuild(manual, guildIds)) {
+              discordUserId = manual;
+            } else {
+              dmError = "That Discord user isn't in the linked Discord server";
+            }
+          }
         }
+
 
         if (discordUserId) {
           const lines = [
