@@ -15,7 +15,7 @@ interface LogRow {
   event_data: any;
 }
 
-export default function MessageLogs() {
+export default function MessageLogs({ embedded = false }: { embedded?: boolean }) {
   const { workspaceId, workspace } = useWorkspace();
   const { hasPermission, isOwner, loading: permLoading } = usePermissions();
   const [rows, setRows] = useState<LogRow[]>([]);
@@ -50,42 +50,48 @@ export default function MessageLogs() {
     });
   }, [rows, query]);
 
+  const Wrap = ({ children }: { children: React.ReactNode }) =>
+    embedded ? <>{children}</> : <DashboardLayout title="Message Logs">{children}</DashboardLayout>;
+
   if (permLoading) {
-    return <DashboardLayout title="Message Logs"><div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div></DashboardLayout>;
+    return <Wrap><div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div></Wrap>;
   }
 
   if (!workspace?.premium) {
     return (
-      <DashboardLayout title="Message Logs">
+      <Wrap>
         <div className="py-10">
           <PremiumGate
             feature="Message Logs"
             description="In-game chat logging keeps a 30-day searchable history of every staff message in your servers. Unlock with the Fluxcore Premium gamepass."
           />
         </div>
-      </DashboardLayout>
+      </Wrap>
     );
   }
 
   if (!allowed) {
     return (
-      <DashboardLayout title="Message Logs">
+      <Wrap>
         <div className="glass rounded-xl p-10 text-center max-w-md mx-auto">
           <ShieldOff className="w-10 h-10 mx-auto mb-3 text-muted-foreground" />
           <h2 className="font-semibold text-foreground">No access</h2>
           <p className="text-sm text-muted-foreground mt-1">You need the <span className="text-foreground">View Message Logs</span> permission.</p>
         </div>
-      </DashboardLayout>
+      </Wrap>
     );
   }
 
   return (
-    <DashboardLayout title="Message Logs">
+    <Wrap>
       <div className="space-y-4 max-w-4xl">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Message Logs</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">In-game chat messages logged by your workspace.</p>
-        </div>
+        {!embedded && (
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Message Logs</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">In-game chat messages logged by your workspace.</p>
+          </div>
+        )}
+
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -126,6 +132,6 @@ export default function MessageLogs() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </Wrap>
   );
 }
