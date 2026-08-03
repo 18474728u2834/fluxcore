@@ -64,6 +64,10 @@ const DEFAULT_SLOTS: Record<string, SessionSlot[]> = {
 
 export default function BSessions() {
   const { workspaceId } = useWorkspace();
+  const { hasPermission, isOwner } = usePermissions();
+  const [dispatchEnabled, setDispatchEnabled] = useState(false);
+  const [dispatchTarget, setDispatchTarget] = useState<{ session: Session; occursAt: Date } | null>(null);
+  const canDispatch = isOwner || hasPermission("flight_dispatch" as any);
   const { scope, newRowDepartmentId } = useDepartment();
   const { user, robloxUsername } = useAuth();
   const { t, phrase, aviation, maritime, trip } = useLexicon(workspaceId);
