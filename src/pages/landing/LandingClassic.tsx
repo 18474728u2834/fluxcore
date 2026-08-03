@@ -524,6 +524,45 @@ export default function LandingClassic() {
         </div>
       </section>
 
+      {/* Quick links */}
+      <section className="py-20 relative">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="rounded-3xl border border-border/40 bg-card/50 backdrop-blur-sm p-8 sm:p-10">
+            <div className="mb-7">
+              <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground font-semibold">Quick links</p>
+              <h2 className="text-2xl sm:text-3xl font-black tracking-[-0.02em] mt-1">Everything, one click away</h2>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { label: "Dashboard", desc: "Open your workspace", icon: LayoutDashboard, to: isLoggedIn ? "/workspaces" : "/login" },
+                { label: "Pricing", desc: "Plans & features", icon: Target, to: "/pricing" },
+                { label: "Security", desc: "How we protect data", icon: ShieldCheck, to: "/security" },
+                { label: "Status", desc: "Live uptime", icon: Activity, to: "/status" },
+                { label: "Support", desc: "Tickets & help", icon: Headphones, to: "/support" },
+                { label: "Feedback", desc: "Ideas & bugs", icon: MessageSquare, to: "/feedback" },
+                { label: "API & scripts", desc: "Developer docs", icon: KeyRound, to: "/api" },
+                { label: "Newsletter", desc: "Product updates", icon: Megaphone, to: "/newsletter" },
+              ].map((l) => (
+                <button
+                  key={l.label}
+                  onClick={() => navigate(l.to)}
+                  className="group text-left rounded-2xl border border-border/40 bg-background/40 p-4 hover:border-primary/40 hover:bg-primary/[0.06] transition-all hover:-translate-y-0.5"
+                >
+                  <div className="w-9 h-9 rounded-xl bg-primary/15 flex items-center justify-center mb-3">
+                    <l.icon className="w-4 h-4 text-primary" />
+                  </div>
+                  <p className="text-sm font-bold text-foreground flex items-center gap-1">
+                    {l.label}
+                    <ArrowRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{l.desc}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-28 relative">
         <div className="max-w-4xl mx-auto px-6">
