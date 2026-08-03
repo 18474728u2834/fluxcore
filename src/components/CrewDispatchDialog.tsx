@@ -109,7 +109,11 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
 
     const results: any[] = (data as any)?.results || [];
     const notified = results.filter(r => r.notified).length;
-    toast.success(`Crew dispatched — ${results.length} assigned, ${notified} DM'd on Discord`);
+    const skipped = results.filter(r => r.skipped).length;
+    toast.success(
+      `Crew dispatched — ${results.length} assigned, ${notified} DM'd on Discord` +
+      (skipped ? `, ${skipped} already notified` : "")
+    );
     onClose();
   };
 
