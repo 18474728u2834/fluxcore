@@ -107,17 +107,29 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                 <p className="text-xs py-6 text-center" style={{ color: bx.textMuted }}>No members found.</p>
               )}
               {shown.map(m => (
-                <div key={m.id} className="flex items-center gap-2 py-1.5">
-                  <RobloxAvatar username={m.roblox_username} className="w-7 h-7 rounded-md flex-shrink-0" />
-                  <span className="text-xs font-medium flex-1 truncate" style={{ color: bx.text }}>{m.roblox_username}</span>
-                  <select
-                    value={picks[m.roblox_username] || ""}
-                    onChange={(e) => setPick(m, e.target.value)}
-                    className="h-8 px-2 rounded-md text-xs outline-none"
-                    style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
-                    <option value="">Unassigned</option>
-                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
-                  </select>
+                <div key={m.id} className="py-1.5 space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <RobloxAvatar username={m.roblox_username} className="w-7 h-7 rounded-md flex-shrink-0" />
+                    <span className="text-xs font-medium flex-1 truncate" style={{ color: bx.text }}>{m.roblox_username}</span>
+                    <select
+                      value={picks[m.roblox_username] || ""}
+                      onChange={(e) => setPick(m, e.target.value)}
+                      className="h-8 px-2 rounded-md text-xs outline-none"
+                      style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
+                      <option value="">Unassigned</option>
+                      {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  {picks[m.roblox_username] && (
+                    <input
+                      value={discordIds[m.id] ?? ""}
+                      onChange={(e) => setDiscordIds(d => ({ ...d, [m.id]: e.target.value.replace(/[^0-9]/g, "") }))}
+                      onBlur={() => saveDiscordId(m)}
+                      placeholder="Discord user ID (optional)"
+                      inputMode="numeric"
+                      className="w-full h-8 px-2 ml-9 rounded-md text-[11px] outline-none"
+                      style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text, width: "calc(100% - 2.25rem)" }} />
+                  )}
                 </div>
               ))}
             </div>
@@ -129,8 +141,9 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
               Dispatch & notify on Discord
             </button>
             <p className="text-[11px] mt-2 text-center" style={{ color: bx.textMuted }}>
-              Members without a linked Discord account are still assigned, just not DM'd.
+              A member's own linked Discord account is used first. Otherwise the Discord ID you set here is DM'd, as long as that user shares the server the Fluxcore bot is in.
             </p>
+
           </>
         )}
       </div>
