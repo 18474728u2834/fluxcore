@@ -392,7 +392,7 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
       <div className="max-w-3xl space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Setup Tracking</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v5 in your Roblox game — one server script, auto-installs the client beacon.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v6 in your Roblox game — one server script, plus an optional input beacon.</p>
         </div>
 
         <div className="glass rounded-xl p-5 space-y-3">
@@ -408,19 +408,19 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
-            <h2 className="font-semibold text-foreground text-sm">Add Server Script (v5 — all-in-one)</h2>
+            <h2 className="font-semibold text-foreground text-sm">Add Server Script (v6)</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
-            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>. The server script auto-installs the silent input beacon into <strong className="text-foreground">StarterPlayerScripts</strong> for you — no second script required.
+            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>. v6 no longer writes script source at runtime (Roblox blocks that with <em>"lacking capability PluginOrOpenCloud"</em>), so add the beacon in step 3 yourself.
           </p>
           <div className="pl-8 text-xs text-muted-foreground space-y-1">
-            <p><strong className="text-foreground">v5 Features:</strong></p>
+            <p><strong className="text-foreground">v6 Features:</strong></p>
             <ul className="list-disc pl-4 space-y-0.5">
-              <li>Auto-installs the input beacon LocalScript on startup</li>
+              <li>No runtime Source writing — no more capability error</li>
+              <li>Server-side movement fallback if the beacon isn't installed</li>
               <li>Silent AFK detection (30s of no input or window unfocus)</li>
-              <li>Message counting & logging</li>
+              <li>Message counting &amp; logging</li>
               <li>15-second heartbeat keepalive</li>
-              <li>Staff-only tracking mode</li>
               <li><strong className="text-foreground">No on-screen GUI</strong> — fully invisible to players</li>
             </ul>
           </div>
@@ -433,6 +433,25 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
             </Button>
           </div>
         </div>
+
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+            <h2 className="font-semibold text-foreground text-sm">Add Input Beacon (recommended)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground pl-8">
+            Create a <strong className="text-foreground">LocalScript</strong> named <code className="text-primary">FluxcoreInputBeacon</code> in <strong className="text-foreground">StarterPlayer → StarterPlayerScripts</strong>. It's silent and gives precise AFK detection (keyboard, mouse and window focus).
+          </p>
+          <div className="relative pl-8">
+            <pre className="bg-muted rounded-lg p-3 text-[11px] font-mono text-secondary-foreground overflow-x-auto max-h-80 overflow-y-auto leading-relaxed">
+              {luaBeaconScript}
+            </pre>
+            <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={copyBeaconToClipboard}>
+              <Copy className="w-3 h-3 mr-1" /> {copiedBeacon ? "Copied" : "Copy"}
+            </Button>
+          </div>
+        </div>
+
 
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
