@@ -37,15 +37,16 @@ export default function SetupTracking() {
 
   const FUNCTION_URL = "https://fluxcore.works/api/v1/track";
 
-  const luaScript = `-- Fluxcore Activity Tracker v5 (all-in-one)
+  const luaScript = `-- Fluxcore Activity Tracker v6
 -- Place in ServerScriptService as a Script named "FluxcoreTracker".
--- This single script also installs the silent input beacon into StarterPlayerScripts
--- automatically — you do NOT need a second script.
+-- v6 no longer writes script Source at runtime (Roblox blocks that with
+-- "lacking capability PluginOrOpenCloud"). Add the optional input beacon
+-- LocalScript yourself for the most accurate AFK detection — without it the
+-- tracker falls back to server-side movement/chat activity detection.
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local StarterPlayer = game:GetService("StarterPlayer")
 
 local InputEvent = ReplicatedStorage:FindFirstChild("FluxcoreInput")
 if not InputEvent then
@@ -54,39 +55,6 @@ if not InputEvent then
   InputEvent.Parent = ReplicatedStorage
 end
 
--- === Auto-install the client beacon (silent, no GUI) ============================
-do
-  local sps = StarterPlayer:FindFirstChildOfClass("StarterPlayerScripts")
-    or StarterPlayer:WaitForChild("StarterPlayerScripts")
-  local existing = sps:FindFirstChild("FluxcoreInputBeacon")
-  if existing then existing:Destroy() end
-  local beacon = Instance.new("LocalScript")
-  beacon.Name = "FluxcoreInputBeacon"
-  beacon.Source = [==[
--- Fluxcore Input Beacon (auto-installed). Silent, no GUI.
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
-local InputEvent = ReplicatedStorage:WaitForChild("FluxcoreInput")
-local PING_INTERVAL = 5
-local lastPing = 0
-local function pingActive()
-  local now = tick()
-  if now - lastPing < PING_INTERVAL then return end
-  lastPing = now
-  pcall(function() InputEvent:FireServer("input") end)
-end
-UserInputService.InputBegan:Connect(function(_, gpe) if gpe then return end pingActive() end)
-UserInputService.WindowFocused:Connect(function()
-  lastPing = 0
-  pcall(function() InputEvent:FireServer("focus") end)
-end)
-UserInputService.WindowFocusReleased:Connect(function()
-  pcall(function() InputEvent:FireServer("blur") end)
-end)
-]==]
-  beacon.Parent = sps
-end
 -- ================================================================================
 
 local Fluxcore = {}
@@ -187,10 +155,27 @@ InputEvent.OnServerEvent:Connect(function(player, kind)
   end
 end)
 
+-- Server-side fallback: if the player's character moves, count that as activity.
+function Fluxcore:CheckMovement(userId, session)
+  local player = Players:GetPlayerByUserId(userId)
+  if not player then return end
+  local char = player.Character
+  local root = char and char:FindFirstChild("HumanoidRootPart")
+  if not root then return end
+  local pos = root.Position
+  local last = session.last_pos
+  if not last or (pos - last).Magnitude > 3 then
+    session.last_input = tick()
+    session.focused = true
+  end
+  session.last_pos = pos
+end
+
 function Fluxcore:RunHeartbeats()
   while true do
     wait(self.HEARTBEAT_INTERVAL)
     for userId, session in pairs(self.Sessions) do
+      self:CheckMovement(userId, session)
       local idleTime = tick() - session.last_input
       local isIdle = (not session.focused) or (idleTime >= self.IDLE_THRESHOLD)
       if isIdle then
@@ -219,13 +204,35 @@ function Fluxcore:Init()
     self:HookChat(p)
   end
   spawn(function() self:RunHeartbeats() end)
-  print("[Fluxcore] Tracker v5 initialized")
+  print("[Fluxcore] Tracker v6 initialized")
 end
 
 Fluxcore:Init()
 return Fluxcore`;
 
-  // (client beacon source now lives inside the v5 server script above)
+  const luaBeaconScript = `-- Fluxcore Input Beacon (optional). Silent, no GUI.
+-- Create a LocalScript named "FluxcoreInputBeacon" in StarterPlayer > StarterPlayerScripts.
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local InputEvent = ReplicatedStorage:WaitForChild("FluxcoreInput")
+local PING_INTERVAL = 5
+local lastPing = 0
+local function pingActive()
+  local now = tick()
+  if now - lastPing < PING_INTERVAL then return end
+  lastPing = now
+  pcall(function() InputEvent:FireServer("input") end)
+end
+UserInputService.InputBegan:Connect(function(_, gpe) if gpe then return end pingActive() end)
+UserInputService.WindowFocused:Connect(function()
+  lastPing = 0
+  pcall(function() InputEvent:FireServer("focus") end)
+end)
+UserInputService.WindowFocusReleased:Connect(function()
+  pcall(function() InputEvent:FireServer("blur") end)
+end)
+`;
+
 
   const luaRankingScript = `-- Fluxcore In-Game Ranking v1
 -- Place in ServerScriptService as a Script named "FluxcoreRanking"
@@ -347,6 +354,14 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
 `;
 
   const [copiedRanking, setCopiedRanking] = useState(false);
+  const [copiedBeacon, setCopiedBeacon] = useState(false);
+
+  const copyBeaconToClipboard = () => {
+    navigator.clipboard.writeText(luaBeaconScript);
+    setCopiedBeacon(true);
+    setTimeout(() => setCopiedBeacon(false), 2000);
+  };
+
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(luaScript);
@@ -377,7 +392,7 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
       <div className="max-w-3xl space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Setup Tracking</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v5 in your Roblox game — one server script, auto-installs the client beacon.</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Install the Activity Tracker v6 in your Roblox game — one server script, plus an optional input beacon.</p>
         </div>
 
         <div className="glass rounded-xl p-5 space-y-3">
@@ -393,19 +408,19 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">2</span>
-            <h2 className="font-semibold text-foreground text-sm">Add Server Script (v5 — all-in-one)</h2>
+            <h2 className="font-semibold text-foreground text-sm">Add Server Script (v6)</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
-            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>. The server script auto-installs the silent input beacon into <strong className="text-foreground">StarterPlayerScripts</strong> for you — no second script required.
+            Create a <strong className="text-foreground">Script</strong> named <code className="text-primary">FluxcoreTracker</code> in <strong className="text-foreground">ServerScriptService</strong>. v6 no longer writes script source at runtime (Roblox blocks that with <em>"lacking capability PluginOrOpenCloud"</em>), so add the beacon in step 3 yourself.
           </p>
           <div className="pl-8 text-xs text-muted-foreground space-y-1">
-            <p><strong className="text-foreground">v5 Features:</strong></p>
+            <p><strong className="text-foreground">v6 Features:</strong></p>
             <ul className="list-disc pl-4 space-y-0.5">
-              <li>Auto-installs the input beacon LocalScript on startup</li>
+              <li>No runtime Source writing — no more capability error</li>
+              <li>Server-side movement fallback if the beacon isn't installed</li>
               <li>Silent AFK detection (30s of no input or window unfocus)</li>
-              <li>Message counting & logging</li>
+              <li>Message counting &amp; logging</li>
               <li>15-second heartbeat keepalive</li>
-              <li>Staff-only tracking mode</li>
               <li><strong className="text-foreground">No on-screen GUI</strong> — fully invisible to players</li>
             </ul>
           </div>
@@ -422,6 +437,25 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">3</span>
+            <h2 className="font-semibold text-foreground text-sm">Add Input Beacon (recommended)</h2>
+          </div>
+          <p className="text-xs text-muted-foreground pl-8">
+            Create a <strong className="text-foreground">LocalScript</strong> named <code className="text-primary">FluxcoreInputBeacon</code> in <strong className="text-foreground">StarterPlayer → StarterPlayerScripts</strong>. It's silent and gives precise AFK detection (keyboard, mouse and window focus).
+          </p>
+          <div className="relative pl-8">
+            <pre className="bg-muted rounded-lg p-3 text-[11px] font-mono text-secondary-foreground overflow-x-auto max-h-80 overflow-y-auto leading-relaxed">
+              {luaBeaconScript}
+            </pre>
+            <Button variant="secondary" size="sm" className="absolute top-2 right-2" onClick={copyBeaconToClipboard}>
+              <Copy className="w-3 h-3 mr-1" /> {copiedBeacon ? "Copied" : "Copy"}
+            </Button>
+          </div>
+        </div>
+
+
+        <div className="glass rounded-xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
             <h2 className="font-semibold text-foreground text-sm">In-Game Ranking (optional)</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
@@ -439,11 +473,11 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
 
         <div className="glass rounded-xl p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">4</span>
+            <span className="w-6 h-6 rounded bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">5</span>
             <h2 className="font-semibold text-foreground text-sm">Test It</h2>
           </div>
           <p className="text-xs text-muted-foreground pl-8">
-            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v5 initialized</code>. Activity will appear in the dashboard immediately.
+            Publish and join your game. Check the output for <code className="text-primary">[Fluxcore] Tracker v6 initialized</code>. Activity will appear in the dashboard immediately.
           </p>
         </div>
       </div>
