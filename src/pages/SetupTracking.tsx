@@ -354,6 +354,14 @@ print("[Fluxcore] Ranking v1 initialized — !promote / !demote enabled")
 `;
 
   const [copiedRanking, setCopiedRanking] = useState(false);
+  const [copiedBeacon, setCopiedBeacon] = useState(false);
+
+  const copyBeaconToClipboard = () => {
+    navigator.clipboard.writeText(luaBeaconScript);
+    setCopiedBeacon(true);
+    setTimeout(() => setCopiedBeacon(false), 2000);
+  };
+
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(luaScript);
