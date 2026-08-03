@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus, Radio } from "lucide-react";
+import { usePermissions } from "@/hooks/usePermissions";
+import { CrewDispatchDialog } from "@/components/CrewDispatchDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
