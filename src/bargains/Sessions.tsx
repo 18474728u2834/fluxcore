@@ -336,22 +336,26 @@ export default function BSessions() {
 
         <div className="flex items-center justify-between">
           <h1 className="text-[2.25rem] font-bold tracking-[-0.035em]" style={{ color: bx.text }}>{groupLabel(selected)}</h1>
-          <button onClick={openScheduler}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity"
-            style={{ background: bx.coral, color: "#fff" }}>
-            <Plus className="w-4 h-4" /> Schedule
-          </button>
+          {canSchedule && (
+            <button onClick={openScheduler}
+              className="inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity"
+              style={{ background: bx.coral, color: "#fff" }}>
+              <Plus className="w-4 h-4" /> Schedule
+            </button>
+          )}
         </div>
 
         {dayOccurrences.length === 0 ? (
           <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
             <CalIcon className="w-10 h-10 mx-auto mb-3" style={{ color: bx.textMuted }} />
             <p className="text-sm" style={{ color: bx.textDim }}>{phrase("No sessions scheduled for this day.")}</p>
-            <button onClick={openScheduler}
-              className="mt-4 inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold"
-              style={{ background: bx.coral, color: "#fff" }}>
-              <Plus className="w-4 h-4" /> Schedule one
-            </button>
+            {canSchedule && (
+              <button onClick={openScheduler}
+                className="mt-4 inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold"
+                style={{ background: bx.coral, color: "#fff" }}>
+                <Plus className="w-4 h-4" /> Schedule one
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
