@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CrewWishlistDialog } from "@/components/CrewWishlistDialog";
 import { bx } from "@/bargains/Shell";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * Standalone crew wishlist page — the link a dispatcher shares with staff:
@@ -12,6 +13,7 @@ import { Loader2 } from "lucide-react";
 export default function CrewWishlist() {
   const { sessionId, occurrence } = useParams();
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [session, setSession] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,6 +29,12 @@ export default function CrewWishlist() {
       setSession(data);
     })();
   }, [sessionId]);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate(`/login?next=${encodeURIComponent(window.location.pathname)}`, { replace: true });
+    }
+  }, [authLoading, user]);
 
   const occursAt = occurrence ? new Date(decodeURIComponent(occurrence)) : null;
 
