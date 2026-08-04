@@ -142,7 +142,37 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
     onClose();
   };
 
-  const shown = members.filter(m => m.roblox_username.toLowerCase().includes(query.toLowerCase()));
+  const wishFor = (name: string) => wishes[name.toLowerCase()];
+  const wishCount = Object.keys(wishes).length;
+
+  // Fill every unassigned member with their first wished position that this
+  // workspace actually dispatches. The dispatcher can still change anything.
+  const applyWishlist = () => {
+    setPicks(p => {
+      const next = { ...p };
+      for (const m of members) {
+        const w = wishFor(m.roblox_username);
+        if (!w || w.availability === "unavailable" || next[m.roblox_username]) continue;
+        const match = w.preferred_roles.find(r => roles.includes(r));
+        if (match) next[m.roblox_username] = match;
+      }
+      return next;
+    });
+    toast.success("Wishlist applied — review before dispatching");
+  };
+
+  const rank = (m: Member) => {
+    const w = wishFor(m.roblox_username);
+    if (!w) return 3;
+    if (w.availability === "unavailable") return 4;
+    if (w.availability === "maybe") return 2;
+    return 1;
+  };
+
+  const shown = members
+    .filter(m => m.roblox_username.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => rank(a) - rank(b) || a.roblox_username.localeCompare(b.roblox_username));
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
