@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus, Radio } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus, Radio, ClipboardList } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { CrewDispatchDialog } from "@/components/CrewDispatchDialog";
+import { CrewWishlistDialog } from "@/components/CrewWishlistDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
@@ -70,6 +71,7 @@ export default function BSessions() {
   const canSchedule = allowedCategories.length > 0;
   const [dispatchEnabled, setDispatchEnabled] = useState(false);
   const [dispatchTarget, setDispatchTarget] = useState<{ session: Session; occursAt: Date } | null>(null);
+  const [wishlistTarget, setWishlistTarget] = useState<{ session: Session; occursAt: Date } | null>(null);
   
   const { scope, newRowDepartmentId } = useDepartment();
   const { user, robloxUsername } = useAuth();
@@ -375,6 +377,14 @@ export default function BSessions() {
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
+                  {!!crew && dispatchEnabled && (
+                    <button onClick={() => setWishlistTarget({ session: s, occursAt: d })}
+                      className={`absolute top-3 ${canDispatch ? "right-[6.6rem]" : "right-11"} h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]`}
+                      style={{ color: bx.textDim, borderColor: bx.borderColor }}
+                      aria-label="Crew wishlist">
+                      <ClipboardList className="w-3.5 h-3.5" /> Wishlist
+                    </button>
+                  )}
                   {canDispatch && (
                     <button onClick={() => setDispatchTarget({ session: s, occursAt: d })}
                       className="absolute top-3 right-11 h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]"
@@ -459,6 +469,15 @@ export default function BSessions() {
           </div>
         )}
       </div>
+
+      {wishlistTarget && (
+        <CrewWishlistDialog
+          workspaceId={workspaceId!}
+          session={wishlistTarget.session}
+          occursAt={wishlistTarget.occursAt}
+          onClose={() => setWishlistTarget(null)}
+        />
+      )}
 
       {dispatchTarget && (
         <CrewDispatchDialog
