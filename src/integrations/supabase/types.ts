@@ -1640,6 +1640,73 @@ export type Database = {
           },
         ]
       }
+      session_crew_preferences: {
+        Row: {
+          availability: string
+          created_at: string
+          id: string
+          member_id: string | null
+          note: string | null
+          occurrence_at: string
+          preferred_roles: Json
+          roblox_username: string
+          session_id: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          availability?: string
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          note?: string | null
+          occurrence_at: string
+          preferred_roles?: Json
+          roblox_username: string
+          session_id: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          availability?: string
+          created_at?: string
+          id?: string
+          member_id?: string | null
+          note?: string | null
+          occurrence_at?: string
+          preferred_roles?: Json
+          roblox_username?: string
+          session_id?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_crew_preferences_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "workspace_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_crew_preferences_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_crew_preferences_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_notifications: {
         Row: {
           action: string
