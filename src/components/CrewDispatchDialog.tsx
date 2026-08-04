@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { toast } from "sonner";
-import { Loader2, Radio, Send, X, Search } from "lucide-react";
+import { Loader2, Radio, Send, X, Search, ClipboardList } from "lucide-react";
 import { bx } from "@/bargains/Shell";
 import { useLexicon } from "@/hooks/useLexicon";
 
@@ -15,11 +15,19 @@ interface Props {
   onClose: () => void;
 }
 
+interface Wish {
+  roblox_username: string;
+  availability: string;
+  preferred_roles: string[];
+  note: string | null;
+}
+
 export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: Props) {
   const { crew } = useLexicon(workspaceId);
   const [members, setMembers] = useState<Member[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
   const [picks, setPicks] = useState<Record<string, string>>({}); // username -> crew role
+  const [wishes, setWishes] = useState<Record<string, Wish>>({}); // lowercased username -> wishlist
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -27,13 +35,16 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
 
   useEffect(() => {
     (async () => {
-      const [{ data: ms }, { data: ws }, { data: existing }, { data: auth }] = await Promise.all([
+      const [{ data: ms }, { data: ws }, { data: existing }, { data: auth }, { data: prefs }] = await Promise.all([
         supabase.from("workspace_members").select("id, roblox_username, discord_user_id")
           .eq("workspace_id", workspaceId).order("roblox_username"),
         supabase.from("workspaces").select("dispatch_roles").eq("id", workspaceId).maybeSingle(),
         supabase.from("session_crew_assignments").select("roblox_username, crew_role")
           .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
         supabase.auth.getUser(),
+        supabase.from("session_crew_preferences" as any)
+          .select("roblox_username, availability, preferred_roles, note")
+          .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
       ]);
       let list = ((ms as any[]) || []) as Member[];
 
@@ -48,6 +59,17 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
         }
       }
 
+      const wishMap: Record<string, Wish> = {};
+      for (const w of ((prefs as any[]) || [])) {
+        wishMap[String(w.roblox_username).toLowerCase()] = {
+          roblox_username: w.roblox_username,
+          availability: w.availability || "available",
+          preferred_roles: Array.isArray(w.preferred_roles) ? w.preferred_roles : [],
+          note: w.note ?? null,
+        };
+      }
+      setWishes(wishMap);
+
       setMembers(list);
       setDiscordIds(Object.fromEntries(list.map(m => [m.id, m.discord_user_id || ""])));
       const dr = (ws as any)?.dispatch_roles;
@@ -58,6 +80,7 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
       setLoading(false);
     })();
   }, [workspaceId, session.id, occursAt]);
+
 
 
   const saveDiscordId = async (m: Member) => {
@@ -119,7 +142,37 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
     onClose();
   };
 
-  const shown = members.filter(m => m.roblox_username.toLowerCase().includes(query.toLowerCase()));
+  const wishFor = (name: string) => wishes[name.toLowerCase()];
+  const wishCount = Object.keys(wishes).length;
+
+  // Fill every unassigned member with their first wished position that this
+  // workspace actually dispatches. The dispatcher can still change anything.
+  const applyWishlist = () => {
+    setPicks(p => {
+      const next = { ...p };
+      for (const m of members) {
+        const w = wishFor(m.roblox_username);
+        if (!w || w.availability === "unavailable" || next[m.roblox_username]) continue;
+        const match = w.preferred_roles.find(r => roles.includes(r));
+        if (match) next[m.roblox_username] = match;
+      }
+      return next;
+    });
+    toast.success("Wishlist applied — review before dispatching");
+  };
+
+  const rank = (m: Member) => {
+    const w = wishFor(m.roblox_username);
+    if (!w) return 3;
+    if (w.availability === "unavailable") return 4;
+    if (w.availability === "maybe") return 2;
+    return 1;
+  };
+
+  const shown = members
+    .filter(m => m.roblox_username.toLowerCase().includes(query.toLowerCase()))
+    .sort((a, b) => rank(a) - rank(b) || a.roblox_username.localeCompare(b.roblox_username));
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
@@ -147,11 +200,26 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                 style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
             </div>
 
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <p className="text-[11px]" style={{ color: bx.textMuted }}>
+                {wishCount ? `${wishCount} crew shared their wishlist` : "No wishlist replies yet"}
+              </p>
+              {wishCount > 0 && (
+                <button onClick={applyWishlist}
+                  className="h-7 px-2.5 rounded-md text-[11px] font-semibold border inline-flex items-center gap-1"
+                  style={{ color: bx.coral, borderColor: bx.borderColor }}>
+                  <ClipboardList className="w-3 h-3" /> Apply wishlist
+                </button>
+              )}
+            </div>
+
+            <div className="mt-2 space-y-1.5">
               {shown.length === 0 && (
                 <p className="text-xs py-6 text-center" style={{ color: bx.textMuted }}>No members found.</p>
               )}
-              {shown.map(m => (
+              {shown.map(m => {
+                const w = wishFor(m.roblox_username);
+                return (
                 <div key={m.id} className="py-1.5 space-y-1.5">
                   <div className="flex items-center gap-2">
                     <RobloxAvatar username={m.roblox_username} className="w-7 h-7 rounded-md flex-shrink-0" />
@@ -165,6 +233,22 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                       {roles.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
                   </div>
+                  {w && (
+                    <div className="ml-9 flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                        style={{
+                          background: "#1c1c20",
+                          color: w.availability === "unavailable" ? bx.coral : w.availability === "maybe" ? bx.textDim : "#4ade80",
+                        }}>
+                        {w.availability === "unavailable" ? "Can't attend" : w.availability === "maybe" ? "Maybe" : "Available"}
+                      </span>
+                      {w.preferred_roles.map(r => (
+                        <span key={r} className="text-[10px] px-1.5 py-0.5 rounded"
+                          style={{ background: "#1c1c20", color: bx.textDim }}>wants {r}</span>
+                      ))}
+                      {w.note && <span className="text-[10px] italic" style={{ color: bx.textMuted }}>“{w.note}”</span>}
+                    </div>
+                  )}
                   {picks[m.roblox_username] && (
                     <input
                       value={discordIds[m.id] ?? ""}
@@ -176,8 +260,10 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                       style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text, width: "calc(100% - 2.25rem)" }} />
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
+
 
             <button onClick={dispatchNow} disabled={sending}
               className="mt-5 w-full h-10 rounded-md text-sm font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-60"
