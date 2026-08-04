@@ -33,7 +33,7 @@
       "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
     },
     {
-      "source": "/((?!api/|https/|application/|assets/|403\\.html|.*\\.[a-zA-Z0-9]+$).*)",
+      "source": "/:path((?!api/|https/|application/).*)",
       "destination": "/index.html"
     }
   ],
