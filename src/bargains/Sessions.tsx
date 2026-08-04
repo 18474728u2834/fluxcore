@@ -378,11 +378,20 @@ export default function BSessions() {
                     </button>
                   )}
                   {!!crew && dispatchEnabled && (
-                    <button onClick={() => setWishlistTarget({ session: s, occursAt: d })}
+                    <button onClick={() => {
+                        if (canDispatch) {
+                          const url = `${window.location.origin}/wishlist/${s.id}/${encodeURIComponent(d.toISOString())}`;
+                          navigator.clipboard.writeText(url)
+                            .then(() => toast.success("Wishlist link copied — send it to your crew"))
+                            .catch(() => toast.error("Couldn't copy the link"));
+                        } else {
+                          setWishlistTarget({ session: s, occursAt: d });
+                        }
+                      }}
                       className={`absolute top-3 ${canDispatch ? "right-[6.6rem]" : "right-11"} h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]`}
                       style={{ color: bx.textDim, borderColor: bx.borderColor }}
-                      aria-label="Crew wishlist">
-                      <ClipboardList className="w-3.5 h-3.5" /> Wishlist
+                      aria-label={canDispatch ? "Copy wishlist link" : "Crew wishlist"}>
+                      <ClipboardList className="w-3.5 h-3.5" /> {canDispatch ? "Wishlist link" : "Wishlist"}
                     </button>
                   )}
                   {canDispatch && (
