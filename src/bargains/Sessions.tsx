@@ -67,10 +67,11 @@ export default function BSessions() {
   const { hasPermission, isOwner } = usePermissions();
   const [dispatchEnabled, setDispatchEnabled] = useState(false);
   const [dispatchTarget, setDispatchTarget] = useState<{ session: Session; occursAt: Date } | null>(null);
-  const canDispatch = isOwner || hasPermission("flight_dispatch" as any);
+  
   const { scope, newRowDepartmentId } = useDepartment();
   const { user, robloxUsername } = useAuth();
-  const { t, phrase, aviation, maritime, trip } = useLexicon(workspaceId);
+  const { t, phrase, aviation, maritime, trip, crew } = useLexicon(workspaceId);
+  const canDispatch = !!crew && (isOwner || hasPermission("flight_dispatch" as any));
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate() - d.getDay()); return d;
   });

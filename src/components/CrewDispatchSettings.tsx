@@ -7,11 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { Loader2, Plus, Radio, Save, X } from "lucide-react";
+import { useLexicon } from "@/hooks/useLexicon";
 
-const DEFAULT_ROLES = ["Pilot", "First Officer", "Cabin Crew", "Ground Crew"];
+const FALLBACK_ROLES = ["Pilot", "First Officer", "Cabin Crew", "Ground Crew"];
 
 export function CrewDispatchSettings() {
   const { workspaceId } = useWorkspace();
+  const { crew } = useLexicon(workspaceId);
+  const DEFAULT_ROLES = crew?.defaults ?? FALLBACK_ROLES;
   const [enabled, setEnabled] = useState(false);
   const [roles, setRoles] = useState<string[]>(DEFAULT_ROLES);
   const [draft, setDraft] = useState("");
@@ -49,6 +52,9 @@ export function CrewDispatchSettings() {
     setSaving(false);
   };
 
+  // Crew dispatch is an aviation / maritime feature only.
+  if (!crew) return null;
+
   if (loading) {
     return (
       <div className="glass rounded-xl p-8 flex justify-center">
@@ -62,9 +68,9 @@ export function CrewDispatchSettings() {
       <div className="flex items-start gap-3">
         <Radio className="w-5 h-5 text-primary mt-0.5" />
         <div>
-          <h3 className="font-semibold text-foreground">Crew Dispatch</h3>
+          <h3 className="font-semibold text-foreground">{crew.title}</h3>
           <p className="text-sm text-muted-foreground">
-            Let staff with the <span className="text-foreground font-medium">Flight Dispatcher</span> permission assign crew
+            Let staff with the <span className="text-foreground font-medium">{crew.permissionLabel}</span> permission assign crew
             positions on any scheduled session. Assigned members get a Discord DM from the Fluxcore bot if their account is linked.
           </p>
         </div>
@@ -79,7 +85,7 @@ export function CrewDispatchSettings() {
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm">Crew positions</Label>
+        <Label className="text-sm">{crew.positionsLabel}</Label>
         <div className="flex flex-wrap gap-2">
           {roles.map(r => (
             <span key={r} className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-muted text-foreground">
@@ -96,7 +102,7 @@ export function CrewDispatchSettings() {
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addRole(); } }}
-            placeholder="e.g. Purser, Load Master, Deck Officer"
+            placeholder={crew.placeholder}
           />
           <Button variant="secondary" onClick={addRole}><Plus className="w-4 h-4" /></Button>
         </div>
