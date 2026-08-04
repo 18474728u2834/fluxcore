@@ -64,7 +64,10 @@ const DEFAULT_SLOTS: Record<string, SessionSlot[]> = {
 
 export default function BSessions() {
   const { workspaceId } = useWorkspace();
-  const { hasPermission, isOwner } = usePermissions();
+  const { hasPermission, isOwner, canCreateSession } = usePermissions();
+  const allowedCategories = ["Shift", "Training", "Event", "Meeting"].filter((c) =>
+    canCreateSession(c === "Meeting" ? "Event" : c));
+  const canSchedule = allowedCategories.length > 0;
   const [dispatchEnabled, setDispatchEnabled] = useState(false);
   const [dispatchTarget, setDispatchTarget] = useState<{ session: Session; occursAt: Date } | null>(null);
   
@@ -172,16 +175,18 @@ export default function BSessions() {
   };
 
   const openScheduler = () => {
+    if (!canSchedule) return;
+    const first = allowedCategories[0];
     const base = new Date(selected);
     const now = new Date();
     base.setHours(now.getHours()+1, 0, 0, 0);
     setWhen(toLocalInput(base));
     setTitle("");
-    setCategory("Shift");
+    setCategory(first);
     setDuration("60");
     setDescription("");
     setGameUrl("");
-    setSlots(DEFAULT_SLOTS.Shift.map(s => ({ ...s, assigned: Array(s.count).fill(null) })));
+    setSlots((DEFAULT_SLOTS[first] || DEFAULT_SLOTS.Event).map(s => ({ ...s, assigned: Array(s.count).fill(null) })));
     setRecurring("none");
     setOpen(true);
   };
@@ -331,22 +336,26 @@ export default function BSessions() {
 
         <div className="flex items-center justify-between">
           <h1 className="text-[2.25rem] font-bold tracking-[-0.035em]" style={{ color: bx.text }}>{groupLabel(selected)}</h1>
-          <button onClick={openScheduler}
-            className="inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity"
-            style={{ background: bx.coral, color: "#fff" }}>
-            <Plus className="w-4 h-4" /> Schedule
-          </button>
+          {canSchedule && (
+            <button onClick={openScheduler}
+              className="inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold hover:opacity-90 transition-opacity"
+              style={{ background: bx.coral, color: "#fff" }}>
+              <Plus className="w-4 h-4" /> Schedule
+            </button>
+          )}
         </div>
 
         {dayOccurrences.length === 0 ? (
           <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
             <CalIcon className="w-10 h-10 mx-auto mb-3" style={{ color: bx.textMuted }} />
             <p className="text-sm" style={{ color: bx.textDim }}>{phrase("No sessions scheduled for this day.")}</p>
-            <button onClick={openScheduler}
-              className="mt-4 inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold"
-              style={{ background: bx.coral, color: "#fff" }}>
-              <Plus className="w-4 h-4" /> Schedule one
-            </button>
+            {canSchedule && (
+              <button onClick={openScheduler}
+                className="mt-4 inline-flex items-center gap-2 h-9 px-4 rounded-md text-sm font-semibold"
+                style={{ background: bx.coral, color: "#fff" }}>
+                <Plus className="w-4 h-4" /> Schedule one
+              </button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -357,12 +366,14 @@ export default function BSessions() {
               return (
                 <div key={`${s.id}-${d.getTime()}`} className="rounded-md border p-5 transition-transform hover:-translate-y-0.5 group relative"
                   style={bx.cardStyle}>
-                  <button onClick={() => deleteSession(s.id)}
-                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-md inline-flex items-center justify-center hover:bg-[#2a2a2e]"
-                    style={{ color: bx.textDim }}
-                    aria-label="Delete session">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {isOwner && (
+                    <button onClick={() => deleteSession(s.id)}
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-md inline-flex items-center justify-center hover:bg-[#2a2a2e]"
+                      style={{ color: bx.textDim }}
+                      aria-label="Delete session">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   {canDispatch && (
                     <button onClick={() => setDispatchTarget({ session: s, occursAt: d })}
                       className="absolute top-3 right-11 h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]"
@@ -484,7 +495,7 @@ export default function BSessions() {
                   <select value={category} onChange={(e) => onCategoryChange(e.target.value)}
                     className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                     style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
-                    {["Shift", "Training", "Event", "Meeting"].map((c) => (
+                    {allowedCategories.map((c) => (
                       <option key={c} value={c}>{t(c)}</option>
                     ))}
                   </select>
