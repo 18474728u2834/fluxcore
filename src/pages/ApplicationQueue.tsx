@@ -80,7 +80,7 @@ export default function ApplicationQueue() {
         </div>
         {apps.length === 0 ? (
           <div className="glass rounded-xl p-10 text-center text-sm text-muted-foreground">No {filter} applications.</div>
-        ) : apps.map(a => <AppCard key={a.id} app={a} onReview={review} busy={busy === a.id} />)}
+        ) : apps.map(a => <AppCard key={a.id} app={a} onReview={review} busy={busy === a.id} canReview={canReview} />)}
       </div>
     </DashboardLayout>
   );
