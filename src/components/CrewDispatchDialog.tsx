@@ -15,11 +15,19 @@ interface Props {
   onClose: () => void;
 }
 
+interface Wish {
+  roblox_username: string;
+  availability: string;
+  preferred_roles: string[];
+  note: string | null;
+}
+
 export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: Props) {
   const { crew } = useLexicon(workspaceId);
   const [members, setMembers] = useState<Member[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
   const [picks, setPicks] = useState<Record<string, string>>({}); // username -> crew role
+  const [wishes, setWishes] = useState<Record<string, Wish>>({}); // lowercased username -> wishlist
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
@@ -27,13 +35,16 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
 
   useEffect(() => {
     (async () => {
-      const [{ data: ms }, { data: ws }, { data: existing }, { data: auth }] = await Promise.all([
+      const [{ data: ms }, { data: ws }, { data: existing }, { data: auth }, { data: prefs }] = await Promise.all([
         supabase.from("workspace_members").select("id, roblox_username, discord_user_id")
           .eq("workspace_id", workspaceId).order("roblox_username"),
         supabase.from("workspaces").select("dispatch_roles").eq("id", workspaceId).maybeSingle(),
         supabase.from("session_crew_assignments").select("roblox_username, crew_role")
           .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
         supabase.auth.getUser(),
+        supabase.from("session_crew_preferences" as any)
+          .select("roblox_username, availability, preferred_roles, note")
+          .eq("session_id", session.id).eq("occurrence_at", occursAt.toISOString()),
       ]);
       let list = ((ms as any[]) || []) as Member[];
 
@@ -48,6 +59,17 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
         }
       }
 
+      const wishMap: Record<string, Wish> = {};
+      for (const w of ((prefs as any[]) || [])) {
+        wishMap[String(w.roblox_username).toLowerCase()] = {
+          roblox_username: w.roblox_username,
+          availability: w.availability || "available",
+          preferred_roles: Array.isArray(w.preferred_roles) ? w.preferred_roles : [],
+          note: w.note ?? null,
+        };
+      }
+      setWishes(wishMap);
+
       setMembers(list);
       setDiscordIds(Object.fromEntries(list.map(m => [m.id, m.discord_user_id || ""])));
       const dr = (ws as any)?.dispatch_roles;
@@ -58,6 +80,7 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
       setLoading(false);
     })();
   }, [workspaceId, session.id, occursAt]);
+
 
 
   const saveDiscordId = async (m: Member) => {
