@@ -175,16 +175,18 @@ export default function BSessions() {
   };
 
   const openScheduler = () => {
+    if (!canSchedule) return;
+    const first = allowedCategories[0];
     const base = new Date(selected);
     const now = new Date();
     base.setHours(now.getHours()+1, 0, 0, 0);
     setWhen(toLocalInput(base));
     setTitle("");
-    setCategory("Shift");
+    setCategory(first);
     setDuration("60");
     setDescription("");
     setGameUrl("");
-    setSlots(DEFAULT_SLOTS.Shift.map(s => ({ ...s, assigned: Array(s.count).fill(null) })));
+    setSlots((DEFAULT_SLOTS[first] || DEFAULT_SLOTS.Event).map(s => ({ ...s, assigned: Array(s.count).fill(null) })));
     setRecurring("none");
     setOpen(true);
   };
