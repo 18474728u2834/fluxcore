@@ -277,6 +277,7 @@ export default function BSessions() {
   };
 
   const toggleClaim = async (s: Session, occursAt: Date, slotIdx: number, seatIdx: number) => {
+    if (!canHostSession(s.category)) { toast.error("You don't have permission to claim this seat"); return; }
     if (!robloxUsername) { toast.error("Verify your Roblox account first"); return; }
     const isRecurring = !!(s.recurring || (s.recurring_days && s.recurring_days.length));
     const eff = effectiveSlots(s, occursAt);
