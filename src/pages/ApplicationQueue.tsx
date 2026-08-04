@@ -86,7 +86,7 @@ export default function ApplicationQueue() {
   );
 }
 
-function AppCard({ app, onReview, busy }: { app: App; onReview: (id: string, status: "accepted" | "denied", note: string, a: App) => void; busy: boolean }) {
+function AppCard({ app, onReview, busy, canReview }: { app: App; onReview: (id: string, status: "accepted" | "denied", note: string, a: App) => void; busy: boolean; canReview: boolean }) {
   const [note, setNote] = useState("");
   return (
     <div className="glass rounded-xl p-5 space-y-3">
