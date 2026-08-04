@@ -22,6 +22,8 @@ interface App {
 export default function ApplicationQueue() {
   const { formId } = useParams();
   const { workspaceId } = useWorkspace();
+  const { hasPermission, isOwner } = usePermissions();
+  const canReview = isOwner || hasPermission("manage_applications");
   const [apps, setApps] = useState<App[]>([]);
   const [filter, setFilter] = useState<"pending" | "accepted" | "denied">("pending");
   const [form, setForm] = useState<any>(null);
