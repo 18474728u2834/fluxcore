@@ -15,7 +15,9 @@ interface Doc {
 }
 
 export default function BDocuments() {
-  const { workspaceId, isOwner } = useWorkspace();
+  const { workspaceId, isOwner: isWsOwner } = useWorkspace();
+  const { hasPermission } = usePermissions();
+  const isOwner = isWsOwner || hasPermission("manage_documents");
   const { scope, newRowDepartmentId, department } = useDepartment();
   const { user } = useAuth();
   const navigate = useNavigate();
