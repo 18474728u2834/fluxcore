@@ -21,7 +21,7 @@ export default function BLOA() {
   const { scope, newRowDepartmentId, department } = useDepartment();
   const { user, robloxUsername } = useAuth();
   const { hasPermission } = usePermissions();
-  const canManage = isOwner || hasPermission("manage_members");
+  const canManage = isOwner || hasPermission("manage_members") || hasPermission("manage_loa");
 
   const [requests, setRequests] = useState<LOARequest[]>([]);
   const [memberRows, setMemberRows] = useState<Record<string, { roblox_username: string; roblox_user_id: string }>>({});

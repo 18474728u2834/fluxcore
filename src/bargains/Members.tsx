@@ -6,13 +6,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
+import { usePermissions } from "@/hooks/usePermissions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 const PAGE_SIZE = 50;
 
 export default function BMembers() {
-  const { workspaceId, isOwner } = useWorkspace();
+  const { workspaceId, isOwner: isWsOwner } = useWorkspace();
+  const { hasPermission } = usePermissions();
+  const isOwner = isWsOwner || hasPermission("manage_members");
   const { department } = useDepartment();
   const [members, setMembers] = useState<any[]>([]);
   const [q, setQ] = useState("");

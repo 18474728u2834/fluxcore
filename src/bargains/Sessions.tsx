@@ -64,7 +64,7 @@ const DEFAULT_SLOTS: Record<string, SessionSlot[]> = {
 
 export default function BSessions() {
   const { workspaceId } = useWorkspace();
-  const { hasPermission, isOwner, canCreateSession } = usePermissions();
+  const { hasPermission, isOwner, canCreateSession, canHostSession } = usePermissions();
   const allowedCategories = ["Shift", "Training", "Event", "Meeting"].filter((c) =>
     canCreateSession(c === "Meeting" ? "Event" : c));
   const canSchedule = allowedCategories.length > 0;
@@ -277,6 +277,7 @@ export default function BSessions() {
   };
 
   const toggleClaim = async (s: Session, occursAt: Date, slotIdx: number, seatIdx: number) => {
+    if (!canHostSession(s.category)) { toast.error("You don't have permission to claim this seat"); return; }
     if (!robloxUsername) { toast.error("Verify your Roblox account first"); return; }
     const isRecurring = !!(s.recurring || (s.recurring_days && s.recurring_days.length));
     const eff = effectiveSlots(s, occursAt);
@@ -433,7 +434,7 @@ export default function BSessions() {
                                       <span className="text-xs italic" style={{ color: bx.textMuted }}>Open</span>
                                     )}
                                   </div>
-                                  {(!name || mine) && (
+                                  {(!name || mine) && canHostSession(s.category) && (
                                     <button onClick={() => toggleClaim(s, d, slIdx, seatIdx)}
                                       className="text-[11px] font-semibold inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-[#2a2a2e] transition"
                                       style={{ color: mine ? bx.textDim : bx.coral }}>

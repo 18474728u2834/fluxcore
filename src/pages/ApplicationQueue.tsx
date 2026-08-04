@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 import { Check, X, Loader2 } from "lucide-react";
 
@@ -22,6 +23,8 @@ interface App {
 export default function ApplicationQueue() {
   const { formId } = useParams();
   const { workspaceId } = useWorkspace();
+  const { hasPermission, isOwner } = usePermissions();
+  const canReview = isOwner || hasPermission("manage_applications");
   const [apps, setApps] = useState<App[]>([]);
   const [filter, setFilter] = useState<"pending" | "accepted" | "denied">("pending");
   const [form, setForm] = useState<any>(null);
@@ -77,13 +80,13 @@ export default function ApplicationQueue() {
         </div>
         {apps.length === 0 ? (
           <div className="glass rounded-xl p-10 text-center text-sm text-muted-foreground">No {filter} applications.</div>
-        ) : apps.map(a => <AppCard key={a.id} app={a} onReview={review} busy={busy === a.id} />)}
+        ) : apps.map(a => <AppCard key={a.id} app={a} onReview={review} busy={busy === a.id} canReview={canReview} />)}
       </div>
     </DashboardLayout>
   );
 }
 
-function AppCard({ app, onReview, busy }: { app: App; onReview: (id: string, status: "accepted" | "denied", note: string, a: App) => void; busy: boolean }) {
+function AppCard({ app, onReview, busy, canReview }: { app: App; onReview: (id: string, status: "accepted" | "denied", note: string, a: App) => void; busy: boolean; canReview: boolean }) {
   const [note, setNote] = useState("");
   return (
     <div className="glass rounded-xl p-5 space-y-3">
@@ -102,7 +105,7 @@ function AppCard({ app, onReview, busy }: { app: App; onReview: (id: string, sta
           </div>
         ))}
       </div>
-      {app.status === "pending" && (
+      {app.status === "pending" && canReview && (
         <div className="space-y-2">
           <Textarea placeholder="Review note (optional)" value={note} onChange={e => setNote(e.target.value)} className="min-h-[60px]" />
           <div className="flex gap-2">

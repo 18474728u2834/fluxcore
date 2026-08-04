@@ -154,10 +154,12 @@ export default function BRoles({ embedded = false }: { embedded?: boolean } = {}
         <div className="flex items-center justify-between mb-5">
           {!embedded && <h1 className="text-[2rem] font-bold tracking-[-0.03em] leading-none" style={{ color: bx.text }}>Roles</h1>}
           <div className="flex items-center gap-3 ml-auto">
-            <label className="flex items-center gap-2 text-xs" style={{ color: bx.textDim }}>
-              <PermSwitch on={autoSync} onChange={toggleAutoSync} />
-              Auto-add new members every minute
-            </label>
+            {isOwner && (
+              <label className="flex items-center gap-2 text-xs" style={{ color: bx.textDim }}>
+                <PermSwitch on={autoSync} onChange={toggleAutoSync} />
+                Auto-add new members every minute
+              </label>
+            )}
             <button onClick={importRoles} disabled={importing}
               className="h-9 px-3 rounded-md text-xs font-semibold inline-flex items-center gap-1.5 border"
               style={{ background: "#1a1a1c", color: bx.text, borderColor: "#2e2e34" }}>

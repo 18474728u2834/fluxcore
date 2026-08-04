@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
+import { usePermissions } from "@/hooks/usePermissions";
 import { toast } from "sonner";
 
 interface Doc {
@@ -15,7 +16,9 @@ interface Doc {
 }
 
 export default function BDocuments() {
-  const { workspaceId, isOwner } = useWorkspace();
+  const { workspaceId, isOwner: isWsOwner } = useWorkspace();
+  const { hasPermission } = usePermissions();
+  const isOwner = isWsOwner || hasPermission("manage_documents");
   const { scope, newRowDepartmentId, department } = useDepartment();
   const { user } = useAuth();
   const navigate = useNavigate();
