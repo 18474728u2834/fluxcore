@@ -495,7 +495,7 @@ export default function BSessions() {
                   <select value={category} onChange={(e) => onCategoryChange(e.target.value)}
                     className="mt-1.5 w-full h-10 px-3 rounded-md text-sm outline-none"
                     style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }}>
-                    {["Shift", "Training", "Event", "Meeting"].map((c) => (
+                    {allowedCategories.map((c) => (
                       <option key={c} value={c}>{t(c)}</option>
                     ))}
                   </select>
