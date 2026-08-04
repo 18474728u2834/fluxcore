@@ -105,7 +105,7 @@ function AppCard({ app, onReview, busy, canReview }: { app: App; onReview: (id: 
           </div>
         ))}
       </div>
-      {app.status === "pending" && (
+      {app.status === "pending" && canReview && (
         <div className="space-y-2">
           <Textarea placeholder="Review note (optional)" value={note} onChange={e => setNote(e.target.value)} className="min-h-[60px]" />
           <div className="flex gap-2">
