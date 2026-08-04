@@ -434,7 +434,7 @@ export default function BSessions() {
                                       <span className="text-xs italic" style={{ color: bx.textMuted }}>Open</span>
                                     )}
                                   </div>
-                                  {(!name || mine) && (
+                                  {(!name || mine) && canHostSession(s.category) && (
                                     <button onClick={() => toggleClaim(s, d, slIdx, seatIdx)}
                                       className="text-[11px] font-semibold inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-[#2a2a2e] transition"
                                       style={{ color: mine ? bx.textDim : bx.coral }}>
