@@ -366,12 +366,14 @@ export default function BSessions() {
               return (
                 <div key={`${s.id}-${d.getTime()}`} className="rounded-md border p-5 transition-transform hover:-translate-y-0.5 group relative"
                   style={bx.cardStyle}>
-                  <button onClick={() => deleteSession(s.id)}
-                    className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-md inline-flex items-center justify-center hover:bg-[#2a2a2e]"
-                    style={{ color: bx.textDim }}
-                    aria-label="Delete session">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {isOwner && (
+                    <button onClick={() => deleteSession(s.id)}
+                      className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-md inline-flex items-center justify-center hover:bg-[#2a2a2e]"
+                      style={{ color: bx.textDim }}
+                      aria-label="Delete session">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   {canDispatch && (
                     <button onClick={() => setDispatchTarget({ session: s, occursAt: d })}
                       className="absolute top-3 right-11 h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]"
