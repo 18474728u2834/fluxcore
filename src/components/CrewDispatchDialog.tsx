@@ -200,11 +200,26 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                 style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
             </div>
 
-            <div className="mt-3 space-y-1.5">
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <p className="text-[11px]" style={{ color: bx.textMuted }}>
+                {wishCount ? `${wishCount} crew shared their wishlist` : "No wishlist replies yet"}
+              </p>
+              {wishCount > 0 && (
+                <button onClick={applyWishlist}
+                  className="h-7 px-2.5 rounded-md text-[11px] font-semibold border inline-flex items-center gap-1"
+                  style={{ color: bx.coral, borderColor: bx.borderColor }}>
+                  <ClipboardList className="w-3 h-3" /> Apply wishlist
+                </button>
+              )}
+            </div>
+
+            <div className="mt-2 space-y-1.5">
               {shown.length === 0 && (
                 <p className="text-xs py-6 text-center" style={{ color: bx.textMuted }}>No members found.</p>
               )}
-              {shown.map(m => (
+              {shown.map(m => {
+                const w = wishFor(m.roblox_username);
+                return (
                 <div key={m.id} className="py-1.5 space-y-1.5">
                   <div className="flex items-center gap-2">
                     <RobloxAvatar username={m.roblox_username} className="w-7 h-7 rounded-md flex-shrink-0" />
@@ -218,6 +233,22 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                       {roles.map(r => <option key={r} value={r}>{r}</option>)}
                     </select>
                   </div>
+                  {w && (
+                    <div className="ml-9 flex flex-wrap items-center gap-1.5">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded font-semibold"
+                        style={{
+                          background: "#1c1c20",
+                          color: w.availability === "unavailable" ? bx.coral : w.availability === "maybe" ? bx.textDim : "#4ade80",
+                        }}>
+                        {w.availability === "unavailable" ? "Can't attend" : w.availability === "maybe" ? "Maybe" : "Available"}
+                      </span>
+                      {w.preferred_roles.map(r => (
+                        <span key={r} className="text-[10px] px-1.5 py-0.5 rounded"
+                          style={{ background: "#1c1c20", color: bx.textDim }}>wants {r}</span>
+                      ))}
+                      {w.note && <span className="text-[10px] italic" style={{ color: bx.textMuted }}>“{w.note}”</span>}
+                    </div>
+                  )}
                   {picks[m.roblox_username] && (
                     <input
                       value={discordIds[m.id] ?? ""}
@@ -229,8 +260,10 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                       style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text, width: "calc(100% - 2.25rem)" }} />
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
+
 
             <button onClick={dispatchNow} disabled={sending}
               className="mt-5 w-full h-10 rounded-md text-sm font-semibold inline-flex items-center justify-center gap-2 disabled:opacity-60"
