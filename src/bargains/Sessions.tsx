@@ -64,7 +64,7 @@ const DEFAULT_SLOTS: Record<string, SessionSlot[]> = {
 
 export default function BSessions() {
   const { workspaceId } = useWorkspace();
-  const { hasPermission, isOwner, canCreateSession } = usePermissions();
+  const { hasPermission, isOwner, canCreateSession, canHostSession } = usePermissions();
   const allowedCategories = ["Shift", "Training", "Event", "Meeting"].filter((c) =>
     canCreateSession(c === "Meeting" ? "Event" : c));
   const canSchedule = allowedCategories.length > 0;
