@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { toast } from "sonner";
-import { Loader2, Radio, Send, X, Search } from "lucide-react";
+import { Loader2, Radio, Send, X, Search, ClipboardList } from "lucide-react";
 import { bx } from "@/bargains/Shell";
 import { useLexicon } from "@/hooks/useLexicon";
 
