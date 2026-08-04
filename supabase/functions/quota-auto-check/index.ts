@@ -109,6 +109,23 @@ Deno.serve(async (req) => {
       (dm || []).forEach((r: any) => deptMembers[r.department_id]?.add(r.member_id));
     }
 
+    // Approved LOA exempts a member from quotas for any period it overlaps.
+    const { data: loas } = await supabase
+      .from("loa_requests")
+      .select("member_id, start_date, end_date")
+      .eq("workspace_id", ws.id)
+      .eq("status", "approved");
+    const loaByMember: Record<string, { s: number; e: number }[]> = {};
+    (loas || []).forEach((l: any) => {
+      (loaByMember[l.member_id] ||= []).push({
+        s: Date.parse(`${l.start_date}T00:00:00Z`),
+        // end_date is inclusive
+        e: Date.parse(`${l.end_date}T00:00:00Z`) + 24 * 60 * 60 * 1000,
+      });
+    });
+    const onLoa = (memberId: string, start: Date, end: Date) =>
+      (loaByMember[memberId] || []).some((r) => r.s < end.getTime() && r.e > start.getTime());
+
     const misses: Record<string, { member: any; entries: { q: any; current: number; start: Date; end: Date }[] }> = {};
 
     for (const q of dueQuotas) {
@@ -118,6 +135,9 @@ Deno.serve(async (req) => {
         const allowed = deptMembers[q.department_id] || new Set();
         filtered = filtered.filter((m: any) => allowed.has(m.id));
       }
+      filtered = filtered.filter((m: any) => !onLoa(m.id, start, end));
+
+
 
 
       for (const m of filtered) {
