@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { toast } from "sonner";
-import { Loader2, Radio, Send, X, Search, ClipboardList } from "lucide-react";
+import { Loader2, Radio, Send, X, Search, ClipboardList, Link2 } from "lucide-react";
 import { bx } from "@/bargains/Shell";
 import { useLexicon } from "@/hooks/useLexicon";
 
@@ -161,6 +161,13 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
     toast.success("Wishlist applied — review before dispatching");
   };
 
+  const copyWishlistLink = () => {
+    const url = `${window.location.origin}/wishlist/${session.id}/${encodeURIComponent(occursAt.toISOString())}`;
+    navigator.clipboard.writeText(url)
+      .then(() => toast.success("Wishlist link copied — send it to your crew"))
+      .catch(() => toast.error("Couldn't copy the link"));
+  };
+
   const rank = (m: Member) => {
     const w = wishFor(m.roblox_username);
     if (!w) return 3;
@@ -200,17 +207,24 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
                 style={{ background: "#141416", border: `1px solid ${bx.borderColor}`, color: bx.text }} />
             </div>
 
-            <div className="mt-3 flex items-center justify-between gap-2">
+            <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
               <p className="text-[11px]" style={{ color: bx.textMuted }}>
                 {wishCount ? `${wishCount} crew shared their wishlist` : "No wishlist replies yet"}
               </p>
-              {wishCount > 0 && (
-                <button onClick={applyWishlist}
+              <div className="flex items-center gap-2">
+                <button onClick={copyWishlistLink}
                   className="h-7 px-2.5 rounded-md text-[11px] font-semibold border inline-flex items-center gap-1"
-                  style={{ color: bx.coral, borderColor: bx.borderColor }}>
-                  <ClipboardList className="w-3 h-3" /> Apply wishlist
+                  style={{ color: bx.textDim, borderColor: bx.borderColor }}>
+                  <Link2 className="w-3 h-3" /> Copy wishlist link
                 </button>
-              )}
+                {wishCount > 0 && (
+                  <button onClick={applyWishlist}
+                    className="h-7 px-2.5 rounded-md text-[11px] font-semibold border inline-flex items-center gap-1"
+                    style={{ color: bx.coral, borderColor: bx.borderColor }}>
+                    <ClipboardList className="w-3 h-3" /> Apply wishlist
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mt-2 space-y-1.5">
