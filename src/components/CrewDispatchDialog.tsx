@@ -4,6 +4,7 @@ import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { toast } from "sonner";
 import { Loader2, Radio, Send, X, Search } from "lucide-react";
 import { bx } from "@/bargains/Shell";
+import { useLexicon } from "@/hooks/useLexicon";
 
 interface Member { id: string; roblox_username: string; discord_user_id?: string | null; }
 
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: Props) {
+  const { crew } = useLexicon(workspaceId);
   const [members, setMembers] = useState<Member[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
   const [picks, setPicks] = useState<Record<string, string>>({}); // username -> crew role
@@ -49,7 +51,7 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
       setMembers(list);
       setDiscordIds(Object.fromEntries(list.map(m => [m.id, m.discord_user_id || ""])));
       const dr = (ws as any)?.dispatch_roles;
-      setRoles(Array.isArray(dr) && dr.length ? dr : ["Pilot", "First Officer", "Cabin Crew", "Ground Crew"]);
+      setRoles(Array.isArray(dr) && dr.length ? dr : (crew?.defaults ?? ["Pilot", "First Officer", "Cabin Crew", "Ground Crew"]));
       const map: Record<string, string> = {};
       for (const row of ((existing as any[]) || [])) map[row.roblox_username] = row.crew_role;
       setPicks(map);
@@ -128,7 +130,7 @@ export function CrewDispatchDialog({ workspaceId, session, occursAt, onClose }: 
         </button>
         <div className="flex items-center gap-2">
           <Radio className="w-4 h-4" style={{ color: bx.coral }} />
-          <h2 className="text-lg font-bold" style={{ color: bx.text }}>Crew dispatch</h2>
+          <h2 className="text-lg font-bold" style={{ color: bx.text }}>{crew?.title ?? "Crew dispatch"}</h2>
         </div>
         <p className="text-xs mt-1" style={{ color: bx.textDim }}>
           {session.route_number ? `${session.route_number} · ` : ""}{session.title} — {occursAt.toLocaleString()}

@@ -138,6 +138,25 @@ export function useLexicon(workspaceId?: string) {
           }
         : null;
 
-    return { aviation, maritime, industry, t, phrase, trip };
+    /** Crew dispatch config — only available for aviation & maritime. */
+    const crew = aviation
+      ? {
+          title: "Crew Dispatch",
+          permissionLabel: "Flight Dispatcher",
+          positionsLabel: "Crew positions",
+          placeholder: "e.g. Purser, Load Master, Relief Pilot",
+          defaults: ["Pilot", "First Officer", "Cabin Crew", "Ground Crew"],
+        }
+      : maritime
+        ? {
+            title: "Crew Dispatch",
+            permissionLabel: "Watch Dispatcher",
+            positionsLabel: "Crew positions",
+            placeholder: "e.g. Bosun, Able Seafarer, Engine Rating",
+            defaults: ["Master", "Chief Officer", "Deck Crew", "Engine Crew", "Port Crew"],
+          }
+        : null;
+
+    return { aviation, maritime, industry, t, phrase, trip, crew };
   }, [aviation, maritime, industry]);
 }

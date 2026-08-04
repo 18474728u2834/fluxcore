@@ -6,6 +6,7 @@ import { useDepartment } from "@/hooks/useDepartment";
 import { Plus, Download, Loader2, Trash2, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { ALL_PERMISSIONS, usePermissions } from "@/hooks/usePermissions";
+import { useLexicon } from "@/hooks/useLexicon";
 
 interface Role {
   id: string;
@@ -44,6 +45,7 @@ export default function BRoles({ embedded = false }: { embedded?: boolean } = {}
   const { hasPermission } = usePermissions();
   const canEditRoles = isOwner || hasPermission("edit_roles");
   const { scope, newRowDepartmentId, department } = useDepartment();
+  const { crew } = useLexicon(workspaceId);
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -226,7 +228,7 @@ export default function BRoles({ embedded = false }: { embedded?: boolean } = {}
 
                   <div className="text-xs font-bold mb-3" style={{ color: bx.textDim }}>PERMISSIONS</div>
                   <div className="space-y-5">
-                    {PERM_GROUPS.map(group => (
+                    {PERM_GROUPS.map(g => ({ ...g, keys: crew ? g.keys : g.keys.filter(k => k !== "flight_dispatch") })).map(group => (
                       <div key={group.title}>
                         <div className="text-[10px] font-bold tracking-wider mb-2" style={{ color: bx.textMuted }}>{group.title}</div>
                         <div className="rounded-md border overflow-hidden" style={{ borderColor: "#26262a", background: "#141416" }}>
