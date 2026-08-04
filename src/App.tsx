@@ -26,6 +26,7 @@ const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const LinkDiscord = lazy(() => import("./pages/LinkDiscord"));
+const CrewWishlist = lazy(() => import("./pages/CrewWishlist"));
 
 // Lazy load everything else
 const Workspaces = lazy(() => import("./pages/Workspaces"));
@@ -382,6 +383,7 @@ function AppRoutes() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/link-discord" element={<LinkDiscord />} />
             <Route path="/apply/:formId" element={<Apply />} />
+            <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
             <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
             {/* Legacy /w/:id/* links redirect to clean URLs */}
             <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
@@ -404,6 +406,7 @@ function AppRoutes() {
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/apply/:formId" element={<Apply />} />
+            <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
@@ -497,6 +500,7 @@ function AppRoutes() {
         <Route path="/unsubscribe" element={<Unsubscribe />} />
         <Route path="/newsletter" element={<Newsletter />} />
         <Route path="/apply/:formId" element={<Apply />} />
+            <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
         <Route path="/discord/verification/:token" element={<DiscordVerify />} />
         
         <Route path="*" element={<NotFound />} />
