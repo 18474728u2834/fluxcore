@@ -643,9 +643,11 @@ export default function FlightHubTab() {
         <div className="rounded-lg bg-muted/40 p-3 text-[11px] text-muted-foreground space-y-1">
           <p className="text-foreground font-medium text-xs">Installation</p>
           <p>1. Enable <strong>HTTP Requests</strong>: Game Settings → Security → Allow HTTP Requests.</p>
-          <p>2. Create a <code>ModuleScript</code> named <code>FlightHubConfig</code> in <code>ServerScriptService</code> and paste <strong>Script 1 — Config</strong>.</p>
-          <p>3. Create a <code>Script</code> named <code>Handler</code> <strong>inside</strong> that ModuleScript and paste <strong>Script 2 — Handler</strong>.</p>
-          <p>4. Flight numbers, origin/destination and aircraft come straight from the Fluxcore session. Only flights with a game link are listed.</p>
+          <p>2. Create a <code>ModuleScript</code> named <code>FlightHubConfig</code> in <code>ReplicatedStorage</code> and paste <strong>Script 1 — Config</strong>.</p>
+          <p>3. Create a <code>Script</code> named <code>FlightHubHandler</code> in <code>ServerScriptService</code> and paste <strong>Script 2 — Handler</strong>.</p>
+          <p>4. Create a <code>LocalScript</code> in <code>StarterPlayer → StarterPlayerScripts</code> and paste the one-line <strong>client bootstrap</strong> below.</p>
+          <p>5. Flight numbers, origin/destination, aircraft and host come straight from the Fluxcore session. Only flights with a game link are listed.</p>
+
         </div>
       </div>
 
