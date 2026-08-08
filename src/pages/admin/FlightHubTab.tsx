@@ -186,11 +186,11 @@ remote.OnServerInvoke = function()
     if ok then return data end
     return { flights = {}, places = {}, passes = {}, header = "Available Flights" }
 end
-\`;
+`;
 
-const BOOTSTRAP = \`-- Fluxcore Flight Hub — CLIENT (LocalScript in StarterPlayer > StarterPlayerScripts)
+const BOOTSTRAP = `-- Fluxcore Flight Hub — CLIENT (LocalScript in StarterPlayer > StarterPlayerScripts)
 require(game:GetService("ReplicatedStorage"):WaitForChild("FlightHubConfig")).mount()
-\`;
+`;
 
 export default function FlightHubTab() {
   const [domain, setDomain] = useState("https://fluxcore.works");
