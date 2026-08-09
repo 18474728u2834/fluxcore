@@ -9,6 +9,10 @@
       "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions/:path*"
     },
     {
+      "source": "/api/v1/games",
+      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-games"
+    },
+    {
       "source": "/api/v1/track",
       "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker"
     },
