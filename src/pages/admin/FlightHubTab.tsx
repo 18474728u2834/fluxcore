@@ -37,6 +37,8 @@ M.REQUIRE_LINK = true
 
 -- Branding
 M.HUB_NAME = "${h}"
+-- Optional logo shown top-right (rbxassetid://0000000000)
+M.LOGO_IMAGE = ""
 M.HEADER = {
     all      = "Available Flights",
     shift    = "Available Departures",
