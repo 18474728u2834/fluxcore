@@ -37,6 +37,8 @@ M.REQUIRE_LINK = true
 
 -- Branding
 M.HUB_NAME = "${h}"
+-- Optional logo shown top-right (rbxassetid://0000000000)
+M.LOGO_IMAGE = ""
 M.HEADER = {
     all      = "Available Flights",
     shift    = "Available Departures",
@@ -68,21 +70,22 @@ function M.mount()
     local TeleportService    = game:GetService("TeleportService")
     local MarketplaceService = game:GetService("MarketplaceService")
     local UserInputService   = game:GetService("UserInputService")
+    local GuiService         = game:GetService("GuiService")
 
     local player = Players.LocalPlayer
     if not player then return end
     local remote = ReplicatedStorage:WaitForChild("FluxcoreFlightHub")
 
     local ACCENT, BG, CARD, STROKE = M.ACCENT, M.BACKGROUND, M.CARD, M.STROKE
+    local GREEN = Color3.fromRGB(101, 202, 148)
+
+    -- Keep everything clear of the Roblox topbar, chat button and mobile buttons.
+    local inset = GuiService:GetGuiInset()
+    local TOP_SAFE  = math.max(inset.Y, 36) + 56
+    local LEFT_SAFE = 56
 
     local function corner(p, r) local c = Instance.new("UICorner") c.CornerRadius = UDim.new(0, r) c.Parent = p end
-    local function stroke(p) local s = Instance.new("UIStroke") s.Color = STROKE s.Thickness = 1 s.Parent = p end
-    local function pad(p, v)
-        local u = Instance.new("UIPadding")
-        u.PaddingTop = UDim.new(0, v) u.PaddingBottom = UDim.new(0, v)
-        u.PaddingLeft = UDim.new(0, v) u.PaddingRight = UDim.new(0, v)
-        u.Parent = p
-    end
+    local function stroke(p, col) local s = Instance.new("UIStroke") s.Color = col or STROKE s.Thickness = 1 s.Parent = p end
     local function label(parent, text, size, color, font)
         local l = Instance.new("TextLabel")
         l.BackgroundTransparency = 1
@@ -99,9 +102,7 @@ function M.mount()
         if type(iso) ~= "string" then return "TBD" end
         local hh, mm = string.match(iso, "T(%d+):(%d+)")
         if not hh then return "TBD" end
-        local h12 = tonumber(hh) % 12
-        if h12 == 0 then h12 = 12 end
-        return string.format("%d:%s %s", h12, mm, tonumber(hh) < 12 and "AM" or "PM")
+        return string.format("%s:%s", hh, mm)
     end
     local function joinPlace(placeId)
         if not placeId then return end
@@ -122,229 +123,290 @@ function M.mount()
     root.BorderSizePixel = 0
     root.Parent = gui
 
-    -- sidebar
-    local side = Instance.new("Frame")
-    side.Size = UDim2.new(0, 200, 1, 0)
-    side.BackgroundColor3 = CARD
-    side.BorderSizePixel = 0
-    side.Parent = root
-    pad(side, 16)
+    -- ============================================================ welcome row
+    local welcome = Instance.new("Frame")
+    welcome.BackgroundTransparency = 1
+    welcome.Position = UDim2.fromOffset(LEFT_SAFE, TOP_SAFE)
+    welcome.Size = UDim2.new(1, -LEFT_SAFE * 2, 0, 34)
+    welcome.Parent = root
 
-    local brand = label(side, M.HUB_NAME, 18, Color3.fromRGB(240, 240, 245), Enum.Font.GothamBold)
-    brand.Size = UDim2.new(1, 0, 0, 22)
-    local sublabel = label(side, "TRAVEL HUB", 10, ACCENT)
-    sublabel.Position = UDim2.new(0, 0, 0, 24)
-    sublabel.Size = UDim2.new(1, 0, 0, 14)
+    local av = Instance.new("ImageLabel")
+    av.Size = UDim2.fromOffset(34, 34)
+    av.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+    av.BorderSizePixel = 0
+    av.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(player.UserId) .. "&w=150&h=150"
+    av.Parent = welcome
+    corner(av, 999)
 
-    local navHolder = Instance.new("Frame")
-    navHolder.BackgroundTransparency = 1
-    navHolder.Position = UDim2.new(0, 0, 0, 64)
-    navHolder.Size = UDim2.new(1, 0, 1, -64)
-    navHolder.Parent = side
-    local navList = Instance.new("UIListLayout")
-    navList.Padding = UDim.new(0, 6)
-    navList.Parent = navHolder
+    local hi = label(welcome, "Welcome, " .. player.DisplayName .. "!", 16, Color3.fromRGB(245, 245, 250), Enum.Font.GothamBold)
+    hi.Position = UDim2.fromOffset(46, 0)
+    hi.Size = UDim2.new(1, -140, 1, 0)
 
-    local pages, navButtons = {}, {}
-    local function selectPage(name)
-        for n, f in pairs(pages) do f.Visible = (n == name) end
-        for n, b in pairs(navButtons) do
-            b.BackgroundTransparency = (n == name) and 0.85 or 1
-            b.TextColor3 = (n == name) and ACCENT or Color3.fromRGB(150, 150, 158)
-        end
-    end
-
-    local content = Instance.new("Frame")
-    content.Position = UDim2.new(0, 200, 0, 0)
-    content.Size = UDim2.new(1, -200, 1, 0)
-    content.BackgroundTransparency = 1
-    content.Parent = root
-
-    local head = Instance.new("Frame")
-    head.Size = UDim2.new(1, 0, 0, 72)
-    head.BackgroundTransparency = 1
-    head.Parent = content
-    pad(head, 20)
-    local title = label(head, "Choose your flight", 20, Color3.fromRGB(240, 240, 245), Enum.Font.GothamBold)
-    title.Size = UDim2.new(1, -60, 0, 24)
-    local sub = label(head, "Live departures from the " .. M.HUB_NAME .. " network", 11, Color3.fromRGB(140, 140, 150))
-    sub.Position = UDim2.new(0, 0, 0, 26)
-    sub.Size = UDim2.new(1, -60, 0, 16)
+    local logo = Instance.new("ImageLabel")
+    logo.AnchorPoint = Vector2.new(1, 0.5)
+    logo.Position = UDim2.new(1, 0, 0.5, 0)
+    logo.Size = UDim2.fromOffset(34, 34)
+    logo.BackgroundTransparency = 1
+    logo.Image = M.LOGO_IMAGE or ""
+    logo.Visible = (M.LOGO_IMAGE or "") ~= ""
+    logo.Parent = welcome
 
     local close = Instance.new("TextButton")
-    close.Size = UDim2.fromOffset(26, 26)
-    close.AnchorPoint = Vector2.new(1, 0)
-    close.Position = UDim2.new(1, 0, 0, 0)
-    close.BackgroundColor3 = Color3.fromRGB(30, 30, 34)
+    close.AnchorPoint = Vector2.new(1, 0.5)
+    close.Position = UDim2.new(1, (M.LOGO_IMAGE or "") ~= "" and -44 or 0, 0.5, 0)
+    close.Size = UDim2.fromOffset(28, 28)
+    close.BackgroundColor3 = Color3.fromRGB(26, 26, 30)
     close.Font = Enum.Font.GothamBold
     close.TextSize = 12
     close.TextColor3 = Color3.fromRGB(200, 200, 205)
     close.Text = "X"
-    close.Parent = head
+    close.Parent = welcome
     corner(close, 8)
     close.MouseButton1Click:Connect(function() gui.Enabled = false end)
 
-    local function page(name)
+    -- ================================================================= banner
+    local banner = Instance.new("Frame")
+    banner.Position = UDim2.fromOffset(LEFT_SAFE, TOP_SAFE + 48)
+    banner.Size = UDim2.new(1, -LEFT_SAFE * 2, 0, 150)
+    banner.BackgroundColor3 = Color3.fromRGB(15, 15, 17)
+    banner.BorderSizePixel = 0
+    banner.Parent = root
+    corner(banner, 10)
+
+    local bGrad = Instance.new("UIGradient")
+    bGrad.Color = ColorSequence.new(Color3.fromRGB(20, 20, 23), Color3.fromRGB(10, 10, 12))
+    bGrad.Rotation = 12
+    bGrad.Parent = banner
+
+    local bState = label(banner, "NO ONGOING FLIGHTS", 26, Color3.fromRGB(248, 248, 252), Enum.Font.GothamBlack)
+    bState.Position = UDim2.fromOffset(34, 28)
+    bState.Size = UDim2.new(1, -68, 0, 32)
+
+    local bNext = Instance.new("TextLabel")
+    bNext.BackgroundTransparency = 1
+    bNext.RichText = true
+    bNext.Font = Enum.Font.GothamMedium
+    bNext.TextSize = 15
+    bNext.TextColor3 = Color3.fromRGB(225, 225, 232)
+    bNext.TextXAlignment = Enum.TextXAlignment.Left
+    bNext.Position = UDim2.fromOffset(34, 68)
+    bNext.Size = UDim2.new(1, -68, 0, 20)
+    bNext.Text = "Checking the schedule..."
+    bNext.Parent = banner
+
+    local bMeta = Instance.new("TextLabel")
+    bMeta.BackgroundTransparency = 1
+    bMeta.RichText = true
+    bMeta.Font = Enum.Font.GothamMedium
+    bMeta.TextSize = 13
+    bMeta.TextColor3 = Color3.fromRGB(160, 160, 170)
+    bMeta.TextXAlignment = Enum.TextXAlignment.Left
+    bMeta.Position = UDim2.fromOffset(34, 98)
+    bMeta.Size = UDim2.new(1, -68, 0, 18)
+    bMeta.Text = ""
+    bMeta.Parent = banner
+
+    local bJoin = Instance.new("TextButton")
+    bJoin.AnchorPoint = Vector2.new(1, 1)
+    bJoin.Position = UDim2.new(1, -24, 1, -24)
+    bJoin.Size = UDim2.fromOffset(150, 36)
+    bJoin.BackgroundColor3 = ACCENT
+    bJoin.Font = Enum.Font.GothamBold
+    bJoin.TextSize = 13
+    bJoin.TextColor3 = Color3.fromRGB(255, 255, 255)
+    bJoin.Text = "Join Flight"
+    bJoin.Visible = false
+    bJoin.Parent = banner
+    corner(bJoin, 8)
+
+    -- =================================================================== tabs
+    local tabRow = Instance.new("Frame")
+    tabRow.BackgroundTransparency = 1
+    tabRow.Position = UDim2.fromOffset(LEFT_SAFE, TOP_SAFE + 220)
+    tabRow.Size = UDim2.new(1, -LEFT_SAFE * 2, 0, 34)
+    tabRow.Parent = root
+
+    local tabList = Instance.new("UIListLayout")
+    tabList.FillDirection = Enum.FillDirection.Horizontal
+    tabList.Padding = UDim.new(0, 26)
+    tabList.VerticalAlignment = Enum.VerticalAlignment.Center
+    tabList.Parent = tabRow
+
+    local pages, tabs = {}, {}
+    local function selectPage(name)
+        for n, f in pairs(pages) do f.Visible = (n == name) end
+        for n, t in pairs(tabs) do
+            t.btn.TextColor3 = (n == name) and Color3.fromRGB(245, 245, 250) or Color3.fromRGB(130, 130, 140)
+            t.line.Visible = (n == name)
+        end
+    end
+
+    local function page(name, tabText, order)
+        local holder = Instance.new("Frame")
+        holder.BackgroundTransparency = 1
+        holder.Size = UDim2.fromOffset(#tabText * 9 + 8, 30)
+        holder.LayoutOrder = order
+        holder.Parent = tabRow
+
+        local b = Instance.new("TextButton")
+        b.BackgroundTransparency = 1
+        b.Size = UDim2.new(1, 0, 1, -4)
+        b.Font = Enum.Font.GothamBold
+        b.TextSize = 14
+        b.TextXAlignment = Enum.TextXAlignment.Left
+        b.Text = string.upper(tabText)
+        b.TextColor3 = Color3.fromRGB(130, 130, 140)
+        b.Parent = holder
+
+        local line = Instance.new("Frame")
+        line.AnchorPoint = Vector2.new(0, 1)
+        line.Position = UDim2.new(0, 0, 1, 0)
+        line.Size = UDim2.new(1, -8, 0, 2)
+        line.BackgroundColor3 = ACCENT
+        line.BorderSizePixel = 0
+        line.Visible = false
+        line.Parent = holder
+
         local f = Instance.new("ScrollingFrame")
-        f.Position = UDim2.new(0, 20, 0, 72)
-        f.Size = UDim2.new(1, -40, 1, -92)
+        f.Position = UDim2.fromOffset(LEFT_SAFE, TOP_SAFE + 262)
+        f.Size = UDim2.new(1, -LEFT_SAFE * 2, 1, -(TOP_SAFE + 300))
         f.BackgroundTransparency = 1
         f.BorderSizePixel = 0
         f.ScrollBarThickness = 4
-        f.ScrollBarImageColor3 = ACCENT
+        f.ScrollBarImageColor3 = Color3.fromRGB(240, 240, 245)
         f.CanvasSize = UDim2.new()
-        f.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        f.AutomaticCanvasSize = Enum.AutomaticSize.XY
+        f.ScrollingDirection = Enum.ScrollingDirection.XY
         f.Visible = false
-        f.Parent = content
+        f.Parent = root
         pages[name] = f
 
-        local b = Instance.new("TextButton")
-        b.Size = UDim2.new(1, 0, 0, 34)
-        b.BackgroundColor3 = ACCENT
-        b.BackgroundTransparency = 1
-        b.AutoButtonColor = false
-        b.Font = Enum.Font.GothamMedium
-        b.TextSize = 12
-        b.TextXAlignment = Enum.TextXAlignment.Left
-        b.Text = "   " .. string.upper(name)
-        b.TextColor3 = Color3.fromRGB(150, 150, 158)
-        b.Parent = navHolder
-        corner(b, 8)
         b.MouseButton1Click:Connect(function() selectPage(name) end)
-        navButtons[name] = b
+        tabs[name] = { btn = b, line = line }
         return f
     end
 
-    local flightsPage = page("Flights")
-    local gamesPage   = page("Games")
-    local storePage   = page("Store")
+    local flightsPage = page("Flights", (M.HUB_NAME or "") .. " Flights", 1)
+    local gamesPage   = page("Games", (M.HUB_NAME or "") .. " Experiences", 2)
+    local storePage   = page("Store", "Store", 3)
 
-    local fGrid = Instance.new("UIGridLayout")
-    fGrid.CellSize = UDim2.fromOffset(300, 300)
-    fGrid.CellPadding = UDim2.fromOffset(14, 14)
-    fGrid.Parent = flightsPage
+    local fRow = Instance.new("UIListLayout")
+    fRow.FillDirection = Enum.FillDirection.Horizontal
+    fRow.Padding = UDim.new(0, 16)
+    fRow.Parent = flightsPage
 
-    local gGrid = Instance.new("UIGridLayout")
-    gGrid.CellSize = UDim2.fromOffset(220, 200)
-    gGrid.CellPadding = UDim2.fromOffset(14, 14)
-    gGrid.Parent = gamesPage
+    local gRow = Instance.new("UIListLayout")
+    gRow.FillDirection = Enum.FillDirection.Horizontal
+    gRow.Padding = UDim.new(0, 16)
+    gRow.Parent = gamesPage
 
     local sList = Instance.new("UIListLayout")
     sList.Padding = UDim.new(0, 10)
     sList.Parent = storePage
 
-    local function flightCard(f, order)
+    -- Shared "experience card": header strip, big art, play button
+    local function tile(order, headerLeft, headerRight, image, onPlay, playColor, playText)
         local card = Instance.new("Frame")
+        card.Size = UDim2.fromOffset(285, 450)
         card.BackgroundColor3 = CARD
         card.BorderSizePixel = 0
         card.LayoutOrder = order
-        corner(card, 14) stroke(card)
+        corner(card, 4)
 
-        local icon = Instance.new("ImageLabel")
-        icon.Size = UDim2.new(1, -20, 0, 150)
-        icon.Position = UDim2.fromOffset(10, 10)
-        icon.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-        icon.BorderSizePixel = 0
-        icon.ScaleType = Enum.ScaleType.Crop
-        icon.Image = f.placeId and ("rbxthumb://type=GameIcon&id=" .. tostring(f.placeId) .. "&w=420&h=420") or ""
-        icon.Parent = card
-        corner(icon, 10)
+        local strip = Instance.new("Frame")
+        strip.Size = UDim2.new(1, 0, 0, 44)
+        strip.BackgroundColor3 = Color3.fromRGB(24, 24, 28)
+        strip.BorderSizePixel = 0
+        strip.Parent = card
 
-        local tag = Instance.new("TextLabel")
-        tag.BackgroundColor3 = Color3.fromRGB(12, 12, 14)
-        tag.Position = UDim2.fromOffset(18, 18)
-        tag.Size = UDim2.fromOffset(76, 22)
-        tag.Font = Enum.Font.GothamBold
-        tag.TextSize = 11
-        tag.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tag.Text = f.flight or string.upper(string.sub(tostring(f.category), 1, 3))
-        tag.Parent = card
-        corner(tag, 6)
+        local left = label(strip, headerLeft, 13, Color3.fromRGB(225, 225, 232), Enum.Font.GothamBold)
+        left.Position = UDim2.fromOffset(14, 0)
+        left.Size = UDim2.new(0, 90, 1, 0)
 
-        local nameLbl = label(card, f.name or (tostring(f.category) .. " " .. clockLabel(f.date)), 14, Color3.fromRGB(240, 240, 245), Enum.Font.GothamBold)
-        nameLbl.Position = UDim2.fromOffset(14, 168)
-        nameLbl.Size = UDim2.new(1, -28, 0, 18)
+        local right = label(strip, headerRight, 12, Color3.fromRGB(225, 225, 232), Enum.Font.GothamBold)
+        right.TextXAlignment = Enum.TextXAlignment.Right
+        right.Position = UDim2.new(0, 100, 0, 0)
+        right.Size = UDim2.new(1, -114, 1, 0)
 
-        local route = (f.origin and f.destination) and (f.origin .. "  ->  " .. f.destination) or (f.aircraft or "Direct connection available")
-        local routeLbl = label(card, route, 11, Color3.fromRGB(150, 150, 158))
-        routeLbl.Position = UDim2.fromOffset(14, 188)
-        routeLbl.Size = UDim2.new(1, -28, 0, 16)
+        local art = Instance.new("ImageLabel")
+        art.Position = UDim2.fromOffset(0, 44)
+        art.Size = UDim2.new(1, 0, 1, -44)
+        art.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
+        art.BorderSizePixel = 0
+        art.ScaleType = Enum.ScaleType.Crop
+        art.Image = image or ""
+        art.Parent = card
 
-        local meta = label(card, clockLabel(f.date) .. (f.host and ("  |  " .. f.host) or "") .. (f.tail and ("  |  " .. f.tail) or ""), 11, Color3.fromRGB(120, 120, 130))
-        meta.Position = UDim2.fromOffset(14, 206)
-        meta.Size = UDim2.new(1, -48, 0, 16)
+        local play = Instance.new("TextButton")
+        play.AnchorPoint = Vector2.new(0.5, 1)
+        play.Position = UDim2.new(0.5, 0, 1, -18)
+        play.Size = UDim2.new(1, -50, 0, 40)
+        play.BackgroundColor3 = playColor or GREEN
+        play.Font = Enum.Font.GothamBold
+        play.TextSize = 15
+        play.TextColor3 = Color3.fromRGB(255, 255, 255)
+        play.Text = playText or "▶"
+        play.Parent = card
+        corner(play, 4)
+        play.MouseButton1Click:Connect(function() onPlay() end)
+
+        return card
+    end
+
+    local function flightCard(f, order)
+        local head = f.flight or string.upper(string.sub(tostring(f.category), 1, 8))
+        local route = (f.origin and f.destination) and (string.upper(f.origin) .. " → " .. string.upper(f.destination))
+            or string.upper(tostring(f.name or "FLIGHT"))
+        local card = tile(order, clockLabel(f.date), route,
+            f.placeId and ("rbxthumb://type=GameIcon&id=" .. tostring(f.placeId) .. "&w=420&h=420") or "",
+            function() joinPlace(f.placeId) end, ACCENT, "JOIN FLIGHT")
+
+        local info = Instance.new("Frame")
+        info.AnchorPoint = Vector2.new(0, 1)
+        info.Position = UDim2.new(0, 0, 1, -66)
+        info.Size = UDim2.new(1, 0, 0, 64)
+        info.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+        info.BackgroundTransparency = 0.25
+        info.BorderSizePixel = 0
+        info.Parent = card
+
+        local n = label(info, head .. "  " .. tostring(f.name or ""), 14, Color3.fromRGB(245, 245, 250), Enum.Font.GothamBold)
+        n.Position = UDim2.fromOffset(14, 8)
+        n.Size = UDim2.new(1, -28, 0, 18)
+
+        local hostTxt = (f.host and ("Host: " .. f.host) or "Host: TBD") .. (f.aircraft and ("  |  " .. f.aircraft) or "")
+        local h = label(info, hostTxt, 12, Color3.fromRGB(165, 165, 175))
+        h.Position = UDim2.fromOffset(14, 30)
+        h.Size = UDim2.new(1, -60, 0, 16)
 
         if f.hostId then
-            local av = Instance.new("ImageLabel")
-            av.Size = UDim2.fromOffset(20, 20)
-            av.AnchorPoint = Vector2.new(1, 0)
-            av.Position = UDim2.new(1, -14, 0, 204)
-            av.BackgroundColor3 = Color3.fromRGB(40, 40, 46)
-            av.BorderSizePixel = 0
-            av.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(f.hostId) .. "&w=150&h=150"
-            av.Parent = card
-            corner(av, 999)
+            local a = Instance.new("ImageLabel")
+            a.AnchorPoint = Vector2.new(1, 0)
+            a.Position = UDim2.new(1, -14, 0, 24)
+            a.Size = UDim2.fromOffset(26, 26)
+            a.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+            a.BorderSizePixel = 0
+            a.Image = "rbxthumb://type=AvatarHeadShot&id=" .. tostring(f.hostId) .. "&w=150&h=150"
+            a.Parent = info
+            corner(a, 999)
         end
-
-        local join = Instance.new("TextButton")
-        join.AnchorPoint = Vector2.new(0.5, 1)
-        join.Position = UDim2.new(0.5, 0, 1, -12)
-        join.Size = UDim2.new(1, -28, 0, 36)
-        join.BackgroundColor3 = ACCENT
-        join.Font = Enum.Font.GothamBold
-        join.TextSize = 12
-        join.TextColor3 = Color3.fromRGB(255, 255, 255)
-        join.Text = "Join Flight  ->"
-        join.Parent = card
-        corner(join, 10)
-        join.MouseButton1Click:Connect(function() joinPlace(f.placeId) end)
 
         return card
     end
 
     local function gameCard(p, order)
-        local card = Instance.new("Frame")
-        card.BackgroundColor3 = CARD
-        card.BorderSizePixel = 0
-        card.LayoutOrder = order
-        corner(card, 14) stroke(card)
-
-        local icon = Instance.new("ImageLabel")
-        icon.Size = UDim2.new(1, -20, 0, 120)
-        icon.Position = UDim2.fromOffset(10, 10)
-        icon.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
-        icon.BorderSizePixel = 0
-        icon.ScaleType = Enum.ScaleType.Crop
-        icon.Image = "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420"
-        icon.Parent = card
-        corner(icon, 10)
-
-        local l = label(card, p.name, 13, Color3.fromRGB(235, 235, 240), Enum.Font.GothamBold)
-        l.Position = UDim2.fromOffset(14, 138)
-        l.Size = UDim2.new(1, -28, 0, 18)
-
-        local b = Instance.new("TextButton")
-        b.AnchorPoint = Vector2.new(0.5, 1)
-        b.Position = UDim2.new(0.5, 0, 1, -10)
-        b.Size = UDim2.new(1, -28, 0, 30)
-        b.BackgroundColor3 = Color3.fromRGB(32, 32, 38)
-        b.Font = Enum.Font.GothamMedium
-        b.TextSize = 11
-        b.TextColor3 = Color3.fromRGB(230, 230, 235)
-        b.Text = "Travel"
-        b.Parent = card
-        corner(b, 8)
-        b.MouseButton1Click:Connect(function() joinPlace(p.id) end)
-        return card
+        return tile(order, tostring(p.playing or 0) .. " playing", string.upper(tostring(p.name or "GAME")),
+            "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420",
+            function() joinPlace(p.id) end, GREEN, "▶")
     end
 
     local function passRow(p, order)
         local row = Instance.new("Frame")
-        row.Size = UDim2.new(1, 0, 0, 62)
+        row.Size = UDim2.new(0, 520, 0, 62)
         row.BackgroundColor3 = CARD
         row.BorderSizePixel = 0
         row.LayoutOrder = order
-        corner(row, 12) stroke(row)
+        corner(row, 6) stroke(row)
 
         local img = Instance.new("ImageLabel")
         img.Size = UDim2.fromOffset(42, 42)
@@ -353,7 +415,7 @@ function M.mount()
         img.BorderSizePixel = 0
         img.Image = "rbxthumb://type=GamePass&id=" .. tostring(p.id) .. "&w=150&h=150"
         img.Parent = row
-        corner(img, 8)
+        corner(img, 6)
 
         local n = label(row, p.name, 13, Color3.fromRGB(235, 235, 240), Enum.Font.GothamBold)
         n.Position = UDim2.fromOffset(62, 12)
@@ -367,13 +429,13 @@ function M.mount()
         buy.AnchorPoint = Vector2.new(1, 0.5)
         buy.Position = UDim2.new(1, -12, 0.5, 0)
         buy.Size = UDim2.fromOffset(110, 32)
-        buy.BackgroundColor3 = ACCENT
+        buy.BackgroundColor3 = GREEN
         buy.Font = Enum.Font.GothamBold
         buy.TextSize = 12
         buy.TextColor3 = Color3.fromRGB(255, 255, 255)
         buy.Text = "Purchase"
         buy.Parent = row
-        corner(buy, 8)
+        corner(buy, 6)
         buy.MouseButton1Click:Connect(function()
             pcall(function() MarketplaceService:PromptGamePassPurchase(player, p.id) end)
         end)
@@ -386,23 +448,53 @@ function M.mount()
         end
     end
 
+    local function hex(c) return string.format("#%02X%02X%02X", c.R * 255, c.G * 255, c.B * 255) end
+
     local function render()
         local ok, data = pcall(function() return remote:InvokeServer() end)
         if not ok or type(data) ~= "table" then return end
-        title.Text = data.header or "Available Flights"
+
+        -- banner state
+        local live, nextFlight
+        for _, f in ipairs(data.flights) do
+            if f.status == "started" then live = live or f end
+            if not nextFlight then nextFlight = f end
+        end
+        local a = hex(ACCENT)
+        if live then
+            bState.Text = "FLIGHT IN PROGRESS"
+            bNext.Text = string.format('Now boarding: <b><font color="%s">%s</font></b> from <b>%s</b> to <b>%s</b>',
+                a, tostring(live.flight or live.name or "Flight"), tostring(live.origin or "Base"), tostring(live.destination or "Destination"))
+            bMeta.Text = "Departure: <b>" .. clockLabel(live.date) .. "</b>"
+            bJoin.Visible = live.placeId ~= nil
+            bJoin.MouseButton1Click:Connect(function() joinPlace(live.placeId) end)
+        elseif nextFlight then
+            bState.Text = "NO ONGOING FLIGHTS"
+            bNext.Text = string.format('Next flight: <b><font color="%s">%s</font></b> from <b>%s</b> to <b>%s</b>',
+                a, tostring(nextFlight.flight or nextFlight.name or "TBD"),
+                tostring(nextFlight.origin or "Base"), tostring(nextFlight.destination or "Destination"))
+            bMeta.Text = string.format('Check-in opens: <font color="%s"><b>%s</b></font>   |   Host: <b>%s</b>',
+                a, clockLabel(nextFlight.date), tostring(nextFlight.host or "TBD"))
+            bJoin.Visible = false
+        else
+            bState.Text = "NO ONGOING FLIGHTS"
+            bNext.Text = M.EMPTY_TEXT
+            bMeta.Text = ""
+            bJoin.Visible = false
+        end
 
         clear(flightsPage)
         if #data.flights == 0 then
             local e = label(flightsPage, M.EMPTY_TEXT, 13, Color3.fromRGB(140, 140, 150))
-            e.Size = UDim2.fromOffset(300, 40)
+            e.Size = UDim2.fromOffset(320, 40)
         else
             for i, f in ipairs(data.flights) do flightCard(f, i).Parent = flightsPage end
         end
 
         clear(gamesPage)
         if #data.places == 0 then
-            local e = label(gamesPage, "No games linked yet", 13, Color3.fromRGB(140, 140, 150))
-            e.Size = UDim2.fromOffset(220, 40)
+            local e = label(gamesPage, "No games found for this group", 13, Color3.fromRGB(140, 140, 150))
+            e.Size = UDim2.fromOffset(320, 40)
         else
             for i, p in ipairs(data.places) do gameCard(p, i).Parent = gamesPage end
         end
@@ -410,13 +502,13 @@ function M.mount()
         clear(storePage)
         if #data.passes == 0 then
             local e = label(storePage, "No gamepasses configured", 13, Color3.fromRGB(140, 140, 150))
-            e.Size = UDim2.new(1, 0, 0, 40)
+            e.Size = UDim2.fromOffset(320, 40)
         else
             for i, p in ipairs(data.passes) do passRow(p, i).Parent = storePage end
         end
     end
 
-    selectPage("Flights")
+    selectPage("Games")
     render()
 
     UserInputService.InputBegan:Connect(function(input, processed)
@@ -495,6 +587,7 @@ local function fetch()
                 tail        = s.tail_number,
                 host        = (s.host and s.host.username) or s.host_name,
                 hostId      = tonumber(s.host and s.host.user_id),
+                status      = s.status,
                 placeId     = placeId,
                 link        = link,
             })
@@ -504,7 +597,30 @@ local function fetch()
     return out
 end
 
+-- Every game owned by the Roblox group (or the group owner), fetched through
+-- Fluxcore so Roblox web APIs stay reachable from the game server.
+local function fetchGames()
+    local ok, res = pcall(function()
+        return HttpService:RequestAsync({
+            Url = cfg.DOMAIN .. "/api/v1/games",
+            Method = "GET",
+            Headers = { ["x-api-key"] = cfg.API_KEY, ["Content-Type"] = "application/json" },
+        })
+    end)
+    if not ok or not res.Success then return {} end
+    local decoded
+    if not pcall(function() decoded = HttpService:JSONDecode(res.Body) end) then return {} end
+    local out = {}
+    for _, g in ipairs((decoded and decoded.games) or {}) do
+        if g.placeId then
+            table.insert(out, { id = g.placeId, name = g.name or "Game", playing = g.playing or 0 })
+        end
+    end
+    return out
+end
+
 local cache, cacheAt = {}, -1e9
+local gameCache, gameCacheAt = {}, -1e9
 
 local function payload()
     local interval = math.max(10, tonumber(cfg.REFRESH_SECONDS) or 30)
@@ -512,19 +628,25 @@ local function payload()
         cache = fetch()
         cacheAt = os.clock()
     end
+    if os.clock() - gameCacheAt > math.max(60, interval) then
+        gameCache = fetchGames()
+        gameCacheAt = os.clock()
+    end
 
-    local places, seen = {}, {}
+    local placeInfo, seen = {}, {}
+    for _, g in ipairs(gameCache) do
+        if not seen[g.id] then seen[g.id] = true; table.insert(placeInfo, g) end
+    end
+    local extra = {}
     for _, id in ipairs(cfg.PLACE_IDS or {}) do
-        if not seen[id] then seen[id] = true; table.insert(places, id) end
+        if not seen[id] then seen[id] = true; table.insert(extra, id) end
     end
     for _, f in ipairs(cache) do
-        if f.placeId and not seen[f.placeId] then seen[f.placeId] = true; table.insert(places, f.placeId) end
+        if f.placeId and not seen[f.placeId] then seen[f.placeId] = true; table.insert(extra, f.placeId) end
     end
-
-    local placeInfo = {}
-    for _, id in ipairs(places) do
+    for _, id in ipairs(extra) do
         local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id) end)
-        table.insert(placeInfo, { id = id, name = (ok and info and info.Name) or ("Place " .. tostring(id)) })
+        table.insert(placeInfo, { id = id, name = (ok and info and info.Name) or ("Place " .. tostring(id)), playing = 0 })
     end
 
     local passes = {}
