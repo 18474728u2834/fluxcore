@@ -587,6 +587,7 @@ local function fetch()
                 tail        = s.tail_number,
                 host        = (s.host and s.host.username) or s.host_name,
                 hostId      = tonumber(s.host and s.host.user_id),
+                status      = s.status,
                 placeId     = placeId,
                 link        = link,
             })
@@ -596,7 +597,30 @@ local function fetch()
     return out
 end
 
+-- Every game owned by the Roblox group (or the group owner), fetched through
+-- Fluxcore so Roblox web APIs stay reachable from the game server.
+local function fetchGames()
+    local ok, res = pcall(function()
+        return HttpService:RequestAsync({
+            Url = cfg.DOMAIN .. "/api/v1/games",
+            Method = "GET",
+            Headers = { ["x-api-key"] = cfg.API_KEY, ["Content-Type"] = "application/json" },
+        })
+    end)
+    if not ok or not res.Success then return {} end
+    local decoded
+    if not pcall(function() decoded = HttpService:JSONDecode(res.Body) end) then return {} end
+    local out = {}
+    for _, g in ipairs((decoded and decoded.games) or {}) do
+        if g.placeId then
+            table.insert(out, { id = g.placeId, name = g.name or "Game", playing = g.playing or 0 })
+        end
+    end
+    return out
+end
+
 local cache, cacheAt = {}, -1e9
+local gameCache, gameCacheAt = {}, -1e9
 
 local function payload()
     local interval = math.max(10, tonumber(cfg.REFRESH_SECONDS) or 30)
@@ -604,19 +628,25 @@ local function payload()
         cache = fetch()
         cacheAt = os.clock()
     end
+    if os.clock() - gameCacheAt > math.max(60, interval) then
+        gameCache = fetchGames()
+        gameCacheAt = os.clock()
+    end
 
-    local places, seen = {}, {}
+    local placeInfo, seen = {}, {}
+    for _, g in ipairs(gameCache) do
+        if not seen[g.id] then seen[g.id] = true; table.insert(placeInfo, g) end
+    end
+    local extra = {}
     for _, id in ipairs(cfg.PLACE_IDS or {}) do
-        if not seen[id] then seen[id] = true; table.insert(places, id) end
+        if not seen[id] then seen[id] = true; table.insert(extra, id) end
     end
     for _, f in ipairs(cache) do
-        if f.placeId and not seen[f.placeId] then seen[f.placeId] = true; table.insert(places, f.placeId) end
+        if f.placeId and not seen[f.placeId] then seen[f.placeId] = true; table.insert(extra, f.placeId) end
     end
-
-    local placeInfo = {}
-    for _, id in ipairs(places) do
+    for _, id in ipairs(extra) do
         local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id) end)
-        table.insert(placeInfo, { id = id, name = (ok and info and info.Name) or ("Place " .. tostring(id)) })
+        table.insert(placeInfo, { id = id, name = (ok and info and info.Name) or ("Place " .. tostring(id)), playing = 0 })
     end
 
     local passes = {}
