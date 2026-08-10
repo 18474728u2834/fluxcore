@@ -30,6 +30,11 @@ M.API_KEY = "${k}"
 -- Which flights to show: "all" | "shift" | "training" | "event"
 M.CATEGORY = "${filter}"
 
+-- Timezone for displayed departure times, in hours from UTC.
+-- The API always returns UTC. Example: 2 = CEST, -4 = EDT, 0 = UTC.
+M.TIMEZONE_OFFSET_HOURS = ${Number.isFinite(tz) ? tz : 0}
+
+
 -- Only today's flights? (false = every upcoming flight the API returns)
 M.TODAY_ONLY = true
 
