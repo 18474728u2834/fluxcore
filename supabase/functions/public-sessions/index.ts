@@ -6,6 +6,68 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-api-key, content-type",
 };
 
+// IATA / ICAO -> city name resolution so boards can show "Munich" instead of "MUC".
+const AIRPORTS: Record<string, string> = {
+  MUC: "Munich", FRA: "Frankfurt", BER: "Berlin", HAM: "Hamburg", DUS: "Dusseldorf", CGN: "Cologne", STR: "Stuttgart",
+  LHR: "London", LGW: "London Gatwick", STN: "London Stansted", LTN: "London Luton", LCY: "London City",
+  MAN: "Manchester", BHX: "Birmingham", EDI: "Edinburgh", GLA: "Glasgow", BRS: "Bristol", NCL: "Newcastle",
+  LPL: "Liverpool", LBA: "Leeds Bradford", BOH: "Bournemouth", EMA: "East Midlands", SOU: "Southampton",
+  BFS: "Belfast", DUB: "Dublin", ORK: "Cork", SNN: "Shannon",
+  CDG: "Paris", ORY: "Paris Orly", NCE: "Nice", LYS: "Lyon", MRS: "Marseille", TLS: "Toulouse", BOD: "Bordeaux",
+  AMS: "Amsterdam", EIN: "Eindhoven", RTM: "Rotterdam", BRU: "Brussels", CRL: "Charleroi", LUX: "Luxembourg",
+  MAD: "Madrid", BCN: "Barcelona", AGP: "Malaga", PMI: "Palma", ALC: "Alicante", VLC: "Valencia", SVQ: "Seville",
+  IBZ: "Ibiza", TFS: "Tenerife", LPA: "Gran Canaria", ACE: "Lanzarote", FUE: "Fuerteventura",
+  LIS: "Lisbon", OPO: "Porto", FAO: "Faro", FNC: "Funchal",
+  FCO: "Rome", CIA: "Rome Ciampino", MXP: "Milan", LIN: "Milan Linate", BGY: "Bergamo", VCE: "Venice", NAP: "Naples",
+  BLQ: "Bologna", PSA: "Pisa", CTA: "Catania", PMO: "Palermo", CAG: "Cagliari",
+  ZRH: "Zurich", GVA: "Geneva", BSL: "Basel", VIE: "Vienna", SZG: "Salzburg", INN: "Innsbruck",
+  CPH: "Copenhagen", BLL: "Billund", OSL: "Oslo", TRF: "Sandefjord", BGO: "Bergen", TRD: "Trondheim", SVG: "Stavanger",
+  ARN: "Stockholm", NYO: "Stockholm Skavsta", GOT: "Gothenburg", HEL: "Helsinki", KEF: "Reykjavik",
+  WAW: "Warsaw", KRK: "Krakow", GDN: "Gdansk", WRO: "Wroclaw", PRG: "Prague", BUD: "Budapest", OTP: "Bucharest",
+  SOF: "Sofia", ZAG: "Zagreb", SPU: "Split", DBV: "Dubrovnik", LJU: "Ljubljana", BEG: "Belgrade", TIA: "Tirana",
+  ATH: "Athens", SKG: "Thessaloniki", HER: "Heraklion", RHO: "Rhodes", CFU: "Corfu", JMK: "Mykonos", JTR: "Santorini",
+  IST: "Istanbul", SAW: "Istanbul Sabiha", AYT: "Antalya", ESB: "Ankara", ADB: "Izmir",
+  SVO: "Moscow", DME: "Moscow Domodedovo", LED: "Saint Petersburg", KBP: "Kyiv", RIX: "Riga", TLL: "Tallinn", VNO: "Vilnius",
+  JFK: "New York", EWR: "Newark", LGA: "New York LaGuardia", BOS: "Boston", PHL: "Philadelphia", IAD: "Washington",
+  DCA: "Washington National", BWI: "Baltimore", ATL: "Atlanta", MIA: "Miami", MCO: "Orlando", FLL: "Fort Lauderdale",
+  TPA: "Tampa", CLT: "Charlotte", ORD: "Chicago", MDW: "Chicago Midway", DTW: "Detroit", MSP: "Minneapolis",
+  DFW: "Dallas", IAH: "Houston", AUS: "Austin", DEN: "Denver", PHX: "Phoenix", LAS: "Las Vegas", SLC: "Salt Lake City",
+  LAX: "Los Angeles", SFO: "San Francisco", SAN: "San Diego", SEA: "Seattle", PDX: "Portland", HNL: "Honolulu",
+  YYZ: "Toronto", YUL: "Montreal", YVR: "Vancouver", YYC: "Calgary", YOW: "Ottawa", YEG: "Edmonton",
+  MEX: "Mexico City", CUN: "Cancun", GRU: "Sao Paulo", GIG: "Rio de Janeiro", EZE: "Buenos Aires", SCL: "Santiago",
+  BOG: "Bogota", LIM: "Lima", PTY: "Panama City",
+  DXB: "Dubai", DWC: "Dubai World Central", AUH: "Abu Dhabi", DOH: "Doha", RUH: "Riyadh", JED: "Jeddah",
+  KWI: "Kuwait City", BAH: "Bahrain", MCT: "Muscat", TLV: "Tel Aviv", AMM: "Amman", CAI: "Cairo", HRG: "Hurghada",
+  SSH: "Sharm El Sheikh", RAK: "Marrakesh", CMN: "Casablanca", TUN: "Tunis", JNB: "Johannesburg", CPT: "Cape Town",
+  NBO: "Nairobi", LOS: "Lagos", ADD: "Addis Ababa",
+  DEL: "Delhi", BOM: "Mumbai", BLR: "Bengaluru", MAA: "Chennai", HYD: "Hyderabad", CCU: "Kolkata", CMB: "Colombo",
+  MLE: "Male", KTM: "Kathmandu", ISB: "Islamabad", KHI: "Karachi", DAC: "Dhaka",
+  BKK: "Bangkok", DMK: "Bangkok Don Mueang", HKT: "Phuket", SIN: "Singapore", KUL: "Kuala Lumpur", CGK: "Jakarta",
+  DPS: "Bali", MNL: "Manila", HAN: "Hanoi", SGN: "Ho Chi Minh City", PNH: "Phnom Penh",
+  HKG: "Hong Kong", TPE: "Taipei", ICN: "Seoul", GMP: "Seoul Gimpo", NRT: "Tokyo", HND: "Tokyo Haneda",
+  KIX: "Osaka", CTS: "Sapporo", FUK: "Fukuoka", PEK: "Beijing", PKX: "Beijing Daxing", PVG: "Shanghai",
+  SHA: "Shanghai Hongqiao", CAN: "Guangzhou", SZX: "Shenzhen", CTU: "Chengdu",
+  SYD: "Sydney", MEL: "Melbourne", BNE: "Brisbane", PER: "Perth", ADL: "Adelaide", OOL: "Gold Coast",
+  AKL: "Auckland", CHC: "Christchurch", WLG: "Wellington", NAN: "Nadi",
+  // Common ICAO aliases
+  EGLL: "London", EGKK: "London Gatwick", EGCC: "Manchester", EDDM: "Munich", EDDF: "Frankfurt",
+  LFPG: "Paris", EHAM: "Amsterdam", LEMD: "Madrid", LEBL: "Barcelona", LIRF: "Rome", LSZH: "Zurich",
+  EKCH: "Copenhagen", ENGM: "Oslo", ESSA: "Stockholm", EFHK: "Helsinki", KJFK: "New York", KLAX: "Los Angeles",
+  OMDB: "Dubai", WSSS: "Singapore", RJTT: "Tokyo Haneda", YSSY: "Sydney",
+};
+
+function resolveAirport(code: string | null): string | null {
+  if (!code) return null;
+  const raw = String(code).trim();
+  if (!raw) return null;
+  const key = raw.toUpperCase();
+  if (AIRPORTS[key]) return AIRPORTS[key];
+  // Already a place name (contains a space or lowercase letters) — keep as typed
+  if (!/^[A-Z]{3,4}$/.test(key)) return raw;
+  return raw;
+}
+
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
