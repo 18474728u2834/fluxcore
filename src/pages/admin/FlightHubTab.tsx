@@ -395,35 +395,47 @@ function M.mount()
     end
 
     local function gameCard(p, order)
+        local img = p.icon
+        if not img or img == "" then
+            img = "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420"
+        end
         return tile(order, tostring(p.playing or 0) .. " playing", string.upper(tostring(p.name or "GAME")),
-            "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420",
-            function() joinPlace(p.id) end, GREEN, "▶")
+            img, function() joinPlace(p.id) end, GREEN, "▶")
     end
 
     local function passRow(p, order)
         local row = Instance.new("Frame")
-        row.Size = UDim2.new(0, 520, 0, 62)
+        row.Size = UDim2.new(0, 560, 0, 84)
         row.BackgroundColor3 = CARD
         row.BorderSizePixel = 0
         row.LayoutOrder = order
         corner(row, 6) stroke(row)
 
         local img = Instance.new("ImageLabel")
-        img.Size = UDim2.fromOffset(42, 42)
-        img.Position = UDim2.fromOffset(10, 10)
+        img.Size = UDim2.fromOffset(60, 60)
+        img.Position = UDim2.fromOffset(12, 12)
         img.BackgroundColor3 = Color3.fromRGB(30, 30, 34)
         img.BorderSizePixel = 0
-        img.Image = "rbxthumb://type=GamePass&id=" .. tostring(p.id) .. "&w=150&h=150"
+        img.ScaleType = Enum.ScaleType.Crop
+        img.Image = (p.icon and p.icon ~= "" and p.icon)
+            or ("rbxthumb://type=GamePass&id=" .. tostring(p.id) .. "&w=150&h=150")
         img.Parent = row
         corner(img, 6)
 
         local n = label(row, p.name, 13, Color3.fromRGB(235, 235, 240), Enum.Font.GothamBold)
-        n.Position = UDim2.fromOffset(62, 12)
-        n.Size = UDim2.new(1, -200, 0, 18)
+        n.Position = UDim2.fromOffset(84, 12)
+        n.Size = UDim2.new(1, -230, 0, 18)
 
         local pr = label(row, p.price and (tostring(p.price) .. " Robux") or "Unavailable", 11, Color3.fromRGB(150, 150, 158))
-        pr.Position = UDim2.fromOffset(62, 32)
-        pr.Size = UDim2.new(1, -200, 0, 16)
+        pr.Position = UDim2.fromOffset(84, 32)
+        pr.Size = UDim2.new(1, -230, 0, 16)
+
+        local desc = label(row, p.description or "", 11, Color3.fromRGB(125, 125, 135))
+        desc.Position = UDim2.fromOffset(84, 50)
+        desc.Size = UDim2.new(1, -230, 0, 26)
+        desc.TextWrapped = true
+        desc.TextYAlignment = Enum.TextYAlignment.Top
+        desc.Visible = (p.description or "") ~= ""
 
         local buy = Instance.new("TextButton")
         buy.AnchorPoint = Vector2.new(1, 0.5)
@@ -441,6 +453,7 @@ function M.mount()
         end)
         return row
     end
+
 
     local function clear(f)
         for _, c in ipairs(f:GetChildren()) do
@@ -461,27 +474,33 @@ function M.mount()
             if not nextFlight then nextFlight = f end
         end
         local a = hex(ACCENT)
+        local function route(f)
+            local o, d = f.origin, f.destination
+            if o and d then return string.format(' from <b>%s</b> to <b>%s</b>', tostring(o), tostring(d)) end
+            if d then return string.format(' to <b>%s</b>', tostring(d)) end
+            return ""
+        end
         if live then
             bState.Text = "FLIGHT IN PROGRESS"
-            bNext.Text = string.format('Now boarding: <b><font color="%s">%s</font></b> from <b>%s</b> to <b>%s</b>',
-                a, tostring(live.flight or live.name or "Flight"), tostring(live.origin or "Base"), tostring(live.destination or "Destination"))
+            bNext.Text = string.format('Now boarding: <b><font color="%s">%s</font></b>%s',
+                a, tostring(live.flight or live.name or "Flight"), route(live))
             bMeta.Text = "Departure: <b>" .. clockLabel(live.date) .. "</b>"
             bJoin.Visible = live.placeId ~= nil
             bJoin.MouseButton1Click:Connect(function() joinPlace(live.placeId) end)
         elseif nextFlight then
-            bState.Text = "NO ONGOING FLIGHTS"
-            bNext.Text = string.format('Next flight: <b><font color="%s">%s</font></b> from <b>%s</b> to <b>%s</b>',
-                a, tostring(nextFlight.flight or nextFlight.name or "TBD"),
-                tostring(nextFlight.origin or "Base"), tostring(nextFlight.destination or "Destination"))
+            bState.Text = "NEXT SCHEDULED FLIGHT"
+            bNext.Text = string.format('<b><font color="%s">%s</font></b>%s',
+                a, tostring(nextFlight.flight or nextFlight.name or "TBD"), route(nextFlight))
             bMeta.Text = string.format('Check-in opens: <font color="%s"><b>%s</b></font>   |   Host: <b>%s</b>',
                 a, clockLabel(nextFlight.date), tostring(nextFlight.host or "TBD"))
             bJoin.Visible = false
         else
-            bState.Text = "NO ONGOING FLIGHTS"
+            bState.Text = "NO FLIGHTS"
             bNext.Text = M.EMPTY_TEXT
             bMeta.Text = ""
             bJoin.Visible = false
         end
+
 
         clear(flightsPage)
         if #data.flights == 0 then
@@ -581,12 +600,15 @@ local function fetch()
                 category    = s.category or "session",
                 date        = s.date,
                 flight      = s.route_number or s.flight_number,
-                origin      = s.origin,
-                destination = s.destination,
+                -- Fluxcore resolves IATA/ICAO codes for us (MUC -> Munich)
+                origin      = s.origin_name or s.origin,
+                destination = s.destination_name or s.destination,
+                originCode  = s.origin,
+                destCode    = s.destination,
                 aircraft    = s.aircraft_model,
                 tail        = s.tail_number,
                 host        = (s.host and s.host.username) or s.host_name,
-                hostId      = tonumber(s.host and s.host.user_id),
+                hostId      = tonumber(s.host and s.host.userId),
                 status      = s.status,
                 placeId     = placeId,
                 link        = link,
@@ -597,8 +619,8 @@ local function fetch()
     return out
 end
 
--- Every game owned by the Roblox group (or the group owner), fetched through
--- Fluxcore so Roblox web APIs stay reachable from the game server.
+-- Public games owned by the Roblox group, fetched through Fluxcore so Roblox
+-- web APIs stay reachable from the game server (icons included).
 local function fetchGames()
     local ok, res = pcall(function()
         return HttpService:RequestAsync({
@@ -613,11 +635,17 @@ local function fetchGames()
     local out = {}
     for _, g in ipairs((decoded and decoded.games) or {}) do
         if g.placeId then
-            table.insert(out, { id = g.placeId, name = g.name or "Game", playing = g.playing or 0 })
+            table.insert(out, {
+                id      = g.placeId,
+                name    = g.name or "Game",
+                playing = g.playing or 0,
+                icon    = g.icon, -- CDN url from Fluxcore, falls back to rbxthumb on the client
+            })
         end
     end
     return out
 end
+
 
 local cache, cacheAt = {}, -1e9
 local gameCache, gameCacheAt = {}, -1e9
@@ -646,7 +674,13 @@ local function payload()
     end
     for _, id in ipairs(extra) do
         local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id) end)
-        table.insert(placeInfo, { id = id, name = (ok and info and info.Name) or ("Place " .. tostring(id)), playing = 0 })
+        table.insert(placeInfo, {
+            id      = id,
+            name    = (ok and info and info.Name) or ("Place " .. tostring(id)),
+            playing = 0,
+            icon    = (ok and info and info.IconImageAssetId and info.IconImageAssetId > 0)
+                      and ("rbxassetid://" .. tostring(info.IconImageAssetId)) or nil,
+        })
     end
 
     local passes = {}
@@ -654,12 +688,17 @@ local function payload()
         local ok, info = pcall(function()
             return MarketplaceService:GetProductInfo(id, Enum.InfoType.GamePass)
         end)
+        local decal = ok and info and tonumber(info.IconImageAssetId) or nil
         table.insert(passes, {
-            id    = id,
-            name  = (ok and info and info.Name) or ("Gamepass " .. tostring(id)),
-            price = (ok and info and info.PriceInRobux) or nil,
+            id          = id,
+            name        = (ok and info and info.Name) or ("Gamepass " .. tostring(id)),
+            price       = (ok and info and info.PriceInRobux) or nil,
+            description = (ok and info and info.Description) or nil,
+            decalId     = decal,
+            icon        = (decal and decal > 0) and ("rbxassetid://" .. tostring(decal)) or nil,
         })
     end
+
 
     return {
         flights = cache,

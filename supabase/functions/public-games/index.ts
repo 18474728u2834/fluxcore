@@ -45,17 +45,17 @@ serve(async (req) => {
       .single();
     if (!workspace) return json({ error: "Invalid API key" }, 401);
 
-    const games: { placeId: number; universeId: number | null; name: string; playing: number }[] = [];
+    const games: { placeId: number; universeId: number | null; name: string; playing: number; icon: string | null }[] = [];
     const seen = new Set<number>();
     const push = (placeId: number | null, universeId: number | null, name: string, playing: number) => {
       if (!placeId || seen.has(placeId)) return;
       seen.add(placeId);
-      games.push({ placeId, universeId, name, playing });
+      games.push({ placeId, universeId, name, playing, icon: null });
     };
 
     const groupId = (workspace as any).roblox_group_id;
 
-    // 1) All games owned by the Roblox group
+    // Public games owned by the Roblox group only (no personal games of the owner)
     if (groupId) {
       for (const host of ["games.roblox.com", "games.roproxy.com"]) {
         const d = await j(`https://${host}/v2/groups/${groupId}/gamesV2?accessFilter=Public&limit=50&sortOrder=Asc`);
@@ -64,32 +64,25 @@ serve(async (req) => {
           break;
         }
       }
-
-      // 2) Games owned by the group owner (personal games)
-      let ownerId: number | null = null;
-      for (const host of ["groups.roblox.com", "groups.roproxy.com"]) {
-        const g = await j(`https://${host}/v1/groups/${groupId}`);
-        if (g?.owner?.userId) { ownerId = g.owner.userId; break; }
-      }
-      if (ownerId) {
-        for (const host of ["games.roblox.com", "games.roproxy.com"]) {
-          const d = await j(`https://${host}/v2/users/${ownerId}/games?accessFilter=Public&limit=50&sortOrder=Asc`);
-          if (d?.data) {
-            for (const g of d.data) push(g.rootPlace?.id ?? null, g.id ?? null, g.name ?? "Game", g.placeVisits ? 0 : 0);
-            break;
-          }
-        }
-      }
     }
 
-    // 3) Always include the workspace's linked game
+    // Always include the workspace's linked game
     const link: string | null = (workspace as any).game_url ?? null;
     if (link) {
       const pid = Number(link.match(/games\/(\d+)/)?.[1] ?? 0);
       if (pid) push(pid, null, workspace.name ?? "Game", 0);
     }
 
-    // Live player counts per universe
+    // Resolve universeIds for places we don't know yet (linked game / extra places)
+    const missing = games.filter((g) => !g.universeId);
+    for (const g of missing) {
+      for (const host of ["apis.roblox.com", "apis.roproxy.com"]) {
+        const d = await j(`https://${host}/universes/v1/places/${g.placeId}/universe`);
+        if (d?.universeId) { g.universeId = d.universeId; break; }
+      }
+    }
+
+    // Live player counts + names per universe
     const universeIds = games.map((g) => g.universeId).filter(Boolean);
     if (universeIds.length) {
       for (const host of ["games.roblox.com", "games.roproxy.com"]) {
@@ -103,7 +96,21 @@ serve(async (req) => {
           break;
         }
       }
+
+      // Icons — return a real CDN url so Roblox clients always render them
+      for (const host of ["thumbnails.roblox.com", "thumbnails.roproxy.com"]) {
+        const d = await j(`https://${host}/v1/games/icons?universeIds=${universeIds.join(",")}&size=512x512&format=Png&isCircular=false`);
+        if (d?.data) {
+          const byU = new Map(d.data.map((t: any) => [t.targetId, t]));
+          for (const g of games) {
+            const t: any = g.universeId ? byU.get(g.universeId) : null;
+            if (t?.state === "Completed" && t.imageUrl) g.icon = t.imageUrl;
+          }
+          break;
+        }
+      }
     }
+
 
     return json({ games }, 200);
   } catch (e) {
