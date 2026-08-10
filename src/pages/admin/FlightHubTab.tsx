@@ -581,12 +581,15 @@ local function fetch()
                 category    = s.category or "session",
                 date        = s.date,
                 flight      = s.route_number or s.flight_number,
-                origin      = s.origin,
-                destination = s.destination,
+                -- Fluxcore resolves IATA/ICAO codes for us (MUC -> Munich)
+                origin      = s.origin_name or s.origin,
+                destination = s.destination_name or s.destination,
+                originCode  = s.origin,
+                destCode    = s.destination,
                 aircraft    = s.aircraft_model,
                 tail        = s.tail_number,
                 host        = (s.host and s.host.username) or s.host_name,
-                hostId      = tonumber(s.host and s.host.user_id),
+                hostId      = tonumber(s.host and s.host.userId),
                 status      = s.status,
                 placeId     = placeId,
                 link        = link,
@@ -597,8 +600,8 @@ local function fetch()
     return out
 end
 
--- Every game owned by the Roblox group (or the group owner), fetched through
--- Fluxcore so Roblox web APIs stay reachable from the game server.
+-- Public games owned by the Roblox group, fetched through Fluxcore so Roblox
+-- web APIs stay reachable from the game server (icons included).
 local function fetchGames()
     local ok, res = pcall(function()
         return HttpService:RequestAsync({
@@ -613,11 +616,17 @@ local function fetchGames()
     local out = {}
     for _, g in ipairs((decoded and decoded.games) or {}) do
         if g.placeId then
-            table.insert(out, { id = g.placeId, name = g.name or "Game", playing = g.playing or 0 })
+            table.insert(out, {
+                id      = g.placeId,
+                name    = g.name or "Game",
+                playing = g.playing or 0,
+                icon    = g.icon, -- CDN url from Fluxcore, falls back to rbxthumb on the client
+            })
         end
     end
     return out
 end
+
 
 local cache, cacheAt = {}, -1e9
 local gameCache, gameCacheAt = {}, -1e9
