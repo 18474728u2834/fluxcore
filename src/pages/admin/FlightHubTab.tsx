@@ -395,35 +395,47 @@ function M.mount()
     end
 
     local function gameCard(p, order)
+        local img = p.icon
+        if not img or img == "" then
+            img = "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420"
+        end
         return tile(order, tostring(p.playing or 0) .. " playing", string.upper(tostring(p.name or "GAME")),
-            "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420",
-            function() joinPlace(p.id) end, GREEN, "▶")
+            img, function() joinPlace(p.id) end, GREEN, "▶")
     end
 
     local function passRow(p, order)
         local row = Instance.new("Frame")
-        row.Size = UDim2.new(0, 520, 0, 62)
+        row.Size = UDim2.new(0, 560, 0, 84)
         row.BackgroundColor3 = CARD
         row.BorderSizePixel = 0
         row.LayoutOrder = order
         corner(row, 6) stroke(row)
 
         local img = Instance.new("ImageLabel")
-        img.Size = UDim2.fromOffset(42, 42)
-        img.Position = UDim2.fromOffset(10, 10)
+        img.Size = UDim2.fromOffset(60, 60)
+        img.Position = UDim2.fromOffset(12, 12)
         img.BackgroundColor3 = Color3.fromRGB(30, 30, 34)
         img.BorderSizePixel = 0
-        img.Image = "rbxthumb://type=GamePass&id=" .. tostring(p.id) .. "&w=150&h=150"
+        img.ScaleType = Enum.ScaleType.Crop
+        img.Image = (p.icon and p.icon ~= "" and p.icon)
+            or ("rbxthumb://type=GamePass&id=" .. tostring(p.id) .. "&w=150&h=150")
         img.Parent = row
         corner(img, 6)
 
         local n = label(row, p.name, 13, Color3.fromRGB(235, 235, 240), Enum.Font.GothamBold)
-        n.Position = UDim2.fromOffset(62, 12)
-        n.Size = UDim2.new(1, -200, 0, 18)
+        n.Position = UDim2.fromOffset(84, 12)
+        n.Size = UDim2.new(1, -230, 0, 18)
 
         local pr = label(row, p.price and (tostring(p.price) .. " Robux") or "Unavailable", 11, Color3.fromRGB(150, 150, 158))
-        pr.Position = UDim2.fromOffset(62, 32)
-        pr.Size = UDim2.new(1, -200, 0, 16)
+        pr.Position = UDim2.fromOffset(84, 32)
+        pr.Size = UDim2.new(1, -230, 0, 16)
+
+        local desc = label(row, p.description or "", 11, Color3.fromRGB(125, 125, 135))
+        desc.Position = UDim2.fromOffset(84, 50)
+        desc.Size = UDim2.new(1, -230, 0, 26)
+        desc.TextWrapped = true
+        desc.TextYAlignment = Enum.TextYAlignment.Top
+        desc.Visible = (p.description or "") ~= ""
 
         local buy = Instance.new("TextButton")
         buy.AnchorPoint = Vector2.new(1, 0.5)
@@ -441,6 +453,7 @@ function M.mount()
         end)
         return row
     end
+
 
     local function clear(f)
         for _, c in ipairs(f:GetChildren()) do
