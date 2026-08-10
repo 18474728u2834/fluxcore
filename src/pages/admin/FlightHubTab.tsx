@@ -738,11 +738,12 @@ export default function FlightHubTab() {
   const [filter, setFilter] = useState<Filter>("all");
   const [hubName, setHubName] = useState("Flight Hub");
   const [passes, setPasses] = useState("");
+  const [tzOffset, setTzOffset] = useState("0");
   const [revealed, setRevealed] = useState(false);
 
   const config = useMemo(
-    () => buildConfig(domain, apiKey, filter, hubName, passes),
-    [domain, apiKey, filter, hubName, passes],
+    () => buildConfig(domain, apiKey, filter, hubName, passes, tzOffset),
+    [domain, apiKey, filter, hubName, passes, tzOffset],
   );
 
   const copy = (text: string, what: string) => {
