@@ -118,7 +118,7 @@ serve(async (req) => {
 
     let query = supabase
       .from("scheduled_sessions")
-      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels, slots, tag_ids, occurrence_assignments")
+      .select("id, title, category, scheduled_at, duration_minutes, host_name, host_id, co_host_name, trainer_name, status, recurring, recurring_days, recurring_time, description, game_url, role_labels, slots, tag_ids, occurrence_assignments, route_number, aircraft_model, tail_number, origin, destination")
       .eq("workspace_id", workspace.id)
       .in("status", ["scheduled", "started"])
       .order("scheduled_at", { ascending: true });
