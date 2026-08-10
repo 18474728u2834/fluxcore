@@ -655,7 +655,13 @@ local function payload()
     end
     for _, id in ipairs(extra) do
         local ok, info = pcall(function() return MarketplaceService:GetProductInfo(id) end)
-        table.insert(placeInfo, { id = id, name = (ok and info and info.Name) or ("Place " .. tostring(id)), playing = 0 })
+        table.insert(placeInfo, {
+            id      = id,
+            name    = (ok and info and info.Name) or ("Place " .. tostring(id)),
+            playing = 0,
+            icon    = (ok and info and info.IconImageAssetId and info.IconImageAssetId > 0)
+                      and ("rbxassetid://" .. tostring(info.IconImageAssetId)) or nil,
+        })
     end
 
     local passes = {}
@@ -663,12 +669,17 @@ local function payload()
         local ok, info = pcall(function()
             return MarketplaceService:GetProductInfo(id, Enum.InfoType.GamePass)
         end)
+        local decal = ok and info and tonumber(info.IconImageAssetId) or nil
         table.insert(passes, {
-            id    = id,
-            name  = (ok and info and info.Name) or ("Gamepass " .. tostring(id)),
-            price = (ok and info and info.PriceInRobux) or nil,
+            id          = id,
+            name        = (ok and info and info.Name) or ("Gamepass " .. tostring(id)),
+            price       = (ok and info and info.PriceInRobux) or nil,
+            description = (ok and info and info.Description) or nil,
+            decalId     = decal,
+            icon        = (decal and decal > 0) and ("rbxassetid://" .. tostring(decal)) or nil,
         })
     end
+
 
     return {
         flights = cache,
