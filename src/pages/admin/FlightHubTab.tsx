@@ -808,6 +808,11 @@ export default function FlightHubTab() {
             <Label className="text-xs">Hub name</Label>
             <Input value={hubName} onChange={(e) => setHubName(e.target.value)} placeholder="Flight Hub" className="text-xs" />
           </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Timezone offset from UTC (hours)</Label>
+            <Input value={tzOffset} onChange={(e) => setTzOffset(e.target.value)} placeholder="0" className="font-mono text-xs" />
+            <p className="text-[11px] text-muted-foreground">Departure times come from the API in UTC. Use 2 for CEST, -4 for EDT, 0 for UTC.</p>
+          </div>
           <div className="space-y-1 sm:col-span-2">
             <Label className="text-xs">Gamepass IDs (store tab)</Label>
             <Input value={passes} onChange={(e) => setPasses(e.target.value)} placeholder="123456, 789012" className="font-mono text-xs" />
