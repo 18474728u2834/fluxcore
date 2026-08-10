@@ -104,12 +104,19 @@ function M.mount()
         l.Parent = parent
         return l
     end
+    -- The API returns UTC ISO timestamps. Shift them by M.TIMEZONE_OFFSET_HOURS
+    -- and format as HH:MM so every flight shows its own real departure time.
+    local TZ = tonumber(M.TIMEZONE_OFFSET_HOURS) or 0
     local function clockLabel(iso)
         if type(iso) ~= "string" then return "TBD" end
-        local hh, mm = string.match(iso, "T(%d+):(%d+)")
+        local y, mo, d, hh, mm = string.match(iso, "(%d+)-(%d+)-(%d+)T(%d+):(%d+)")
         if not hh then return "TBD" end
-        return string.format("%s:%s", hh, mm)
+        local total = (tonumber(hh) * 60) + tonumber(mm) + math.floor(TZ * 60)
+        total = total % (24 * 60)
+        if total < 0 then total = total + (24 * 60) end
+        return string.format("%02d:%02d", math.floor(total / 60), total % 60)
     end
+
     local function joinPlace(placeId)
         if not placeId then return end
         pcall(function() TeleportService:Teleport(placeId, player) end)
