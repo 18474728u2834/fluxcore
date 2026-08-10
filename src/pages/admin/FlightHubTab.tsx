@@ -7,7 +7,8 @@ import { toast } from "sonner";
 
 type Filter = "all" | "shift" | "training" | "event";
 
-function buildConfig(domain: string, apiKey: string, filter: Filter, hubName: string, passes: string) {
+function buildConfig(domain: string, apiKey: string, filter: Filter, hubName: string, passes: string, tzOffset: string) {
+  const tz = Number(tzOffset);
   const d = domain.replace(/"/g, '\\"').replace(/\/+$/, "");
   const k = apiKey.replace(/"/g, '\\"');
   const h = hubName.replace(/"/g, '\\"');
@@ -28,6 +29,11 @@ M.API_KEY = "${k}"
 
 -- Which flights to show: "all" | "shift" | "training" | "event"
 M.CATEGORY = "${filter}"
+
+-- Timezone for displayed departure times, in hours from UTC.
+-- The API always returns UTC. Example: 2 = CEST, -4 = EDT, 0 = UTC.
+M.TIMEZONE_OFFSET_HOURS = ${Number.isFinite(tz) ? tz : 0}
+
 
 -- Only today's flights? (false = every upcoming flight the API returns)
 M.TODAY_ONLY = true
@@ -98,12 +104,19 @@ function M.mount()
         l.Parent = parent
         return l
     end
+    -- The API returns UTC ISO timestamps. Shift them by M.TIMEZONE_OFFSET_HOURS
+    -- and format as HH:MM so every flight shows its own real departure time.
+    local TZ = tonumber(M.TIMEZONE_OFFSET_HOURS) or 0
     local function clockLabel(iso)
         if type(iso) ~= "string" then return "TBD" end
-        local hh, mm = string.match(iso, "T(%d+):(%d+)")
+        local y, mo, d, hh, mm = string.match(iso, "(%d+)-(%d+)-(%d+)T(%d+):(%d+)")
         if not hh then return "TBD" end
-        return string.format("%s:%s", hh, mm)
+        local total = (tonumber(hh) * 60) + tonumber(mm) + math.floor(TZ * 60)
+        total = total % (24 * 60)
+        if total < 0 then total = total + (24 * 60) end
+        return string.format("%02d:%02d", math.floor(total / 60), total % 60)
     end
+
     local function joinPlace(placeId)
         if not placeId then return end
         pcall(function() TeleportService:Teleport(placeId, player) end)
@@ -725,11 +738,12 @@ export default function FlightHubTab() {
   const [filter, setFilter] = useState<Filter>("all");
   const [hubName, setHubName] = useState("Flight Hub");
   const [passes, setPasses] = useState("");
+  const [tzOffset, setTzOffset] = useState("0");
   const [revealed, setRevealed] = useState(false);
 
   const config = useMemo(
-    () => buildConfig(domain, apiKey, filter, hubName, passes),
-    [domain, apiKey, filter, hubName, passes],
+    () => buildConfig(domain, apiKey, filter, hubName, passes, tzOffset),
+    [domain, apiKey, filter, hubName, passes, tzOffset],
   );
 
   const copy = (text: string, what: string) => {
@@ -793,6 +807,11 @@ export default function FlightHubTab() {
           <div className="space-y-1">
             <Label className="text-xs">Hub name</Label>
             <Input value={hubName} onChange={(e) => setHubName(e.target.value)} placeholder="Flight Hub" className="text-xs" />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-xs">Timezone offset from UTC (hours)</Label>
+            <Input value={tzOffset} onChange={(e) => setTzOffset(e.target.value)} placeholder="0" className="font-mono text-xs" />
+            <p className="text-[11px] text-muted-foreground">Departure times come from the API in UTC. Use 2 for CEST, -4 for EDT, 0 for UTC.</p>
           </div>
           <div className="space-y-1 sm:col-span-2">
             <Label className="text-xs">Gamepass IDs (store tab)</Label>
