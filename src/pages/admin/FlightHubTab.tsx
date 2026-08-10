@@ -7,7 +7,8 @@ import { toast } from "sonner";
 
 type Filter = "all" | "shift" | "training" | "event";
 
-function buildConfig(domain: string, apiKey: string, filter: Filter, hubName: string, passes: string) {
+function buildConfig(domain: string, apiKey: string, filter: Filter, hubName: string, passes: string, tzOffset: string) {
+  const tz = Number(tzOffset);
   const d = domain.replace(/"/g, '\\"').replace(/\/+$/, "");
   const k = apiKey.replace(/"/g, '\\"');
   const h = hubName.replace(/"/g, '\\"');
