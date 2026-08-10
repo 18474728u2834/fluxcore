@@ -474,27 +474,33 @@ function M.mount()
             if not nextFlight then nextFlight = f end
         end
         local a = hex(ACCENT)
+        local function route(f)
+            local o, d = f.origin, f.destination
+            if o and d then return string.format(' from <b>%s</b> to <b>%s</b>', tostring(o), tostring(d)) end
+            if d then return string.format(' to <b>%s</b>', tostring(d)) end
+            return ""
+        end
         if live then
             bState.Text = "FLIGHT IN PROGRESS"
-            bNext.Text = string.format('Now boarding: <b><font color="%s">%s</font></b> from <b>%s</b> to <b>%s</b>',
-                a, tostring(live.flight or live.name or "Flight"), tostring(live.origin or "Base"), tostring(live.destination or "Destination"))
+            bNext.Text = string.format('Now boarding: <b><font color="%s">%s</font></b>%s',
+                a, tostring(live.flight or live.name or "Flight"), route(live))
             bMeta.Text = "Departure: <b>" .. clockLabel(live.date) .. "</b>"
             bJoin.Visible = live.placeId ~= nil
             bJoin.MouseButton1Click:Connect(function() joinPlace(live.placeId) end)
         elseif nextFlight then
-            bState.Text = "NO ONGOING FLIGHTS"
-            bNext.Text = string.format('Next flight: <b><font color="%s">%s</font></b> from <b>%s</b> to <b>%s</b>',
-                a, tostring(nextFlight.flight or nextFlight.name or "TBD"),
-                tostring(nextFlight.origin or "Base"), tostring(nextFlight.destination or "Destination"))
+            bState.Text = "NEXT SCHEDULED FLIGHT"
+            bNext.Text = string.format('<b><font color="%s">%s</font></b>%s',
+                a, tostring(nextFlight.flight or nextFlight.name or "TBD"), route(nextFlight))
             bMeta.Text = string.format('Check-in opens: <font color="%s"><b>%s</b></font>   |   Host: <b>%s</b>',
                 a, clockLabel(nextFlight.date), tostring(nextFlight.host or "TBD"))
             bJoin.Visible = false
         else
-            bState.Text = "NO ONGOING FLIGHTS"
+            bState.Text = "NO FLIGHTS"
             bNext.Text = M.EMPTY_TEXT
             bMeta.Text = ""
             bJoin.Visible = false
         end
+
 
         clear(flightsPage)
         if #data.flights == 0 then
