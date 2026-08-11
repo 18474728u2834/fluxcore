@@ -632,7 +632,7 @@ function M.mount()
             local e = label(gamesPage, "No games found for this group", 13, Color3.fromRGB(140, 140, 150))
             e.Size = UDim2.fromOffset(320, 40)
         else
-            for i, p in ipairs(data.places) do gameCard(p, i).Parent = gamesPage end
+            for i, p in ipairs(data.places) do gameCard(p, i, data.flights).Parent = gamesPage end
         end
 
         clear(storePage)
