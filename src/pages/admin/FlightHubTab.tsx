@@ -454,15 +454,60 @@ function M.mount()
         return card
     end
 
-    local function gameCard(p, order)
+    local function gameCard(p, order, flights)
+        -- Manual decal from Config wins, then the icon Fluxcore resolved, then rbxthumb
         local manual = (M.GAME_ICONS or {})[p.id]
         local img = manual and ("rbxassetid://" .. tostring(manual)) or p.icon
         if not img or img == "" then
             img = "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420"
         end
-        return tile(order, tostring(p.playing or 0) .. " playing", string.upper(tostring(p.name or "GAME")),
-            img, function() joinPlace(p.id) end, GREEN, "▶")
+
+        -- Flights departing from this experience (matched on the Fluxcore game link)
+        local mine, nextF, liveF = {}, nil, nil
+        for _, f in ipairs(flights or {}) do
+            if f.placeId and p.id and tonumber(f.placeId) == tonumber(p.id) then
+                table.insert(mine, f)
+                if f.status == "started" then liveF = liveF or f end
+                if not nextF then nextF = f end
+            end
+        end
+
+        local headLeft = tostring(p.playing or 0) .. " playing"
+        if liveF then headLeft = "BOARDING"
+        elseif nextF then headLeft = clockLabel(nextF.date) end
+
+        local card = tile(order, headLeft, string.upper(tostring(p.name or "GAME")),
+            img, function() joinPlace(p.id) end, liveF and GREEN or GREEN,
+            liveF and "JOIN NOW" or "▶")
+
+        if #mine > 0 then
+            local info = Instance.new("Frame")
+            info.AnchorPoint = Vector2.new(0, 1)
+            info.Position = UDim2.new(0, 0, 1, -66)
+            info.Size = UDim2.new(1, 0, 0, 46)
+            info.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
+            info.BackgroundTransparency = 0.25
+            info.BorderSizePixel = 0
+            info.Parent = card
+
+            local top = nextF
+            local rt = (top.origin and top.destination)
+                and (string.upper(top.origin) .. " → " .. string.upper(top.destination))
+                or tostring(top.name or "Flight")
+            local n = label(info, (top.flight and (top.flight .. "  ") or "") .. rt, 13,
+                Color3.fromRGB(245, 245, 250), Enum.Font.GothamBold)
+            n.Position = UDim2.fromOffset(14, 4)
+            n.Size = UDim2.new(1, -28, 0, 18)
+
+            local sub = label(info, #mine .. (#mine == 1 and " flight departing here" or " flights departing here"),
+                12, Color3.fromRGB(165, 165, 175))
+            sub.Position = UDim2.fromOffset(14, 24)
+            sub.Size = UDim2.new(1, -28, 0, 16)
+        end
+
+        return card
     end
+
 
 
     local function passRow(p, order)
