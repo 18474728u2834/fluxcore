@@ -36,7 +36,7 @@ M.TIMEZONE_OFFSET_HOURS = ${Number.isFinite(tz) ? tz : 0}
 
 
 -- Only today's flights? (false = every upcoming flight the API returns)
-M.TODAY_ONLY = true
+M.TODAY_ONLY = false
 
 -- Only list flights that have a game link (so "Join Flight" always works)
 M.REQUIRE_LINK = true
@@ -57,6 +57,18 @@ M.GAMEPASS_IDS = {${ids.length ? "\n    " + ids.join(",\n    ") + ",\n" : ""}}
 
 -- Extra Place IDs shown in the GAMES tab. Places used by flights are added automatically.
 M.PLACE_IDS = {}
+
+-- Hide the hub game itself from the GAMES tab.
+M.HIDE_CURRENT_GAME = true
+
+-- Manual game icons. Roblox blocks web icons in-game, so set them here:
+--   [placeId] = decalId        (decal / image asset id of the icon)
+-- Example:
+--   M.GAME_ICONS = {
+--       [1234567890] = 9876543210,
+--   }
+M.GAME_ICONS = {}
+
 
 M.REFRESH_SECONDS = 30
 M.AUTO_OPEN  = true
@@ -105,17 +117,47 @@ function M.mount()
         return l
     end
     -- The API returns UTC ISO timestamps. Shift them by M.TIMEZONE_OFFSET_HOURS
-    -- and format as HH:MM so every flight shows its own real departure time.
+    -- and format as HH:MM, adding a day hint when the flight is not today.
     local TZ = tonumber(M.TIMEZONE_OFFSET_HOURS) or 0
-    local function clockLabel(iso)
-        if type(iso) ~= "string" then return "TBD" end
-        local y, mo, d, hh, mm = string.match(iso, "(%d+)-(%d+)-(%d+)T(%d+):(%d+)")
-        if not hh then return "TBD" end
-        local total = (tonumber(hh) * 60) + tonumber(mm) + math.floor(TZ * 60)
-        total = total % (24 * 60)
-        if total < 0 then total = total + (24 * 60) end
-        return string.format("%02d:%02d", math.floor(total / 60), total % 60)
+    local function civilDays(y, m, d)
+        if m <= 2 then y = y - 1 end
+        local era = math.floor(y / 400)
+        local yoe = y - era * 400
+        local mp = (m + (m > 2 and -3 or 9))
+        local doy = math.floor((153 * mp + 2) / 5) + d - 1
+        local doe = yoe * 365 + math.floor(yoe / 4) - math.floor(yoe / 100) + doy
+        return era * 146097 + doe - 719468
     end
+    -- absolute minutes (local to TZ) for an ISO timestamp
+    local function isoMinutes(iso)
+        if type(iso) ~= "string" then return nil end
+        local y, mo, d, hh, mm = string.match(iso, "(%d+)-(%d+)-(%d+)T(%d+):(%d+)")
+        if not hh then return nil end
+        return civilDays(tonumber(y), tonumber(mo), tonumber(d)) * 1440
+            + tonumber(hh) * 60 + tonumber(mm) + math.floor(TZ * 60)
+    end
+    local function dayOffset(iso)
+        local mins = isoMinutes(iso)
+        if not mins then return 0 end
+        local nowMins = math.floor(os.time() / 60) + math.floor(TZ * 60)
+        return math.floor(mins / 1440) - math.floor(nowMins / 1440)
+    end
+    local function timeOnly(iso)
+        local mins = isoMinutes(iso)
+        if not mins then return "TBD" end
+        local t = mins % 1440
+        return string.format("%02d:%02d", math.floor(t / 60), t % 60)
+    end
+    local function clockLabel(iso)
+        local t = timeOnly(iso)
+        if t == "TBD" then return t end
+        local off = dayOffset(iso)
+        if off == 1 then return "Tomorrow " .. t end
+        if off > 1 then return t .. " (+" .. tostring(off) .. "d)" end
+        if off < 0 then return t .. " (" .. tostring(off) .. "d)" end
+        return t
+    end
+
 
     local function joinPlace(placeId)
         if not placeId then return end
@@ -370,9 +412,14 @@ function M.mount()
         local head = f.flight or string.upper(string.sub(tostring(f.category), 1, 8))
         local route = (f.origin and f.destination) and (string.upper(f.origin) .. " → " .. string.upper(f.destination))
             or string.upper(tostring(f.name or "FLIGHT"))
-        local card = tile(order, clockLabel(f.date), route,
-            f.placeId and ("rbxthumb://type=GameIcon&id=" .. tostring(f.placeId) .. "&w=420&h=420") or "",
-            function() joinPlace(f.placeId) end, ACCENT, "JOIN FLIGHT")
+        local live = f.status == "started"
+        local icon = (M.GAME_ICONS or {})[f.placeId]
+        local art = icon and ("rbxassetid://" .. tostring(icon))
+            or (f.placeId and ("rbxthumb://type=GameIcon&id=" .. tostring(f.placeId) .. "&w=420&h=420") or "")
+        local card = tile(order, (live and "BOARDING · " or "") .. clockLabel(f.date), route,
+            art, function() joinPlace(f.placeId) end, live and GREEN or ACCENT,
+            live and "JOIN NOW" or "JOIN FLIGHT")
+
 
         local info = Instance.new("Frame")
         info.AnchorPoint = Vector2.new(0, 1)
@@ -408,13 +455,15 @@ function M.mount()
     end
 
     local function gameCard(p, order)
-        local img = p.icon
+        local manual = (M.GAME_ICONS or {})[p.id]
+        local img = manual and ("rbxassetid://" .. tostring(manual)) or p.icon
         if not img or img == "" then
             img = "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420"
         end
         return tile(order, tostring(p.playing or 0) .. " playing", string.upper(tostring(p.name or "GAME")),
             img, function() joinPlace(p.id) end, GREEN, "▶")
     end
+
 
     local function passRow(p, order)
         local row = Instance.new("Frame")
@@ -476,7 +525,11 @@ function M.mount()
 
     local function hex(c) return string.format("#%02X%02X%02X", c.R * 255, c.G * 255, c.B * 255) end
 
+    local joinTarget = nil
+    bJoin.MouseButton1Click:Connect(function() if joinTarget then joinPlace(joinTarget) end end)
+
     local function render()
+
         local ok, data = pcall(function() return remote:InvokeServer() end)
         if not ok or type(data) ~= "table" then return end
 
@@ -498,21 +551,27 @@ function M.mount()
             bNext.Text = string.format('Now boarding: <b><font color="%s">%s</font></b>%s',
                 a, tostring(live.flight or live.name or "Flight"), route(live))
             bMeta.Text = "Departure: <b>" .. clockLabel(live.date) .. "</b>"
+            bJoin.Text = "Join Flight"
             bJoin.Visible = live.placeId ~= nil
-            bJoin.MouseButton1Click:Connect(function() joinPlace(live.placeId) end)
+            joinTarget = live.placeId
         elseif nextFlight then
-            bState.Text = "NEXT SCHEDULED FLIGHT"
+            local off = dayOffset(nextFlight.date)
+            bState.Text = off == 1 and "NEXT FLIGHT — TOMORROW"
+                or (off > 1 and ("NEXT FLIGHT — IN " .. tostring(off) .. " DAYS") or "NEXT SCHEDULED FLIGHT")
             bNext.Text = string.format('<b><font color="%s">%s</font></b>%s',
                 a, tostring(nextFlight.flight or nextFlight.name or "TBD"), route(nextFlight))
             bMeta.Text = string.format('Check-in opens: <font color="%s"><b>%s</b></font>   |   Host: <b>%s</b>',
                 a, clockLabel(nextFlight.date), tostring(nextFlight.host or "TBD"))
             bJoin.Visible = false
+            joinTarget = nil
         else
             bState.Text = "NO FLIGHTS"
             bNext.Text = M.EMPTY_TEXT
             bMeta.Text = ""
             bJoin.Visible = false
+            joinTarget = nil
         end
+
 
 
         clear(flightsPage)
@@ -675,6 +734,10 @@ local function payload()
     end
 
     local placeInfo, seen = {}, {}
+    -- Never list the hub game itself in the GAMES tab.
+    if cfg.HIDE_CURRENT_GAME ~= false then
+        seen[game.PlaceId] = true
+    end
     for _, g in ipairs(gameCache) do
         if not seen[g.id] then seen[g.id] = true; table.insert(placeInfo, g) end
     end
