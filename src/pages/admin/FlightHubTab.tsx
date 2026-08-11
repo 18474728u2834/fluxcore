@@ -36,7 +36,7 @@ M.TIMEZONE_OFFSET_HOURS = ${Number.isFinite(tz) ? tz : 0}
 
 
 -- Only today's flights? (false = every upcoming flight the API returns)
-M.TODAY_ONLY = true
+M.TODAY_ONLY = false
 
 -- Only list flights that have a game link (so "Join Flight" always works)
 M.REQUIRE_LINK = true
