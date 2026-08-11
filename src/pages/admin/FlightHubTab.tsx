@@ -547,21 +547,27 @@ function M.mount()
             bNext.Text = string.format('Now boarding: <b><font color="%s">%s</font></b>%s',
                 a, tostring(live.flight or live.name or "Flight"), route(live))
             bMeta.Text = "Departure: <b>" .. clockLabel(live.date) .. "</b>"
+            bJoin.Text = "Join Flight"
             bJoin.Visible = live.placeId ~= nil
-            bJoin.MouseButton1Click:Connect(function() joinPlace(live.placeId) end)
+            joinTarget = live.placeId
         elseif nextFlight then
-            bState.Text = "NEXT SCHEDULED FLIGHT"
+            local off = dayOffset(nextFlight.date)
+            bState.Text = off == 1 and "NEXT FLIGHT — TOMORROW"
+                or (off > 1 and ("NEXT FLIGHT — IN " .. tostring(off) .. " DAYS") or "NEXT SCHEDULED FLIGHT")
             bNext.Text = string.format('<b><font color="%s">%s</font></b>%s',
                 a, tostring(nextFlight.flight or nextFlight.name or "TBD"), route(nextFlight))
             bMeta.Text = string.format('Check-in opens: <font color="%s"><b>%s</b></font>   |   Host: <b>%s</b>',
                 a, clockLabel(nextFlight.date), tostring(nextFlight.host or "TBD"))
             bJoin.Visible = false
+            joinTarget = nil
         else
             bState.Text = "NO FLIGHTS"
             bNext.Text = M.EMPTY_TEXT
             bMeta.Text = ""
             bJoin.Visible = false
+            joinTarget = nil
         end
+
 
 
         clear(flightsPage)
