@@ -734,6 +734,10 @@ local function payload()
     end
 
     local placeInfo, seen = {}, {}
+    -- Never list the hub game itself in the GAMES tab.
+    if cfg.HIDE_CURRENT_GAME ~= false then
+        seen[game.PlaceId] = true
+    end
     for _, g in ipairs(gameCache) do
         if not seen[g.id] then seen[g.id] = true; table.insert(placeInfo, g) end
     end
