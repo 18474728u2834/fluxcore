@@ -525,7 +525,11 @@ function M.mount()
 
     local function hex(c) return string.format("#%02X%02X%02X", c.R * 255, c.G * 255, c.B * 255) end
 
+    local joinTarget = nil
+    bJoin.MouseButton1Click:Connect(function() if joinTarget then joinPlace(joinTarget) end end)
+
     local function render()
+
         local ok, data = pcall(function() return remote:InvokeServer() end)
         if not ok or type(data) ~= "table" then return end
 
