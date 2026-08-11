@@ -117,17 +117,47 @@ function M.mount()
         return l
     end
     -- The API returns UTC ISO timestamps. Shift them by M.TIMEZONE_OFFSET_HOURS
-    -- and format as HH:MM so every flight shows its own real departure time.
+    -- and format as HH:MM, adding a day hint when the flight is not today.
     local TZ = tonumber(M.TIMEZONE_OFFSET_HOURS) or 0
-    local function clockLabel(iso)
-        if type(iso) ~= "string" then return "TBD" end
-        local y, mo, d, hh, mm = string.match(iso, "(%d+)-(%d+)-(%d+)T(%d+):(%d+)")
-        if not hh then return "TBD" end
-        local total = (tonumber(hh) * 60) + tonumber(mm) + math.floor(TZ * 60)
-        total = total % (24 * 60)
-        if total < 0 then total = total + (24 * 60) end
-        return string.format("%02d:%02d", math.floor(total / 60), total % 60)
+    local function civilDays(y, m, d)
+        if m <= 2 then y = y - 1 end
+        local era = math.floor(y / 400)
+        local yoe = y - era * 400
+        local mp = (m + (m > 2 and -3 or 9))
+        local doy = math.floor((153 * mp + 2) / 5) + d - 1
+        local doe = yoe * 365 + math.floor(yoe / 4) - math.floor(yoe / 100) + doy
+        return era * 146097 + doe - 719468
     end
+    -- absolute minutes (local to TZ) for an ISO timestamp
+    local function isoMinutes(iso)
+        if type(iso) ~= "string" then return nil end
+        local y, mo, d, hh, mm = string.match(iso, "(%d+)-(%d+)-(%d+)T(%d+):(%d+)")
+        if not hh then return nil end
+        return civilDays(tonumber(y), tonumber(mo), tonumber(d)) * 1440
+            + tonumber(hh) * 60 + tonumber(mm) + math.floor(TZ * 60)
+    end
+    local function dayOffset(iso)
+        local mins = isoMinutes(iso)
+        if not mins then return 0 end
+        local nowMins = math.floor(os.time() / 60) + math.floor(TZ * 60)
+        return math.floor(mins / 1440) - math.floor(nowMins / 1440)
+    end
+    local function timeOnly(iso)
+        local mins = isoMinutes(iso)
+        if not mins then return "TBD" end
+        local t = mins % 1440
+        return string.format("%02d:%02d", math.floor(t / 60), t % 60)
+    end
+    local function clockLabel(iso)
+        local t = timeOnly(iso)
+        if t == "TBD" then return t end
+        local off = dayOffset(iso)
+        if off == 1 then return "Tomorrow " .. t end
+        if off > 1 then return t .. " (+" .. tostring(off) .. "d)" end
+        if off < 0 then return t .. " (" .. tostring(off) .. "d)" end
+        return t
+    end
+
 
     local function joinPlace(placeId)
         if not placeId then return end
