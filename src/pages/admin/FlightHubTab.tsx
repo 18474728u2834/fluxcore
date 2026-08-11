@@ -455,13 +455,15 @@ function M.mount()
     end
 
     local function gameCard(p, order)
-        local img = p.icon
+        local manual = (M.GAME_ICONS or {})[p.id]
+        local img = manual and ("rbxassetid://" .. tostring(manual)) or p.icon
         if not img or img == "" then
             img = "rbxthumb://type=GameIcon&id=" .. tostring(p.id) .. "&w=420&h=420"
         end
         return tile(order, tostring(p.playing or 0) .. " playing", string.upper(tostring(p.name or "GAME")),
             img, function() joinPlace(p.id) end, GREEN, "▶")
     end
+
 
     local function passRow(p, order)
         local row = Instance.new("Frame")
