@@ -58,6 +58,18 @@ M.GAMEPASS_IDS = {${ids.length ? "\n    " + ids.join(",\n    ") + ",\n" : ""}}
 -- Extra Place IDs shown in the GAMES tab. Places used by flights are added automatically.
 M.PLACE_IDS = {}
 
+-- Hide the hub game itself from the GAMES tab.
+M.HIDE_CURRENT_GAME = true
+
+-- Manual game icons. Roblox blocks web icons in-game, so set them here:
+--   [placeId] = decalId        (decal / image asset id of the icon)
+-- Example:
+--   M.GAME_ICONS = {
+--       [1234567890] = 9876543210,
+--   }
+M.GAME_ICONS = {}
+
+
 M.REFRESH_SECONDS = 30
 M.AUTO_OPEN  = true
 M.TOGGLE_KEY = Enum.KeyCode.H
