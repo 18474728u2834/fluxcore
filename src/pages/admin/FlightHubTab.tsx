@@ -412,9 +412,14 @@ function M.mount()
         local head = f.flight or string.upper(string.sub(tostring(f.category), 1, 8))
         local route = (f.origin and f.destination) and (string.upper(f.origin) .. " → " .. string.upper(f.destination))
             or string.upper(tostring(f.name or "FLIGHT"))
-        local card = tile(order, clockLabel(f.date), route,
-            f.placeId and ("rbxthumb://type=GameIcon&id=" .. tostring(f.placeId) .. "&w=420&h=420") or "",
-            function() joinPlace(f.placeId) end, ACCENT, "JOIN FLIGHT")
+        local live = f.status == "started"
+        local icon = (M.GAME_ICONS or {})[f.placeId]
+        local art = icon and ("rbxassetid://" .. tostring(icon))
+            or (f.placeId and ("rbxthumb://type=GameIcon&id=" .. tostring(f.placeId) .. "&w=420&h=420") or "")
+        local card = tile(order, (live and "BOARDING · " or "") .. clockLabel(f.date), route,
+            art, function() joinPlace(f.placeId) end, live and GREEN or ACCENT,
+            live and "JOIN NOW" or "JOIN FLIGHT")
+
 
         local info = Instance.new("Frame")
         info.AnchorPoint = Vector2.new(0, 1)
