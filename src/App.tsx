@@ -386,7 +386,6 @@ function AppRoutes() {
             <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
             <Route path="/guest/flighthub" element={<GuestFlightHub />} />
-            <Route path="/guest/flighthub" element={<GuestFlightHub />} />
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
             {/* Legacy /w/:id/* links redirect to clean URLs */}
             <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
