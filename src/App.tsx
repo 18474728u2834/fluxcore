@@ -93,6 +93,7 @@ const Applications = lazy(() => import("./pages/Applications"));
 const ApplicationQueue = lazy(() => import("./pages/ApplicationQueue"));
 const Apply = lazy(() => import("./pages/Apply"));
 const DiscordVerify = lazy(() => import("./pages/DiscordVerify"));
+const GuestFlightHub = lazy(() => import("./pages/GuestFlightHub"));
 
 
 const queryClient = new QueryClient({
@@ -384,7 +385,8 @@ function AppRoutes() {
             <Route path="/link-discord" element={<LinkDiscord />} />
             <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
-            <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/guest/flighthub" element={<GuestFlightHub />} />
+          <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
             {/* Legacy /w/:id/* links redirect to clean URLs */}
             <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
@@ -407,6 +409,7 @@ function AppRoutes() {
           <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
+          <Route path="/guest/flighthub" element={<GuestFlightHub />} />
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
@@ -444,6 +447,7 @@ function AppRoutes() {
           <Route path="/login" element={<BargainsLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
           <Route path="/link-discord" element={<LinkDiscord />} />
+          <Route path="/guest/flighthub" element={<GuestFlightHub />} />
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
           {/* Legacy /w/:id/* links redirect to clean URLs */}
           <Route path="/w/:workspaceId/*" element={<LegacyWorkspaceRedirect />} />
@@ -502,6 +506,7 @@ function AppRoutes() {
         <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
         <Route path="/discord/verification/:token" element={<DiscordVerify />} />
+        <Route path="/guest/flighthub/:workspaceId" element={<GuestFlightHub />} />
         
         <Route path="*" element={<NotFound />} />
       </Routes>
