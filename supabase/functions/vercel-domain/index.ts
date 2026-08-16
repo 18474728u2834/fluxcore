@@ -35,13 +35,33 @@ Deno.serve(async (req) => {
         headers: { Authorization: `Bearer ${vt}` },
       });
       const d = await r.json().catch(() => ({}));
+      // List domains already attached to the project + their DNS config state
+      const dl = await fetch(`${VERCEL_API}/v9/projects/${pid}/domains${q}&limit=100`.replace('?&', '?'), {
+        headers: { Authorization: `Bearer ${vt}` },
+      });
+      const dld = await dl.json().catch(() => ({}));
+      const domains = (dld?.domains || []).map((x: any) => ({
+        name: x.name, verified: x.verified,
+      }));
+      // Check wildcard/DNS health for one sample subdomain
+      const sample = String(body.subdomain || 'diagtest').toLowerCase().replace(/[^a-z0-9-]/g, '');
+      const cfg = await fetch(
+        `${VERCEL_API}/v6/domains/${encodeURIComponent(`${sample}.${ROOT_DOMAIN}`)}/config${q}`,
+        { headers: { Authorization: `Bearer ${vt}` } },
+      );
+      const cfgd = await cfg.json().catch(() => ({}));
       return json({
         hasToken: !!vt, hasProject: !!pid, hasTeam: !!tid,
         projectLookupStatus: r.status,
         projectName: d?.name ?? null,
         errorCode: d?.error?.code ?? null,
         errorMessage: d?.error?.message ?? null,
+        domainCount: domains.length,
+        domains,
+        sampleDomain: `${sample}.${ROOT_DOMAIN}`,
+        sampleConfig: { misconfigured: cfgd?.misconfigured, cnames: cfgd?.cnames, aValues: cfgd?.aValues, error: cfgd?.error?.code },
       });
+
     }
 
     const supabase = createClient(
