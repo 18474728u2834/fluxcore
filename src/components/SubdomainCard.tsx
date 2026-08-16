@@ -108,56 +108,26 @@ export default function SubdomainCard({ workspaceId, workspaceName }: Props) {
 
     setSaving(true);
 
-    // Check availability
-    const { data: existing } = await supabase.from("partner_portals").select("id,workspace_id").eq("subdomain", sub).maybeSingle();
-    if (existing && (existing as any).workspace_id !== workspaceId) {
-      setSaving(false);
-      toast.error(`${sub}.fluxcore.works is already taken`);
+    const { data, error } = await supabase.functions.invoke("vercel-domain", {
+      body: { action: "claim", subdomain: sub, workspaceId },
+    });
+    setSaving(false);
+
+    const errMsg = (data as any)?.error || (error as any)?.message;
+    if (errMsg) {
+      toast.error(String(errMsg));
+      await load();
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setSaving(false); return; }
-
-    let portalErr;
-    if (portal) {
-      // Remove old subdomain from Vercel first
-      if (portal.subdomain !== sub) {
-        await supabase.functions.invoke("vercel-domain", { body: { action: "remove", subdomain: portal.subdomain } });
-      }
-      const { error } = await supabase.from("partner_portals").update({
-        subdomain: sub,
-        status: "active",
-        closed_reason: null,
-      }).eq("id", portal.id);
-      portalErr = error;
-    } else {
-      const { error } = await supabase.from("partner_portals").insert({
-        workspace_id: workspaceId,
-        subdomain: sub,
-        name: workspaceName,
-        auto_created: true,
-        use_hyra_ui: false,
-        status: "active",
-        created_by: user.id,
-        links: [],
-      });
-      portalErr = error;
-    }
-    if (portalErr) { setSaving(false); toast.error(portalErr.message); return; }
-
-    // Attach on Vercel
-    const { data: vData, error: vErr } = await supabase.functions.invoke("vercel-domain", {
-      body: { action: "add", subdomain: sub },
-    });
-    setSaving(false);
-    if (vErr || (vData as any)?.error) {
-      toast.warning(`Saved, but Vercel attach pending. ${sub}.fluxcore.works should resolve within a few minutes.`);
+    if ((data as any)?.attached === false) {
+      toast.warning(`Saved — ${sub}.fluxcore.works should resolve within a few minutes.`);
     } else {
       toast.success(`${sub}.fluxcore.works is yours!`);
     }
     await load();
   };
+
 
   if (loading) {
     return (
