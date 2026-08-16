@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { RobloxLogo } from "@/components/RobloxLogo";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
-import { canUseSso, redirectToMainLogin } from "@/lib/sso";
+import { redirectToMainLogin } from "@/lib/sso";
 import type { PartnerConfig } from "./PartnerPortal";
 
 

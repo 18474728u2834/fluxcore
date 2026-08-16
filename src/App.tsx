@@ -18,7 +18,6 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { NexusSkeleton, ClassicSkeleton } from "@/components/PageSkeletons";
-import PortalBoot from "@/components/PortalBoot";
 
 // Lazy load every route — each gets its own JS chunk so devtools
 // only ever sees code for the page that's currently rendered.
@@ -286,17 +285,10 @@ function AppRoutes() {
     hostname.includes("bloxy-bargains");
 
   const isStatusHost = hostname.startsWith("status.fluxcore") || hostname === "status.fluxcore.works";
-  // Demo host: always shows the boot screen, looping with fresh ids each replay.
-  const isBootTestHost = subdomain === "boottest";
 
   const [partner, setPartner] = useState<any | undefined>(
-    isMainHost || isHardcoded || isStatusHost || isBootTestHost ? null : undefined
+    isMainHost || isHardcoded || isStatusHost ? null : undefined
   );
-  const [booting, setBooting] = useState(false);
-
-  if (isBootTestHost) {
-    return <PortalBoot label="boottest.fluxcore.works" replay />;
-  }
 
   if (isStatusHost) {
     return (
@@ -339,11 +331,6 @@ function AppRoutes() {
         if (!active) return;
         if (data) {
           if ((data as any).use_hyra_ui) HYRA_UI_WORKSPACE_IDS.add(data.workspace_id);
-          // Only cold portals (dormant = no visits for 2+ days) get the boot screen.
-          if ((data as any).status === "dormant") {
-            setBooting(true);
-            window.setTimeout(() => { if (active) setBooting(false); }, 3_600);
-          }
           setPartner(data);
         } else {
           setPartner(null);
@@ -357,10 +344,6 @@ function AppRoutes() {
 
   if (partner === undefined) {
     return <PageLoader />;
-  }
-
-  if (booting) {
-    return <PortalBoot label={subdomain ? `${subdomain}.fluxcore.works` : undefined} />;
   }
 
   if (partner) {

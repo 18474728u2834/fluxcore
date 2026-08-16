@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Gamepad2, Shield } from "lucide-react";
 import { RobloxLogo } from "@/components/RobloxLogo";
-import { canUseSso, redirectToMainLogin } from "@/lib/sso";
+import { redirectToMainLogin } from "@/lib/sso";
 
 
 export default function Login() {
