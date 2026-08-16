@@ -847,7 +847,7 @@ end
 `;
 
 const BOOTSTRAP = `-- Fluxcore Flight Hub — CLIENT (LocalScript in StarterPlayer > StarterPlayerScripts)
-require(game:GetService("ReplicatedStorage"):WaitForChild("FlightHubConfig")).mount()
+require(game:GetService("ReplicatedStorage"):WaitForChild("FlightHubUI")).mount()
 `;
 
 export default function FlightHubTab() {
