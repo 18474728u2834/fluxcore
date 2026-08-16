@@ -17,20 +17,45 @@ Deno.serve(async (req) => {
     if (!authHeader?.startsWith('Bearer ')) {
       return json({ error: 'Unauthorized' }, 401);
     }
+    const token = authHeader.replace('Bearer ', '');
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const isServiceCall = token === serviceKey;
+
+    const body = await req.json().catch(() => ({}));
+    const action = String(body.action || '');
+
+    // Diagnostics — service-role only. Never returns secret values.
+    if (action === 'diag') {
+      if (!isServiceCall) return json({ error: 'Forbidden' }, 403);
+      const vt = Deno.env.get('VERCEL_API_TOKEN');
+      const pid = Deno.env.get('VERCEL_PROJECT_ID');
+      const tid = Deno.env.get('VERCEL_TEAM_ID');
+      const q = tid ? `?teamId=${encodeURIComponent(tid)}` : '';
+      const r = await fetch(`${VERCEL_API}/v9/projects/${pid}${q}`, {
+        headers: { Authorization: `Bearer ${vt}` },
+      });
+      const d = await r.json().catch(() => ({}));
+      return json({
+        hasToken: !!vt, hasProject: !!pid, hasTeam: !!tid,
+        projectLookupStatus: r.status,
+        projectName: d?.name ?? null,
+        errorCode: d?.error?.code ?? null,
+        errorMessage: d?.error?.message ?? null,
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_ANON_KEY')!,
       { global: { headers: { Authorization: authHeader } } }
     );
-    const token = authHeader.replace('Bearer ', '');
     const { data: claims, error: claimsErr } = await supabase.auth.getClaims(token);
     if (claimsErr || !claims?.claims) return json({ error: 'Unauthorized' }, 401);
 
-    const body = await req.json().catch(() => ({}));
-    const action = String(body.action || '');
     const subdomainRaw = String(body.subdomain || '').toLowerCase().trim();
     const subdomain = subdomainRaw.replace(/[^a-z0-9-]/g, '');
     if (!subdomain || subdomain.length > 63) return json({ error: 'Invalid subdomain' }, 400);
+
 
     // Authorization: either Fluxcore staff, OR a workspace owner attaching
     // their own subdomain (must match a partner_portals row they own).
