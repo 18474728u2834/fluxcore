@@ -33,12 +33,12 @@ export default function Login() {
     if (!authLoading && user) navigate("/workspaces");
   }, [user, authLoading]);
 
-  // On a workspace subdomain, silently pull an existing fluxcore.works session
-  // so users never have to re-link Roblox/Discord per subdomain.
+  // Subdomains have no login page of their own — go straight to fluxcore.works.
   useEffect(() => {
     if (authLoading || user) return;
-    trySilentSso("/dashboard");
+    redirectToMainLogin("/dashboard");
   }, [authLoading, user]);
+
 
   useEffect(() => {
     if (state.step === "success" && state.tokenHash && state.email && !settingSession) {
