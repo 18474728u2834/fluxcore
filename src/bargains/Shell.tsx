@@ -421,7 +421,9 @@ export function BargainsShell({ children }: ShellProps) {
             </button>
             {menuOpen && (
               <div className="absolute left-0 top-12 w-60 rounded-md border py-1 z-50" style={{ background: "#141416", borderColor: "#26262a" }}>
-                <button onClick={() => { navigate("/workspaces"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Switch workspace</button>
+                {!isPortalHost() && (
+                  <button onClick={() => { navigate("/workspaces"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">Switch workspace</button>
+                )}
                 {activeDept && (
                   <>
                     <button onClick={() => { navigate(`${base}/d/${activeDept.slug}/dept-settings`); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm hover:bg-[#1f1f22]">{activeDept.name} settings</button>
