@@ -80,9 +80,20 @@ M.CARD       = Color3.fromRGB(18, 18, 21)
 M.STROKE     = Color3.fromRGB(38, 38, 42)
 M.EMPTY_TEXT = "No flights available right now"
 
------------------------------------------------------------------- client UI
--- M.mount() is called by the one-line client LocalScript. Server never runs it.
-function M.mount()
+return M
+`;
+}
+
+const UI = `--!strict
+-- Fluxcore Flight Hub — UI (client)
+-- ModuleScript. Place in ReplicatedStorage and name it exactly "FlightHubUI".
+-- Reads every setting from the "FlightHubConfig" ModuleScript. Nothing to edit here.
+
+local M = require(game:GetService("ReplicatedStorage"):WaitForChild("FlightHubConfig"))
+
+local UI = {}
+
+function UI.mount()
     local Players            = game:GetService("Players")
     local ReplicatedStorage  = game:GetService("ReplicatedStorage")
     local TeleportService    = game:GetService("TeleportService")
@@ -660,9 +671,8 @@ function M.mount()
     end)
 end
 
-return M
+return UI
 `;
-}
 
 const HANDLER = `--!strict
 -- Fluxcore Flight Hub — HANDLER (server)
@@ -837,7 +847,7 @@ end
 `;
 
 const BOOTSTRAP = `-- Fluxcore Flight Hub — CLIENT (LocalScript in StarterPlayer > StarterPlayerScripts)
-require(game:GetService("ReplicatedStorage"):WaitForChild("FlightHubConfig")).mount()
+require(game:GetService("ReplicatedStorage"):WaitForChild("FlightHubUI")).mount()
 `;
 
 export default function FlightHubTab() {
@@ -872,8 +882,8 @@ export default function FlightHubTab() {
           <p className="text-sm font-semibold text-foreground">Flight Hub</p>
           <p className="text-[11px] text-muted-foreground">
             A fullscreen in-game hub: every scheduled flight that has a game link (with a <strong>Join Flight</strong> button),
-            all linked games with their icons, and the game's gamepasses in a store tab. Two scripts — a <strong>Config</strong> ModuleScript
-            and a <strong>Handler</strong> Script inside it.
+            all linked games with their icons, and the game's gamepasses in a store tab. Three scripts — a <strong>Config</strong> ModuleScript,
+            a <strong>UI</strong> ModuleScript and a server <strong>Handler</strong>.
           </p>
         </div>
 
@@ -932,9 +942,10 @@ export default function FlightHubTab() {
           <p className="text-foreground font-medium text-xs">Installation</p>
           <p>1. Enable <strong>HTTP Requests</strong>: Game Settings → Security → Allow HTTP Requests.</p>
           <p>2. Create a <code>ModuleScript</code> named <code>FlightHubConfig</code> in <code>ReplicatedStorage</code> and paste <strong>Script 1 — Config</strong>.</p>
-          <p>3. Create a <code>Script</code> named <code>FlightHubHandler</code> in <code>ServerScriptService</code> and paste <strong>Script 2 — Handler</strong>.</p>
-          <p>4. Create a <code>LocalScript</code> in <code>StarterPlayer → StarterPlayerScripts</code> and paste the one-line <strong>client bootstrap</strong> below.</p>
-          <p>5. Flight numbers, origin/destination, aircraft and host come straight from the Fluxcore session. Only flights with a game link are listed.</p>
+          <p>3. Create a <code>ModuleScript</code> named <code>FlightHubUI</code> in <code>ReplicatedStorage</code> and paste <strong>Script 2 — UI</strong>.</p>
+          <p>4. Create a <code>Script</code> named <code>FlightHubHandler</code> in <code>ServerScriptService</code> and paste <strong>Script 3 — Handler</strong>.</p>
+          <p>5. Create a <code>LocalScript</code> in <code>StarterPlayer → StarterPlayerScripts</code> and paste the one-line <strong>client bootstrap</strong> below.</p>
+          <p>6. Flight numbers, origin/destination, aircraft and host come straight from the Fluxcore session. Only flights with a game link are listed.</p>
 
         </div>
       </div>
@@ -960,7 +971,25 @@ export default function FlightHubTab() {
       <div className="glass rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
           <div>
-            <p className="text-sm font-semibold text-foreground">Script 2 — Handler <span className="text-muted-foreground font-normal">(Script in ServerScriptService)</span></p>
+            <p className="text-sm font-semibold text-foreground">Script 2 — UI <span className="text-muted-foreground font-normal">(ModuleScript)</span></p>
+            <p className="text-[11px] text-muted-foreground">Name it exactly <code>FlightHubUI</code> in <code>ReplicatedStorage</code>. Builds the interface — nothing to edit, it reads the Config.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={() => copy(UI, "UI script")}>
+              <Copy className="w-3 h-3 mr-1" /> Copy
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => download(UI, "fluxcore-flighthub-ui.lua")}>
+              <Download className="w-3 h-3 mr-1" /> .lua
+            </Button>
+          </div>
+        </div>
+        <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[460px] overflow-auto whitespace-pre text-foreground/90">{UI}</pre>
+      </div>
+
+      <div className="glass rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Script 3 — Handler <span className="text-muted-foreground font-normal">(Script in ServerScriptService)</span></p>
             <p className="text-[11px] text-muted-foreground">Fetches flights, place icons and gamepass info, then serves them to the hub UI.</p>
           </div>
           <div className="flex gap-2">
