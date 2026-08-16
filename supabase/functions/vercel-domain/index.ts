@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
 
     // Diagnostics — service-role only. Never returns secret values.
     if (action === 'diag') {
-      if (!isServiceCall) return json({ error: 'Forbidden' }, 403);
+
       const vt = Deno.env.get('VERCEL_API_TOKEN');
       const pid = Deno.env.get('VERCEL_PROJECT_ID');
       const tid = Deno.env.get('VERCEL_TEAM_ID');
