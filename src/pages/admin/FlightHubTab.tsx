@@ -671,9 +671,8 @@ function UI.mount()
     end)
 end
 
-return M
+return UI
 `;
-}
 
 const HANDLER = `--!strict
 -- Fluxcore Flight Hub — HANDLER (server)
