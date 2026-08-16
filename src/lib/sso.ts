@@ -13,6 +13,14 @@ export function getMainOrigin(): string | null {
   return "https://fluxcore.works";
 }
 
+/** True when the current host is a workspace subdomain locked to one workspace. */
+export function isPortalHost(): boolean {
+  if (typeof window === "undefined") return false;
+  const host = window.location.hostname;
+  if (!host.endsWith("fluxcore.works")) return false;
+  return host !== "fluxcore.works" && host !== "www.fluxcore.works" && host !== "status.fluxcore.works";
+}
+
 /** True when the current host is a subdomain that can pull a session from the apex. */
 export function canUseSso(): boolean {
   return getMainOrigin() !== null;
