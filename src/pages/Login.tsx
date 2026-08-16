@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
 import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Gamepad2, Shield } from "lucide-react";
 import { RobloxLogo } from "@/components/RobloxLogo";
+import { canUseSso, startSso, trySilentSso } from "@/lib/sso";
 
 
 export default function Login() {
@@ -31,6 +32,13 @@ export default function Login() {
   useEffect(() => {
     if (!authLoading && user) navigate("/workspaces");
   }, [user, authLoading]);
+
+  // On a workspace subdomain, silently pull an existing fluxcore.works session
+  // so users never have to re-link Roblox/Discord per subdomain.
+  useEffect(() => {
+    if (authLoading || user) return;
+    trySilentSso("/dashboard");
+  }, [authLoading, user]);
 
   useEffect(() => {
     if (state.step === "success" && state.tokenHash && state.email && !settingSession) {
@@ -120,6 +128,16 @@ export default function Login() {
               </div>
 
               <div className="space-y-3">
+                {canUseSso() && (
+                  <Button
+                    onClick={() => startSso({ next: "/dashboard" })}
+                    variant="outline"
+                    className="w-full h-12 text-base press-shrink"
+                  >
+                    Continue with Fluxcore account
+                  </Button>
+                )}
+
                 <Button onClick={handleRobloxOAuth} variant="hero" className="w-full h-12 text-base">
                   <RobloxLogo className="w-5 h-5 mr-2" />
                   Sign in with Roblox

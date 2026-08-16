@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { RobloxLogo } from "@/components/RobloxLogo";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
+import { canUseSso, startSso, trySilentSso } from "@/lib/sso";
 import type { PartnerConfig } from "./PartnerPortal";
 
 
@@ -52,6 +53,11 @@ export default function PartnerLogin({ config }: { config: PartnerConfig }) {
       });
     }
   }, [state.step, state.tokenHash, state.email]);
+
+  useEffect(() => {
+    if (authLoading || user) return;
+    trySilentSso(`/w/${config.workspace_id}/dashboard`);
+  }, [authLoading, user]);
 
   const handleRobloxOAuth = () => {
     const origin = encodeURIComponent(window.location.origin);
