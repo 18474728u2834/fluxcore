@@ -48,6 +48,10 @@ function withTimeout<T>(promise: PromiseLike<T>, label: string, ms = 10_000): Pr
 
 export default function Workspaces() {
   const navigate = useNavigate();
+  // A workspace subdomain is locked to its own workspace — no switching from here.
+  useEffect(() => {
+    if (isPortalHost()) navigate("/dashboard", { replace: true });
+  }, [navigate]);
   const { user, signOut, loading: authLoading, robloxUsername } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
