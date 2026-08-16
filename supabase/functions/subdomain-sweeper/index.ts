@@ -25,10 +25,17 @@ serve(async (req) => {
 
     // Idempotent and read-mostly — any caller bearing the project anon or
     // service-role key is allowed. Unauthenticated callers are rejected.
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+    const allowed = new Set(
+      [
+        serviceRoleKey,
+        Deno.env.get("SUPABASE_ANON_KEY"),
+        Deno.env.get("SUPABASE_PUBLISHABLE_KEY"),
+        Deno.env.get("SUPABASE_PUBLISHABLE_OR_ANON_KEY"),
+      ].filter(Boolean) as string[],
+    );
     const authHeader = req.headers.get("authorization") || "";
-    const presented = authHeader.replace(/^Bearer\s+/i, "");
-    if (presented !== serviceRoleKey && presented !== anonKey) {
+    const presented = authHeader.replace(/^Bearer\s+/i, "") || req.headers.get("apikey") || "";
+    if (!allowed.has(presented)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -73,8 +80,43 @@ serve(async (req) => {
       }
     }
 
+    // --- Prune orphans: any *.fluxcore.works attached to the project that no
+    // longer has a matching partner_portals row gets detached from Vercel.
+    const wanted = new Set(
+      (portals || [])
+        .map((p) => String(p.subdomain || "").toLowerCase().replace(/[^a-z0-9-]/g, ""))
+        .filter(Boolean)
+        .map((s) => `${s}.${ROOT_DOMAIN}`),
+    );
+
+    let pruned = 0, pruneFailed = 0;
+    const pruneList: string[] = [];
+    try {
+      const listUrl = `${VERCEL_API}/v9/projects/${projectId}/domains${teamQuery}${teamQuery ? "&" : "?"}limit=100`;
+      const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${vercelToken}` } });
+      const listData = await listRes.json().catch(() => ({}));
+      const all: any[] = listData?.domains || [];
+      for (const d of all) {
+        const name = String(d?.name || "").toLowerCase();
+        // Only touch single-level subdomains of the root; never the apex or wildcard.
+        if (!name.endsWith(`.${ROOT_DOMAIN}`)) continue;
+        const label = name.slice(0, -(ROOT_DOMAIN.length + 1));
+        if (!label || label.includes(".") || label === "*") continue;
+        if (wanted.has(name)) continue;
+        const del = await fetch(
+          `${VERCEL_API}/v9/projects/${projectId}/domains/${encodeURIComponent(name)}${teamQuery}`,
+          { method: "DELETE", headers: { Authorization: `Bearer ${vercelToken}` } },
+        );
+        if (del.ok || del.status === 404) { pruned++; pruneList.push(name); }
+        else { pruneFailed++; console.error(`subdomain-sweeper prune failed ${name} -> ${del.status}`); }
+      }
+    } catch (e) {
+      console.error("subdomain-sweeper prune exception", e);
+    }
+
     return new Response(JSON.stringify({
       success: true, total: portals?.length || 0, attached, alreadyOk, failed,
+      pruned, pruneFailed, prunedDomains: pruneList,
     }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
   } catch (err: any) {
     console.error("subdomain-sweeper error:", err);
