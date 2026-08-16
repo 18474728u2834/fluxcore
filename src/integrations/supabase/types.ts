@@ -1845,6 +1845,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sso_handoff_tokens: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          return_origin: string
+          token: string
+          user_id: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          return_origin: string
+          token: string
+          user_id: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          return_origin?: string
+          token?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       staff_admins: {
         Row: {
           added_by: string | null
