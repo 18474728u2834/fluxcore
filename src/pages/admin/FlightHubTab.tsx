@@ -989,7 +989,7 @@ export default function FlightHubTab() {
       <div className="glass rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
           <div>
-            <p className="text-sm font-semibold text-foreground">Script 2 — Handler <span className="text-muted-foreground font-normal">(Script in ServerScriptService)</span></p>
+            <p className="text-sm font-semibold text-foreground">Script 3 — Handler <span className="text-muted-foreground font-normal">(Script in ServerScriptService)</span></p>
             <p className="text-[11px] text-muted-foreground">Fetches flights, place icons and gamepass info, then serves them to the hub UI.</p>
           </div>
           <div className="flex gap-2">
