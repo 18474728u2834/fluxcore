@@ -38,15 +38,18 @@ export function startSso(opts: { silent?: boolean; next?: string } = {}) {
   window.location.href = `${main}/#/sso?${params.toString()}`;
 }
 
-/** Attempt a silent handoff at most once per browser tab. */
-export function trySilentSso(next?: string): boolean {
+/**
+ * On a workspace subdomain there is no local login page — send the browser to
+ * the single login at fluxcore.works right away. Returns true when redirecting.
+ * If the apex already bounced us back (sso=none / sso=error) we stay put so the
+ * local fallback UI can render instead of looping.
+ */
+export function redirectToMainLogin(next?: string): boolean {
   if (!canUseSso()) return false;
-  try {
-    if (sessionStorage.getItem(SSO_ATTEMPT_KEY)) return false;
-    sessionStorage.setItem(SSO_ATTEMPT_KEY, "1");
-  } catch {
-    return false;
-  }
-  startSso({ silent: true, next });
+  const hash = typeof window !== "undefined" ? window.location.hash : "";
+  const search = typeof window !== "undefined" ? window.location.search : "";
+  if (/[?&]sso=(none|error)/.test(hash) || /[?&]sso=(none|error)/.test(search)) return false;
+  startSso({ next });
   return true;
 }
+

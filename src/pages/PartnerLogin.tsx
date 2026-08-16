@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { RobloxLogo } from "@/components/RobloxLogo";
 import { DiscordSignInButton } from "@/components/DiscordSignInButton";
-import { canUseSso, startSso, trySilentSso } from "@/lib/sso";
+import { redirectToMainLogin } from "@/lib/sso";
 import type { PartnerConfig } from "./PartnerPortal";
 
 
@@ -56,7 +56,7 @@ export default function PartnerLogin({ config }: { config: PartnerConfig }) {
 
   useEffect(() => {
     if (authLoading || user) return;
-    trySilentSso(`/w/${config.workspace_id}/dashboard`);
+    redirectToMainLogin(`/w/${config.workspace_id}/dashboard`);
   }, [authLoading, user]);
 
   const handleRobloxOAuth = () => {
@@ -169,15 +169,6 @@ export default function PartnerLogin({ config }: { config: PartnerConfig }) {
               </div>
 
               <div className="space-y-3">
-                {canUseSso() && (
-                  <Button
-                    onClick={() => startSso({ next: `/w/${config.workspace_id}/dashboard` })}
-                    variant="outline"
-                    className="w-full h-12 bg-transparent border-white/15 text-white hover:bg-white/5 hover:text-white"
-                  >
-                    Continue with Fluxcore account
-                  </Button>
-                )}
 
                 <Button
                   onClick={handleRobloxOAuth}
