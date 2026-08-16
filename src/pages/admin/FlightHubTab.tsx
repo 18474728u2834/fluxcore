@@ -970,6 +970,24 @@ export default function FlightHubTab() {
       <div className="glass rounded-xl overflow-hidden">
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
           <div>
+            <p className="text-sm font-semibold text-foreground">Script 2 — UI <span className="text-muted-foreground font-normal">(ModuleScript)</span></p>
+            <p className="text-[11px] text-muted-foreground">Name it exactly <code>FlightHubUI</code> in <code>ReplicatedStorage</code>. Builds the interface — nothing to edit, it reads the Config.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button size="sm" variant="secondary" onClick={() => copy(UI, "UI script")}>
+              <Copy className="w-3 h-3 mr-1" /> Copy
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => download(UI, "fluxcore-flighthub-ui.lua")}>
+              <Download className="w-3 h-3 mr-1" /> .lua
+            </Button>
+          </div>
+        </div>
+        <pre className="text-[11px] leading-relaxed font-mono p-4 max-h-[460px] overflow-auto whitespace-pre text-foreground/90">{UI}</pre>
+      </div>
+
+      <div className="glass rounded-xl overflow-hidden">
+        <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border">
+          <div>
             <p className="text-sm font-semibold text-foreground">Script 2 — Handler <span className="text-muted-foreground font-normal">(Script in ServerScriptService)</span></p>
             <p className="text-[11px] text-muted-foreground">Fetches flights, place icons and gamepass info, then serves them to the hub UI.</p>
           </div>
