@@ -25,6 +25,8 @@ import PortalBoot from "@/components/PortalBoot";
 const Index = lazy(() => import("./pages/Index"));
 const Login = lazy(() => import("./pages/Login"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
+const SsoStart = lazy(() => import("./pages/SsoStart"));
+const SsoCallback = lazy(() => import("./pages/SsoCallback"));
 const LinkDiscord = lazy(() => import("./pages/LinkDiscord"));
 const CrewWishlist = lazy(() => import("./pages/CrewWishlist"));
 
@@ -382,6 +384,8 @@ function AppRoutes() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/sso" element={<SsoStart />} />
+            <Route path="/sso/callback" element={<SsoCallback />} />
             <Route path="/link-discord" element={<LinkDiscord />} />
             <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
@@ -406,6 +410,8 @@ function AppRoutes() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<PartnerLogin config={partner} />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
           <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
@@ -429,6 +435,8 @@ function AppRoutes() {
           <Route path="/" element={<Almore />} />
           <Route path="/login" element={<AlmoreLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
           <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/workspaces" element={<Workspaces />} />
           <Route path="/w/:workspaceId/*" element={<Navigate to="/" replace />} />
@@ -446,6 +454,8 @@ function AppRoutes() {
           <Route path="/" element={<Bargains />} />
           <Route path="/login" element={<BargainsLogin />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
           <Route path="/link-discord" element={<LinkDiscord />} />
           <Route path="/guest/flighthub" element={<GuestFlightHub />} />
           <Route path="/workspaces" element={<Navigate to="/dashboard" replace />} />
@@ -468,6 +478,8 @@ function AppRoutes() {
           <Route path="/" element={<BloxyBargains />} />
           <Route path="/login" element={<Login />} />
           <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route path="/sso" element={<SsoStart />} />
+          <Route path="/sso/callback" element={<SsoCallback />} />
           <Route path="/workspaces" element={<Workspaces />} />
           <Route path="/w/:workspaceId/*" element={<Navigate to="/" replace />} />
           <Route path="*" element={<BloxyBargains />} />
@@ -483,6 +495,8 @@ function AppRoutes() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
+        <Route path="/sso" element={<SsoStart />} />
+        <Route path="/sso/callback" element={<SsoCallback />} />
         <Route path="/link-discord" element={<LinkDiscord />} />
         <Route path="/workspaces" element={<Workspaces />} />
         <Route path="/terms" element={<Terms />} />
