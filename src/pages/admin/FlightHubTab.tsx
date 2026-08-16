@@ -80,9 +80,20 @@ M.CARD       = Color3.fromRGB(18, 18, 21)
 M.STROKE     = Color3.fromRGB(38, 38, 42)
 M.EMPTY_TEXT = "No flights available right now"
 
------------------------------------------------------------------- client UI
--- M.mount() is called by the one-line client LocalScript. Server never runs it.
-function M.mount()
+return M
+`;
+}
+
+const UI = `--!strict
+-- Fluxcore Flight Hub — UI (client)
+-- ModuleScript. Place in ReplicatedStorage and name it exactly "FlightHubUI".
+-- Reads every setting from the "FlightHubConfig" ModuleScript. Nothing to edit here.
+
+local M = require(game:GetService("ReplicatedStorage"):WaitForChild("FlightHubConfig"))
+
+local UI = {}
+
+function UI.mount()
     local Players            = game:GetService("Players")
     local ReplicatedStorage  = game:GetService("ReplicatedStorage")
     local TeleportService    = game:GetService("TeleportService")
