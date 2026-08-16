@@ -882,8 +882,8 @@ export default function FlightHubTab() {
           <p className="text-sm font-semibold text-foreground">Flight Hub</p>
           <p className="text-[11px] text-muted-foreground">
             A fullscreen in-game hub: every scheduled flight that has a game link (with a <strong>Join Flight</strong> button),
-            all linked games with their icons, and the game's gamepasses in a store tab. Two scripts — a <strong>Config</strong> ModuleScript
-            and a <strong>Handler</strong> Script inside it.
+            all linked games with their icons, and the game's gamepasses in a store tab. Three scripts — a <strong>Config</strong> ModuleScript,
+            a <strong>UI</strong> ModuleScript and a server <strong>Handler</strong>.
           </p>
         </div>
 
