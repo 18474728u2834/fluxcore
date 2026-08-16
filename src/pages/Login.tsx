@@ -128,15 +128,7 @@ export default function Login() {
               </div>
 
               <div className="space-y-3">
-                {canUseSso() && (
-                  <Button
-                    onClick={() => startSso({ next: "/dashboard" })}
-                    variant="outline"
-                    className="w-full h-12 text-base press-shrink"
-                  >
-                    Continue with Fluxcore account
-                  </Button>
-                )}
+
 
                 <Button onClick={handleRobloxOAuth} variant="hero" className="w-full h-12 text-base">
                   <RobloxLogo className="w-5 h-5 mr-2" />
