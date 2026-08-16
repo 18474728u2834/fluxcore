@@ -25,10 +25,17 @@ serve(async (req) => {
 
     // Idempotent and read-mostly — any caller bearing the project anon or
     // service-role key is allowed. Unauthenticated callers are rejected.
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+    const allowed = new Set(
+      [
+        serviceRoleKey,
+        Deno.env.get("SUPABASE_ANON_KEY"),
+        Deno.env.get("SUPABASE_PUBLISHABLE_KEY"),
+        Deno.env.get("SUPABASE_PUBLISHABLE_OR_ANON_KEY"),
+      ].filter(Boolean) as string[],
+    );
     const authHeader = req.headers.get("authorization") || "";
-    const presented = authHeader.replace(/^Bearer\s+/i, "");
-    if (presented !== serviceRoleKey && presented !== anonKey) {
+    const presented = authHeader.replace(/^Bearer\s+/i, "") || req.headers.get("apikey") || "";
+    if (!allowed.has(presented)) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
