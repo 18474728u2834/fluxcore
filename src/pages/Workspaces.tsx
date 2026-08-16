@@ -10,6 +10,7 @@ import { useTheme } from "@/hooks/useTheme";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { SiteBanner } from "@/components/SiteBanner";
+import { isPortalHost } from "@/lib/sso";
 
 
 interface Workspace {
@@ -48,6 +49,10 @@ function withTimeout<T>(promise: PromiseLike<T>, label: string, ms = 10_000): Pr
 
 export default function Workspaces() {
   const navigate = useNavigate();
+  // A workspace subdomain is locked to its own workspace — no switching from here.
+  useEffect(() => {
+    if (isPortalHost()) navigate("/dashboard", { replace: true });
+  }, [navigate]);
   const { user, signOut, loading: authLoading, robloxUsername } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);

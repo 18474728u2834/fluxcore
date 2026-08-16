@@ -9,6 +9,7 @@ import { usePermissions } from "@/hooks/usePermissions";
 import { useTheme } from "@/hooks/useTheme";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isPortalHost } from "@/lib/sso";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
   SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
@@ -173,12 +174,14 @@ export function AppSidebar() {
               {!collapsed && <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
+          {!isPortalHost() && (
           <SidebarMenuItem>
             <SidebarMenuButton onClick={() => navigate("/workspaces")} className="text-muted-foreground hover:bg-secondary/60 hover:text-foreground">
               <Menu className="mr-2 h-4 w-4" />
               {!collapsed && <span>Switch Workspace</span>}
             </SidebarMenuButton>
           </SidebarMenuItem>
+          )}
           {!isOwner && (
             <SidebarMenuItem>
               <AlertDialog>
