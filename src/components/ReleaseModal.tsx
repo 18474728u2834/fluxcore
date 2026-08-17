@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Heart, Star, TrendingUp, BarChart3, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { Sparkles, Heart, Star, TrendingUp, BarChart3, CheckCircle2, ArrowUpRight, Rocket, Shield, Zap, type LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const CURRENT_VERSION = "4.6.0";
+const FALLBACK_VERSION = "4.6.0";
 
-const features = [
+const ICON_MAP: Record<string, LucideIcon> = {
+  Sparkles, Heart, Star, TrendingUp, BarChart3, CheckCircle2, ArrowUpRight, Rocket, Shield, Zap,
+};
+
+const FALLBACK_FEATURES = [
   { icon: Heart, title: "Kudos Wall", desc: "Members can post shoutouts to teammates — a live feed of recognition that flows in real-time across the workspace. Find it in the sidebar under Kudos." },
   { icon: Star, title: "Staff Spotlight", desc: "Each week we automatically highlight the member who received the most kudos in the last 7 days. No nominations, no admin work — just earned recognition." },
   { icon: TrendingUp, title: "Promotion Nominations", desc: "Any member can nominate a teammate for promotion with a reason. Leads and owners get a queue to approve or decline — no more guessing who's ready to move up." },
