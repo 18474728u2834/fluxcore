@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
-import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus, Radio, ClipboardList } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Calendar as CalIcon, X, Loader2, Trash2, UserPlus, UserMinus, Radio, ClipboardList, Pencil } from "lucide-react";
 import { usePermissions } from "@/hooks/usePermissions";
 import { CrewDispatchDialog } from "@/components/CrewDispatchDialog";
 import { CrewWishlistDialog } from "@/components/CrewWishlistDialog";
@@ -18,6 +18,7 @@ interface SessionSlot { label: string; count: number; assigned: (string | null)[
 interface Session {
   id: string;
   title: string;
+  description?: string | null;
   scheduled_at: string;
   host_name: string | null;
   host_id: string | null;
@@ -103,6 +104,8 @@ export default function BSessions() {
   const [destination, setDestination] = useState("");
   const [recurring, setRecurring] = useState<"none" | "daily" | "weekly">("none");
   const [saving, setSaving] = useState(false);
+  // When set, the modal edits this existing session instead of creating one.
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -114,7 +117,7 @@ export default function BSessions() {
   useEffect(() => {
     if (!workspaceId) return;
     const q = supabase.from("scheduled_sessions")
-      .select("id, title, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments, route_number, aircraft_model, tail_number, origin, destination")
+      .select("id, title, description, scheduled_at, host_name, host_id, duration_minutes, category, recurring, recurring_days, recurring_time, game_url, slots, occurrence_assignments, route_number, aircraft_model, tail_number, origin, destination")
       .eq("workspace_id", workspaceId)
       .order("scheduled_at", { ascending: true });
     scope(q).then(({ data }: any) => setSessions((data as any) || []));
@@ -190,6 +193,35 @@ export default function BSessions() {
     setGameUrl("");
     setSlots((DEFAULT_SLOTS[first] || DEFAULT_SLOTS.Event).map(s => ({ ...s, assigned: Array(s.count).fill(null) })));
     setRecurring("none");
+    setRouteNumber(""); setAircraftModel(""); setTailNumber(""); setOrigin(""); setDestination("");
+    setEditingId(null);
+    setOpen(true);
+  };
+
+  const canEditSession = (s: Session) => isOwner || canCreateSession(s.category === "Meeting" ? "Event" : s.category);
+
+  const openEditor = (s: Session) => {
+    if (!canEditSession(s)) return;
+    const base = new Date(s.scheduled_at);
+    setEditingId(s.id);
+    setTitle(s.title || "");
+    setCategory(s.category);
+    setWhen(toLocalInput(base));
+    setDuration(String(s.duration_minutes ?? 60));
+    setDescription(s.description || "");
+    setGameUrl(s.game_url || "");
+    setRouteNumber(s.route_number || "");
+    setAircraftModel(s.aircraft_model || "");
+    setTailNumber(s.tail_number || "");
+    setOrigin(s.origin || "");
+    setDestination(s.destination || "");
+    setRecurring((s.recurring === "daily" || s.recurring === "weekly") ? s.recurring : "none");
+    const base_slots = (s.slots && s.slots.length ? s.slots : DEFAULT_SLOTS[s.category] || DEFAULT_SLOTS.Event);
+    setSlots(base_slots.map(sl => {
+      const arr = [...(sl.assigned || [])];
+      while (arr.length < sl.count) arr.push(null);
+      return { ...sl, assigned: arr.slice(0, sl.count) };
+    }));
     setOpen(true);
   };
 
@@ -260,10 +292,23 @@ export default function BSessions() {
       payload.recurring_time = `${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
       payload.recurring_days = recurring === "weekly" ? [dt.getDay()] : [0,1,2,3,4,5,6];
     }
-    const { error } = await supabase.from("scheduled_sessions").insert(payload);
+    if (recurring === "none") {
+      payload.recurring = null;
+      payload.recurring_time = null;
+      payload.recurring_days = null;
+    }
+    let error: any = null;
+    if (editingId) {
+      // Keep the original creator as host_id; only update the editable fields.
+      const { host_id, workspace_id, department_id, tag_ids, ...updates } = payload;
+      ({ error } = await supabase.from("scheduled_sessions").update(updates).eq("id", editingId));
+    } else {
+      ({ error } = await supabase.from("scheduled_sessions").insert(payload));
+    }
     setSaving(false);
     if (error) { toast.error("Failed: " + error.message); return; }
-    toast.success("Session scheduled");
+    toast.success(editingId ? "Session updated" : "Session scheduled");
+    setEditingId(null);
     setOpen(false);
     const newDay = new Date(when); newDay.setHours(0,0,0,0);
     setSelected(newDay);
@@ -377,9 +422,17 @@ export default function BSessions() {
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   )}
+                  {canEditSession(s) && (
+                    <button onClick={() => openEditor(s)}
+                      className="absolute top-3 right-11 opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 rounded-md inline-flex items-center justify-center hover:bg-[#2a2a2e]"
+                      style={{ color: bx.textDim }}
+                      aria-label="Edit session">
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   {canDispatch && (
                     <button onClick={() => setDispatchTarget({ session: s, occursAt: d })}
-                      className="absolute top-3 right-11 h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]"
+                      className="absolute top-3 right-20 h-7 px-2 rounded-md inline-flex items-center gap-1 text-[11px] font-semibold border hover:bg-[#2a2a2e]"
                       style={{ color: bx.coral, borderColor: bx.borderColor }}
                       aria-label="Dispatch crew">
                       <Radio className="w-3.5 h-3.5" /> Dispatch
@@ -483,14 +536,18 @@ export default function BSessions() {
       {/* Schedule modal */}
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-          onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}>
+          onClick={(e) => { if (e.target === e.currentTarget) { setOpen(false); setEditingId(null); } }}>
           <div className="w-full max-w-md rounded-md border p-6 relative max-h-[90vh] overflow-y-auto" style={bx.cardStyle}>
-            <button onClick={() => setOpen(false)}
+            <button onClick={() => { setOpen(false); setEditingId(null); }}
               className="absolute top-4 right-4 hover:text-white" style={{ color: bx.textDim }} aria-label="Close">
               <X className="w-4 h-4" />
             </button>
-            <h2 className="text-lg font-bold" style={{ color: bx.text }}>{phrase("Schedule session")}</h2>
-            <p className="text-xs mt-1" style={{ color: bx.textDim }}>{phrase("Add a session to the calendar.")}</p>
+            <h2 className="text-lg font-bold" style={{ color: bx.text }}>
+              {editingId ? phrase("Edit session") : phrase("Schedule session")}
+            </h2>
+            <p className="text-xs mt-1" style={{ color: bx.textDim }}>
+              {editingId ? phrase("Update the details for this session.") : phrase("Add a session to the calendar.")}
+            </p>
 
             <div className="mt-5 space-y-4">
               <div>
@@ -643,14 +700,14 @@ export default function BSessions() {
             </div>
 
             <div className="mt-6 flex justify-end gap-2">
-              <button onClick={() => setOpen(false)}
+              <button onClick={() => { setOpen(false); setEditingId(null); }}
                 className="h-10 px-4 rounded-md text-sm font-medium"
                 style={{ background: "#242427", color: bx.text }}>Cancel</button>
               <button onClick={createSession} disabled={saving}
                 className="h-10 px-5 rounded-md text-sm font-semibold text-white disabled:opacity-60 inline-flex items-center gap-2"
                 style={{ background: bx.coral }}>
                 {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                {saving ? "Scheduling…" : "Schedule"}
+                {saving ? (editingId ? "Saving…" : "Scheduling…") : (editingId ? "Save changes" : "Schedule")}
               </button>
             </div>
           </div>
