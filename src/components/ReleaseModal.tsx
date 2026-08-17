@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Heart, Star, TrendingUp, BarChart3, CheckCircle2, ArrowUpRight } from "lucide-react";
+import { Sparkles, Heart, Star, TrendingUp, BarChart3, CheckCircle2, ArrowUpRight, Rocket, Shield, Zap, type LucideIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 
-const CURRENT_VERSION = "4.6.0";
+const FALLBACK_VERSION = "4.6.0";
 
-const features = [
+const ICON_MAP: Record<string, LucideIcon> = {
+  Sparkles, Heart, Star, TrendingUp, BarChart3, CheckCircle2, ArrowUpRight, Rocket, Shield, Zap,
+};
+
+const FALLBACK_FEATURES = [
   { icon: Heart, title: "Kudos Wall", desc: "Members can post shoutouts to teammates — a live feed of recognition that flows in real-time across the workspace. Find it in the sidebar under Kudos." },
   { icon: Star, title: "Staff Spotlight", desc: "Each week we automatically highlight the member who received the most kudos in the last 7 days. No nominations, no admin work — just earned recognition." },
   { icon: TrendingUp, title: "Promotion Nominations", desc: "Any member can nominate a teammate for promotion with a reason. Leads and owners get a queue to approve or decline — no more guessing who's ready to move up." },
@@ -16,21 +20,38 @@ const features = [
   { icon: ArrowUpRight, title: "Polish & fixes", desc: "Tighter glassmorphism, faster page loads, and a sweep of small QoL fixes across the dashboard." },
 ];
 
+type Feature = { icon: LucideIcon; title: string; desc: string };
+
 export function ReleaseModal() {
   const { workspaceId, isOwner } = useWorkspace();
   const [open, setOpen] = useState(false);
+  const [version, setVersion] = useState(FALLBACK_VERSION);
+  const [subtitle, setSubtitle] = useState("Major update — here's what we've shipped");
+  const [features, setFeatures] = useState<Feature[]>(FALLBACK_FEATURES);
 
   useEffect(() => {
     if (!isOwner || !workspaceId) return;
     const checkRelease = async () => {
-      const { data } = await supabase
-        .from("workspaces")
-        .select("release_version")
-        .eq("id", workspaceId)
-        .single();
-      if (data && (data as any).release_version !== CURRENT_VERSION) {
-        setOpen(true);
+      const [{ data: setting }, { data }] = await Promise.all([
+        supabase.from("site_settings").select("value").eq("key", "current_release").maybeSingle(),
+        supabase.from("workspaces").select("release_version").eq("id", workspaceId).single(),
+      ]);
+
+      const rel = setting?.value as any;
+      const latest = rel?.version || FALLBACK_VERSION;
+      if (rel?.version && Array.isArray(rel.items) && rel.items.length) {
+        setVersion(rel.version);
+        if (rel.subtitle) setSubtitle(rel.subtitle);
+        setFeatures(
+          rel.items.map((i: any) => ({
+            icon: ICON_MAP[i.icon] || Sparkles,
+            title: String(i.title || ""),
+            desc: String(i.desc || ""),
+          }))
+        );
       }
+
+      if (data && (data as any).release_version !== latest) setOpen(true);
     };
     checkRelease();
   }, [workspaceId, isOwner]);
@@ -39,7 +60,7 @@ export function ReleaseModal() {
     setOpen(false);
     await supabase
       .from("workspaces")
-      .update({ release_version: CURRENT_VERSION } as any)
+      .update({ release_version: version } as any)
       .eq("id", workspaceId);
     // Force refresh so new pages, permissions and styles load without manual reload
     window.location.reload();
@@ -51,9 +72,9 @@ export function ReleaseModal() {
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-5 h-5 text-primary" />
-            <DialogTitle className="text-foreground text-lg">What's New in Fluxcore v{CURRENT_VERSION}</DialogTitle>
+            <DialogTitle className="text-foreground text-lg">What's New in Fluxcore v{version}</DialogTitle>
           </div>
-          <p className="text-sm text-muted-foreground">Major update — here's what we've shipped</p>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </DialogHeader>
         <div className="space-y-3 pt-2">
           {features.map((f, i) => (
@@ -75,3 +96,4 @@ export function ReleaseModal() {
     </Dialog>
   );
 }
+
