@@ -88,7 +88,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
   const logoColor = bgLum > 0.5 ? "#1a1a2e" : "#ffffff";
 
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex w-full" style={{ backgroundColor: bgColor }}>
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
