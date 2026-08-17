@@ -94,10 +94,11 @@ export function DiscordBotCard({ workspaceId, isOwner }: { workspaceId: string; 
             size="sm"
             onClick={async () => {
               const t = toast.loading("Registering slash commands…");
-              const { error } = await supabase.functions.invoke("discord-register-commands", { body: {} });
+              const { data, error } = await supabase.functions.invoke("discord-register-commands", { body: {} });
               toast.dismiss(t);
               if (error) toast.error("Failed: " + error.message);
-              else toast.success("Slash commands registered with Discord");
+              else if ((data as any)?.error) toast.error((data as any).error);
+              else toast.success(`Registered ${(data as any)?.registered ?? 7} slash commands with Discord`);
             }}
           >
             Re-register slash commands
