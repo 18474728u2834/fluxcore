@@ -30,10 +30,40 @@ async function verifySignature(req: Request, raw: string): Promise<boolean> {
   } catch { return false; }
 }
 
-function ephemeral(content: string) {
-  return new Response(JSON.stringify({ type: 4, data: { content, flags: 64 } }), {
-    headers: { "Content-Type": "application/json" },
-  });
+// Command handlers return plain strings; the transport layer decides whether to
+// send them inline (type 4) or as a follow-up to a deferred reply (type 5).
+function ephemeral(content: string): string {
+  return content;
+}
+
+const APP_ID = Deno.env.get("DISCORD_APPLICATION_ID")!;
+
+async function followUp(interactionToken: string, content: string) {
+  try {
+    await fetch(
+      `https://discord.com/api/v10/webhooks/${APP_ID}/${interactionToken}/messages/@original`,
+      {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content }),
+      },
+    );
+  } catch (_) { /* nothing we can do */ }
+}
+
+// Extract the real error message from a supabase functions.invoke failure.
+async function invokeErrorMessage(error: any): Promise<string> {
+  try {
+    const res = error?.context;
+    if (res && typeof res.text === "function") {
+      const txt = await res.text();
+      try {
+        const j = JSON.parse(txt);
+        return j.error || j.message || txt;
+      } catch { return txt || error.message; }
+    }
+  } catch (_) { /* fall through */ }
+  return error?.message || "unknown error";
 }
 
 function randomToken(n = 10) {
@@ -90,7 +120,7 @@ async function logCommand(entry: {
   } catch (_) { /* swallow log errors */ }
 }
 
-async function handleCommand(body: any): Promise<Response> {
+async function handleCommand(body: any): Promise<string> {
   const cmd = body.data?.name as string;
   const opts = body.data?.options as any[] | undefined;
   const guild_id = body.guild_id as string | undefined;
@@ -145,7 +175,15 @@ async function handleCommand(body: any): Promise<Response> {
     const { data, error } = await admin.functions.invoke("roblox-rank", {
       body: { workspace_id: caller.workspace_id, action: cmd, target_username: target, actor_user_id: caller.user_id },
     });
-    if (error) { await log("error", error.message); return ephemeral("Failed: " + error.message); }
+    if (error) {
+      const msg = await invokeErrorMessage(error);
+      await log("error", msg);
+      return ephemeral("Failed to " + cmd + " " + target + ": " + msg);
+    }
+    if ((data as any)?.error) {
+      await log("error", String((data as any).error));
+      return ephemeral("Failed to " + cmd + " " + target + ": " + (data as any).error);
+    }
     await log("ok");
     return ephemeral(`${cmd === "promote" ? "Promoted" : "Demoted"} ${target}. ${data?.from?.name ? `${data.from.name} -> ${data.to?.name}` : ""}`);
   }
@@ -244,8 +282,20 @@ Deno.serve(async (req) => {
 
   if (body.type === 1) return new Response(JSON.stringify({ type: 1 }), { headers: { "Content-Type": "application/json" } });
   if (body.type === 2) {
-    try { return await handleCommand(body); }
-    catch (e) { return ephemeral("Error: " + (e as Error).message); }
+    // Discord requires a response within 3 seconds. Roblox Open Cloud calls can
+    // take longer, so acknowledge immediately and edit the reply when done.
+    const interactionToken = body.token as string;
+    const work = (async () => {
+      let content: string;
+      try { content = await handleCommand(body); }
+      catch (e) { content = "Error: " + (e as Error).message; }
+      await followUp(interactionToken, content);
+    })();
+    // @ts-ignore EdgeRuntime is available in Supabase edge functions
+    if (typeof EdgeRuntime !== "undefined") EdgeRuntime.waitUntil(work);
+    return new Response(JSON.stringify({ type: 5, data: { flags: 64 } }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
   return new Response("unhandled", { status: 200 });
 });
