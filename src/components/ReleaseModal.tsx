@@ -20,21 +20,38 @@ const FALLBACK_FEATURES = [
   { icon: ArrowUpRight, title: "Polish & fixes", desc: "Tighter glassmorphism, faster page loads, and a sweep of small QoL fixes across the dashboard." },
 ];
 
+type Feature = { icon: LucideIcon; title: string; desc: string };
+
 export function ReleaseModal() {
   const { workspaceId, isOwner } = useWorkspace();
   const [open, setOpen] = useState(false);
+  const [version, setVersion] = useState(FALLBACK_VERSION);
+  const [subtitle, setSubtitle] = useState("Major update — here's what we've shipped");
+  const [features, setFeatures] = useState<Feature[]>(FALLBACK_FEATURES);
 
   useEffect(() => {
     if (!isOwner || !workspaceId) return;
     const checkRelease = async () => {
-      const { data } = await supabase
-        .from("workspaces")
-        .select("release_version")
-        .eq("id", workspaceId)
-        .single();
-      if (data && (data as any).release_version !== CURRENT_VERSION) {
-        setOpen(true);
+      const [{ data: setting }, { data }] = await Promise.all([
+        supabase.from("site_settings").select("value").eq("key", "current_release").maybeSingle(),
+        supabase.from("workspaces").select("release_version").eq("id", workspaceId).single(),
+      ]);
+
+      const rel = setting?.value as any;
+      const latest = rel?.version || FALLBACK_VERSION;
+      if (rel?.version && Array.isArray(rel.items) && rel.items.length) {
+        setVersion(rel.version);
+        if (rel.subtitle) setSubtitle(rel.subtitle);
+        setFeatures(
+          rel.items.map((i: any) => ({
+            icon: ICON_MAP[i.icon] || Sparkles,
+            title: String(i.title || ""),
+            desc: String(i.desc || ""),
+          }))
+        );
       }
+
+      if (data && (data as any).release_version !== latest) setOpen(true);
     };
     checkRelease();
   }, [workspaceId, isOwner]);
@@ -43,7 +60,7 @@ export function ReleaseModal() {
     setOpen(false);
     await supabase
       .from("workspaces")
-      .update({ release_version: CURRENT_VERSION } as any)
+      .update({ release_version: version } as any)
       .eq("id", workspaceId);
     // Force refresh so new pages, permissions and styles load without manual reload
     window.location.reload();
@@ -55,9 +72,9 @@ export function ReleaseModal() {
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-5 h-5 text-primary" />
-            <DialogTitle className="text-foreground text-lg">What's New in Fluxcore v{CURRENT_VERSION}</DialogTitle>
+            <DialogTitle className="text-foreground text-lg">What's New in Fluxcore v{version}</DialogTitle>
           </div>
-          <p className="text-sm text-muted-foreground">Major update — here's what we've shipped</p>
+          <p className="text-sm text-muted-foreground">{subtitle}</p>
         </DialogHeader>
         <div className="space-y-3 pt-2">
           {features.map((f, i) => (
@@ -79,3 +96,4 @@ export function ReleaseModal() {
     </Dialog>
   );
 }
+
