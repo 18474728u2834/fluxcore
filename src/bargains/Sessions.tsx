@@ -297,7 +297,7 @@ export default function BSessions() {
       payload.recurring_time = null;
       payload.recurring_days = null;
     }
-    let error;
+    let error: any = null;
     if (editingId) {
       // Keep the original creator as host_id; only update the editable fields.
       const { host_id, workspace_id, department_id, tag_ids, ...updates } = payload;
