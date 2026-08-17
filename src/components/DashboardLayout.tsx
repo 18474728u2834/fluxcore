@@ -64,6 +64,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
           `}</style>
           {children}
         </div>
+        <ReleaseModal />
       </BargainsShell>
     );
   }
