@@ -190,7 +190,7 @@ export default function LandingClassic() {
           {[
             { icon: Clock, t: "Tracked to the second", d: "A heartbeat every 30 seconds with idle detection, so in-game minutes are what actually happened — not what someone claims happened." },
             { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
-            { icon: Users, t: "Everyone gets access", d: "Every tracked member can sign in and see their own hours, quota and history. Transparency instead of screenshots in Discord." },
+            { icon: Zap, t: "Ranks that move themselves", d: "A logbook entry ranks the member in the Roblox group, updates their Fluxcore role and posts it to Discord — one action, three systems in sync." },
           ].map((c) => (
             <div key={c.t} className="rounded-2xl border border-border/50 bg-card/50 p-7">
               <div className="w-11 h-11 rounded-xl bg-muted/70 border border-border/50 flex items-center justify-center mb-6">
