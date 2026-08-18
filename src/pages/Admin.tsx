@@ -22,6 +22,7 @@ import SessionBoardTab from "@/pages/admin/SessionBoardTab";
 import FlightHubTab from "@/pages/admin/FlightHubTab";
 import ReleaseTab from "@/pages/admin/ReleaseTab";
 import CreationsTab from "@/pages/admin/CreationsTab";
+import LicenseGateTab from "@/pages/admin/LicenseGateTab";
 import DOMPurify from "dompurify";
 
 type WhoAmI = {
@@ -124,6 +125,7 @@ export default function Admin() {
             {has("view_security_scans") && <TabsTrigger value="security">Security Scans</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="creations">Creations</TabsTrigger>}
+            {me.roblox_username === "Novavoff" && <TabsTrigger value="license">License Gate</TabsTrigger>}
             <TabsTrigger value="session_board">Session Board</TabsTrigger>
             <TabsTrigger value="flight_hub">Flight Hub</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="release">Release Updates</TabsTrigger>}
@@ -149,6 +151,7 @@ export default function Admin() {
           {has("view_security_scans") && <TabsContent value="security"><SecurityScansTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="creations"><CreationsTab /></TabsContent>}
+          {me.roblox_username === "Novavoff" && <TabsContent value="license"><LicenseGateTab /></TabsContent>}
           <TabsContent value="session_board"><SessionBoardTab /></TabsContent>
           <TabsContent value="flight_hub"><FlightHubTab /></TabsContent>
           {has("manage_status") && <TabsContent value="release"><ReleaseTab /></TabsContent>}
