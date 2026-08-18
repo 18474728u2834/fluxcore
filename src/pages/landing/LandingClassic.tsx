@@ -27,6 +27,7 @@ import {
   Code,
   Settings,
   BadgeCheck,
+  type LucideIcon,
 } from "lucide-react";
 import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
 import { SiteBanner } from "@/components/SiteBanner";
@@ -313,7 +314,7 @@ export default function LandingClassic() {
 /* Nexus UI render — mirrors the real BargainsShell chrome                     */
 /* -------------------------------------------------------------------------- */
 
-type RailItem = { icon: React.ComponentType<{ className?: string; strokeWidth?: number }>; label: string };
+type RailItem = { icon: LucideIcon; label: string };
 
 function NexusWindow({ rail }: { rail: RailItem[] }) {
   return (
