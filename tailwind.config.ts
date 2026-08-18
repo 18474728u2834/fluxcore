@@ -102,6 +102,10 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-10px)" },
         },
+        "dashboard-float": {
+          "0%, 100%": { transform: "translateY(0) rotateX(0deg) rotateY(0deg)" },
+          "50%": { transform: "translateY(-28px) rotateX(8deg) rotateY(-4deg)" },
+        },
         "marquee": {
           from: { transform: "translateX(0)" },
           to: { transform: "translateX(calc(-50% - 1rem))" },
@@ -115,6 +119,7 @@ export default {
         "scale-in": "scale-in 0.3s ease-out forwards",
         "slide-up": "slide-up 0.4s ease-out forwards",
         "float": "float 6s ease-in-out infinite",
+        "dashboard-float": "dashboard-float 7s ease-in-out infinite",
         "marquee": "marquee 30s linear infinite",
       },
       transitionTimingFunction: {
