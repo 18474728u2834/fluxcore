@@ -83,13 +83,11 @@ export default function LandingClassic() {
   ];
 
   const Wordmark = ({ small }: { small?: boolean }) => (
-    <button onClick={() => navigate("/")} className="flex items-center gap-2">
-      <span className="w-[22px] h-[22px] rounded-[6px] bg-foreground flex items-center justify-center">
-        <span className="text-background text-[12px] font-black leading-none">F</span>
-      </span>
-      <span className={`${small ? "text-[14px]" : "text-[15px]"} font-semibold tracking-[-0.01em]`}>Fluxcore</span>
+    <button onClick={() => navigate("/")} className="flex items-center">
+      <span className={`${small ? "text-[15px]" : "text-[17px]"} font-semibold tracking-[-0.02em] text-foreground`}>Fluxcore</span>
     </button>
   );
+
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
