@@ -40,10 +40,11 @@
             if (t && (t.tagName === 'IMG' || t.tagName === 'VIDEO' || t.tagName === 'SOURCE')) e.preventDefault();
           });
           // Headless / automation / mirror tool sniff
+          var localDev = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
           var ua = (navigator.userAgent || '').toLowerCase();
           var bad = /(httrack|wget|curl|sitesucker|webcopy|cyotek|offline ?explorer|teleport|getleft|webreaper|website ?ripper|website ?downloader|scrapy|httpx|python-requests|libwww|java\/|go-http-client|node-fetch|axios\/|okhttp|headlesschrome|phantomjs|slimerjs|electron|puppeteer|playwright|selenium|cypress)/;
           var suspect = bad.test(ua) || navigator.webdriver === true || (!navigator.languages || navigator.languages.length === 0);
-          if (suspect && location.pathname !== '/403.html') {
+          if (suspect && !localDev && location.pathname !== '/403.html') {
             location.replace('/403.html');
           }
           // Detect file:// or non-http origin (offline mirror copy opened from disk)
