@@ -60,6 +60,7 @@ const Promotions = lazy(() => import("./pages/Promotions"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const Creations = lazy(() => import("./pages/Creations"));
 const Admin = lazy(() => import("./pages/Admin"));
 const ApiIndex = lazy(() => import("./pages/api/ApiIndex"));
 const ApiSessions = lazy(() => import("./pages/api/SessionsApi"));
@@ -484,6 +485,7 @@ function AppRoutes() {
         <Route path="/workspaces" element={<Workspaces />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/creations" element={<Creations />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/support" element={<Support />} />
         <Route path="/feedback" element={<Feedback />} />
