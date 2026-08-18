@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Wordmark } from "@/components/Wordmark";
+
 import {
   ArrowLeft, Bug, Lightbulb, Send, Loader2, MessageSquare,
   Search, Clock, CheckCircle2, FlaskConical,
@@ -196,8 +198,9 @@ export default function Feedback() {
           <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <button onClick={() => navigate("/")} className="text-lg font-extrabold text-gradient tracking-tight">Fluxcore</button>
-          <span className="text-sm text-muted-foreground">Feedback</span>
+          <Wordmark small />
+          <span className="text-sm text-muted-foreground">Ideas &amp; bug reports</span>
+
         </div>
       </nav>
 
