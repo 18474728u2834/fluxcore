@@ -119,6 +119,7 @@ export default {
         "scale-in": "scale-in 0.3s ease-out forwards",
         "slide-up": "slide-up 0.4s ease-out forwards",
         "float": "float 6s ease-in-out infinite",
+        "dashboard-float": "dashboard-float 7s ease-in-out infinite",
         "marquee": "marquee 30s linear infinite",
       },
       transitionTimingFunction: {
