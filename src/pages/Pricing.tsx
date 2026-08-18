@@ -62,14 +62,14 @@ export default function Pricing() {
       <nav className="fixed top-0 w-full z-50 border-b border-border/10 bg-background/70 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <span className="text-xl font-black tracking-tight cursor-pointer" onClick={() => navigate("/")}>
-              <span className="text-primary">flux</span>core
-            </span>
+            <Wordmark />
             <div className="hidden md:flex items-center gap-1">
-              <button onClick={() => navigate("/#features")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">Features</button>
+              <button onClick={() => navigate("/#product")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">Product</button>
               <button onClick={() => navigate("/pricing")} className="px-3 py-1.5 text-sm text-foreground rounded-md bg-white/5 transition-all">Pricing</button>
-              <button onClick={() => navigate("/feedback")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">Feedback</button>
+              <button onClick={() => navigate("/security")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">Security</button>
+              <button onClick={() => navigate("/feedback")} className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground rounded-md hover:bg-white/5 transition-all">Ideas &amp; bug reports</button>
             </div>
+
           </div>
           <div className="flex items-center gap-2">
             <button onClick={() => navigate("/support")} className="p-2.5 text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-lg transition-all" title="Support Center">
