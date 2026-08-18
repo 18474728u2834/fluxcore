@@ -101,7 +101,7 @@ export default function LandingClassic() {
               <a href="#product" className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Product</a>
               <button onClick={() => navigate("/pricing")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
               <button onClick={() => navigate("/security")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Security</button>
-              <button onClick={() => navigate("/feedback")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Changelog</button>
+              <button onClick={() => navigate("/feedback")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Ideas &amp; bug reports</button>
               <button onClick={() => navigate("/support")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Support</button>
             </div>
           </div>
