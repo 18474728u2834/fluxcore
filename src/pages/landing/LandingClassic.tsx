@@ -4,6 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight,
   ArrowUpRight,
+  Play,
   Sun,
   Moon,
   Activity,
@@ -93,118 +94,128 @@ export default function LandingClassic() {
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* ---------------------------------------------------------------- nav */}
-      <nav className="sticky top-0 z-50 bg-background/85 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl">
         <SiteBanner placement="marketing" />
-        <div className={`border-b ${RULE}`}>
-          <div className="max-w-[1080px] mx-auto px-6 h-[58px] flex items-center justify-between">
-            <div className="flex items-center gap-8">
-              <Wordmark />
-              <div className="hidden md:flex items-center gap-6">
-                <a href="#product" className="text-[13.5px] text-muted-foreground hover:text-foreground transition-colors">Product</a>
-                <button onClick={() => navigate("/pricing")} className="text-[13.5px] text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
-                <button onClick={() => navigate("/security")} className="text-[13.5px] text-muted-foreground hover:text-foreground transition-colors">Security</button>
-                <button onClick={() => navigate("/support")} className="text-[13.5px] text-muted-foreground hover:text-foreground transition-colors">Support</button>
-              </div>
+        <div className="max-w-[1180px] mx-auto px-6 h-[64px] flex items-center justify-between">
+          <div className="flex items-center gap-9">
+            <Wordmark />
+            <div className="hidden md:flex items-center gap-7">
+              <a href="#product" className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Product</a>
+              <button onClick={() => navigate("/pricing")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
+              <button onClick={() => navigate("/security")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Security</button>
+              <button onClick={() => navigate("/feedback")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Changelog</button>
+              <button onClick={() => navigate("/support")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Support</button>
             </div>
-            <div className="flex items-center gap-1">
-              <button onClick={toggleTheme} aria-label="Toggle theme" className="p-2 text-muted-foreground hover:text-foreground transition-colors">
-                {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={toggleTheme} aria-label="Toggle theme" className="p-2 text-muted-foreground hover:text-foreground transition-colors">
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+            {!isLoggedIn && (
+              <button onClick={() => navigate("/login")} className="hidden sm:block text-[14px] font-medium px-3 py-1.5 text-muted-foreground hover:text-foreground transition-colors">
+                Sign in
               </button>
-              {!isLoggedIn && (
-                <button onClick={() => navigate("/login")} className="hidden sm:block text-[13.5px] px-3 py-1.5 text-muted-foreground hover:text-foreground transition-colors">
-                  Sign in
-                </button>
-              )}
-              <button
-                onClick={go}
-                className="text-[13.5px] font-medium h-8 px-3.5 rounded-md bg-foreground text-background hover:opacity-90 transition-opacity"
-              >
-                {isLoggedIn ? "Dashboard" : "Get started"}
-              </button>
-            </div>
+            )}
+            <button onClick={go} className="text-[14px] font-semibold h-9 px-4 rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-all">
+              {isLoggedIn ? "Dashboard" : "Sign up"}
+            </button>
           </div>
         </div>
       </nav>
 
       {/* --------------------------------------------------------------- hero */}
-      <section className={`border-b ${RULE}`}>
-        <div className="max-w-[1080px] mx-auto px-6 pt-20 pb-16">
-          <p className="text-[12px] text-muted-foreground mb-5">Staff management for Roblox groups</p>
-          <h1 className="text-[40px] sm:text-[58px] font-semibold leading-[1.02] tracking-[-0.035em] max-w-[15ch]">
-            Run your group like
-            <br className="hidden sm:block" /> it&rsquo;s an actual company.
+      <section className="relative">
+        <div className="pointer-events-none absolute inset-x-0 -top-24 h-[520px] overflow-hidden">
+          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-[900px] h-[420px] rounded-full bg-primary/[0.13] blur-[150px]" />
+        </div>
+
+        <div className="relative max-w-[1080px] mx-auto px-6 pt-24 sm:pt-28 pb-4 text-center">
+          <h1 className="text-[42px] sm:text-[66px] lg:text-[78px] font-extrabold leading-[0.96] tracking-[-0.04em] mx-auto max-w-[16ch]">
+            The staff platform for Roblox communities
           </h1>
-          <p className="mt-6 text-[16.5px] leading-[1.65] text-muted-foreground max-w-[54ch]">
-            Fluxcore is one dashboard for activity, ranking, sessions, quotas and policies.
-            The spreadsheet, the four Discord bots and the tab you keep losing — all replaced.
+          <p className="mt-7 text-[17px] sm:text-[18px] leading-[1.6] text-muted-foreground max-w-[58ch] mx-auto">
+            Fluxcore is the all-in-one tool to run your group. Activity tracking, ranking,
+            sessions, quotas, policies — and everything in between.
           </p>
 
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <button
-              onClick={go}
-              className="group inline-flex items-center gap-2 h-10 px-4 rounded-md bg-foreground text-background text-[14px] font-medium hover:opacity-90 transition-opacity"
-            >
-              {isLoggedIn ? "Open dashboard" : "Start free with Roblox"}
-              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+          <div className="mt-9 flex flex-wrap gap-3 justify-center">
+            <button onClick={go} className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-[15px] font-semibold hover:brightness-110 transition-all shadow-[0_0_50px_-14px_hsl(var(--primary))]">
+              {isLoggedIn ? "Open dashboard" : "Get started"}
             </button>
-            <a href="#product" className={`inline-flex items-center gap-1.5 h-10 px-4 rounded-md border ${RULE} text-[14px] font-medium hover:bg-muted/50 transition-colors`}>
+            <a href="#product" className="h-11 px-6 rounded-lg bg-card border border-border/60 text-[15px] font-semibold inline-flex items-center gap-2 hover:bg-muted/60 transition-colors">
+              <Play className="w-3.5 h-3.5 fill-primary text-primary" />
               See the dashboard
             </a>
-            <span className="text-[12.5px] text-muted-foreground">Free, no card, sign in with Roblox.</span>
           </div>
         </div>
-      </section>
 
-      {/* ------------------------------------------------------------ product */}
-      <section id="product" className={`border-b ${RULE} bg-muted/20`}>
-        <div className="max-w-[1080px] mx-auto px-6 py-16">
-          <div className="flex items-end justify-between mb-6 flex-wrap gap-2">
-            <div>
-              <p className="text-[12px] uppercase tracking-[0.14em] text-muted-foreground">Nexus UI</p>
-              <h2 className="text-[22px] font-semibold tracking-[-0.02em] mt-1">The dashboard your staff open every day</h2>
+        {/* ------------------------------------------------------- product shot */}
+        <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-24" style={{ perspective: "2200px" }}>
+          {isMobile ? (
+            <NexusPhone rail={rail} />
+          ) : (
+            <div style={{ transform: "rotateX(9deg) rotateZ(-1.2deg)", transformStyle: "preserve-3d" }}>
+              <NexusWindow rail={rail} />
             </div>
-            <span className="text-[12.5px] text-muted-foreground font-mono">fluxcore.works/w/…/dashboard</span>
-          </div>
-
-          {isMobile ? <NexusPhone rail={rail} /> : <NexusWindow rail={rail} />}
+          )}
+          <div className="pointer-events-none absolute inset-x-16 -bottom-6 h-32 bg-primary/25 blur-[90px] rounded-full" />
         </div>
       </section>
 
       {/* --------------------------------------------------------------- used */}
-      <section className={`border-b ${RULE}`}>
-        <div className="max-w-[1080px] mx-auto px-6 py-12">
-          <p className="text-[12px] uppercase tracking-[0.14em] text-muted-foreground mb-6">In use today</p>
-          <div className="flex items-center gap-8 flex-wrap mb-8">
-            <span className="flex items-center gap-2.5">
-              <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-6 h-6 rounded object-cover" />
-              <span className="text-[14px] font-medium">Bloxy Bargains</span>
+      <section className="pt-24 pb-6">
+        <div className="max-w-[1080px] mx-auto px-6">
+          <p className="text-center text-[11.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-8">
+            Trusted by communities on Roblox
+          </p>
+          <div className="flex items-center justify-center gap-8 flex-wrap mb-10">
+            <span className="flex items-center gap-2.5 opacity-90">
+              <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-9 h-9 rounded-lg object-cover" />
+              <span className="text-[14.5px] font-semibold">Bloxy Bargains</span>
             </span>
-            <span className="flex items-center gap-2.5">
-              <img src={redFunnelBadge} alt="Red Funnel Group" className="w-6 h-6 rounded object-cover" />
-              <span className="text-[14px] font-medium">Red Funnel Group</span>
+            <span className="flex items-center gap-2.5 opacity-90">
+              <img src={redFunnelBadge} alt="Red Funnel Group" className="w-9 h-9 rounded-lg object-cover" />
+              <span className="text-[14.5px] font-semibold">Red Funnel Group</span>
             </span>
-            <span className="text-[14px] text-muted-foreground">and a steadily growing list of groups</span>
           </div>
           <WorkspaceMarquee />
         </div>
       </section>
 
-      {/* ------------------------------------------------------- capabilities */}
-      <section className={`border-b ${RULE}`}>
-        <div className="max-w-[1080px] mx-auto px-6 py-16">
-          <div className="max-w-[52ch] mb-10">
-            <p className="text-[12px] uppercase tracking-[0.14em] text-muted-foreground mb-3">What&rsquo;s inside</p>
-            <h2 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.03em] leading-[1.1]">
-              Twelve things you were doing by hand.
-            </h2>
-          </div>
+      {/* ------------------------------------------------------------- pillars */}
+      <section className="py-20">
+        <div className="max-w-[1180px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            { icon: Clock, t: "Tracked to the second", d: "A heartbeat every 30 seconds with idle detection, so in-game minutes are what actually happened — not what someone claims happened." },
+            { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
+            { icon: Users, t: "Everyone gets access", d: "Every tracked member can sign in and see their own hours, quota and history. Transparency instead of screenshots in Discord." },
+          ].map((c) => (
+            <div key={c.t} className="rounded-2xl border border-border/50 bg-card/50 p-7">
+              <div className="w-11 h-11 rounded-xl bg-muted/70 border border-border/50 flex items-center justify-center mb-6">
+                <c.icon className="w-[18px] h-[18px]" strokeWidth={1.9} />
+              </div>
+              <h3 className="text-[19px] font-bold tracking-[-0.02em] mb-2.5">{c.t}</h3>
+              <p className="text-[14.5px] text-muted-foreground leading-[1.65]">{c.d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-t border-l ${RULE}`}>
+      {/* -------------------------------------------------------- capabilities */}
+      <section className="py-20">
+        <div className="max-w-[1180px] mx-auto px-6">
+          <h2 className="text-center text-[34px] sm:text-[46px] font-extrabold tracking-[-0.035em] leading-[1.05] mb-14">
+            That&rsquo;s just scratching the surface
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {capabilities.map((c) => (
-              <div key={c.title} className={`border-r border-b ${RULE} p-6 hover:bg-muted/30 transition-colors`}>
-                <c.icon className="w-[17px] h-[17px] text-muted-foreground mb-4" strokeWidth={1.8} />
-                <h3 className="text-[14.5px] font-semibold mb-1.5 tracking-[-0.01em]">{c.title}</h3>
-                <p className="text-[13.5px] text-muted-foreground leading-[1.6]">{c.desc}</p>
+              <div key={c.title} className="group rounded-2xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:border-border transition-all">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
+                  <c.icon className="w-[17px] h-[17px] text-primary" strokeWidth={2} />
+                </div>
+                <h3 className="text-[15.5px] font-bold mb-1.5 tracking-[-0.01em]">{c.title}</h3>
+                <p className="text-[13.5px] text-muted-foreground leading-[1.65]">{c.desc}</p>
               </div>
             ))}
           </div>
