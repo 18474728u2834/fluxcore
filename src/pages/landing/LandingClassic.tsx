@@ -50,6 +50,15 @@ export default function LandingClassic() {
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = !authLoading && !!user;
   const isMobile = useIsMobile();
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+  const lift = Math.min(scrollY * 0.22, 160);
 
   const go = () => navigate(isLoggedIn ? "/workspaces" : "/login");
 
