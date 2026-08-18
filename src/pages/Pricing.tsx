@@ -16,33 +16,41 @@ export default function Pricing() {
   const isLoggedIn = !authLoading && !!user;
 
   const everything = [
-    "Unlimited workspaces",
-    "Unlimited members",
-    "Auto-rank sync with Roblox group",
-    "Real-time activity tracking",
-    "Shift, training & event scheduling",
-    "Discord webhooks & session reminders",
-    "Policies with digital signatures & auto-assign",
+    "Unlimited workspaces & members",
+    "Nexus UI 2.0 — fully customizable dashboard",
+    "Auto-rank sync with your Roblox group",
+    "Real-time activity & idle tracking",
+    "Shift, training & event scheduling (editable)",
+    "Application forms — web & in-game center",
+    "Auto-grading & auto-ranking of applicants",
+    "Discord bot with rank-locked slash commands",
+    "Crew Dispatch & crew wishlists",
+    "Flight Hub & Session Board Roblox displays",
+    "Aviation & Maritime industry modes",
+    "Kudos, spotlights & promotion nominations",
+    "Documents with digital signatures & auto-assign",
     "Leave of absence workflow",
     "In-game message logging",
-    "Per-role quotas & leaderboards",
+    "Per-role quotas, leaderboards & auto-warnings",
+    "Custom subdomain with one-click SSO",
     "Full custom branding (colors, grid, badge)",
     "Audit log of every staff action",
     "Analytics dashboard with historical trends",
-    "AI support assistant",
-    "Priority support",
+    "Encrypted-at-rest data & nightly breach scans",
+    "AI support assistant & priority support",
   ];
 
   const highlights = [
-    { icon: Sparkles, title: "Unlimited Workspaces", desc: "Run as many groups, projects or sub-divisions as you want from one account." },
-    { icon: MessageSquareText, title: "In-Game Message Logs", desc: "Searchable chat history of every staff message in your servers." },
-    { icon: BarChart3, title: "Per-Role Quotas", desc: "Set different session and time targets for every rank." },
-    { icon: Palette, title: "Full Custom Branding", desc: "Custom primary, text and background colors plus a verified badge." },
-    { icon: ShieldCheck, title: "Audit Log", desc: "Full timeline of every promotion, demotion, warning, and config change." },
-    { icon: Bot, title: "Analytics Dashboard", desc: "Heatmaps, leaderboards, idle-time breakdowns and historical trends." },
-    { icon: FileSignature, title: "Document Auto-Assign", desc: "Push policies to new staff automatically and require signatures on rank-up." },
-    { icon: BadgeCheck, title: "Priority Support", desc: "Fast-tracked tickets and direct line to the team." },
+    { icon: Sparkles, title: "Nexus UI 2.0", desc: "Owners design the dashboard — pick the cards, pages and sidebar mode every member sees." },
+    { icon: FileSignature, title: "Application Forms", desc: "Step-by-step forms on the web and inside Roblox, with auto-grading and auto-ranking." },
+    { icon: Bot, title: "Discord Bot", desc: "Rank-locked /promote, /demote, /warn, /loa, /quota and /lookup with verified accounts." },
+    { icon: Palette, title: "Industry Modes", desc: "Switch the whole app to Aviation or Maritime language — flights, departures, watches." },
+    { icon: BarChart3, title: "Flight Hub & Session Board", desc: "Live in-game displays of your sessions, hosts and join links, generated for you." },
+    { icon: BadgeCheck, title: "Subdomain + SSO", desc: "your-group.fluxcore.works with one sign-in shared across every portal." },
+    { icon: ShieldCheck, title: "Encrypted & Scanned", desc: "Player data encrypted at rest, with automated breach and fault scans every night." },
+    { icon: MessageSquareText, title: "Kudos & Promotions", desc: "Public recognition feed plus a peer nomination queue for the next rank up." },
   ];
+
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
