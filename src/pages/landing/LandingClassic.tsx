@@ -91,9 +91,11 @@ export default function LandingClassic() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* ------------------------------------------------------------- banner */}
+      <SiteBanner placement="marketing" />
+
       {/* ---------------------------------------------------------------- nav */}
-      <nav className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl">
-        <SiteBanner placement="marketing" />
+      <nav className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/40">
         <div className="max-w-[1180px] mx-auto px-6 h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-9">
             <Wordmark />
@@ -148,14 +150,11 @@ export default function LandingClassic() {
         </div>
 
         {/* ------------------------------------------------------- product shot */}
-        <div id="product" className="group relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-24" style={{ perspective: "2200px" }}>
+        <div id="product" className="group relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-24">
           {isMobile ? (
             <NexusPhone rail={rail} />
           ) : (
-            <div
-              className="[transform:rotateX(9deg)_rotateZ(-1.2deg)_scale(0.985)] group-hover:[transform:rotateX(0deg)_rotateZ(0deg)_scale(1)] transition-transform duration-700 ease-out will-change-transform"
-              style={{ transformStyle: "preserve-3d" }}
-            >
+            <div className="transition-transform duration-700 ease-out will-change-transform hover:scale-[1.01]">
               <NexusWindow rail={rail} />
             </div>
           )}
