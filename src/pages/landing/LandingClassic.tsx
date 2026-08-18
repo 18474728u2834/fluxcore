@@ -294,7 +294,7 @@ export default function LandingClassic() {
             </p>
           </div>
           {[
-            { h: "Product", l: [["Pricing", "/pricing"], ["Security", "/security"], ["Status", "/status"], ["Changelog", "/feedback"]] },
+            { h: "Product", l: [["Pricing", "/pricing"], ["Security", "/security"], ["Status", "/status"], ["Ideas & bug reports", "/feedback"]] },
             { h: "Support", l: [["Help & tickets", "/support"], ["Feedback", "/feedback"], ["Workspaces", "/workspaces"]] },
             { h: "Legal", l: [["Terms", "/terms"], ["Privacy", "/privacy"]] },
           ].map((col) => (
