@@ -61,3 +61,6 @@ verify_jwt = false
 
 [functions.dispatch-crew]
 verify_jwt = false
+
+[functions.license-check]
+verify_jwt = false
