@@ -4,6 +4,7 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight,
   ArrowUpRight,
+  Play,
   Sun,
   Moon,
   Activity,
