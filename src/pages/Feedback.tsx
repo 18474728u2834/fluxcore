@@ -196,8 +196,9 @@ export default function Feedback() {
           <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground transition-colors">
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <button onClick={() => navigate("/")} className="text-lg font-extrabold text-gradient tracking-tight">Fluxcore</button>
-          <span className="text-sm text-muted-foreground">Feedback</span>
+          <Wordmark small />
+          <span className="text-sm text-muted-foreground">Ideas &amp; bug reports</span>
+
         </div>
       </nav>
 
