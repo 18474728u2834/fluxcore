@@ -83,13 +83,11 @@ export default function LandingClassic() {
   ];
 
   const Wordmark = ({ small }: { small?: boolean }) => (
-    <button onClick={() => navigate("/")} className="flex items-center gap-2">
-      <span className="w-[22px] h-[22px] rounded-[6px] bg-foreground flex items-center justify-center">
-        <span className="text-background text-[12px] font-black leading-none">F</span>
-      </span>
-      <span className={`${small ? "text-[14px]" : "text-[15px]"} font-semibold tracking-[-0.01em]`}>Fluxcore</span>
+    <button onClick={() => navigate("/")} className="flex items-center">
+      <span className={`${small ? "text-[15px]" : "text-[17px]"} font-semibold tracking-[-0.02em] text-foreground`}>Fluxcore</span>
     </button>
   );
+
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -103,7 +101,7 @@ export default function LandingClassic() {
               <a href="#product" className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Product</a>
               <button onClick={() => navigate("/pricing")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
               <button onClick={() => navigate("/security")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Security</button>
-              <button onClick={() => navigate("/feedback")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Changelog</button>
+              <button onClick={() => navigate("/feedback")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Ideas &amp; bug reports</button>
               <button onClick={() => navigate("/support")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Support</button>
             </div>
           </div>
@@ -192,7 +190,7 @@ export default function LandingClassic() {
           {[
             { icon: Clock, t: "Tracked to the second", d: "A heartbeat every 30 seconds with idle detection, so in-game minutes are what actually happened — not what someone claims happened." },
             { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
-            { icon: Users, t: "Everyone gets access", d: "Every tracked member can sign in and see their own hours, quota and history. Transparency instead of screenshots in Discord." },
+            { icon: Zap, t: "Ranks that move themselves", d: "A logbook entry ranks the member in the Roblox group, updates their Fluxcore role and posts it to Discord — one action, three systems in sync." },
           ].map((c) => (
             <div key={c.t} className="rounded-2xl border border-border/50 bg-card/50 p-7">
               <div className="w-11 h-11 rounded-xl bg-muted/70 border border-border/50 flex items-center justify-center mb-6">
@@ -296,7 +294,7 @@ export default function LandingClassic() {
             </p>
           </div>
           {[
-            { h: "Product", l: [["Pricing", "/pricing"], ["Security", "/security"], ["Status", "/status"], ["Changelog", "/feedback"]] },
+            { h: "Product", l: [["Pricing", "/pricing"], ["Security", "/security"], ["Status", "/status"], ["Ideas & bug reports", "/feedback"]] },
             { h: "Support", l: [["Help & tickets", "/support"], ["Feedback", "/feedback"], ["Workspaces", "/workspaces"]] },
             { h: "Legal", l: [["Terms", "/terms"], ["Privacy", "/privacy"]] },
           ].map((col) => (
