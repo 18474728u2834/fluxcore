@@ -91,9 +91,11 @@ export default function LandingClassic() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* ------------------------------------------------------------- banner */}
+      <SiteBanner placement="marketing" />
+
       {/* ---------------------------------------------------------------- nav */}
-      <nav className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl">
-        <SiteBanner placement="marketing" />
+      <nav className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/40">
         <div className="max-w-[1180px] mx-auto px-6 h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-9">
             <Wordmark />
