@@ -8,6 +8,8 @@ import {
   ShieldCheck, FileSignature, Heart
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
+import { Wordmark } from "@/components/Wordmark";
+
 
 export default function Pricing() {
   const navigate = useNavigate();
