@@ -8,6 +8,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Wordmark } from "@/components/Wordmark";
+
 import {
   ArrowLeft, Bug, Lightbulb, Send, Loader2, MessageSquare,
   Search, Clock, CheckCircle2, FlaskConical,
