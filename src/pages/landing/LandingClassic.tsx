@@ -150,14 +150,18 @@ export default function LandingClassic() {
         </div>
 
         {/* ------------------------------------------------------- product shot */}
-        <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-24" style={{ perspective: "2200px" }}>
+        <div id="product" className="group relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-24" style={{ perspective: "2200px" }}>
           {isMobile ? (
             <NexusPhone rail={rail} />
           ) : (
-            <div style={{ transform: "rotateX(9deg) rotateZ(-1.2deg)", transformStyle: "preserve-3d" }}>
+            <div
+              className="[transform:rotateX(9deg)_rotateZ(-1.2deg)_scale(0.985)] group-hover:[transform:rotateX(0deg)_rotateZ(0deg)_scale(1)] transition-transform duration-700 ease-out will-change-transform"
+              style={{ transformStyle: "preserve-3d" }}
+            >
               <NexusWindow rail={rail} />
             </div>
           )}
+
           <div className="pointer-events-none absolute inset-x-16 -bottom-6 h-32 bg-primary/25 blur-[90px] rounded-full" />
         </div>
       </section>
