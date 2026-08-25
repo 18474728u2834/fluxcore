@@ -13,6 +13,26 @@ const corsHeaders = {
 const VERCEL_API = "https://api.vercel.com";
 const ROOT_DOMAIN = "fluxcore.works";
 
+// System-owned subdomains that are NOT created by the workspace subdomain
+// generator. The sweeper must never detach these.
+const RESERVED_SUBDOMAINS = new Set([
+  "status",
+  "www",
+  "app",
+  "api",
+  "docs",
+  "mail",
+  "email",
+  "cdn",
+  "staging",
+  "dev",
+  "preview",
+  "admin",
+  "blog",
+  "support",
+  "help",
+]);
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -102,6 +122,7 @@ serve(async (req) => {
         if (!name.endsWith(`.${ROOT_DOMAIN}`)) continue;
         const label = name.slice(0, -(ROOT_DOMAIN.length + 1));
         if (!label || label.includes(".") || label === "*") continue;
+        if (RESERVED_SUBDOMAINS.has(label)) continue;
         if (wanted.has(name)) continue;
         const del = await fetch(
           `${VERCEL_API}/v9/projects/${projectId}/domains/${encodeURIComponent(name)}${teamQuery}`,
