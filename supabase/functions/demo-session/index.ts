@@ -101,7 +101,14 @@ serve(async (req) => {
       );
     }
 
-    // 3b. Suppress first-run prompts for the demo account.
+    // 3b. Give the demo workspace a closed portal record so owners aren't
+    // force-redirected to Settings (?claim=1) for missing a subdomain.
+    await admin.from("partner_portals").upsert(
+      { workspace_id: workspaceId, subdomain: "demo", status: "closed" },
+      { onConflict: "workspace_id" },
+    );
+
+    // 3c. Suppress first-run prompts for the demo account.
     await admin.from("user_birthdays").upsert(
       { user_id: userId, birthday_month: 6, birthday_day: 12 },
       { onConflict: "user_id" },
