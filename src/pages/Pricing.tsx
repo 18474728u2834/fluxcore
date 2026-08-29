@@ -111,9 +111,6 @@ export default function Pricing() {
 
       <section className="relative pb-10">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest mb-6">
-            Everything included
-          </div>
           <div className="flex items-baseline justify-center gap-1 mb-3">
             <span className="text-7xl sm:text-8xl font-black">$0</span>
             <span className="text-muted-foreground font-medium text-lg">forever</span>
