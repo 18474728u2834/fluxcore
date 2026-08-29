@@ -173,6 +173,20 @@
   .animate-fade-in {
     animation: fade-in 0.4s ease forwards;
   }
+  .landing-head {
+    font-family: 'Space Grotesk', 'Outfit', sans-serif;
+    letter-spacing: -0.03em;
+  }
+  .landing-body {
+    font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+  }
+  @keyframes soft-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.55; transform: scale(0.82); }
+  }
+  .animate-soft-pulse {
+    animation: soft-pulse 2.4s ease-in-out infinite;
+  }
 }
 
 /* Custom purple scrollbar */
