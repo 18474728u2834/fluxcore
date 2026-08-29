@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
 import { SiteBanner } from "@/components/SiteBanner";
+import { Wordmark } from "@/components/Wordmark";
 import { useIsMobile } from "@/hooks/use-mobile";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
 import redFunnelBadge from "@/assets/red-funnel-badge.png";
@@ -80,14 +81,6 @@ export default function LandingClassic() {
     { icon: ShieldCheck, label: "Roles" },
     { icon: Code, label: "Tracking" },
   ];
-
-  const Wordmark = ({ small }: { small?: boolean }) => (
-    <button onClick={() => navigate("/")} className="flex items-center group">
-      <span className={`landing-head ${small ? "text-[16px]" : "text-[18px]"} font-bold text-foreground transition-transform duration-300 group-hover:-rotate-2 group-hover:scale-[1.03]`}>
-        Fluxcore
-      </span>
-    </button>
-  );
 
   return (
     <div className="landing-body min-h-screen bg-background text-foreground overflow-x-hidden">

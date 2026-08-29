@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertCircle, Info, AlertTriangle, CheckCircle2, X } from "lucide-react";
 
@@ -26,6 +26,8 @@ export function SiteBanner({ placement }: { placement: "marketing" | "workspaces
   const [dismissed, setDismissed] = useState<string[]>(() => {
     try { return JSON.parse(localStorage.getItem("fluxcore_banner_dismissed") || "[]"); } catch { return []; }
   });
+  const [visible, setVisible] = useState(true);
+  const lastScrollY = useRef(0);
 
   useEffect(() => {
     (async () => {
@@ -44,29 +46,52 @@ export function SiteBanner({ placement }: { placement: "marketing" | "workspaces
     })();
   }, [placement]);
 
-  if (!banner || dismissed.includes(banner.id)) return null;
-  const meta = LEVEL_STYLES[banner.level] || LEVEL_STYLES.info;
-  const Icon = meta.icon;
+  useEffect(() => {
+    const onScroll = () => {
+      const y = window.scrollY;
+      if (y <= 0) {
+        setVisible(true);
+      } else if (y > lastScrollY.current) {
+        setVisible(true);
+      } else {
+        setVisible(false);
+      }
+      lastScrollY.current = y;
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   const dismiss = () => {
+    if (!banner) return;
     const next = [...dismissed, banner.id];
     setDismissed(next);
     localStorage.setItem("fluxcore_banner_dismissed", JSON.stringify(next));
   };
 
+  if (!banner || dismissed.includes(banner.id)) return null;
+  const meta = LEVEL_STYLES[banner.level] || LEVEL_STYLES.info;
+  const Icon = meta.icon;
+
   return (
-    <div className={`w-full border-b ${meta.bg} text-foreground`}>
-      <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-3 text-sm">
-        <Icon className="w-4 h-4 shrink-0" />
-        <span className="flex-1">{banner.message}</span>
-        {banner.link_url && (
-          <a href={banner.link_url} target={banner.link_url.startsWith("http") ? "_blank" : undefined} rel="noreferrer"
-             className="font-medium underline shrink-0 hover:opacity-80">
-            {banner.link_label || "Learn more"}
-          </a>
-        )}
-        <button onClick={dismiss} className="opacity-60 hover:opacity-100 shrink-0" aria-label="Dismiss"><X className="w-4 h-4" /></button>
+    <>
+      <div
+        className={`fixed top-0 left-0 right-0 z-[60] w-full border-b ${meta.bg} text-foreground transition-transform duration-300 ${visible ? "translate-y-0" : "-translate-y-full"}`}
+      >
+        <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center gap-3 text-sm">
+          <Icon className="w-4 h-4 shrink-0" />
+          <span className="flex-1">{banner.message}</span>
+          {banner.link_url && (
+            <a href={banner.link_url} target={banner.link_url.startsWith("http") ? "_blank" : undefined} rel="noreferrer"
+               className="font-medium underline shrink-0 hover:opacity-80">
+              {banner.link_label || "Learn more"}
+            </a>
+          )}
+          <button onClick={dismiss} className="opacity-60 hover:opacity-100 shrink-0" aria-label="Dismiss"><X className="w-4 h-4" /></button>
+        </div>
       </div>
-    </div>
+      {visible && <div className="h-10" aria-hidden="true" />}
+    </>
   );
 }
