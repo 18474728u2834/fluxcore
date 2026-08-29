@@ -202,6 +202,7 @@ export default function WebsiteBuilderTab() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<SiteDesign | null>(null);
   const [showPreview, setShowPreview] = useState(true);
+  const [presets, setPresets] = useState<ThemePreset[]>(() => readPresets());
 
   const load = async () => {
     setLoading(true);
