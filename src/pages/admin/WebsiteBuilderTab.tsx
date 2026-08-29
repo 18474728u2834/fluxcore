@@ -453,6 +453,39 @@ export default function WebsiteBuilderTab() {
                 <Label className="text-sm">Gradient glow</Label>
                 <Switch checked={draft.theme.gradient} onCheckedChange={(v) => setTheme({ gradient: v })} />
               </div>
+
+              <div className="space-y-2 pt-1 border-t border-border/50">
+                <div className="flex flex-wrap items-center gap-2 pt-3">
+                  <Button size="sm" variant="outline" className="gap-1" onClick={savePreset}>
+                    <Save className="w-3.5 h-3.5" /> Save this theme
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1"
+                    onClick={() => { setDraft({ ...draft, theme: { ...DEFAULT_THEME } }); toast.success("Theme reset to default"); }}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Reset to default
+                  </Button>
+                </div>
+                {presets.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {presets.map((p) => (
+                      <div key={p.name} className="flex items-center gap-1 rounded-md border border-border/60 pl-2.5 pr-1 py-1">
+                        <button className="text-xs text-foreground" onClick={() => applyPreset(p)}>{p.name}</button>
+                        <button
+                          className="text-destructive/80 hover:text-destructive"
+                          aria-label={`Delete ${p.name}`}
+                          onClick={() => deletePreset(p.name)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
 
             {draft.target === "landing" && (
