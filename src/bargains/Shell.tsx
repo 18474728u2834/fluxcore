@@ -14,6 +14,7 @@ import { useLexicon } from "@/hooks/useLexicon";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { isPortalHost } from "@/lib/sso";
+import { DemoBanner } from "@/components/DemoBanner";
 import bargainsLogo from "@/assets/bargains-logo.png";
 
 interface ShellProps {
@@ -288,6 +289,7 @@ export function BargainsShell({ children }: ShellProps) {
 
   return (
     <div className="min-h-screen w-full flex font-bargains" style={{ background: "#0f0f10", color: "#fafafa" }}>
+      <DemoBanner />
       <style>{`
         .font-bargains, .font-bargains * {
           font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif;
