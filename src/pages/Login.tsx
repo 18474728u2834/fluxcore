@@ -26,6 +26,8 @@ export default function Login() {
       const params = new URLSearchParams(qs);
       const grant = params.get("grant");
       if (grant) localStorage.setItem("fluxcore_pending_grant", grant);
+      // Leaving the demo: real logins should get the normal owner flow again
+      localStorage.removeItem("demo_mode");
     } catch {}
   }, []);
 

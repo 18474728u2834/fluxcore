@@ -103,18 +103,15 @@ serve(async (req) => {
 
     // 3b. Give the demo workspace a closed portal record so owners aren't
     // force-redirected to Settings (?claim=1) for missing a subdomain.
-    const { data: portal } = await admin
-      .from("partner_portals")
-      .select("id")
-      .eq("workspace_id", workspaceId)
-      .maybeSingle();
-    if (!portal) {
-      await admin.from("partner_portals").insert({
+    const { error: portalErr } = await admin.from("partner_portals").upsert(
+      {
         workspace_id: workspaceId,
-        subdomain: "demo",
+        subdomain: `demo-${String(workspaceId).slice(0, 8)}`,
         status: "closed",
-      });
-    }
+      },
+      { onConflict: "workspace_id" },
+    );
+    if (portalErr) console.error("demo portal upsert failed:", portalErr.message);
 
     // 3c. Suppress first-run prompts for the demo account.
     await admin.from("user_birthdays").upsert(

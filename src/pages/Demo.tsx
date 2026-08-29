@@ -31,6 +31,7 @@ export default function Demo() {
 
         try {
           localStorage.setItem("ui_version", "nexus");
+          localStorage.setItem("demo_mode", "1");
           // Always start the demo with the sidebar collapsed (state persists via cookie otherwise)
           document.cookie = "sidebar:state=false; path=/; max-age=604800";
         } catch { /* ignore */ }

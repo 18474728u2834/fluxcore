@@ -136,7 +136,8 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
 
         supabase.rpc("heartbeat_portal", { _workspace_id: workspaceId }).then(() => {}, () => {});
 
-        if (ownerCheck && !workspaceIdOverride) {
+        const isDemoMode = (() => { try { return localStorage.getItem("demo_mode") === "1"; } catch { return false; } })();
+        if (ownerCheck && !workspaceIdOverride && !isDemoMode) {
           const host = window.location.hostname;
           const isMain = host === "fluxcore.works" || host === "www.fluxcore.works";
           if (isMain) {
