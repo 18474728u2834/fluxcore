@@ -128,6 +128,8 @@ export default function Admin() {
             {me.roblox_username === "Novavoff" && <TabsTrigger value="creations">Creations</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="license">License Gate</TabsTrigger>}
             {has("manage_status") && <TabsTrigger value="builder">Website Builder</TabsTrigger>}
+            {has("manage_status") && <TabsTrigger value="ai_designer">AI Designer</TabsTrigger>}
+
             <TabsTrigger value="session_board">Session Board</TabsTrigger>
             <TabsTrigger value="flight_hub">Flight Hub</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="release">Release Updates</TabsTrigger>}
