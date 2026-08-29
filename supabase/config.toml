@@ -64,3 +64,6 @@ verify_jwt = false
 
 [functions.license-check]
 verify_jwt = false
+
+[functions.demo-session]
+verify_jwt = false
