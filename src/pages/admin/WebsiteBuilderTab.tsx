@@ -516,38 +516,65 @@ export default function WebsiteBuilderTab() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {SECTION_TYPES.map((t) => (
-                    <Button key={t} size="sm" variant="outline" className="gap-1"
-                      onClick={() => setSections([...draft.sections, newSection(t)])}>
-                      <Plus className="w-3.5 h-3.5" /> {SECTION_LABELS[t]}
-                    </Button>
-                  ))}
+                {/* Palette — drag a box down into the page, or click to append. */}
+                <div className="sticky top-2 z-20 rounded-xl border border-border/60 bg-card/95 backdrop-blur p-3 space-y-2">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Drag a box into the page
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SECTION_TYPES.map((t) => (
+                      <button
+                        key={t}
+                        draggable
+                        onDragStart={(e) => { setDragNew(t); setDragFrom(null); e.dataTransfer.effectAllowed = "copy"; }}
+                        onDragEnd={() => { setDragNew(null); setDragFrom(null); setDropAt(null); }}
+                        onClick={() => setSections([...draft.sections, newSection(t)])}
+                        className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/40 px-2.5 py-1.5 text-xs text-foreground cursor-grab active:cursor-grabbing hover:bg-muted"
+                      >
+                        <GripVertical className="w-3.5 h-3.5 text-muted-foreground" /> {SECTION_LABELS[t]}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-3">
+                <div
+                  className="space-y-3"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => { e.preventDefault(); handleDrop(draft.sections.length); }}
+                >
                   {draft.sections.map((s, i) => (
-                    <SectionEditor
+                    <div
                       key={s.id}
-                      section={s}
-                      first={i === 0}
-                      last={i === draft.sections.length - 1}
-                      onChange={(next) => setSections(draft.sections.map((x, idx) => (idx === i ? next : x)))}
-                      onRemove={() => setSections(draft.sections.filter((_, idx) => idx !== i))}
-                      onMove={(dir) => {
-                        const arr = [...draft.sections];
-                        const j = i + dir;
-                        if (j < 0 || j >= arr.length) return;
-                        [arr[i], arr[j]] = [arr[j], arr[i]];
-                        setSections(arr);
-                      }}
-                    />
+                      onDragOver={(e) => { e.preventDefault(); setDropAt(i); }}
+                      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleDrop(i); }}
+                      className={dropAt === i && (dragNew || dragFrom !== null) ? "rounded-xl ring-2 ring-primary" : ""}
+                    >
+                      <SectionEditor
+                        section={s}
+                        first={i === 0}
+                        last={i === draft.sections.length - 1}
+                        onDragStart={() => { setDragFrom(i); setDragNew(null); }}
+                        onDragEnd={() => { setDragNew(null); setDragFrom(null); setDropAt(null); }}
+                        onChange={(next) => setSections(draft.sections.map((x, idx) => (idx === i ? next : x)))}
+                        onRemove={() => setSections(draft.sections.filter((_, idx) => idx !== i))}
+                        onMove={(dir) => {
+                          const arr = [...draft.sections];
+                          const j = i + dir;
+                          if (j < 0 || j >= arr.length) return;
+                          [arr[i], arr[j]] = [arr[j], arr[i]];
+                          setSections(arr);
+                        }}
+                      />
+                    </div>
                   ))}
                   {!draft.sections.length && (
-                    <p className="text-sm text-muted-foreground">Add your first section above.</p>
+                    <div className="rounded-xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">
+                      Drag a box from the palette above to start building.
+                    </div>
                   )}
                 </div>
               </div>
+
             )}
 
             {draft.target === "landing" && showPreview && (
