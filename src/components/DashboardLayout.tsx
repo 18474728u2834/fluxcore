@@ -13,6 +13,8 @@ import { QuotaSetupPrompt } from "@/components/QuotaSetupPrompt";
 export function DashboardLayout({ children, title }: { children: React.ReactNode; title?: string }) {
   const { loading, workspace, error } = useWorkspace();
   const { version } = useUIVersion();
+  const { design } = useActiveSiteDesign("workspace");
+
 
   if (loading) {
     return (
