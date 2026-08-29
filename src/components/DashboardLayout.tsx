@@ -51,20 +51,27 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
 
   // Nexus UI is the new default for every workspace.
   if (version === "nexus") {
+    const t = design?.theme;
+    const surface = t?.surface || "#141416";
+    const bg = t?.background || "#0f0f11";
+    const fg = t?.foreground || "#fafafa";
+    const accent = t?.primary || "";
+    const radius = t?.radius ?? 6;
     return (
       <BargainsShell>
-        <div className="nexus-skin">
+        <div className="nexus-skin" style={t ? { fontFamily: FONT_STACKS[t.font] } : undefined}>
           <style>{`
             .nexus-skin .glass,
             .nexus-skin [class*="bg-card"],
             .nexus-skin .bg-background,
-            .nexus-skin .bg-muted { background: #141416 !important; border-color: #22222a !important; }
-            .nexus-skin .border, .nexus-skin .border-border, .nexus-skin .border-border\\/50 { border-color: #22222a !important; }
-            .nexus-skin .text-foreground { color: #fafafa !important; }
-            .nexus-skin .text-muted-foreground { color: #8a8a8e !important; }
-            .nexus-skin .rounded-xl, .nexus-skin .rounded-2xl { border-radius: 6px !important; }
+            .nexus-skin .bg-muted { background: ${surface} !important; border-color: ${fg}1f !important; }
+            .nexus-skin .border, .nexus-skin .border-border, .nexus-skin .border-border\\/50 { border-color: ${fg}1f !important; }
+            .nexus-skin .text-foreground { color: ${fg} !important; }
+            .nexus-skin .text-muted-foreground { color: ${fg}99 !important; }
+            .nexus-skin .rounded-xl, .nexus-skin .rounded-2xl { border-radius: ${radius}px !important; }
+            ${accent ? `.nexus-skin .text-primary { color: ${accent} !important; }` : ""}
             .nexus-skin input, .nexus-skin textarea, .nexus-skin select {
-              background: #0f0f11 !important; border-color: #26262a !important; color: #fafafa !important;
+              background: ${bg} !important; border-color: ${fg}26 !important; color: ${fg} !important;
             }
           `}</style>
           {children}
@@ -72,6 +79,7 @@ export function DashboardLayout({ children, title }: { children: React.ReactNode
         <ReleaseModal />
       </BargainsShell>
     );
+
   }
 
   if (version === "minimal") {
