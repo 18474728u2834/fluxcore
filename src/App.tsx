@@ -499,10 +499,10 @@ function AppRoutes() {
         <Route path="/api" element={<ApiIndex />} />
         <Route path="/api/sessions" element={<ApiSessions />} />
         <Route path="/api/ranking" element={<ApiRanking />} />
-        <Route path="/status" element={<Status />} />
-        <Route path="/security" element={<SecurityPage />} />
-        <Route path="/unsubscribe" element={<Unsubscribe />} />
-        <Route path="/newsletter" element={<Newsletter />} />
+        <Route path="/status" element={<PublicAccent><Status /></PublicAccent>} />
+        <Route path="/security" element={<PublicAccent><SecurityPage /></PublicAccent>} />
+        <Route path="/unsubscribe" element={<PublicAccent><Unsubscribe /></PublicAccent>} />
+        <Route path="/newsletter" element={<PublicAccent><Newsletter /></PublicAccent>} />
         <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
         <Route path="/discord/verification/:token" element={<DiscordVerify />} />
