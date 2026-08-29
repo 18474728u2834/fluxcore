@@ -58,7 +58,7 @@ export default function Pricing() {
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-[-20%] left-[50%] -translate-x-1/2 w-[800px] h-[600px] rounded-full bg-primary/[0.07] blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-500/[0.05] blur-[100px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-primary/[0.05] blur-[100px]" />
       </div>
 
       <nav className="fixed top-0 w-full z-50 border-b border-border/10 bg-background/70 backdrop-blur-2xl">
@@ -103,7 +103,7 @@ export default function Pricing() {
           <h1 className="text-5xl sm:text-6xl font-black leading-[1.05] tracking-tight mb-5">
             Fluxcore is now
             <br />
-            <span className="bg-gradient-to-r from-primary via-violet-400 to-primary bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-primary via-primary/70 to-primary bg-clip-text text-transparent">
               free for everyone.
             </span>
           </h1>
@@ -115,7 +115,7 @@ export default function Pricing() {
 
       <section className="relative pb-20">
         <div className="max-w-2xl mx-auto px-6">
-          <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/[0.08] via-card/40 to-violet-500/[0.05] backdrop-blur-sm p-10 shadow-2xl shadow-primary/10">
+          <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/[0.08] via-card/40 to-primary/[0.05] backdrop-blur-sm p-10 shadow-2xl shadow-primary/10">
             <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
               Everything included
             </div>
