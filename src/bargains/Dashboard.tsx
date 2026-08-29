@@ -170,7 +170,15 @@ export default function BDashboard() {
           <div className="grid grid-cols-3 gap-3">
             {stats.map(s => (
               <div key={s.label} className="rounded-2xl border p-4" style={n3.cardStyle}>
-                <div className="text-2xl font-semibold" style={{ color: n3.text }}>{s.value}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-semibold" style={{ color: n3.text }}>{s.value}</span>
+                  {s.live && (
+                    <span className="relative flex w-2 h-2">
+                      <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+                      <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-400" />
+                    </span>
+                  )}
+                </div>
                 <div className="text-[11px] uppercase tracking-[0.1em] mt-1" style={{ color: n3.textMuted }}>{s.label}</div>
               </div>
             ))}
