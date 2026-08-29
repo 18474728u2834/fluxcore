@@ -116,14 +116,21 @@ serve(async (req) => {
       const listRes = await fetch(listUrl, { headers: { Authorization: `Bearer ${vercelToken}` } });
       const listData = await listRes.json().catch(() => ({}));
       const all: any[] = listData?.domains || [];
+      // Lovable-owned preview hostnames attached to the Vercel project — these
+      // are never used in production and just eat domain slots.
+      const LOVABLE_ZONES = [".lovable.app", ".lovableproject.com", ".lovableproject-dev.com", ".gptengineer.run"];
       for (const d of all) {
         const name = String(d?.name || "").toLowerCase();
-        // Only touch single-level subdomains of the root; never the apex or wildcard.
-        if (!name.endsWith(`.${ROOT_DOMAIN}`)) continue;
-        const label = name.slice(0, -(ROOT_DOMAIN.length + 1));
-        if (!label || label.includes(".") || label === "*") continue;
-        if (RESERVED_SUBDOMAINS.has(label)) continue;
-        if (wanted.has(name)) continue;
+        const isLovableHost = LOVABLE_ZONES.some((z) => name.endsWith(z));
+        if (!isLovableHost) {
+          // Only touch single-level subdomains of the root; never the apex or wildcard.
+          if (!name.endsWith(`.${ROOT_DOMAIN}`)) continue;
+          const label = name.slice(0, -(ROOT_DOMAIN.length + 1));
+          if (!label || label.includes(".") || label === "*") continue;
+          if (RESERVED_SUBDOMAINS.has(label)) continue;
+          if (wanted.has(name)) continue;
+        }
+
         const del = await fetch(
           `${VERCEL_API}/v9/projects/${projectId}/domains/${encodeURIComponent(name)}${teamQuery}`,
           { method: "DELETE", headers: { Authorization: `Bearer ${vercelToken}` } },
