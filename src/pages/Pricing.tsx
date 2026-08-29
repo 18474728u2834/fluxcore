@@ -113,30 +113,50 @@ export default function Pricing() {
         </div>
       </section>
 
-      <section className="relative pb-20">
-        <div className="max-w-2xl mx-auto px-6">
-          <div className="relative rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/[0.08] via-card/40 to-primary/[0.05] backdrop-blur-sm p-10 shadow-2xl shadow-primary/10">
-            <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest">
-              Everything included
-            </div>
-            <div className="text-center mb-8">
-              <div className="flex items-baseline justify-center gap-1 mb-2">
-                <span className="text-6xl font-black">$0</span>
-                <span className="text-muted-foreground font-medium">forever</span>
+      <section className="relative pb-12">
+        <div className="max-w-5xl mx-auto px-6">
+          <div className="grid lg:grid-cols-5 gap-6 items-start">
+            <div className="lg:col-span-2 lg:sticky lg:top-24 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/[0.08] via-card/40 to-primary/[0.05] backdrop-blur-sm p-8 shadow-xl shadow-primary/10">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest mb-6">
+                Everything included
               </div>
-              <p className="text-sm text-muted-foreground">No plans, no upgrades, no gamepass. Just sign in and go.</p>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1 mb-2">
+                  <span className="text-6xl font-black">$0</span>
+                  <span className="text-muted-foreground font-medium">forever</span>
+                </div>
+                <p className="text-sm text-muted-foreground">No plans, no upgrades, no gamepass. Just sign in and go.</p>
+              </div>
+              <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/30" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
+                {isLoggedIn ? "Open Dashboard" : "Get started — it's free"} <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
             </div>
-            <ul className="space-y-3 mb-10 grid sm:grid-cols-2 gap-x-6">
-              {everything.map((item) => (
-                <li key={item} className="flex items-center gap-3 text-sm">
-                  <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                  {item}
-                </li>
+
+            <div className="lg:col-span-3 grid sm:grid-cols-2 gap-4">
+              {[
+                { title: "Workspace & members", items: ["Unlimited workspaces & members", "Nexus UI 2.0 — fully customizable dashboard", "Custom subdomain with one-click SSO", "Full custom branding (colors, grid, badge)", "Audit log of every staff action", "Analytics dashboard with historical trends"] },
+                { title: "Roblox integration", items: ["Auto-rank sync with your Roblox group", "Real-time activity & idle tracking", "In-game message logging", "Per-role quotas, leaderboards & auto-warnings", "License gate for protected scripts"] },
+                { title: "Sessions & scheduling", items: ["Shift, training & event scheduling (editable)", "Flight Hub & Session Board Roblox displays", "Aviation & Maritime industry modes", "Crew Dispatch & crew wishlists", "Auto-attendance verification after 5 min"] },
+                { title: "Applications & Discord", items: ["Application forms — web & in-game center", "Auto-grading & auto-ranking of applicants", "Discord bot with rank-locked slash commands", "/verify links and DMs for crew roles"] },
+                { title: "Staff management", items: ["Kudos, spotlights & promotion nominations", "Documents with digital signatures & auto-assign", "Leave of absence workflow", "Application review queue"] },
+                { title: "Security & support", items: ["Encrypted-at-rest data & nightly breach scans", "AI support assistant & priority support", "Role-based permissions and admin tools"] },
+              ].map((card) => (
+                <div key={card.title} className="rounded-xl border border-border/15 bg-card/20 p-5 hover:bg-card/40 hover:border-primary/30 transition-all">
+                  <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
+                    {card.title}
+                  </h3>
+                  <ul className="space-y-2.5">
+                    {card.items.map((item) => (
+                      <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
+                        <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ))}
-            </ul>
-            <Button className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/30" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
-              {isLoggedIn ? "Open Dashboard" : "Get started — it's free"} <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
+            </div>
           </div>
         </div>
       </section>
