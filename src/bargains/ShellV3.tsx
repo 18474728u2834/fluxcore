@@ -71,9 +71,9 @@ export function ShellV3({ children }: { children: ReactNode }) {
             to={`${base}/${to}`}
             className="group relative flex items-center gap-3 h-10 px-3 rounded-xl text-[13px] font-medium transition-all"
             style={{
-              background: active ? "rgba(255,255,255,0.07)" : "transparent",
+              background: active ? `${accent}26` : "transparent",
               color: active ? "#ffffff" : "#93939b",
-              boxShadow: active ? `inset 0 0 0 1px rgba(255,255,255,0.06)` : undefined,
+              boxShadow: active ? `inset 0 0 0 1px ${accent}40` : undefined,
             }}
           >
             <span
