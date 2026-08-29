@@ -158,8 +158,15 @@ export default function LandingClassic() {
 
         {/* ------------------------------------------------------- product shot */}
         <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-20 animate-fade-up" style={{ animationDelay: "0.25s", animationFillMode: "backwards" }}>
-          {isMobile ? <NexusPhone rail={rail} /> : <NexusWindow rail={rail} />}
+          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
+            <p className="landing-head text-[18px] sm:text-[20px] font-bold">Try it right here</p>
+            <p className="text-[13.5px] text-muted-foreground">
+              Promote, demote, toggle who&rsquo;s in-game and claim a shift — nothing is saved, it&rsquo;s a sandbox.
+            </p>
+          </div>
+          {isMobile ? <NexusPhone rail={rail} /> : <InteractiveDemo />}
         </div>
+
       </section>
 
       {/* --------------------------------------------------------------- used */}
