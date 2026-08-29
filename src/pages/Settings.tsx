@@ -325,52 +325,87 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="glass rounded-xl p-5 space-y-4">
-                <div className="flex items-center gap-2">
-                  <Palette className="w-4 h-4 text-primary" />
-                  <h2 className="font-semibold text-foreground text-sm">Branding & Customization</h2>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs">Primary Color</Label>
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                      <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+              <div className="flex items-center gap-2 pt-2">
+                <Palette className="w-4 h-4 text-primary" />
+                <h2 className="font-semibold text-foreground text-sm">Branding & Customization</h2>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 items-start">
+                <div className="lg:col-span-3 space-y-4">
+                  <div className="glass rounded-xl p-5 space-y-4">
+                    <h3 className="font-medium text-foreground text-sm">Brand Colors</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Primary Color</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 shrink-0" />
+                          <Input value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Text Color</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 shrink-0" />
+                          <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Background Color</Label>
+                        <div className="flex items-center gap-2">
+                          <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0 shrink-0" />
+                          <Input value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Text Color</Label>
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                      <Input value={textColor} onChange={(e) => setTextColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-xs">Background Color</Label>
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-8 h-8 rounded cursor-pointer border-0" />
-                      <Input value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="bg-muted border-border text-xs font-mono" />
+
+                  <div className="glass rounded-xl p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Grid3X3 className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Grid Background</p>
+                          <p className="text-xs text-muted-foreground">Show grid pattern on dashboard</p>
+                        </div>
+                      </div>
+                      <Switch checked={showGrid} onCheckedChange={setShowGrid} />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-                  <div className="flex items-center gap-2">
-                    <Grid3X3 className="w-4 h-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">Grid Background</p>
-                      <p className="text-xs text-muted-foreground">Show grid pattern on dashboard</p>
+                <div className="lg:col-span-2 glass rounded-xl p-5 space-y-3 lg:sticky lg:top-4">
+                  <h3 className="font-medium text-foreground text-sm">Live Preview</h3>
+                  <div
+                    className="rounded-lg border border-border overflow-hidden"
+                    style={{
+                      backgroundColor,
+                      backgroundImage: showGrid ? "linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px)" : "none",
+                      backgroundSize: "24px 24px",
+                    }}
+                  >
+                    <div className="flex items-center gap-2 px-3 py-2 border-b" style={{ borderColor: `${textColor}22` }}>
+                      <div className="w-5 h-5 rounded-md flex items-center justify-center text-[9px] font-bold" style={{ backgroundColor: primaryColor, color: textColor }}>Aa</div>
+                      <span className="text-[11px] font-semibold" style={{ color: textColor }}>{name || "Workspace"}</span>
+                    </div>
+                    <div className="p-3 space-y-2">
+                      <div className="rounded-md px-3 py-2" style={{ backgroundColor: `${textColor}0d` }}>
+                        <p className="text-[11px] font-medium" style={{ color: textColor }}>Good evening, Aa</p>
+                        <p className="text-[9px]" style={{ color: textColor, opacity: 0.55 }}>Here's what's happening today.</p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {["Shifts", "Staff", "Quota"].map((l) => (
+                          <div key={l} className="rounded-md p-2" style={{ backgroundColor: `${textColor}0d` }}>
+                            <p className="text-[8px]" style={{ color: textColor, opacity: 0.55 }}>{l}</p>
+                            <p className="text-[11px] font-bold" style={{ color: primaryColor }}>12</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="rounded-md px-3 py-1.5 text-center text-[10px] font-semibold" style={{ backgroundColor: primaryColor, color: textColor }}>
+                        Primary button
+                      </div>
                     </div>
                   </div>
-                  <Switch checked={showGrid} onCheckedChange={setShowGrid} />
-                </div>
-
-                <div className="flex items-center gap-3 p-3 rounded-lg" style={{ backgroundColor }}>
-                  <div className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold" style={{ backgroundColor: primaryColor, color: textColor }}>Aa</div>
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: textColor }}>Preview</p>
-                    <p className="text-xs" style={{ color: textColor, opacity: 0.6 }}>Your brand colors</p>
-                  </div>
+                  <p className="text-[11px] text-muted-foreground">Updates as you change colors above.</p>
                 </div>
               </div>
 
