@@ -18,21 +18,39 @@ import {
 
 const SECTION_TYPES = Object.keys(SECTION_LABELS) as SectionType[];
 
-type ThemePreset = { name: string; theme: SiteTheme };
+type ThemePreset = { name: string; theme: SiteTheme; builtin?: boolean };
 const PRESET_KEY = "fluxcore.themePresets";
+
+/** The live Nexus UI look, always available as a preset you can jump back to. */
+export const NEXUS_PRESET: ThemePreset = {
+  name: "Nexus UI",
+  builtin: true,
+  theme: {
+    primary: "#22d3ee",
+    background: "#0f0f11",
+    foreground: "#fafafa",
+    surface: "#141416",
+    radius: 6,
+    font: "outfit",
+    density: "comfortable",
+    gradient: true,
+  },
+};
 
 function readPresets(): ThemePreset[] {
   try {
     const raw = localStorage.getItem(PRESET_KEY);
     const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
+    const saved: ThemePreset[] = Array.isArray(arr) ? arr.filter((p: any) => p?.name !== NEXUS_PRESET.name) : [];
+    return [NEXUS_PRESET, ...saved];
   } catch {
-    return [];
+    return [NEXUS_PRESET];
   }
 }
 function writePresets(list: ThemePreset[]) {
-  try { localStorage.setItem(PRESET_KEY, JSON.stringify(list)); } catch { /* ignore */ }
+  try { localStorage.setItem(PRESET_KEY, JSON.stringify(list.filter((p) => !p.builtin))); } catch { /* ignore */ }
 }
+
 
 /** Text input with an AI grammar-fix button. */
 function AiField({
