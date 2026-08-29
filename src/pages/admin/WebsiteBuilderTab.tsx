@@ -321,6 +321,25 @@ export default function WebsiteBuilderTab() {
   const setTheme = (patch: Partial<SiteTheme>) => draft && setDraft({ ...draft, theme: { ...draft.theme, ...patch } });
   const setSections = (sections: Section[]) => draft && setDraft({ ...draft, sections });
 
+  /** Drops either a new palette box or a dragged section at the given index. */
+  const handleDrop = (index: number) => {
+    if (!draft) return;
+    const arr = [...draft.sections];
+    if (dragNew) {
+      arr.splice(index, 0, newSection(dragNew));
+    } else if (dragFrom !== null) {
+      const [moved] = arr.splice(dragFrom, 1);
+      arr.splice(dragFrom < index ? index - 1 : index, 0, moved);
+    } else {
+      return;
+    }
+    setSections(arr);
+    setDragNew(null);
+    setDragFrom(null);
+    setDropAt(null);
+  };
+
+
   const savePreset = () => {
     if (!draft) return;
     const name = window.prompt("Name this theme", draft.name || "My theme");
