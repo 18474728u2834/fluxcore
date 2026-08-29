@@ -101,6 +101,12 @@ serve(async (req) => {
       );
     }
 
+    // 3b. Suppress first-run prompts for the demo account.
+    await admin.from("user_birthdays").upsert(
+      { user_id: userId, birthday_month: 6, birthday_day: 12 },
+      { onConflict: "user_id" },
+    );
+
     // 4. Mint a real session for the demo account.
     const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
       type: "magiclink",
