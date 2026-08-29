@@ -531,16 +531,21 @@ export default function WebsiteBuilderTab() {
                 {presets.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {presets.map((p) => (
-                      <div key={p.name} className="flex items-center gap-1 rounded-md border border-border/60 pl-2.5 pr-1 py-1">
+                      <div key={p.name} className={`flex items-center gap-1 rounded-md border pl-2.5 pr-1 py-1 ${p.builtin ? "border-primary/50 bg-primary/10" : "border-border/60"}`}>
                         <button className="text-xs text-foreground" onClick={() => applyPreset(p)}>{p.name}</button>
-                        <button
-                          className="text-destructive/80 hover:text-destructive"
-                          aria-label={`Delete ${p.name}`}
-                          onClick={() => deletePreset(p.name)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                        {p.builtin ? (
+                          <span className="px-1 text-[10px] text-muted-foreground">saved</span>
+                        ) : (
+                          <button
+                            className="text-destructive/80 hover:text-destructive"
+                            aria-label={`Delete ${p.name}`}
+                            onClick={() => deletePreset(p.name)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
+
                     ))}
                   </div>
                 )}
