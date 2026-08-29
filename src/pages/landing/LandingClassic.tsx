@@ -151,6 +151,9 @@ export default function LandingClassic() {
                 {isLoggedIn ? "Open dashboard" : "Get started — it's free"}
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
+              <button onClick={() => navigate("/demo")} className="h-12 px-7 rounded-lg border border-border text-[15px] font-medium inline-flex items-center gap-2.5 hover:bg-muted/50 hover:border-border/80 transition-all">
+                Try the live demo
+              </button>
               <button onClick={() => navigate("/pricing")} className="h-12 px-7 rounded-lg border border-border text-[15px] font-medium inline-flex items-center gap-2.5 hover:bg-muted/50 hover:border-border/80 transition-all">
                 Pricing
               </button>
@@ -160,14 +163,14 @@ export default function LandingClassic() {
 
         {/* ------------------------------------------------------- product shot */}
         <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-20 animate-fade-up" style={{ animationDelay: "0.25s", animationFillMode: "backwards" }}>
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
-            <p className="landing-head text-[18px] sm:text-[20px] font-bold">Try it right here</p>
-            <p className="text-[13.5px] text-muted-foreground">
-              Promote, demote, toggle who&rsquo;s in-game and claim a shift — nothing is saved, it&rsquo;s a sandbox.
-            </p>
+          {isMobile ? <NexusPhone rail={rail} /> : <NexusWindow rail={rail} />}
+          <div className="mt-4 text-center">
+            <button onClick={() => navigate("/demo")} className="text-[14px] font-medium story-link" style={{ color: "#2f74a8" }}>
+              Open the interactive demo — fake staff you can promote and demote →
+            </button>
           </div>
-          {isMobile ? <NexusPhone rail={rail} /> : <InteractiveDemo />}
         </div>
+
 
       </section>
 
