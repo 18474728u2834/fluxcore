@@ -16,6 +16,11 @@ import { AccountRemovalGate } from "@/components/AccountRemovalGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+
+/** Wraps public / marketing pages so they use the steel-blue accent (workspace UI untouched). */
+const PublicAccent = ({ children }: { children: React.ReactNode }) => (
+  <div className="public-accent contents">{children}</div>
+);
 import { supabase } from "@/integrations/supabase/client";
 import { NexusSkeleton, ClassicSkeleton } from "@/components/PageSkeletons";
 
