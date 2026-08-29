@@ -225,9 +225,15 @@ Deno.serve(async (req) => {
     const token = authHeader.replace('Bearer ', '').trim();
     let triggeredBy = 'cron';
 
-    // Cron / service-role calls pass the service key. Anything else must be a
-    // signed-in staff member holding the view_security_scans permission.
-    if (token && token !== SERVICE_KEY) {
+    // Every caller must authenticate. Cron / service-role calls pass the
+    // service key; anything else must be a signed-in staff member holding the
+    // view_security_scans permission. Anonymous requests are rejected outright.
+    if (!token) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), {
+        status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (token !== SERVICE_KEY) {
       const userClient = createClient(SUPABASE_URL, ANON_KEY, {
         global: { headers: { Authorization: `Bearer ${token}` } },
       });
