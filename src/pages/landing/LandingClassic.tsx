@@ -126,43 +126,33 @@ export default function LandingClassic() {
 
       {/* --------------------------------------------------------------- hero */}
       <section className="relative">
-        <div className="pointer-events-none absolute inset-x-0 -top-24 h-[520px] overflow-hidden">
-          <div className="absolute left-1/2 -translate-x-1/2 top-0 w-[900px] h-[420px] rounded-full bg-primary/[0.13] blur-[150px]" />
-        </div>
-
-        <div className="relative max-w-[1080px] mx-auto px-6 pt-24 sm:pt-28 pb-4 text-center">
-          <h1 className="text-[42px] sm:text-[66px] lg:text-[78px] font-extrabold leading-[0.96] tracking-[-0.04em] mx-auto max-w-[16ch]">
-            The staff platform for Roblox communities
+        <div className="relative max-w-[1180px] mx-auto px-6 pt-20 sm:pt-24 pb-2">
+          <p className="text-[12px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-6">
+            Staff management · Roblox
+          </p>
+          <h1 className="text-[40px] sm:text-[58px] lg:text-[64px] font-semibold leading-[1.02] tracking-[-0.035em] max-w-[19ch]">
+            Run your staff team like an actual company.
           </h1>
-          <p className="mt-7 text-[17px] sm:text-[18px] leading-[1.6] text-muted-foreground max-w-[58ch] mx-auto">
-            Fluxcore is the all-in-one tool to run your group. Activity tracking, ranking,
-            sessions, quotas, policies — and everything in between.
+          <p className="mt-6 text-[16.5px] leading-[1.65] text-muted-foreground max-w-[54ch]">
+            Fluxcore keeps activity, ranking, sessions, quotas and policies in one place —
+            wired straight into your Roblox group and your Discord server.
           </p>
 
-          <div className="mt-9 flex flex-wrap gap-3 justify-center">
-            <button onClick={go} className="h-11 px-6 rounded-lg bg-primary text-primary-foreground text-[15px] font-semibold hover:brightness-110 transition-all shadow-[0_0_50px_-14px_hsl(var(--primary))]">
-              {isLoggedIn ? "Open dashboard" : "Get started"}
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <button onClick={go} className="h-10 px-5 rounded-[8px] bg-primary text-primary-foreground text-[14.5px] font-medium hover:brightness-110 transition-all">
+              {isLoggedIn ? "Open dashboard" : "Get started — it's free"}
             </button>
-            <a href="#product" className="h-11 px-6 rounded-lg bg-card border border-border/60 text-[15px] font-semibold inline-flex items-center gap-2 hover:bg-muted/60 transition-colors">
-              <Play className="w-3.5 h-3.5 fill-primary text-primary" />
+            <a href="#product" className="h-10 px-5 rounded-[8px] border border-border text-[14.5px] font-medium inline-flex items-center gap-2 hover:bg-muted/50 transition-colors">
+              <Play className="w-3.5 h-3.5" />
               See the dashboard
             </a>
+            <span className="text-[13px] text-muted-foreground">No card. No gamepass gate.</span>
           </div>
         </div>
 
         {/* ------------------------------------------------------- product shot */}
-        <div id="product" className="group relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-24" style={{ perspective: "1200px" }}>
-          {isMobile ? (
-            <div className="animate-dashboard-float" style={{ transformStyle: "preserve-3d" }}>
-              <NexusPhone rail={rail} />
-            </div>
-          ) : (
-            <div className="animate-dashboard-float" style={{ transformStyle: "preserve-3d" }}>
-              <NexusWindow rail={rail} />
-            </div>
-          )}
-
-          <div className="pointer-events-none absolute inset-x-16 -bottom-6 h-32 bg-primary/25 blur-[90px] rounded-full" />
+        <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-14 sm:pt-16">
+          {isMobile ? <NexusPhone rail={rail} /> : <NexusWindow rail={rail} />}
         </div>
       </section>
 
