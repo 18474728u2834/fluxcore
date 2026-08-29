@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight, Sun, Moon, Headphones, ChevronRight, CheckCircle2,
   Sparkles, MessageSquareText, BadgeCheck, Palette, BarChart3, Bot,
-  ShieldCheck, FileSignature, Heart
+  ShieldCheck, FileSignature
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Wordmark } from "@/components/Wordmark";
@@ -109,43 +109,13 @@ export default function Pricing() {
         </div>
       </section>
 
-      <section className="relative pb-10">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-          <div className="flex items-baseline justify-center gap-1 mb-3">
-            <span className="text-7xl sm:text-8xl font-black">$0</span>
-            <span className="text-muted-foreground font-medium text-lg">forever</span>
-          </div>
-          <p className="text-sm text-muted-foreground mb-8">No plans, no upgrades, no gamepass. Just sign in and go.</p>
-          <Button className="h-12 px-8 bg-primary hover:bg-primary/90 text-primary-foreground font-bold shadow-lg shadow-primary/30" onClick={() => navigate(isLoggedIn ? "/workspaces" : "/login")}>
-            {isLoggedIn ? "Open Dashboard" : "Get started — it's free"} <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      </section>
-
       <section className="relative pb-20">
         <div className="max-w-6xl mx-auto px-6">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {[
-              { title: "Workspace & members", items: ["Unlimited workspaces & members", "Nexus UI 2.0 — fully customizable dashboard", "Custom subdomain with one-click SSO", "Full custom branding (colors, grid, badge)", "Audit log of every staff action", "Analytics dashboard with historical trends"] },
-              { title: "Roblox integration", items: ["Auto-rank sync with your Roblox group", "Real-time activity & idle tracking", "In-game message logging", "Per-role quotas, leaderboards & auto-warnings", "License gate for protected scripts"] },
-              { title: "Sessions & scheduling", items: ["Shift, training & event scheduling (editable)", "Flight Hub & Session Board Roblox displays", "Aviation & Maritime industry modes", "Crew Dispatch & crew wishlists", "Auto-attendance verification after 5 min"] },
-              { title: "Applications & Discord", items: ["Application forms — web & in-game center", "Auto-grading & auto-ranking of applicants", "Discord bot with rank-locked slash commands", "/verify links and DMs for crew roles"] },
-              { title: "Staff management", items: ["Kudos, spotlights & promotion nominations", "Documents with digital signatures & auto-assign", "Leave of absence workflow", "Application review queue"] },
-              { title: "Security & support", items: ["Encrypted-at-rest data & nightly breach scans", "AI support assistant & priority support", "Role-based permissions and admin tools"] },
-            ].map((card) => (
-              <div key={card.title} className="rounded-xl border border-border/15 bg-card/20 p-5 hover:bg-card/40 hover:border-primary/30 transition-all">
-                <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-primary" />
-                  {card.title}
-                </h3>
-                <ul className="space-y-2.5">
-                  {card.items.map((item) => (
-                    <li key={item} className="flex items-start gap-2 text-xs text-muted-foreground leading-relaxed">
-                      <span className="w-1 h-1 rounded-full bg-primary mt-1.5 shrink-0" />
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {everything.map((item) => (
+              <div key={item} className="rounded-xl border border-border/15 bg-card/20 p-5 hover:bg-card/40 hover:border-primary/30 transition-all flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <span className="text-sm leading-snug">{item}</span>
               </div>
             ))}
           </div>
