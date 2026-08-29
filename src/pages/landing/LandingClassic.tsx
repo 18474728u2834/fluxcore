@@ -165,7 +165,7 @@ export default function LandingClassic() {
           {isMobile ? <NexusPhone rail={rail} /> : <NexusWindow rail={rail} />}
           <div className="mt-4 text-center">
             <button onClick={() => navigate("/demo")} className="text-[14px] font-medium story-link" style={{ color: "#2f74a8" }}>
-              Open the interactive demo — fake staff you can promote and demote →
+              Open the interactive demo →
             </button>
           </div>
         </div>
