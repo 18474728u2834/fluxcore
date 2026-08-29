@@ -373,96 +373,12 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
         </div>
       </div>
 
-      <div className="flex min-h-[540px]" style={{ color: "#fafafa" }}>
-        {/* icon rail */}
-        <aside className="w-[54px] shrink-0 flex flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-          <div className="w-7 h-7 rounded-lg mb-3 flex items-center justify-center" style={{ background: "#f55a4a" }}>
-            <span className="text-white font-black text-[11px]">F</span>
-          </div>
-          <nav className="flex flex-col gap-1 flex-1">
-            {rail.map((i, idx) => (
-              <div key={i.label} className="w-8 h-8 rounded-lg flex items-center justify-center"
-                style={{ background: idx === 0 ? "#1f1f22" : "transparent", color: idx === 0 ? "#fff" : "#6f6f74" }}>
-                <i.icon className="w-[15px] h-[15px]" strokeWidth={1.8} />
-              </div>
-            ))}
-          </nav>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ color: "#6f6f74" }}>
-            <Settings className="w-[15px] h-[15px]" strokeWidth={1.8} />
-          </div>
-        </aside>
-
-        {/* content */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <header className="h-11 flex items-center justify-between px-4 border-b" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-            <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded-[5px]" style={{ background: "#f55a4a" }} />
-              <span className="text-[12.5px] font-medium">Staff Team</span>
-              <span className="text-[11px]" style={{ color: "#6f6f74" }}>/ Dashboard</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full" style={{ background: "#161618", color: "#8a8a8e" }}>⌘K</span>
-              <span className="w-6 h-6 rounded-full" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
-            </div>
-          </header>
-
-          <div className="p-5 space-y-5">
-            {/* hero band */}
-            <div className="rounded-xl h-[132px] p-5 flex flex-col justify-end relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg,#6ea8ff 0%,#88b8ff 42%,#b6d2ff 100%)" }}>
-              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.42))" }} />
-              <div className="relative">
-                <div className="text-[10px] font-semibold uppercase tracking-[0.09em] text-white/75 mb-1">Hiya, Novavoff</div>
-                <div className="text-white text-[24px] font-bold tracking-[-0.03em] leading-tight">Great to see you back</div>
-              </div>
-            </div>
-
-            {/* stats */}
-            <div className="grid grid-cols-4 gap-3">
-              {[["Online now", "8", "live"], ["Hours today", "142h", "+12h"], ["Sessions this week", "17", "3 today"], ["Quota met", "78%", "of 46 staff"]].map(([l, v, s]) => (
-                <div key={l} className="rounded-xl border p-3" style={{ background: "#141416", borderColor: "#22222a" }}>
-                  <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: "#6f6f74" }}>{l}</div>
-                  <div className="text-[22px] font-bold mt-1 leading-none">{v}</div>
-                  <div className="text-[10px] font-mono mt-1.5 text-emerald-400">{s}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* two columns */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border p-4" style={{ background: "#141416", borderColor: "#22222a" }}>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.09em] mb-3" style={{ color: "#6f6f74" }}>Upcoming sessions</div>
-                <div className="space-y-2">
-                  {[["Shift · 2:00 PM", "Host synt · 12 claimed"], ["Training · 5:30 PM", "Host kai · 6 claimed"], ["Event · 8:00 PM", "Host mira · 21 claimed"]].map(([t, m]) => (
-                    <div key={t} className="flex items-center gap-2.5 rounded-lg border px-2.5 py-2" style={{ background: "#0f0f11", borderColor: "#22222a" }}>
-                      <span className="w-1.5 h-8 rounded-full" style={{ background: "#f55a4a" }} />
-                      <div className="min-w-0">
-                        <div className="text-[12px] font-semibold truncate">{t}</div>
-                        <div className="text-[10.5px]" style={{ color: "#6f6f74" }}>{m}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="rounded-xl border p-4" style={{ background: "#141416", borderColor: "#22222a" }}>
-                <div className="text-[11px] font-semibold uppercase tracking-[0.09em] mb-3" style={{ color: "#6f6f74" }}>Recent activity</div>
-                <div className="space-y-2">
-                  {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h 12m in-game"], ["noel", "LOA approved · 3 days"]].map(([n, a]) => (
-                    <div key={n} className="flex items-center gap-2.5 rounded-lg border px-2.5 py-2" style={{ background: "#0f0f11", borderColor: "#22222a" }}>
-                      <span className="w-6 h-6 rounded-full shrink-0" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
-                      <div className="min-w-0">
-                        <div className="text-[12px] font-semibold truncate">{n}</div>
-                        <div className="text-[10.5px] truncate" style={{ color: "#6f6f74" }}>{a}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <img
+        src={nexusDemoShot}
+        alt="Fluxcore Nexus workspace dashboard showing staff roster, sessions and activity"
+        className="block w-full"
+        loading="lazy"
+      />
     </div>
   );
 }
