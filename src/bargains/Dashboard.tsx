@@ -168,6 +168,7 @@ export default function BDashboard() {
                 </h1>
               </div>
             </div>
+            </div>
           )}
 
           <div className="grid grid-cols-3 gap-3">
