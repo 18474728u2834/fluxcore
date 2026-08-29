@@ -154,8 +154,11 @@ export default function BDashboard() {
         <BirthdayPrompt />
         <div className="max-w-6xl mx-auto space-y-5">
           {config.showHero && (
+            <div className="relative">
+              <div className="absolute -inset-2 rounded-3xl blur-2xl opacity-25 pointer-events-none"
+                style={{ background: `radial-gradient(60% 80% at 50% 0%, ${accent}, transparent 70%)` }} />
             <div className="rounded-2xl overflow-hidden relative min-h-[200px] flex flex-col justify-end p-7" style={heroStyle}>
-              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.62) 100%)" }} />
+              <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 78%, ${accent}40 100%)` }} />
               <div className="relative">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 flex items-center gap-1.5 mb-2">
                   <Hand className="w-3 h-3" /> {greeting}, {name}
