@@ -30,6 +30,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
+import { InteractiveDemo } from "@/components/landing/InteractiveDemo";
+
 import { SiteBanner } from "@/components/SiteBanner";
 import { Wordmark } from "@/components/Wordmark";
 import { useIsMobile } from "@/hooks/use-mobile";
