@@ -137,7 +137,11 @@ export default function LandingClassic() {
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-3.5">
-              <button onClick={go} className="group h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-semibold inline-flex items-center gap-2 hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all shadow-[0_12px_36px_-12px_hsl(var(--primary)/0.55)]">
+              <button
+                onClick={go}
+                className="group h-12 px-7 rounded-lg text-white text-[15px] font-semibold inline-flex items-center gap-2 hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all"
+                style={{ background: "#2f74a8", boxShadow: "0 12px 36px -12px rgba(47,116,168,0.55)" }}
+              >
                 {isLoggedIn ? "Open dashboard" : "Get started — it's free"}
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
@@ -189,9 +193,16 @@ export default function LandingClassic() {
               { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
               { icon: Zap, t: "Ranks that move themselves", d: "A logbook entry ranks the member in the Roblox group, updates their Fluxcore role and posts it to Discord — one action, three systems in sync." },
             ].map((c) => (
-              <div key={c.t} className="rounded-xl border border-border/50 bg-card/30 p-8 hover-lift hover:border-primary/25 group">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
-                  <c.icon className="w-[19px] h-[19px] text-primary" strokeWidth={1.9} />
+              <div
+                key={c.t}
+                className="rounded-xl border border-border/50 bg-card/30 p-8 hover-lift group"
+                style={{ ["--hover-border" as string]: "rgba(47,116,168,0.25)" }}
+              >
+                <div
+                  className="w-11 h-11 rounded-xl flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6"
+                  style={{ background: "rgba(47,116,168,0.10)", border: "1px solid rgba(47,116,168,0.15)" }}
+                >
+                  <c.icon className="w-[19px] h-[19px]" strokeWidth={1.9} style={{ color: "#2f74a8" }} />
                 </div>
                 <h3 className="landing-head text-[19px] font-bold mb-2.5">{c.t}</h3>
                 <p className="text-[14.5px] text-muted-foreground leading-[1.7]">{c.d}</p>
@@ -215,7 +226,11 @@ export default function LandingClassic() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-fade">
             {capabilities.map((c) => (
-              <div key={c.title} className="rounded-lg border border-border/40 bg-card/20 p-6 flex gap-4 hover:bg-card/50 hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300">
+              <div
+                key={c.title}
+                className="rounded-lg border border-border/40 bg-card/20 p-6 flex gap-4 hover:bg-card/50 hover:-translate-y-0.5 transition-all duration-300"
+                style={{ ["--hover-border" as string]: "rgba(47,116,168,0.20)" }}
+              >
                 <div className="w-9 h-9 rounded-lg bg-muted/60 border border-border/50 flex items-center justify-center shrink-0">
                   <c.icon className="w-[15px] h-[15px] text-muted-foreground" strokeWidth={1.9} />
                 </div>
