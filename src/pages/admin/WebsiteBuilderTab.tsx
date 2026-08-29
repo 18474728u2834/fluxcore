@@ -98,7 +98,7 @@ function AiField({
 }
 
 function SectionEditor({
-  section, onChange, onRemove, onMove, first, last,
+  section, onChange, onRemove, onMove, first, last, onDragStart, onDragEnd,
 }: {
   section: Section;
   onChange: (s: Section) => void;
@@ -106,7 +106,10 @@ function SectionEditor({
   onMove: (dir: -1 | 1) => void;
   first: boolean;
   last: boolean;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
 }) {
+  const [dragging, setDragging] = useState(false);
   const set = (patch: Partial<Section>) => onChange({ ...section, ...patch });
   const items = section.items || [];
   const setItem = (i: number, patch: Partial<{ title: string; desc: string }>) =>
@@ -116,10 +119,24 @@ function SectionEditor({
   const hasCta = ["hero", "cta"].includes(section.type);
 
   return (
-    <div className="rounded-xl border border-border/50 p-4 space-y-3 bg-card/40">
+    <div
+      draggable={dragging}
+      onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart?.(); }}
+      onDragEnd={() => { setDragging(false); onDragEnd?.(); }}
+      className="rounded-xl border border-border/50 p-4 space-y-3 bg-card/40"
+    >
       <div className="flex items-center gap-2">
+        <span
+          onMouseDown={() => setDragging(true)}
+          onMouseUp={() => setDragging(false)}
+          className="cursor-grab active:cursor-grabbing text-muted-foreground"
+          aria-label="Drag to reorder"
+        >
+          <GripVertical className="w-4 h-4" />
+        </span>
         <Badge variant="secondary">{SECTION_LABELS[section.type]}</Badge>
         <div className="flex-1" />
+
         <Button variant="ghost" size="icon" disabled={first} onClick={() => onMove(-1)} aria-label="Move up">
           <ArrowUp className="w-4 h-4" />
         </Button>
