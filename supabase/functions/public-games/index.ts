@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { guard } from "../_shared/apiGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +19,8 @@ async function j(url: string) {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const blocked = guard(req, { name: "public-games", methods: ["GET", "POST"], limit: 60, cors: corsHeaders });
+  if (blocked) return blocked;
 
   const json = (body: unknown, status = 200) =>
     new Response(JSON.stringify(body), {

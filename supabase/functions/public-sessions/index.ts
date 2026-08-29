@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { guard } from "../_shared/apiGuard.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -70,6 +71,8 @@ function resolveAirport(code: string | null): string | null {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const blocked = guard(req, { name: "public-sessions", methods: ["GET", "POST"], limit: 120, cors: corsHeaders });
+  if (blocked) return blocked;
 
   try {
     const supabase = createClient(

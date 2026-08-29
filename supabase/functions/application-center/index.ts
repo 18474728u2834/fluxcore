@@ -3,6 +3,7 @@
 // script. Deployed publicly with verify_jwt = false; we authenticate via the
 // workspace's app_center_api_key_hash, not Supabase auth.
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { guard } from "../_shared/apiGuard.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -136,6 +137,8 @@ async function resolveWorkspace(req: Request) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
+  const blocked = guard(req, { name: "application-center", methods: ["GET", "POST"], limit: 240, cors: cors });
+  if (blocked) return blocked;
 
   // Strip the function name + any Vercel rewrite prefix so /list, /submit work in both shapes.
   const url = new URL(req.url);
