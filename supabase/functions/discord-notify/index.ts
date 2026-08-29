@@ -348,26 +348,38 @@ serve(async (req) => {
 
     const authHeader = req.headers.get("authorization") || "";
 
-    // Cron / batch path: service role only
-    if (action === "dispatch_due_sessions") {
-      if (authHeader !== `Bearer ${serviceRoleKey}`) {
-        return json({ error: "Unauthorized" }, 401);
-      }
-    } else {
-      // User actions: require a valid Supabase JWT AND workspace ownership
+    const isServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
+
+    if (!isServiceRole) {
+      // Any non-cron caller: require a valid Supabase JWT + workspace membership
       if (!authHeader.startsWith("Bearer ")) return json({ error: "Unauthorized" }, 401);
+      const token = authHeader.replace("Bearer ", "");
       const sbAuth = createClient(supabaseUrl, anonKey);
-      const { data: claims, error: claimsErr } = await sbAuth.auth.getClaims(authHeader.replace("Bearer ", ""));
-      if (claimsErr || !claims?.claims?.sub) return json({ error: "Unauthorized" }, 401);
+      const { data: claims, error: claimsErr } = await sbAuth.auth.getClaims(token);
+      const uid = claims?.claims?.sub as string | undefined;
+      if (claimsErr || !uid) return json({ error: "Unauthorized" }, 401);
       if (!workspaceId) return json({ error: "Missing workspace_id" }, 400);
-      const { data: isOwner } = await supabase.rpc("is_workspace_owner", { _workspace_id: workspaceId });
-      // is_workspace_owner uses auth.uid() — call it via a JWT-bound client
+
       const sbUser = createClient(supabaseUrl, anonKey, {
         global: { headers: { Authorization: authHeader } },
       });
       const { data: ownerCheck } = await sbUser.rpc("is_workspace_owner", { _workspace_id: workspaceId });
-      if (!ownerCheck) return json({ error: "Forbidden" }, 403);
+
+      if (action === "dispatch_due_sessions") {
+        // Members of the workspace may trigger their own workspace's dispatch
+        if (!ownerCheck) {
+          const { count } = await supabase
+            .from("workspace_members")
+            .select("id", { count: "exact", head: true })
+            .eq("workspace_id", workspaceId)
+            .eq("user_id", uid);
+          if (!count) return json({ error: "Forbidden" }, 403);
+        }
+      } else if (!ownerCheck) {
+        return json({ error: "Forbidden" }, 403);
+      }
     }
+
 
     if (action === "dispatch_due_sessions") {
       const now = new Date();
