@@ -1,9 +1,9 @@
-import { ReactNode, useEffect, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
   Search, Calendar, Target, Megaphone, Heart, ArrowUp, ClipboardList,
-  Menu, X, ChevronDown, Sparkles,
+  Menu, X, ChevronDown, Sparkles, Loader2,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,7 +11,10 @@ import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useLexicon } from "@/hooks/useLexicon";
 import { isPortalHost } from "@/lib/sso";
 import { DemoBanner } from "@/components/DemoBanner";
+import { RobloxAvatar } from "@/components/RobloxAvatar";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+
 
 const NAV = [
   { to: "dashboard",    icon: Home,          label: "Dashboard" },
