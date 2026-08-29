@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
-  Loader2, Plus, Save, Trash2, ArrowUp, ArrowDown, Sparkles, Layout, Eye, Monitor, RotateCcw,
+  Loader2, Plus, Save, Trash2, ArrowUp, ArrowDown, Sparkles, Layout, Eye, Monitor, RotateCcw, GripVertical,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { SiteDesignRenderer } from "@/components/SiteDesignRenderer";
 import {
@@ -18,21 +19,39 @@ import {
 
 const SECTION_TYPES = Object.keys(SECTION_LABELS) as SectionType[];
 
-type ThemePreset = { name: string; theme: SiteTheme };
+type ThemePreset = { name: string; theme: SiteTheme; builtin?: boolean };
 const PRESET_KEY = "fluxcore.themePresets";
+
+/** The live Nexus UI look, always available as a preset you can jump back to. */
+export const NEXUS_PRESET: ThemePreset = {
+  name: "Nexus UI",
+  builtin: true,
+  theme: {
+    primary: "#22d3ee",
+    background: "#0f0f11",
+    foreground: "#fafafa",
+    surface: "#141416",
+    radius: 6,
+    font: "outfit",
+    density: "comfortable",
+    gradient: true,
+  },
+};
 
 function readPresets(): ThemePreset[] {
   try {
     const raw = localStorage.getItem(PRESET_KEY);
     const arr = raw ? JSON.parse(raw) : [];
-    return Array.isArray(arr) ? arr : [];
+    const saved: ThemePreset[] = Array.isArray(arr) ? arr.filter((p: any) => p?.name !== NEXUS_PRESET.name) : [];
+    return [NEXUS_PRESET, ...saved];
   } catch {
-    return [];
+    return [NEXUS_PRESET];
   }
 }
 function writePresets(list: ThemePreset[]) {
-  try { localStorage.setItem(PRESET_KEY, JSON.stringify(list)); } catch { /* ignore */ }
+  try { localStorage.setItem(PRESET_KEY, JSON.stringify(list.filter((p) => !p.builtin))); } catch { /* ignore */ }
 }
+
 
 /** Text input with an AI grammar-fix button. */
 function AiField({
@@ -79,7 +98,7 @@ function AiField({
 }
 
 function SectionEditor({
-  section, onChange, onRemove, onMove, first, last,
+  section, onChange, onRemove, onMove, first, last, onDragStart, onDragEnd,
 }: {
   section: Section;
   onChange: (s: Section) => void;
@@ -87,7 +106,10 @@ function SectionEditor({
   onMove: (dir: -1 | 1) => void;
   first: boolean;
   last: boolean;
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
 }) {
+  const [dragging, setDragging] = useState(false);
   const set = (patch: Partial<Section>) => onChange({ ...section, ...patch });
   const items = section.items || [];
   const setItem = (i: number, patch: Partial<{ title: string; desc: string }>) =>
@@ -97,10 +119,24 @@ function SectionEditor({
   const hasCta = ["hero", "cta"].includes(section.type);
 
   return (
-    <div className="rounded-xl border border-border/50 p-4 space-y-3 bg-card/40">
+    <div
+      draggable={dragging}
+      onDragStart={(e) => { e.dataTransfer.effectAllowed = "move"; onDragStart?.(); }}
+      onDragEnd={() => { setDragging(false); onDragEnd?.(); }}
+      className="rounded-xl border border-border/50 p-4 space-y-3 bg-card/40"
+    >
       <div className="flex items-center gap-2">
+        <span
+          onMouseDown={() => setDragging(true)}
+          onMouseUp={() => setDragging(false)}
+          className="cursor-grab active:cursor-grabbing text-muted-foreground"
+          aria-label="Drag to reorder"
+        >
+          <GripVertical className="w-4 h-4" />
+        </span>
         <Badge variant="secondary">{SECTION_LABELS[section.type]}</Badge>
         <div className="flex-1" />
+
         <Button variant="ghost" size="icon" disabled={first} onClick={() => onMove(-1)} aria-label="Move up">
           <ArrowUp className="w-4 h-4" />
         </Button>
@@ -203,6 +239,11 @@ export default function WebsiteBuilderTab() {
   const [draft, setDraft] = useState<SiteDesign | null>(null);
   const [showPreview, setShowPreview] = useState(true);
   const [presets, setPresets] = useState<ThemePreset[]>(() => readPresets());
+  const [dragNew, setDragNew] = useState<SectionType | null>(null);
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dropAt, setDropAt] = useState<number | null>(null);
+
+
 
   const load = async () => {
     setLoading(true);
@@ -279,6 +320,25 @@ export default function WebsiteBuilderTab() {
 
   const setTheme = (patch: Partial<SiteTheme>) => draft && setDraft({ ...draft, theme: { ...draft.theme, ...patch } });
   const setSections = (sections: Section[]) => draft && setDraft({ ...draft, sections });
+
+  /** Drops either a new palette box or a dragged section at the given index. */
+  const handleDrop = (index: number) => {
+    if (!draft) return;
+    const arr = [...draft.sections];
+    if (dragNew) {
+      arr.splice(index, 0, newSection(dragNew));
+    } else if (dragFrom !== null) {
+      const [moved] = arr.splice(dragFrom, 1);
+      arr.splice(dragFrom < index ? index - 1 : index, 0, moved);
+    } else {
+      return;
+    }
+    setSections(arr);
+    setDragNew(null);
+    setDragFrom(null);
+    setDropAt(null);
+  };
+
 
   const savePreset = () => {
     if (!draft) return;
@@ -471,16 +531,21 @@ export default function WebsiteBuilderTab() {
                 {presets.length > 0 && (
                   <div className="flex flex-wrap gap-1.5">
                     {presets.map((p) => (
-                      <div key={p.name} className="flex items-center gap-1 rounded-md border border-border/60 pl-2.5 pr-1 py-1">
+                      <div key={p.name} className={`flex items-center gap-1 rounded-md border pl-2.5 pr-1 py-1 ${p.builtin ? "border-primary/50 bg-primary/10" : "border-border/60"}`}>
                         <button className="text-xs text-foreground" onClick={() => applyPreset(p)}>{p.name}</button>
-                        <button
-                          className="text-destructive/80 hover:text-destructive"
-                          aria-label={`Delete ${p.name}`}
-                          onClick={() => deletePreset(p.name)}
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                        {p.builtin ? (
+                          <span className="px-1 text-[10px] text-muted-foreground">saved</span>
+                        ) : (
+                          <button
+                            className="text-destructive/80 hover:text-destructive"
+                            aria-label={`Delete ${p.name}`}
+                            onClick={() => deletePreset(p.name)}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
+
                     ))}
                   </div>
                 )}
@@ -498,38 +563,65 @@ export default function WebsiteBuilderTab() {
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-1.5">
-                  {SECTION_TYPES.map((t) => (
-                    <Button key={t} size="sm" variant="outline" className="gap-1"
-                      onClick={() => setSections([...draft.sections, newSection(t)])}>
-                      <Plus className="w-3.5 h-3.5" /> {SECTION_LABELS[t]}
-                    </Button>
-                  ))}
+                {/* Palette — drag a box down into the page, or click to append. */}
+                <div className="sticky top-2 z-20 rounded-xl border border-border/60 bg-card/95 backdrop-blur p-3 space-y-2">
+                  <div className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Drag a box into the page
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {SECTION_TYPES.map((t) => (
+                      <button
+                        key={t}
+                        draggable
+                        onDragStart={(e) => { setDragNew(t); setDragFrom(null); e.dataTransfer.effectAllowed = "copy"; }}
+                        onDragEnd={() => { setDragNew(null); setDragFrom(null); setDropAt(null); }}
+                        onClick={() => setSections([...draft.sections, newSection(t)])}
+                        className="inline-flex items-center gap-1 rounded-md border border-border/60 bg-muted/40 px-2.5 py-1.5 text-xs text-foreground cursor-grab active:cursor-grabbing hover:bg-muted"
+                      >
+                        <GripVertical className="w-3.5 h-3.5 text-muted-foreground" /> {SECTION_LABELS[t]}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                <div className="space-y-3">
+                <div
+                  className="space-y-3"
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={(e) => { e.preventDefault(); handleDrop(draft.sections.length); }}
+                >
                   {draft.sections.map((s, i) => (
-                    <SectionEditor
+                    <div
                       key={s.id}
-                      section={s}
-                      first={i === 0}
-                      last={i === draft.sections.length - 1}
-                      onChange={(next) => setSections(draft.sections.map((x, idx) => (idx === i ? next : x)))}
-                      onRemove={() => setSections(draft.sections.filter((_, idx) => idx !== i))}
-                      onMove={(dir) => {
-                        const arr = [...draft.sections];
-                        const j = i + dir;
-                        if (j < 0 || j >= arr.length) return;
-                        [arr[i], arr[j]] = [arr[j], arr[i]];
-                        setSections(arr);
-                      }}
-                    />
+                      onDragOver={(e) => { e.preventDefault(); setDropAt(i); }}
+                      onDrop={(e) => { e.preventDefault(); e.stopPropagation(); handleDrop(i); }}
+                      className={dropAt === i && (dragNew || dragFrom !== null) ? "rounded-xl ring-2 ring-primary" : ""}
+                    >
+                      <SectionEditor
+                        section={s}
+                        first={i === 0}
+                        last={i === draft.sections.length - 1}
+                        onDragStart={() => { setDragFrom(i); setDragNew(null); }}
+                        onDragEnd={() => { setDragNew(null); setDragFrom(null); setDropAt(null); }}
+                        onChange={(next) => setSections(draft.sections.map((x, idx) => (idx === i ? next : x)))}
+                        onRemove={() => setSections(draft.sections.filter((_, idx) => idx !== i))}
+                        onMove={(dir) => {
+                          const arr = [...draft.sections];
+                          const j = i + dir;
+                          if (j < 0 || j >= arr.length) return;
+                          [arr[i], arr[j]] = [arr[j], arr[i]];
+                          setSections(arr);
+                        }}
+                      />
+                    </div>
                   ))}
                   {!draft.sections.length && (
-                    <p className="text-sm text-muted-foreground">Add your first section above.</p>
+                    <div className="rounded-xl border border-dashed border-border/60 p-8 text-center text-sm text-muted-foreground">
+                      Drag a box from the palette above to start building.
+                    </div>
                   )}
                 </div>
               </div>
+
             )}
 
             {draft.target === "landing" && showPreview && (
