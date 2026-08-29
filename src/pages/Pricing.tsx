@@ -5,7 +5,7 @@ import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight, Sun, Moon, Headphones, ChevronRight, CheckCircle2,
   Sparkles, MessageSquareText, BadgeCheck, Palette, BarChart3, Bot,
-  ShieldCheck, FileSignature, Heart
+  ShieldCheck, FileSignature
 } from "lucide-react";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { Wordmark } from "@/components/Wordmark";
