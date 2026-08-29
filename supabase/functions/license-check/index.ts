@@ -3,6 +3,7 @@
 // creator is linked to a Fluxcore account / workspace. Used by the generated
 // LicenseGate script: licensed -> protected code runs, unlicensed -> script:Destroy().
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { guard } from "../_shared/apiGuard.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -19,6 +20,8 @@ const json = (body: unknown, status = 200) =>
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: cors });
+  const blocked = guard(req, { name: "license-check", methods: ["POST"], limit: 120, cors: cors });
+  if (blocked) return blocked;
 
   try {
     const body = await req.json().catch(() => ({}));

@@ -1,13 +1,28 @@
+import { useEffect, useState } from "react";
 import LandingClassic from "@/pages/landing/LandingClassic";
-import { SiteDesignRenderer } from "@/components/SiteDesignRenderer";
-import { useActiveSiteDesign } from "@/hooks/useSiteDesign";
+import LandingNexus from "@/pages/landing/LandingNexus";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Index() {
-  const { design, loading } = useActiveSiteDesign("landing");
+  const [theme, setTheme] = useState<"fluxcore" | "nexus" | null>(null);
 
-  if (loading) return <div className="min-h-screen bg-background" />;
-  if (design && design.sections.length) {
-    return <SiteDesignRenderer design={design} className="min-h-screen" />;
-  }
-  return <LandingClassic />;
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "landing_theme")
+        .maybeSingle();
+      if (cancelled) return;
+      const v = (data?.value as any)?.theme;
+      setTheme(v === "nexus" ? "nexus" : "fluxcore");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (!theme) return <div className="min-h-screen bg-background" />;
+  return theme === "nexus" ? <LandingNexus /> : <LandingClassic />;
 }

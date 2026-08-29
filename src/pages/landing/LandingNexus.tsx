@@ -4,6 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight,
+  ArrowUpRight,
+  Play,
   Sun,
   Moon,
   Activity,
@@ -31,17 +33,18 @@ import {
 } from "lucide-react";
 import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
 import { SiteBanner } from "@/components/SiteBanner";
-import { Wordmark } from "@/components/Wordmark";
 import { useIsMobile } from "@/hooks/use-mobile";
 import bloxyBargainsBadge from "@/assets/bloxy-bargains-badge.png";
 import redFunnelBadge from "@/assets/red-funnel-badge.png";
 
 /* ---------------------------------------------------------------------------
-   Fluxcore homepage — rounded, human, product-first.
-   Space Grotesk headlines, DM Sans body, one violet accent, no AI clichés.
+   Fluxcore homepage — quiet, editorial, product-first.
+   No hero glow, no floating orbs. Type, rules, and one honest screenshot.
 --------------------------------------------------------------------------- */
 
-export default function LandingClassic() {
+const RULE = "border-border/50";
+
+export default function LandingNexus() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -80,34 +83,41 @@ export default function LandingClassic() {
     { icon: Code, label: "Tracking" },
   ];
 
+  const Wordmark = ({ small }: { small?: boolean }) => (
+    <button onClick={() => navigate("/")} className="flex items-center">
+      <span className={`${small ? "text-[15px]" : "text-[17px]"} font-semibold tracking-[-0.02em] text-foreground`}>Fluxcore</span>
+    </button>
+  );
+
+
   return (
-    <div className="landing-body min-h-screen bg-background text-foreground overflow-x-hidden">
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
       {/* ------------------------------------------------------------- banner */}
       <SiteBanner placement="marketing" />
 
       {/* ---------------------------------------------------------------- nav */}
       <nav className="sticky top-0 z-50 bg-background/70 backdrop-blur-xl border-b border-border/40">
-        <div className="max-w-[1180px] mx-auto px-6 h-[68px] flex items-center justify-between">
+        <div className="max-w-[1180px] mx-auto px-6 h-[64px] flex items-center justify-between">
           <div className="flex items-center gap-9">
             <Wordmark />
             <div className="hidden md:flex items-center gap-7">
-              <a href="#product" className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Product</a>
-              <button onClick={() => navigate("/pricing")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Pricing</button>
-              
-              <button onClick={() => navigate("/feedback")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Ideas &amp; bug reports</button>
-              <button onClick={() => navigate("/support")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Support</button>
+              <a href="#product" className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Product</a>
+              <button onClick={() => navigate("/pricing")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
+              <button onClick={() => navigate("/security")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Security</button>
+              <button onClick={() => navigate("/feedback")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Ideas &amp; bug reports</button>
+              <button onClick={() => navigate("/support")} className="text-[14px] font-medium text-muted-foreground hover:text-foreground transition-colors">Support</button>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={toggleTheme} aria-label="Toggle theme" className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all">
+            <button onClick={toggleTheme} aria-label="Toggle theme" className="p-2 text-muted-foreground hover:text-foreground transition-colors">
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             {!isLoggedIn && (
-              <button onClick={() => navigate("/login")} className="hidden sm:block text-[14px] font-medium px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all">
+              <button onClick={() => navigate("/login")} className="hidden sm:block text-[14px] font-medium px-3 py-1.5 text-muted-foreground hover:text-foreground transition-colors">
                 Sign in
               </button>
             )}
-            <button onClick={go} className="text-[14px] font-semibold h-10 px-5 rounded-lg bg-primary text-primary-foreground hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all">
+            <button onClick={go} className="text-[14px] font-semibold h-9 px-4 rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-all">
               {isLoggedIn ? "Dashboard" : "Sign up"}
             </button>
           </div>
@@ -116,52 +126,50 @@ export default function LandingClassic() {
 
       {/* --------------------------------------------------------------- hero */}
       <section className="relative">
-        <div className="relative max-w-[1180px] mx-auto px-6 pt-20 sm:pt-28 pb-2">
-          <div className="stagger-fade">
-            <h1 className="landing-head text-[44px] sm:text-[64px] lg:text-[76px] font-bold leading-[1.02] max-w-[16ch]">
-              Run your staff team like an actual company.
-            </h1>
-            <p className="mt-7 text-[17px] leading-[1.7] text-muted-foreground max-w-[54ch]">
-              Fluxcore keeps activity, ranking, sessions, quotas and policies in one place —
-              wired straight into your Roblox group and your Discord server.
-            </p>
+        <div className="relative max-w-[1180px] mx-auto px-6 pt-20 sm:pt-24 pb-2">
+          <p className="text-[12px] font-mono uppercase tracking-[0.18em] text-muted-foreground mb-6">
+            Staff management · Roblox
+          </p>
+          <h1 className="text-[40px] sm:text-[58px] lg:text-[64px] font-semibold leading-[1.02] tracking-[-0.035em] max-w-[19ch]">
+            Run your staff team like an actual company.
+          </h1>
+          <p className="mt-6 text-[16.5px] leading-[1.65] text-muted-foreground max-w-[54ch]">
+            Fluxcore keeps activity, ranking, sessions, quotas and policies in one place —
+            wired straight into your Roblox group and your Discord server.
+          </p>
 
-            <div className="mt-10 flex flex-wrap items-center gap-3.5">
-              <button onClick={go} className="group h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-semibold inline-flex items-center gap-2 hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all shadow-[0_12px_36px_-12px_hsl(var(--primary)/0.55)]">
-                {isLoggedIn ? "Open dashboard" : "Get started — it's free"}
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </button>
-              <button onClick={() => navigate("/pricing")} className="h-12 px-7 rounded-lg border border-border text-[15px] font-medium inline-flex items-center gap-2.5 hover:bg-muted/50 hover:border-border/80 transition-all">
-                Pricing
-              </button>
-            </div>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <button onClick={go} className="h-10 px-5 rounded-[8px] bg-primary text-primary-foreground text-[14.5px] font-medium hover:brightness-110 transition-all">
+              {isLoggedIn ? "Open dashboard" : "Get started — it's free"}
+            </button>
+            <a href="#product" className="h-10 px-5 rounded-[8px] border border-border text-[14.5px] font-medium inline-flex items-center gap-2 hover:bg-muted/50 transition-colors">
+              <Play className="w-3.5 h-3.5" />
+              See the dashboard
+            </a>
+            <span className="text-[13px] text-muted-foreground">No card. No gamepass gate.</span>
           </div>
         </div>
 
         {/* ------------------------------------------------------- product shot */}
-        <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-20 animate-fade-up" style={{ animationDelay: "0.25s", animationFillMode: "backwards" }}>
-          {isMobile ? <NexusPhone rail={rail} /> : <NexusWindow rail={rail} />}
+        <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-14 sm:pt-16">
+          {isMobile ? <NexusPhoneV1 rail={rail} /> : <NexusWindowV1 rail={rail} />}
         </div>
       </section>
 
       {/* --------------------------------------------------------------- used */}
-      <section className="pt-24 pb-4">
+      <section className="pt-20 pb-4">
         <div className="max-w-[1180px] mx-auto px-6">
-          <div className="border-t border-border/50 pt-10">
-            <p className="landing-head text-[22px] sm:text-[26px] font-bold text-foreground mb-2">
-              Trusted By:
+          <div className={`border-t ${RULE} pt-8`}>
+            <p className="text-[11.5px] font-mono uppercase tracking-[0.16em] text-muted-foreground mb-6">
+              In use today
             </p>
-            <p className="text-[14.5px] text-muted-foreground leading-[1.7] max-w-[58ch] mb-7">
-              Groups running daily shifts, trainings and rank changes on Fluxcore — with their
-              activity, logbooks and quotas handled in one place instead of five bots.
-            </p>
-            <div className="flex items-center gap-4 flex-wrap mb-11">
-              <span className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
-                <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-8 h-8 rounded-lg object-cover" />
+            <div className="flex items-center gap-8 flex-wrap mb-10">
+              <span className="flex items-center gap-2.5">
+                <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-8 h-8 rounded-md object-cover" />
                 <span className="text-[14px] font-medium">Bloxy Bargains</span>
               </span>
-              <span className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
-                <img src={redFunnelBadge} alt="Red Funnel Group" className="w-8 h-8 rounded-lg object-cover" />
+              <span className="flex items-center gap-2.5">
+                <img src={redFunnelBadge} alt="Red Funnel Group" className="w-8 h-8 rounded-md object-cover" />
                 <span className="text-[14px] font-medium">Red Funnel Group</span>
               </span>
             </div>
@@ -171,46 +179,40 @@ export default function LandingClassic() {
       </section>
 
       {/* ------------------------------------------------------------- pillars */}
-      <section className="py-20">
-        <div className="max-w-[1180px] mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { icon: Clock, t: "Tracked to the second", d: "A heartbeat every 30 seconds with idle detection, so in-game minutes are what actually happened — not what someone claims happened." },
-              { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
-              { icon: Zap, t: "Ranks that move themselves", d: "A logbook entry ranks the member in the Roblox group, updates their Fluxcore role and posts it to Discord — one action, three systems in sync." },
-            ].map((c) => (
-              <div key={c.t} className="rounded-xl border border-border/50 bg-card/30 p-8 hover-lift hover:border-primary/25 group">
-                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
-                  <c.icon className="w-[19px] h-[19px] text-primary" strokeWidth={1.9} />
-                </div>
-                <h3 className="landing-head text-[19px] font-bold mb-2.5">{c.t}</h3>
-                <p className="text-[14.5px] text-muted-foreground leading-[1.7]">{c.d}</p>
-              </div>
-            ))}
-          </div>
+      <section className="py-16">
+        <div className={`max-w-[1180px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 border-t ${RULE}`}>
+          {[
+            { icon: Clock, t: "Tracked to the second", d: "A heartbeat every 30 seconds with idle detection, so in-game minutes are what actually happened — not what someone claims happened." },
+            { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
+            { icon: Zap, t: "Ranks that move themselves", d: "A logbook entry ranks the member in the Roblox group, updates their Fluxcore role and posts it to Discord — one action, three systems in sync." },
+          ].map((c, i) => (
+            <div key={c.t} className={`py-8 md:py-10 md:px-8 ${i === 0 ? "md:pl-0" : ""} ${i < 2 ? `border-b md:border-b-0 md:border-r ${RULE}` : ""}`}>
+              <c.icon className="w-[18px] h-[18px] mb-5 text-muted-foreground" strokeWidth={1.8} />
+              <h3 className="text-[17px] font-semibold tracking-[-0.02em] mb-2">{c.t}</h3>
+              <p className="text-[14px] text-muted-foreground leading-[1.65]">{c.d}</p>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* -------------------------------------------------------- capabilities */}
-      <section className="pb-24">
+      <section className="pb-20">
         <div className="max-w-[1180px] mx-auto px-6">
-          <div className="border-t border-border/50 pt-12 mb-12 flex flex-wrap items-end justify-between gap-4">
-            <h2 className="landing-head text-[30px] sm:text-[40px] font-bold leading-[1.08] max-w-[18ch]">
+          <div className={`border-t ${RULE} pt-10 mb-10 flex flex-wrap items-end justify-between gap-4`}>
+            <h2 className="text-[28px] sm:text-[36px] font-semibold tracking-[-0.03em] leading-[1.1] max-w-[18ch]">
               Everything else your group already needs
             </h2>
-            <p className="text-[14.5px] text-muted-foreground max-w-[36ch]">
+            <p className="text-[14px] text-muted-foreground max-w-[36ch]">
               Twelve systems that usually live in five different bots and a spreadsheet.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-fade">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-2">
             {capabilities.map((c) => (
-              <div key={c.title} className="rounded-lg border border-border/40 bg-card/20 p-6 flex gap-4 hover:bg-card/50 hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300">
-                <div className="w-9 h-9 rounded-lg bg-muted/60 border border-border/50 flex items-center justify-center shrink-0">
-                  <c.icon className="w-[15px] h-[15px] text-muted-foreground" strokeWidth={1.9} />
-                </div>
+              <div key={c.title} className={`border-t ${RULE} py-6 flex gap-4`}>
+                <c.icon className="w-[16px] h-[16px] mt-1 shrink-0 text-muted-foreground" strokeWidth={1.9} />
                 <div>
-                  <h3 className="landing-head text-[15.5px] font-semibold mb-1.5">{c.title}</h3>
+                  <h3 className="text-[15px] font-semibold mb-1.5 tracking-[-0.01em]">{c.title}</h3>
                   <p className="text-[13.5px] text-muted-foreground leading-[1.65]">{c.desc}</p>
                 </div>
               </div>
@@ -219,20 +221,25 @@ export default function LandingClassic() {
         </div>
       </section>
 
+
       {/* ----------------------------------------------------------- security */}
-      <section className="border-y border-border/50 bg-muted/20">
-        <div className="max-w-[1080px] mx-auto px-6 py-20 grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-12">
+      <section className={`border-b ${RULE} bg-muted/20`}>
+        <div className="max-w-[1080px] mx-auto px-6 py-16 grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-12">
           <div>
-            <h2 className="landing-head text-[30px] sm:text-[38px] font-bold leading-[1.1] mb-5">
+            <p className="text-[12px] uppercase tracking-[0.14em] text-muted-foreground mb-3">Security</p>
+            <h2 className="text-[28px] sm:text-[34px] font-semibold tracking-[-0.03em] leading-[1.1] mb-4">
               Your data is encrypted and never leaves our database.
             </h2>
-            <p className="text-[15.5px] text-muted-foreground leading-[1.7]">
+            <p className="text-[15px] text-muted-foreground leading-[1.65] mb-6">
               Isolation happens in Postgres, not just in the app. Even if someone got a query through,
               one workspace still cannot read another&rsquo;s rows.
             </p>
+            <button onClick={() => navigate("/security")} className="inline-flex items-center gap-1.5 text-[14px] font-medium hover:underline">
+              Full security overview <ArrowUpRight className="w-3.5 h-3.5" />
+            </button>
           </div>
 
-          <div className="rounded-xl border border-border/50 bg-card/30 p-2 sm:p-3">
+          <div className={`border-t ${RULE}`}>
             {[
               ["Encrypted in transit", "HTTPS/TLS 1.2+ with OCSP stapling on every request — browser, game server, Open Cloud."],
               ["Encrypted at rest", "Managed Postgres encrypts every disk page and every automated backup, uploads included."],
@@ -240,13 +247,11 @@ export default function LandingClassic() {
               ["Row-Level Security", "Every table gated by RLS. Workspaces are isolated at the database level."],
               ["Roblox OAuth, no passwords", "OAuth 2.0 with PKCE. We never see or store a Roblox password."],
               ["Daily breach scans", "Automated checks for faults and exposure run every night, reviewed by staff."],
-            ].map(([t, d], i, arr) => (
-              <div key={t} className={`py-4 px-4 sm:px-5 flex gap-4 rounded-lg hover:bg-muted/40 transition-colors ${i < arr.length - 1 ? "border-b border-border/40" : ""}`}>
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500" strokeWidth={1.9} />
-                </div>
+            ].map(([t, d]) => (
+              <div key={t} className={`border-b ${RULE} py-4 flex gap-4`}>
+                <ShieldCheck className="w-4 h-4 mt-0.5 shrink-0 text-emerald-500" strokeWidth={1.9} />
                 <div>
-                  <h3 className="landing-head text-[14.5px] font-semibold mb-1">{t}</h3>
+                  <h3 className="text-[14px] font-semibold mb-1">{t}</h3>
                   <p className="text-[13.5px] text-muted-foreground leading-[1.6]">{d}</p>
                 </div>
               </div>
@@ -256,21 +261,21 @@ export default function LandingClassic() {
       </section>
 
       {/* ------------------------------------------------------------ pricing */}
-      <section>
-        <div className="max-w-[1080px] mx-auto px-6 py-20">
-          <div className="rounded-xl border border-border/50 bg-card/30 p-9 sm:p-12 flex flex-col md:flex-row md:items-center gap-8 justify-between hover:border-primary/25 transition-colors duration-500">
+      <section className={`border-b ${RULE}`}>
+        <div className="max-w-[1080px] mx-auto px-6 py-16">
+          <div className={`border ${RULE} rounded-lg p-8 sm:p-10 flex flex-col md:flex-row md:items-center gap-8 justify-between`}>
             <div className="max-w-[46ch]">
-              <p className="landing-head text-[12px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-4">Pricing</p>
-              <h2 className="landing-head text-[30px] font-bold leading-[1.1] mb-3">Free for everyone. Forever.</h2>
-              <p className="text-[15.5px] text-muted-foreground leading-[1.7]">
+              <p className="text-[12px] uppercase tracking-[0.14em] text-muted-foreground mb-3">Pricing</p>
+              <h2 className="text-[28px] font-semibold tracking-[-0.03em] leading-[1.1] mb-3">Free for everyone. Forever.</h2>
+              <p className="text-[15px] text-muted-foreground leading-[1.65]">
                 No card, no subscription, no gamepass gate. Every feature is unlocked for every group,
                 whether you have nine staff or nine hundred.
               </p>
             </div>
             <div className="shrink-0">
-              <button onClick={go} className="group inline-flex items-center gap-2 h-12 px-7 rounded-lg bg-foreground text-background text-[15px] font-semibold hover:scale-[1.04] active:scale-[0.98] transition-transform">
+              <button onClick={go} className="inline-flex items-center gap-2 h-10 px-5 rounded-md bg-foreground text-background text-[14px] font-medium hover:opacity-90 transition-opacity">
                 {isLoggedIn ? "Open dashboard" : "Create your workspace"}
-                <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+                <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
@@ -278,11 +283,11 @@ export default function LandingClassic() {
       </section>
 
       {/* ------------------------------------------------------------- footer */}
-      <footer className="border-t border-border/50">
-        <div className="max-w-[1080px] mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-8">
+      <footer>
+        <div className="max-w-[1080px] mx-auto px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2 md:col-span-1">
             <Wordmark small />
-            <p className="mt-3.5 text-[13.5px] text-muted-foreground leading-[1.65] max-w-[28ch]">
+            <p className="mt-3 text-[13px] text-muted-foreground leading-[1.6] max-w-[28ch]">
               Staff management for Roblox groups that take it seriously.
             </p>
           </div>
@@ -292,8 +297,8 @@ export default function LandingClassic() {
             { h: "Legal", l: [["Terms", "/terms"], ["Privacy", "/privacy"]] },
           ].map((col) => (
             <div key={col.h}>
-              <h4 className="landing-head text-[12px] font-semibold uppercase tracking-[0.14em] text-muted-foreground mb-4">{col.h}</h4>
-              <ul className="space-y-2.5">
+              <h4 className="text-[12px] uppercase tracking-[0.14em] text-muted-foreground mb-3">{col.h}</h4>
+              <ul className="space-y-2">
                 {col.l.map(([label, href]) => (
                   <li key={label}>
                     <button onClick={() => navigate(href)} className="text-[13.5px] text-muted-foreground hover:text-foreground transition-colors">
@@ -305,7 +310,7 @@ export default function LandingClassic() {
             </div>
           ))}
         </div>
-        <div className="border-t border-border/50">
+        <div className={`border-t ${RULE}`}>
           <div className="max-w-[1080px] mx-auto px-6 py-5 text-[12.5px] text-muted-foreground flex flex-wrap gap-2 justify-between">
             <span>&copy; {new Date().getFullYear()} Fluxcore. All rights reserved to RetailPro Technologies UIA.</span>
             <span>Not affiliated with or endorsed by Roblox Corporation.</span>
@@ -322,16 +327,16 @@ export default function LandingClassic() {
 
 type RailItem = { icon: LucideIcon; label: string };
 
-function NexusWindow({ rail }: { rail: RailItem[] }) {
+function NexusWindowV1({ rail }: { rail: RailItem[] }) {
   return (
-    <div className="rounded-2xl border border-border/60 overflow-hidden shadow-[0_32px_80px_-32px_rgba(0,0,0,0.6)] hover:shadow-[0_40px_90px_-32px_hsl(var(--primary)/0.25)] transition-shadow duration-700" style={{ background: "#0f0f10" }}>
+    <div className="rounded-lg border border-border/60 overflow-hidden shadow-[0_24px_60px_-30px_rgba(0,0,0,0.55)]" style={{ background: "#0f0f10" }}>
       {/* browser chrome */}
       <div className="flex items-center gap-1.5 px-3.5 py-2.5 border-b" style={{ borderColor: "#1a1a1c", background: "#0a0a0b" }}>
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#3a3a3e" }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#3a3a3e" }} />
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#3a3a3e" }} />
         <div className="flex-1 flex justify-center">
-          <div className="px-3.5 py-1 rounded-full text-[11px] font-mono" style={{ background: "#161618", color: "rgba(255,255,255,0.45)" }}>
+          <div className="px-3 py-1 rounded text-[11px] font-mono" style={{ background: "#161618", color: "rgba(255,255,255,0.45)" }}>
             fluxcore.works/w/staff-team/dashboard
           </div>
         </div>
@@ -340,18 +345,18 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
       <div className="flex min-h-[540px]" style={{ color: "#fafafa" }}>
         {/* icon rail */}
         <aside className="w-[54px] shrink-0 flex flex-col items-center py-3 border-r" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-          <div className="w-7 h-7 rounded-lg mb-3 flex items-center justify-center" style={{ background: "#f55a4a" }}>
+          <div className="w-7 h-7 rounded-md mb-3 flex items-center justify-center" style={{ background: "#f55a4a" }}>
             <span className="text-white font-black text-[11px]">F</span>
           </div>
           <nav className="flex flex-col gap-1 flex-1">
             {rail.map((i, idx) => (
-              <div key={i.label} className="w-8 h-8 rounded-lg flex items-center justify-center"
+              <div key={i.label} className="w-8 h-8 rounded-md flex items-center justify-center"
                 style={{ background: idx === 0 ? "#1f1f22" : "transparent", color: idx === 0 ? "#fff" : "#6f6f74" }}>
                 <i.icon className="w-[15px] h-[15px]" strokeWidth={1.8} />
               </div>
             ))}
           </nav>
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ color: "#6f6f74" }}>
+          <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ color: "#6f6f74" }}>
             <Settings className="w-[15px] h-[15px]" strokeWidth={1.8} />
           </div>
         </aside>
@@ -360,19 +365,19 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
         <div className="flex-1 min-w-0 flex flex-col">
           <header className="h-11 flex items-center justify-between px-4 border-b" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
             <div className="flex items-center gap-2">
-              <span className="w-4 h-4 rounded-[5px]" style={{ background: "#f55a4a" }} />
+              <span className="w-4 h-4 rounded-[4px]" style={{ background: "#f55a4a" }} />
               <span className="text-[12.5px] font-medium">Staff Team</span>
               <span className="text-[11px]" style={{ color: "#6f6f74" }}>/ Dashboard</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full" style={{ background: "#161618", color: "#8a8a8e" }}>⌘K</span>
-              <span className="w-6 h-6 rounded-full" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
+              <span className="text-[11px] px-2 py-0.5 rounded" style={{ background: "#161618", color: "#8a8a8e" }}>⌘K</span>
+              <span className="w-6 h-6 rounded-md" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
             </div>
           </header>
 
           <div className="p-5 space-y-5">
             {/* hero band */}
-            <div className="rounded-xl h-[132px] p-5 flex flex-col justify-end relative overflow-hidden"
+            <div className="rounded-md h-[132px] p-5 flex flex-col justify-end relative overflow-hidden"
               style={{ background: "linear-gradient(135deg,#6ea8ff 0%,#88b8ff 42%,#b6d2ff 100%)" }}>
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg,rgba(0,0,0,0.02),rgba(0,0,0,0.42))" }} />
               <div className="relative">
@@ -384,7 +389,7 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
             {/* stats */}
             <div className="grid grid-cols-4 gap-3">
               {[["Online now", "8", "live"], ["Hours today", "142h", "+12h"], ["Sessions this week", "17", "3 today"], ["Quota met", "78%", "of 46 staff"]].map(([l, v, s]) => (
-                <div key={l} className="rounded-xl border p-3" style={{ background: "#141416", borderColor: "#22222a" }}>
+                <div key={l} className="rounded-md border p-3" style={{ background: "#141416", borderColor: "#22222a" }}>
                   <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: "#6f6f74" }}>{l}</div>
                   <div className="text-[22px] font-bold mt-1 leading-none">{v}</div>
                   <div className="text-[10px] font-mono mt-1.5 text-emerald-400">{s}</div>
@@ -394,11 +399,11 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
 
             {/* two columns */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-xl border p-4" style={{ background: "#141416", borderColor: "#22222a" }}>
+              <div className="rounded-md border p-4" style={{ background: "#141416", borderColor: "#22222a" }}>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.09em] mb-3" style={{ color: "#6f6f74" }}>Upcoming sessions</div>
                 <div className="space-y-2">
                   {[["Shift · 2:00 PM", "Host synt · 12 claimed"], ["Training · 5:30 PM", "Host kai · 6 claimed"], ["Event · 8:00 PM", "Host mira · 21 claimed"]].map(([t, m]) => (
-                    <div key={t} className="flex items-center gap-2.5 rounded-lg border px-2.5 py-2" style={{ background: "#0f0f11", borderColor: "#22222a" }}>
+                    <div key={t} className="flex items-center gap-2.5 rounded border px-2.5 py-2" style={{ background: "#0f0f11", borderColor: "#22222a" }}>
                       <span className="w-1.5 h-8 rounded-full" style={{ background: "#f55a4a" }} />
                       <div className="min-w-0">
                         <div className="text-[12px] font-semibold truncate">{t}</div>
@@ -409,12 +414,12 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
                 </div>
               </div>
 
-              <div className="rounded-xl border p-4" style={{ background: "#141416", borderColor: "#22222a" }}>
+              <div className="rounded-md border p-4" style={{ background: "#141416", borderColor: "#22222a" }}>
                 <div className="text-[11px] font-semibold uppercase tracking-[0.09em] mb-3" style={{ color: "#6f6f74" }}>Recent activity</div>
                 <div className="space-y-2">
                   {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h 12m in-game"], ["noel", "LOA approved · 3 days"]].map(([n, a]) => (
-                    <div key={n} className="flex items-center gap-2.5 rounded-lg border px-2.5 py-2" style={{ background: "#0f0f11", borderColor: "#22222a" }}>
-                      <span className="w-6 h-6 rounded-full shrink-0" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
+                    <div key={n} className="flex items-center gap-2.5 rounded border px-2.5 py-2" style={{ background: "#0f0f11", borderColor: "#22222a" }}>
+                      <span className="w-6 h-6 rounded-md shrink-0" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
                       <div className="min-w-0">
                         <div className="text-[12px] font-semibold truncate">{n}</div>
                         <div className="text-[10.5px] truncate" style={{ color: "#6f6f74" }}>{a}</div>
@@ -431,36 +436,36 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
   );
 }
 
-function NexusPhone({ rail }: { rail: RailItem[] }) {
+function NexusPhoneV1({ rail }: { rail: RailItem[] }) {
   return (
-    <div className="mx-auto w-[272px] rounded-[1.5rem] border-[6px] border-[#1a1a1c] overflow-hidden shadow-[0_32px_70px_-30px_rgba(0,0,0,0.65)]" style={{ background: "#0f0f10" }}>
+    <div className="mx-auto w-[272px] rounded-[2rem] border-[6px] border-[#1a1a1c] overflow-hidden shadow-[0_24px_60px_-30px_rgba(0,0,0,0.6)]" style={{ background: "#0f0f10" }}>
       <div className="h-6 flex items-center justify-center" style={{ background: "#0a0a0b" }}>
         <div className="w-16 h-3 rounded-full" style={{ background: "#0f0f10" }} />
       </div>
       <div style={{ color: "#fafafa" }}>
         <div className="h-11 px-3 flex items-center justify-between border-b" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
           <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-md" style={{ background: "#f55a4a" }} />
+            <span className="w-5 h-5 rounded-[5px]" style={{ background: "#f55a4a" }} />
             <span className="text-[12px] font-semibold">Staff Team</span>
           </div>
           <span className="text-[10px]" style={{ color: "#6f6f74" }}>Dashboard</span>
         </div>
         <div className="p-3 space-y-3">
-          <div className="rounded-xl h-[88px] p-3 flex flex-col justify-end" style={{ background: "linear-gradient(135deg,#6ea8ff 0%,#88b8ff 42%,#b6d2ff 100%)" }}>
+          <div className="rounded-lg h-[88px] p-3 flex flex-col justify-end" style={{ background: "linear-gradient(135deg,#6ea8ff 0%,#88b8ff 42%,#b6d2ff 100%)" }}>
             <div className="text-[8px] font-semibold uppercase tracking-wider text-white/85">Hiya</div>
             <div className="text-white text-[15px] font-bold leading-tight">Novavoff</div>
           </div>
           <div className="grid grid-cols-2 gap-2">
             {[["Online now", "8"], ["Hours today", "142h"]].map(([l, v]) => (
-              <div key={l} className="rounded-xl border p-2.5" style={{ background: "#141416", borderColor: "#22222a" }}>
+              <div key={l} className="rounded-lg border p-2.5" style={{ background: "#141416", borderColor: "#22222a" }}>
                 <div className="text-[8px] uppercase tracking-wider" style={{ color: "#6f6f74" }}>{l}</div>
                 <div className="text-lg font-bold leading-tight">{v}</div>
               </div>
             ))}
           </div>
           {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h in-game"]].map(([n, a]) => (
-            <div key={n} className="flex items-center gap-2 rounded-xl border px-2.5 py-2" style={{ background: "#141416", borderColor: "#22222a" }}>
-              <span className="w-6 h-6 rounded-full shrink-0" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
+            <div key={n} className="flex items-center gap-2 rounded-lg border px-2.5 py-2" style={{ background: "#141416", borderColor: "#22222a" }}>
+              <span className="w-6 h-6 rounded-md shrink-0" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
               <div className="min-w-0">
                 <div className="text-[10px] font-semibold">{n}</div>
                 <div className="text-[9px] truncate" style={{ color: "#6f6f74" }}>{a}</div>
