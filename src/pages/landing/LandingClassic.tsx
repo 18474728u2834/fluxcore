@@ -157,64 +157,70 @@ export default function LandingClassic() {
       </section>
 
       {/* --------------------------------------------------------------- used */}
-      <section className="pt-24 pb-6">
-        <div className="max-w-[1080px] mx-auto px-6">
-          <p className="text-center text-[11.5px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-8">
-            Trusted by communities on Roblox
-          </p>
-          <div className="flex items-center justify-center gap-8 flex-wrap mb-10">
-            <span className="flex items-center gap-2.5 opacity-90">
-              <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-9 h-9 rounded-lg object-cover" />
-              <span className="text-[14.5px] font-semibold">Bloxy Bargains</span>
-            </span>
-            <span className="flex items-center gap-2.5 opacity-90">
-              <img src={redFunnelBadge} alt="Red Funnel Group" className="w-9 h-9 rounded-lg object-cover" />
-              <span className="text-[14.5px] font-semibold">Red Funnel Group</span>
-            </span>
+      <section className="pt-20 pb-4">
+        <div className="max-w-[1180px] mx-auto px-6">
+          <div className={`border-t ${RULE} pt-8`}>
+            <p className="text-[11.5px] font-mono uppercase tracking-[0.16em] text-muted-foreground mb-6">
+              In use today
+            </p>
+            <div className="flex items-center gap-8 flex-wrap mb-10">
+              <span className="flex items-center gap-2.5">
+                <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-8 h-8 rounded-md object-cover" />
+                <span className="text-[14px] font-medium">Bloxy Bargains</span>
+              </span>
+              <span className="flex items-center gap-2.5">
+                <img src={redFunnelBadge} alt="Red Funnel Group" className="w-8 h-8 rounded-md object-cover" />
+                <span className="text-[14px] font-medium">Red Funnel Group</span>
+              </span>
+            </div>
+            <WorkspaceMarquee />
           </div>
-          <WorkspaceMarquee />
         </div>
       </section>
 
       {/* ------------------------------------------------------------- pillars */}
-      <section className="py-20">
-        <div className="max-w-[1180px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-5">
+      <section className="py-16">
+        <div className={`max-w-[1180px] mx-auto px-6 grid grid-cols-1 md:grid-cols-3 border-t ${RULE}`}>
           {[
             { icon: Clock, t: "Tracked to the second", d: "A heartbeat every 30 seconds with idle detection, so in-game minutes are what actually happened — not what someone claims happened." },
             { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
             { icon: Zap, t: "Ranks that move themselves", d: "A logbook entry ranks the member in the Roblox group, updates their Fluxcore role and posts it to Discord — one action, three systems in sync." },
-          ].map((c) => (
-            <div key={c.t} className="rounded-2xl border border-border/50 bg-card/50 p-7">
-              <div className="w-11 h-11 rounded-xl bg-muted/70 border border-border/50 flex items-center justify-center mb-6">
-                <c.icon className="w-[18px] h-[18px]" strokeWidth={1.9} />
-              </div>
-              <h3 className="text-[19px] font-bold tracking-[-0.02em] mb-2.5">{c.t}</h3>
-              <p className="text-[14.5px] text-muted-foreground leading-[1.65]">{c.d}</p>
+          ].map((c, i) => (
+            <div key={c.t} className={`py-8 md:py-10 md:px-8 ${i === 0 ? "md:pl-0" : ""} ${i < 2 ? `border-b md:border-b-0 md:border-r ${RULE}` : ""}`}>
+              <c.icon className="w-[18px] h-[18px] mb-5 text-muted-foreground" strokeWidth={1.8} />
+              <h3 className="text-[17px] font-semibold tracking-[-0.02em] mb-2">{c.t}</h3>
+              <p className="text-[14px] text-muted-foreground leading-[1.65]">{c.d}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* -------------------------------------------------------- capabilities */}
-      <section className="py-20">
+      <section className="pb-20">
         <div className="max-w-[1180px] mx-auto px-6">
-          <h2 className="text-center text-[34px] sm:text-[46px] font-extrabold tracking-[-0.035em] leading-[1.05] mb-14">
-            That&rsquo;s just scratching the surface
-          </h2>
+          <div className={`border-t ${RULE} pt-10 mb-10 flex flex-wrap items-end justify-between gap-4`}>
+            <h2 className="text-[28px] sm:text-[36px] font-semibold tracking-[-0.03em] leading-[1.1] max-w-[18ch]">
+              Everything else your group already needs
+            </h2>
+            <p className="text-[14px] text-muted-foreground max-w-[36ch]">
+              Twelve systems that usually live in five different bots and a spreadsheet.
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-2">
             {capabilities.map((c) => (
-              <div key={c.title} className="group rounded-2xl border border-border/50 bg-card/40 p-6 hover:bg-card/80 hover:border-border transition-all">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-5">
-                  <c.icon className="w-[17px] h-[17px] text-primary" strokeWidth={2} />
+              <div key={c.title} className={`border-t ${RULE} py-6 flex gap-4`}>
+                <c.icon className="w-[16px] h-[16px] mt-1 shrink-0 text-muted-foreground" strokeWidth={1.9} />
+                <div>
+                  <h3 className="text-[15px] font-semibold mb-1.5 tracking-[-0.01em]">{c.title}</h3>
+                  <p className="text-[13.5px] text-muted-foreground leading-[1.65]">{c.desc}</p>
                 </div>
-                <h3 className="text-[15.5px] font-bold mb-1.5 tracking-[-0.01em]">{c.title}</h3>
-                <p className="text-[13.5px] text-muted-foreground leading-[1.65]">{c.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
 
       {/* ----------------------------------------------------------- security */}
       <section className={`border-b ${RULE} bg-muted/20`}>
