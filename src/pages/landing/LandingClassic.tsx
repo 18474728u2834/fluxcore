@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
@@ -50,15 +50,6 @@ export default function LandingClassic() {
   const { theme, toggleTheme } = useTheme();
   const isLoggedIn = !authLoading && !!user;
   const isMobile = useIsMobile();
-  const [scrollY, setScrollY] = useState(0);
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-  const lift = Math.min(scrollY * 0.22, 160);
 
   const go = () => navigate(isLoggedIn ? "/workspaces" : "/login");
 
@@ -161,17 +152,15 @@ export default function LandingClassic() {
 
         {/* ------------------------------------------------------- product shot */}
         <div id="product" className="group relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-24" style={{ perspective: "1200px" }}>
-          <div className="will-change-transform" style={{ transform: `translateY(${-lift}px)` }}>
-            {isMobile ? (
-              <div className="animate-dashboard-float" style={{ transformStyle: "preserve-3d" }}>
-                <NexusPhone rail={rail} />
-              </div>
-            ) : (
-              <div className="animate-dashboard-float" style={{ transformStyle: "preserve-3d" }}>
-                <NexusWindow rail={rail} />
-              </div>
-            )}
-          </div>
+          {isMobile ? (
+            <div className="animate-dashboard-float" style={{ transformStyle: "preserve-3d" }}>
+              <NexusPhone rail={rail} />
+            </div>
+          ) : (
+            <div className="animate-dashboard-float" style={{ transformStyle: "preserve-3d" }}>
+              <NexusWindow rail={rail} />
+            </div>
+          )}
 
           <div className="pointer-events-none absolute inset-x-16 -bottom-6 h-32 bg-primary/25 blur-[90px] rounded-full" />
         </div>
