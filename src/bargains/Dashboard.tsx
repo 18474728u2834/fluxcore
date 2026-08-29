@@ -41,6 +41,25 @@ export default function BDashboard() {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [newMembers, setNewMembers] = useState<NewMember[]>([]);
   const [gameThumb, setGameThumb] = useState<string | null>(null);
+  const [staffInGame, setStaffInGame] = useState<number>(0);
+
+  // Live "staff in game" counter — sessions with a heartbeat and no leave timestamp.
+  useEffect(() => {
+    if (!workspaceId) return;
+    let cancelled = false;
+    const load = async () => {
+      const { data } = await supabase
+        .from("activity_sessions")
+        .select("roblox_user_id")
+        .eq("workspace_id", workspaceId)
+        .is("left_at", null)
+        .eq("discarded", false);
+      if (!cancelled) setStaffInGame(new Set((data || []).map(r => r.roblox_user_id)).size);
+    };
+    load();
+    const iv = setInterval(load, 30000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [workspaceId]);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -128,7 +147,7 @@ export default function BDashboard() {
     const stats = [
       { label: "Birthdays today", value: birthdays.length },
       { label: "New this week", value: newMembers.length },
-      { label: "Cards enabled", value: config.cards.length },
+      { label: "Staff in game", value: staffInGame, live: true },
     ];
     return (
       <BargainsShell>
