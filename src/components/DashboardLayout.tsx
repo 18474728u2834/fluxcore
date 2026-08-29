@@ -9,6 +9,9 @@ import { MinimalLayout } from "@/components/MinimalLayout";
 import { BargainsShell } from "@/bargains/Shell";
 import { AnnouncementBanner } from "@/components/AnnouncementBanner";
 import { QuotaSetupPrompt } from "@/components/QuotaSetupPrompt";
+import { useActiveSiteDesign } from "@/hooks/useSiteDesign";
+import { FONT_STACKS } from "@/lib/siteDesign";
+
 
 export function DashboardLayout({ children, title }: { children: React.ReactNode; title?: string }) {
   const { loading, workspace, error } = useWorkspace();
