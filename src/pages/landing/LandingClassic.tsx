@@ -138,6 +138,16 @@ export default function LandingClassic() {
           </div>
         </div>
 
+        {/* gradient under hero */}
+        <div
+          className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-0 w-[120%] max-w-[1400px] h-[320px] opacity-45 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(47,116,168,0.55) 0%, rgba(47,116,168,0.22) 40%, transparent 72%)",
+          }}
+          aria-hidden="true"
+        />
+
         {/* ------------------------------------------------------- product shot */}
         <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-20 animate-fade-up" style={{ animationDelay: "0.25s", animationFillMode: "backwards" }}>
           {isMobile ? <NexusPhone rail={rail} /> : <NexusWindow rail={rail} />}
@@ -149,7 +159,7 @@ export default function LandingClassic() {
         <div className="max-w-[1180px] mx-auto px-6">
           <div className="border-t border-border/50 pt-10">
             <p className="landing-head text-[22px] sm:text-[26px] font-bold text-foreground mb-2">
-              Trusted By:
+              Trusted By
             </p>
             <p className="text-[14.5px] text-muted-foreground leading-[1.7] max-w-[58ch] mb-7">
               Groups running daily shifts, trainings and rank changes on Fluxcore — with their
