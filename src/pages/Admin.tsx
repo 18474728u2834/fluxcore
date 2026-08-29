@@ -157,6 +157,8 @@ export default function Admin() {
           {me.roblox_username === "Novavoff" && <TabsContent value="creations"><CreationsTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="license"><LicenseGateTab /></TabsContent>}
           <TabsContent value="builder"><WebsiteBuilderTab /></TabsContent>
+          {has("manage_status") && <TabsContent value="ai_designer"><AiDesignerTab /></TabsContent>}
+
           <TabsContent value="session_board"><SessionBoardTab /></TabsContent>
           <TabsContent value="flight_hub"><FlightHubTab /></TabsContent>
           {has("manage_status") && <TabsContent value="release"><ReleaseTab /></TabsContent>}
