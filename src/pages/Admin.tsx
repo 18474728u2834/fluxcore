@@ -163,6 +163,7 @@ export default function Admin() {
           <TabsContent value="session_board"><SessionBoardTab /></TabsContent>
           <TabsContent value="flight_hub"><FlightHubTab /></TabsContent>
           {has("manage_status") && <TabsContent value="release"><ReleaseTab /></TabsContent>}
+          {me.owner_admin && <TabsContent value="trials"><TrialsTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>
