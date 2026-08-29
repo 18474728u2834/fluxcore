@@ -533,9 +533,9 @@ export default function WebsiteBuilderTab() {
             )}
 
             {draft.target === "landing" && showPreview && (
-              <div className="rounded-xl border border-border/50 overflow-hidden">
-                <div className="px-4 py-2 text-xs text-muted-foreground border-b border-border/50">Live preview</div>
-                <div className="max-h-[640px] overflow-auto">
+              <div className="rounded-xl border border-border/50 overflow-hidden relative isolate">
+                <div className="px-4 py-2 text-xs text-muted-foreground border-b border-border/50 bg-card relative z-10">Live preview</div>
+                <div className="max-h-[640px] overflow-auto relative z-0" style={{ contain: "paint" }}>
                   <SiteDesignRenderer design={draft} />
                 </div>
               </div>
