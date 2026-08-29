@@ -112,7 +112,7 @@ export function RobloxAvatar({ username, userId, className }: Props) {
     // For userId we already render the direct URL, but still resolve in
     // background to upgrade to a stable CDN URL we can cache.
     resolveViaEdge({ username, userId }).then((u) => {
-      if (alive && u) setSrc(u);
+      if (alive && u) { setErrored(false); setSrc(u); }
     });
     return () => { alive = false; };
   }, [cacheKey, username, userId]);
