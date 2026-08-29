@@ -6,10 +6,21 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const ALLOWED_HOSTS = (h: string) =>
+  h === "fluxcore.works" ||
+  h.endsWith(".fluxcore.works") ||
+  h.endsWith(".lovable.app") ||
+  h === "localhost" ||
+  h === "127.0.0.1";
+
+// Only allow trusted Fluxcore origins — an arbitrary origin here would receive
+// a live magic-link token in the final redirect (account takeover).
 const safeRedirectOrigin = (value: string | null) => {
   if (!value) return "";
   try {
     const parsed = new URL(value);
+    if (parsed.protocol !== "https:" && parsed.hostname !== "localhost" && parsed.hostname !== "127.0.0.1") return "";
+    if (!ALLOWED_HOSTS(parsed.hostname)) return "";
     return parsed.origin;
   } catch {
     return "";

@@ -6,9 +6,23 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const ALLOWED_HOSTS = (h: string) =>
+  h === "fluxcore.works" ||
+  h.endsWith(".fluxcore.works") ||
+  h.endsWith(".lovable.app") ||
+  h === "localhost" ||
+  h === "127.0.0.1";
+
+// Only allow trusted Fluxcore origins — an arbitrary origin here would receive
+// a live magic-link token in the final redirect (account takeover).
 const safeOrigin = (v: string | null) => {
   if (!v) return "";
-  try { return new URL(v).origin; } catch { return ""; }
+  try {
+    const u = new URL(v);
+    if (u.protocol !== "https:" && u.hostname !== "localhost" && u.hostname !== "127.0.0.1") return "";
+    if (!ALLOWED_HOSTS(u.hostname)) return "";
+    return u.origin;
+  } catch { return ""; }
 };
 
 const randomToken = () => {
