@@ -263,6 +263,29 @@ export default function WebsiteBuilderTab() {
   const setTheme = (patch: Partial<SiteTheme>) => draft && setDraft({ ...draft, theme: { ...draft.theme, ...patch } });
   const setSections = (sections: Section[]) => draft && setDraft({ ...draft, sections });
 
+  const savePreset = () => {
+    if (!draft) return;
+    const name = window.prompt("Name this theme", draft.name || "My theme");
+    if (!name?.trim()) return;
+    const next = [...presets.filter((p) => p.name !== name.trim()), { name: name.trim(), theme: draft.theme }];
+    setPresets(next);
+    writePresets(next);
+    toast.success("Theme saved");
+  };
+
+  const applyPreset = (p: ThemePreset) => {
+    if (!draft) return;
+    setDraft({ ...draft, theme: { ...p.theme } });
+    toast.success(`Applied "${p.name}"`);
+  };
+
+  const deletePreset = (name: string) => {
+    const next = presets.filter((p) => p.name !== name);
+    setPresets(next);
+    writePresets(next);
+  };
+
+
   if (loading) {
     return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>;
   }
