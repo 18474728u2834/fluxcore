@@ -140,10 +140,9 @@ export default function LandingClassic() {
                 {isLoggedIn ? "Open dashboard" : "Get started — it's free"}
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
-              <a href="#product" className="h-12 px-7 rounded-lg border border-border text-[15px] font-medium inline-flex items-center gap-2.5 hover:bg-muted/50 hover:border-border/80 transition-all">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-soft-pulse" />
-                See it in action
-              </a>
+              <button onClick={() => navigate("/pricing")} className="h-12 px-7 rounded-lg border border-border text-[15px] font-medium inline-flex items-center gap-2.5 hover:bg-muted/50 hover:border-border/80 transition-all">
+                Pricing
+              </button>
             </div>
           </div>
         </div>
@@ -158,8 +157,8 @@ export default function LandingClassic() {
       <section className="pt-24 pb-4">
         <div className="max-w-[1180px] mx-auto px-6">
           <div className="border-t border-border/50 pt-10">
-            <p className="landing-head text-[12px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-7">
-              In use today
+            <p className="landing-head text-[22px] sm:text-[26px] font-bold text-foreground mb-7">
+              Trusted By:
             </p>
             <div className="flex items-center gap-4 flex-wrap mb-11">
               <span className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
