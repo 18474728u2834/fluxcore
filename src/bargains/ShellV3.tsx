@@ -44,10 +44,35 @@ export function ShellV3({ children }: { children: ReactNode }) {
   const [drawer, setDrawer] = useState(false);
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState("");
+  const [focused, setFocused] = useState(false);
+  const [people, setPeople] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const base = `/w/${workspaceId}`;
   const accent = workspace?.primary_color || "#2f74a8";
   const initials = (workspace?.name || "").trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "·";
+
+  // Workspace (Roblox group) icon, cached in localStorage
+  const [groupIcon, setGroupIcon] = useState<string | null>(() => {
+    const gid = workspace?.roblox_group_id;
+    if (!gid || typeof window === "undefined") return null;
+    return localStorage.getItem(`fluxcore-group-icon-${gid}`);
+  });
+  useEffect(() => {
+    const gid = workspace?.roblox_group_id;
+    if (!gid) { setGroupIcon(null); return; }
+    const key = `fluxcore-group-icon-${gid}`;
+    const cached = localStorage.getItem(key);
+    if (cached) { setGroupIcon(cached); return; }
+    fetch(`${(import.meta as any).env.VITE_SUPABASE_URL}/functions/v1/roblox-group-icon?groupIds=${gid}`)
+      .then(r => r.json())
+      .then(j => {
+        const img = j?.data?.[0]?.imageUrl;
+        if (img) { setGroupIcon(img); try { localStorage.setItem(key, img); } catch { /* ignore */ } }
+      })
+      .catch(() => {});
+  }, [workspace?.roblox_group_id]);
 
   const navItems = useMemo(
     () => NAV
@@ -59,10 +84,43 @@ export function ShellV3({ children }: { children: ReactNode }) {
   const results = useMemo(() => {
     const s = q.trim().toLowerCase();
     if (s.length < 1) return [];
-    return navItems.filter(n => n.label.toLowerCase().includes(s)).slice(0, 6);
+    return navItems.filter(n => n.label.toLowerCase().includes(s)).slice(0, 5);
   }, [q, navItems]);
 
+  // People search (debounced)
+  useEffect(() => {
+    const s = q.trim();
+    if (!workspaceId || s.length < 2) { setPeople([]); setSearching(false); return; }
+    setSearching(true);
+    const timer = setTimeout(async () => {
+      const { data } = await supabase
+        .from("workspace_members")
+        .select("id, roblox_username, roblox_user_id, role")
+        .eq("workspace_id", workspaceId)
+        .ilike("roblox_username", `%${s}%`)
+        .limit(6);
+      setPeople(data || []);
+      setSearching(false);
+    }, 220);
+    return () => clearTimeout(timer);
+  }, [q, workspaceId]);
+
   useEffect(() => { setDrawer(false); }, [pathname]);
+
+  // ⌘K / Ctrl+K focuses search
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        searchRef.current?.focus();
+      }
+      if (e.key === "Escape") { setQ(""); searchRef.current?.blur(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+
 
   const Rail = ({ mobile = false }: { mobile?: boolean }) => (
     <nav className="flex flex-col gap-1">
