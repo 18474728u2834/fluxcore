@@ -19,8 +19,7 @@ import { RobloxAppCenterTab } from "@/pages/admin/RobloxAppCenterTab";
 import MarqueeTab from "@/pages/admin/MarqueeTab";
 import SecurityScansTab from "@/pages/admin/SecurityScansTab";
 import SessionBoardTab from "@/pages/admin/SessionBoardTab";
-import WebsiteBuilderTab from "@/pages/admin/WebsiteBuilderTab";
-import AiDesignerTab from "@/pages/admin/AiDesignerTab";
+import LandingThemeTab from "@/pages/admin/LandingThemeTab";
 
 import FlightHubTab from "@/pages/admin/FlightHubTab";
 import ReleaseTab from "@/pages/admin/ReleaseTab";
@@ -129,8 +128,7 @@ export default function Admin() {
             {me.roblox_username === "Novavoff" && <TabsTrigger value="roblox_app">Roblox App Center</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="creations">Creations</TabsTrigger>}
             {me.roblox_username === "Novavoff" && <TabsTrigger value="license">License Gate</TabsTrigger>}
-            {has("manage_status") && <TabsTrigger value="builder">Website Builder</TabsTrigger>}
-            {has("manage_status") && <TabsTrigger value="ai_designer">AI Designer</TabsTrigger>}
+            {has("manage_status") && <TabsTrigger value="landing_theme">Landing Theme</TabsTrigger>}
 
             <TabsTrigger value="session_board">Session Board</TabsTrigger>
             <TabsTrigger value="flight_hub">Flight Hub</TabsTrigger>
@@ -158,8 +156,7 @@ export default function Admin() {
           {me.roblox_username === "Novavoff" && <TabsContent value="roblox_app"><RobloxAppCenterTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="creations"><CreationsTab /></TabsContent>}
           {me.roblox_username === "Novavoff" && <TabsContent value="license"><LicenseGateTab /></TabsContent>}
-          <TabsContent value="builder"><WebsiteBuilderTab /></TabsContent>
-          {has("manage_status") && <TabsContent value="ai_designer"><AiDesignerTab /></TabsContent>}
+          {has("manage_status") && <TabsContent value="landing_theme"><LandingThemeTab /></TabsContent>}
 
           <TabsContent value="session_board"><SessionBoardTab /></TabsContent>
           <TabsContent value="flight_hub"><FlightHubTab /></TabsContent>
