@@ -18,6 +18,22 @@ import {
 
 const SECTION_TYPES = Object.keys(SECTION_LABELS) as SectionType[];
 
+type ThemePreset = { name: string; theme: SiteTheme };
+const PRESET_KEY = "fluxcore.themePresets";
+
+function readPresets(): ThemePreset[] {
+  try {
+    const raw = localStorage.getItem(PRESET_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+function writePresets(list: ThemePreset[]) {
+  try { localStorage.setItem(PRESET_KEY, JSON.stringify(list)); } catch { /* ignore */ }
+}
+
 /** Text input with an AI grammar-fix button. */
 function AiField({
   label, value, onChange, kind, multiline,
