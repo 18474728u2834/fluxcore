@@ -27,6 +27,7 @@ const HERO_LINES = (n: string) => [
 export default function BDashboard() {
   const { workspaceId, workspace } = useWorkspace();
   const { config } = useNexusConfig(workspaceId);
+  const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
   const { robloxUsername } = useAuth();
 
   const name = robloxUsername || "friend";
