@@ -5,11 +5,11 @@ export function Wordmark({ small, className }: { small?: boolean; className?: st
   return (
     <button
       onClick={() => navigate("/")}
-      className={`flex items-center ${className ?? ""}`}
+      className={`flex items-center group ${className ?? ""}`}
       aria-label="Fluxcore home"
     >
       <span
-        className={`${small ? "text-[15px]" : "text-[17px]"} font-semibold tracking-[-0.02em] text-foreground`}
+        className={`landing-head ${small ? "text-[16px]" : "text-[18px]"} font-bold text-foreground transition-transform duration-300 group-hover:-rotate-2 group-hover:scale-[1.03]`}
       >
         Fluxcore
       </span>
