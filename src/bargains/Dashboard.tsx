@@ -118,6 +118,7 @@ export default function BDashboard() {
       .catch(() => {});
   }, [(workspace as any)?.game_url]);
 
+  const accent = (workspace as any)?.primary_color || "#2f74a8";
   const heroImg = (workspace as any)?.nexus_hero_image_url as string | undefined;
   const heroStyle: React.CSSProperties = heroImg
     ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center" }
