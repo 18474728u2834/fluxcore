@@ -483,13 +483,13 @@ function AppRoutes() {
         <Route path="/sso/callback" element={<SsoCallback />} />
         <Route path="/link-discord" element={<LinkDiscord />} />
         <Route path="/workspaces" element={<Workspaces />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/creations" element={<Creations />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/feedback" element={<Feedback />} />
-        <Route path="/feedback/:ticketId" element={<FeedbackTicket />} />
+        <Route path="/terms" element={<PublicAccent><Terms /></PublicAccent>} />
+        <Route path="/pricing" element={<PublicAccent><Pricing /></PublicAccent>} />
+        <Route path="/creations" element={<PublicAccent><Creations /></PublicAccent>} />
+        <Route path="/privacy" element={<PublicAccent><Privacy /></PublicAccent>} />
+        <Route path="/support" element={<PublicAccent><Support /></PublicAccent>} />
+        <Route path="/feedback" element={<PublicAccent><Feedback /></PublicAccent>} />
+        <Route path="/feedback/:ticketId" element={<PublicAccent><FeedbackTicket /></PublicAccent>} />
         <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
         <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
