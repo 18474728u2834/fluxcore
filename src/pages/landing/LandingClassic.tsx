@@ -95,7 +95,7 @@ export default function LandingClassic() {
             <div className="hidden md:flex items-center gap-7">
               <a href="#product" className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Product</a>
               <button onClick={() => navigate("/pricing")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Pricing</button>
-              <button onClick={() => navigate("/security")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Security</button>
+              
               <button onClick={() => navigate("/feedback")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Ideas &amp; bug reports</button>
               <button onClick={() => navigate("/support")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Support</button>
             </div>
@@ -150,8 +150,12 @@ export default function LandingClassic() {
       <section className="pt-24 pb-4">
         <div className="max-w-[1180px] mx-auto px-6">
           <div className="border-t border-border/50 pt-10">
-            <p className="landing-head text-[22px] sm:text-[26px] font-bold text-foreground mb-7">
+            <p className="landing-head text-[22px] sm:text-[26px] font-bold text-foreground mb-2">
               Trusted By:
+            </p>
+            <p className="text-[14.5px] text-muted-foreground leading-[1.7] max-w-[58ch] mb-7">
+              Groups running daily shifts, trainings and rank changes on Fluxcore — with their
+              activity, logbooks and quotas handled in one place instead of five bots.
             </p>
             <div className="flex items-center gap-4 flex-wrap mb-11">
               <span className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
@@ -221,19 +225,13 @@ export default function LandingClassic() {
       <section className="border-y border-border/50 bg-muted/20">
         <div className="max-w-[1080px] mx-auto px-6 py-20 grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-12">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-4 py-1.5 text-[12px] font-semibold text-primary mb-6">
-              <Sparkles className="w-3.5 h-3.5" /> Security
-            </span>
             <h2 className="landing-head text-[30px] sm:text-[38px] font-bold leading-[1.1] mb-5">
               Your data is encrypted and never leaves our database.
             </h2>
-            <p className="text-[15.5px] text-muted-foreground leading-[1.7] mb-7">
+            <p className="text-[15.5px] text-muted-foreground leading-[1.7]">
               Isolation happens in Postgres, not just in the app. Even if someone got a query through,
               one workspace still cannot read another&rsquo;s rows.
             </p>
-            <button onClick={() => navigate("/security")} className="group inline-flex items-center gap-1.5 text-[14.5px] font-semibold text-primary hover:underline underline-offset-4">
-              Full security overview <ArrowUpRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </button>
           </div>
 
           <div className="rounded-xl border border-border/50 bg-card/30 p-2 sm:p-3">
