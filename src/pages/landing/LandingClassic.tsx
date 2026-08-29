@@ -115,7 +115,17 @@ export default function LandingClassic() {
       </nav>
 
       {/* --------------------------------------------------------------- hero */}
-      <section className="relative">
+      <section className="relative overflow-hidden">
+        {/* gradient under headline */}
+        <div
+          className="pointer-events-none absolute left-0 top-[18%] w-full h-[420px] opacity-60 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(ellipse 90% 55% at 30% 60%, rgba(47,116,168,0.45) 0%, rgba(47,116,168,0.18) 45%, transparent 75%)",
+          }}
+          aria-hidden="true"
+        />
+
         <div className="relative max-w-[1180px] mx-auto px-6 pt-20 sm:pt-28 pb-2">
           <div className="stagger-fade">
             <h1 className="landing-head text-[44px] sm:text-[64px] lg:text-[76px] font-bold leading-[1.02] max-w-[16ch]">
@@ -149,7 +159,7 @@ export default function LandingClassic() {
         <div className="max-w-[1180px] mx-auto px-6">
           <div className="border-t border-border/50 pt-10">
             <p className="landing-head text-[22px] sm:text-[26px] font-bold text-foreground mb-2">
-              Trusted By:
+              Trusted By
             </p>
             <p className="text-[14.5px] text-muted-foreground leading-[1.7] max-w-[58ch] mb-7">
               Groups running daily shifts, trainings and rank changes on Fluxcore — with their
