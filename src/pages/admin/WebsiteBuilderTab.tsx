@@ -239,6 +239,11 @@ export default function WebsiteBuilderTab() {
   const [draft, setDraft] = useState<SiteDesign | null>(null);
   const [showPreview, setShowPreview] = useState(true);
   const [presets, setPresets] = useState<ThemePreset[]>(() => readPresets());
+  const [dragNew, setDragNew] = useState<SectionType | null>(null);
+  const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [dropAt, setDropAt] = useState<number | null>(null);
+
+
 
   const load = async () => {
     setLoading(true);
