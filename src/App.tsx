@@ -65,6 +65,7 @@ const Promotions = lazy(() => import("./pages/Promotions"));
 const BloxyBargains = lazy(() => import("./pages/BloxyBargains"));
 const Bargains = lazy(() => import("./pages/Bargains"));
 const Pricing = lazy(() => import("./pages/Pricing"));
+const Demo = lazy(() => import("./pages/Demo"));
 const Creations = lazy(() => import("./pages/Creations"));
 const Admin = lazy(() => import("./pages/Admin"));
 const ApiIndex = lazy(() => import("./pages/api/ApiIndex"));
@@ -491,6 +492,7 @@ function AppRoutes() {
         <Route path="/workspaces" element={<Workspaces />} />
         <Route path="/terms" element={<PublicAccent><Terms /></PublicAccent>} />
         <Route path="/pricing" element={<PublicAccent><Pricing /></PublicAccent>} />
+        <Route path="/demo" element={<Demo />} />
         <Route path="/creations" element={<PublicAccent><Creations /></PublicAccent>} />
         <Route path="/privacy" element={<PublicAccent><Privacy /></PublicAccent>} />
         <Route path="/support" element={<PublicAccent><Support /></PublicAccent>} />
