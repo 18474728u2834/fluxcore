@@ -82,13 +82,13 @@ export default function Pricing() {
             </button>
             <div className="w-px h-6 bg-border/30 mx-1 hidden sm:block" />
             {isLoggedIn ? (
-              <Button size="sm" onClick={() => navigate("/workspaces")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4">
-                Dashboard <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-              </Button>
+              <button onClick={() => navigate("/workspaces")} className="px-3 py-1.5 text-sm text-primary hover:text-primary font-semibold rounded-md hover:bg-primary/10 transition-all flex items-center gap-0.5">
+                Dashboard <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             ) : (
-              <Button size="sm" onClick={() => navigate("/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4">
+              <button onClick={() => navigate("/login")} className="px-3 py-1.5 text-sm text-primary hover:text-primary font-semibold rounded-md hover:bg-primary/10 transition-all">
                 Get Started
-              </Button>
+              </button>
             )}
           </div>
         </div>
