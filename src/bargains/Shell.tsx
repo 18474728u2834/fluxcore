@@ -9,6 +9,8 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useNexusV3Trial } from "@/hooks/useNexusV3";
+import { ShellV3 } from "@/bargains/ShellV3";
 import { useLexicon } from "@/hooks/useLexicon";
 
 import { supabase } from "@/integrations/supabase/client";
