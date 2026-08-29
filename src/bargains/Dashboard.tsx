@@ -1,11 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
 import { BargainsShell, bx } from "./Shell";
+import { n3 } from "./ShellV3";
 import { BirthdayPrompt } from "./BirthdayPrompt";
 import { NexusCard, type CardData } from "./NexusCards";
 import { Play, Cake, Hand } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useNexusV3Trial } from "@/hooks/useNexusV3";
 import { useAuth } from "@/hooks/useAuth";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 
@@ -170,13 +172,6 @@ export default function BDashboard() {
 
   // ---- Nexus UI 2.0: owner-designed dashboard -------------------------------
   if (config.version === "v2") {
-    const cardData: CardData = {
-      birthdays, newMembers, gameThumb,
-      gameUrl: (workspace as any)?.game_url ?? null,
-      workspaceName: workspace?.name,
-      workspaceId: workspaceId || "",
-      base: `/w/${workspaceId}`,
-    };
     return (
       <BargainsShell>
         <BirthdayPrompt />
