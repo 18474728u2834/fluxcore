@@ -41,6 +41,25 @@ export default function BDashboard() {
   const [birthdays, setBirthdays] = useState<Birthday[]>([]);
   const [newMembers, setNewMembers] = useState<NewMember[]>([]);
   const [gameThumb, setGameThumb] = useState<string | null>(null);
+  const [staffInGame, setStaffInGame] = useState<number>(0);
+
+  // Live "staff in game" counter — sessions with a heartbeat and no leave timestamp.
+  useEffect(() => {
+    if (!workspaceId) return;
+    let cancelled = false;
+    const load = async () => {
+      const { data } = await supabase
+        .from("activity_sessions")
+        .select("roblox_user_id")
+        .eq("workspace_id", workspaceId)
+        .is("left_at", null)
+        .eq("discarded", false);
+      if (!cancelled) setStaffInGame(new Set((data || []).map(r => r.roblox_user_id)).size);
+    };
+    load();
+    const iv = setInterval(load, 30000);
+    return () => { cancelled = true; clearInterval(iv); };
+  }, [workspaceId]);
 
   useEffect(() => {
     if (!workspaceId) return;
@@ -99,6 +118,7 @@ export default function BDashboard() {
       .catch(() => {});
   }, [(workspace as any)?.game_url]);
 
+  const accent = (workspace as any)?.primary_color || "#2f74a8";
   const heroImg = (workspace as any)?.nexus_hero_image_url as string | undefined;
   const heroStyle: React.CSSProperties = heroImg
     ? { backgroundImage: `linear-gradient(135deg, rgba(0,0,0,0.25), rgba(0,0,0,0.05)), url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center" }
@@ -128,15 +148,18 @@ export default function BDashboard() {
     const stats = [
       { label: "Birthdays today", value: birthdays.length },
       { label: "New this week", value: newMembers.length },
-      { label: "Cards enabled", value: config.cards.length },
+      { label: "Staff in game", value: staffInGame, live: true },
     ];
     return (
       <BargainsShell>
         <BirthdayPrompt />
         <div className="max-w-6xl mx-auto space-y-5">
           {config.showHero && (
+            <div className="relative">
+              <div className="absolute -inset-2 rounded-3xl blur-2xl opacity-25 pointer-events-none"
+                style={{ background: `radial-gradient(60% 80% at 50% 0%, ${accent}, transparent 70%)` }} />
             <div className="rounded-2xl overflow-hidden relative min-h-[200px] flex flex-col justify-end p-7" style={heroStyle}>
-              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.62) 100%)" }} />
+              <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.55) 78%, ${accent}40 100%)` }} />
               <div className="relative">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 flex items-center gap-1.5 mb-2">
                   <Hand className="w-3 h-3" /> {greeting}, {name}
@@ -146,12 +169,21 @@ export default function BDashboard() {
                 </h1>
               </div>
             </div>
+            </div>
           )}
 
           <div className="grid grid-cols-3 gap-3">
             {stats.map(s => (
               <div key={s.label} className="rounded-2xl border p-4" style={n3.cardStyle}>
-                <div className="text-2xl font-semibold" style={{ color: n3.text }}>{s.value}</div>
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-semibold" style={{ color: n3.text }}>{s.value}</span>
+                  {s.live && (
+                    <span className="relative flex w-2 h-2">
+                      <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+                      <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-400" />
+                    </span>
+                  )}
+                </div>
                 <div className="text-[11px] uppercase tracking-[0.1em] mt-1" style={{ color: n3.textMuted }}>{s.label}</div>
               </div>
             ))}

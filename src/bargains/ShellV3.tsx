@@ -71,9 +71,9 @@ export function ShellV3({ children }: { children: ReactNode }) {
             to={`${base}/${to}`}
             className="group relative flex items-center gap-3 h-10 px-3 rounded-xl text-[13px] font-medium transition-all"
             style={{
-              background: active ? "rgba(255,255,255,0.07)" : "transparent",
+              background: active ? `${accent}26` : "transparent",
               color: active ? "#ffffff" : "#93939b",
-              boxShadow: active ? `inset 0 0 0 1px rgba(255,255,255,0.06)` : undefined,
+              boxShadow: active ? `inset 0 0 0 1px ${accent}40` : undefined,
             }}
           >
             <span
@@ -99,6 +99,13 @@ export function ShellV3({ children }: { children: ReactNode }) {
         .font-nexus3 *::-webkit-scrollbar { width: 8px; height: 8px; }
         .font-nexus3 *::-webkit-scrollbar-thumb { background: #26262b; border-radius: 999px; }
         .n3-glass { background: rgba(20,20,24,0.72); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.07); }
+        .n3-side {
+          background:
+            linear-gradient(168deg, hsl(258 90% 66% / 0.32) 0%, hsl(275 70% 58% / 0.16) 48%, rgba(20,20,24,0.62) 100%),
+            rgba(20,20,24,0.55);
+          backdrop-filter: blur(22px);
+          border: 1px solid rgba(255,255,255,0.09);
+        }
       `}</style>
 
       {/* ambient accent light */}
@@ -109,7 +116,7 @@ export function ShellV3({ children }: { children: ReactNode }) {
 
       {/* Floating sidebar — desktop */}
       <aside className="hidden md:flex w-[248px] shrink-0 p-3">
-        <div className="n3-glass rounded-2xl w-full flex flex-col p-3 sticky top-3 h-[calc(100vh-24px)]">
+        <div className="n3-side rounded-2xl w-full flex flex-col p-3 sticky top-3 h-[calc(100vh-24px)]">
           <button
             onClick={() => navigate(`${base}/dashboard`)}
             className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition-colors text-left"
@@ -206,7 +213,7 @@ export function ShellV3({ children }: { children: ReactNode }) {
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/60" onClick={() => setDrawer(false)} />
           <div className={cn("relative w-72 max-w-[85%] h-full p-3")}>
-            <div className="n3-glass rounded-2xl h-full flex flex-col p-3">
+            <div className="n3-side rounded-2xl h-full flex flex-col p-3">
               <div className="flex items-center justify-between px-1 pb-3">
                 <span className="text-sm font-semibold truncate">{workspace?.name || "Workspace"}</span>
                 <button onClick={() => setDrawer(false)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5">
