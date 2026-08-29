@@ -322,7 +322,12 @@ export function ShellV3({ children }: { children: ReactNode }) {
           <div className={cn("relative w-72 max-w-[85%] h-full p-3")}>
             <div className="n3-side rounded-2xl h-full flex flex-col p-3">
               <div className="flex items-center justify-between px-1 pb-3">
-                <span className="text-sm font-semibold truncate">{workspace?.name || "Workspace"}</span>
+                <span className="flex items-center gap-2 min-w-0">
+                  {groupIcon
+                    ? <img src={groupIcon} alt="" className="w-7 h-7 rounded-lg object-cover shrink-0" />
+                    : <span className="w-7 h-7 rounded-lg flex items-center justify-center text-[10px] font-bold text-white shrink-0" style={{ background: accent }}>{initials}</span>}
+                  <span className="text-sm font-semibold truncate">{workspace?.name || "Workspace"}</span>
+                </span>
                 <button onClick={() => setDrawer(false)} className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5">
                   <X className="w-4 h-4" />
                 </button>
