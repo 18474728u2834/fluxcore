@@ -473,10 +473,6 @@ function AppRoutes() {
   }
 
 
-  const PublicAccent = ({ children }: { children: React.ReactNode }) => (
-    <div className="public-accent contents">{children}</div>
-  );
-
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
