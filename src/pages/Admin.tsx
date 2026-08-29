@@ -20,6 +20,8 @@ import MarqueeTab from "@/pages/admin/MarqueeTab";
 import SecurityScansTab from "@/pages/admin/SecurityScansTab";
 import SessionBoardTab from "@/pages/admin/SessionBoardTab";
 import WebsiteBuilderTab from "@/pages/admin/WebsiteBuilderTab";
+import AiDesignerTab from "@/pages/admin/AiDesignerTab";
+
 import FlightHubTab from "@/pages/admin/FlightHubTab";
 import ReleaseTab from "@/pages/admin/ReleaseTab";
 import CreationsTab from "@/pages/admin/CreationsTab";
