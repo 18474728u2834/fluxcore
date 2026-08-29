@@ -4,7 +4,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import {
   ArrowRight,
-  ArrowUpRight,
   Sun,
   Moon,
   Activity,
@@ -28,7 +27,6 @@ import {
   Code,
   Settings,
   BadgeCheck,
-  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { WorkspaceMarquee } from "@/components/WorkspaceMarquee";
