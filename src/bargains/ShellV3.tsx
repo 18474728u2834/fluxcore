@@ -37,7 +37,7 @@ export function ShellV3({ children }: { children: ReactNode }) {
   const { workspace, workspaceId } = useWorkspace();
   const { config } = useNexusConfig(workspaceId);
   const { t } = useLexicon(workspaceId);
-  const { signOut, robloxUsername } = useAuth();
+  const { signOut, robloxUsername, robloxUserId } = useAuth();
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
