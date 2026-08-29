@@ -345,7 +345,7 @@ type RailItem = { icon: LucideIcon; label: string };
 
 function NexusWindow({ rail }: { rail: RailItem[] }) {
   return (
-    <div className="rounded-2xl border border-border/60 overflow-hidden shadow-[0_32px_80px_-32px_rgba(0,0,0,0.6)] hover:shadow-[0_40px_90px_-32px_hsl(var(--primary)/0.25)] transition-shadow duration-700" style={{ background: "#0f0f10" }}>
+    <div className="rounded-2xl border border-border/60 overflow-hidden shadow-[0_32px_80px_-32px_rgba(0,0,0,0.6)] hover:shadow-[0_40px_90px_-32px_rgba(47,116,168,0.25)] transition-shadow duration-700" style={{ background: "#0f0f10" }}>
       {/* browser chrome */}
       <div className="flex items-center gap-1.5 px-3.5 py-2.5 border-b" style={{ borderColor: "#1a1a1c", background: "#0a0a0b" }}>
         <span className="w-2.5 h-2.5 rounded-full" style={{ background: "#3a3a3e" }} />
