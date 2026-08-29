@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type NexusVersion = "v1" | "v2";
+export type NexusVersion = "v1" | "v2" | "v3";
 export type NexusRailMode = "hover" | "icons";
 export type NexusIndustry = "general" | "aviation" | "maritime";
 
@@ -50,7 +50,7 @@ export const DEFAULT_NEXUS_CONFIG: NexusConfig = {
 export function normalizeNexusConfig(raw: any): NexusConfig {
   const c = raw && typeof raw === "object" ? raw : {};
   return {
-    version: c.version === "v2" ? "v2" : "v1",
+    version: c.version === "v2" ? "v2" : c.version === "v3" ? "v3" : "v1",
     hiddenNav: Array.isArray(c.hiddenNav) ? c.hiddenNav.filter((k: any) => typeof k === "string") : [],
     cards: Array.isArray(c.cards) && c.cards.length
       ? c.cards.filter((k: any) => NEXUS_CARDS.some(card => card.id === k))

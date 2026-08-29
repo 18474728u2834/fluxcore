@@ -25,6 +25,7 @@ import FlightHubTab from "@/pages/admin/FlightHubTab";
 import ReleaseTab from "@/pages/admin/ReleaseTab";
 import CreationsTab from "@/pages/admin/CreationsTab";
 import LicenseGateTab from "@/pages/admin/LicenseGateTab";
+import TrialsTab from "@/pages/admin/TrialsTab";
 import DOMPurify from "dompurify";
 
 type WhoAmI = {
@@ -133,6 +134,7 @@ export default function Admin() {
             <TabsTrigger value="session_board">Session Board</TabsTrigger>
             <TabsTrigger value="flight_hub">Flight Hub</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="release">Release Updates</TabsTrigger>}
+            {me.owner_admin && <TabsTrigger value="trials">Trials</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
@@ -161,6 +163,7 @@ export default function Admin() {
           <TabsContent value="session_board"><SessionBoardTab /></TabsContent>
           <TabsContent value="flight_hub"><FlightHubTab /></TabsContent>
           {has("manage_status") && <TabsContent value="release"><ReleaseTab /></TabsContent>}
+          {me.owner_admin && <TabsContent value="trials"><TrialsTab /></TabsContent>}
           <TabsContent value="audit"><AuditTab /></TabsContent>
         </Tabs>
       </div>

@@ -1,11 +1,13 @@
 import { useEffect, useState, useMemo } from "react";
 import { BargainsShell, bx } from "./Shell";
+import { n3 } from "./ShellV3";
 import { BirthdayPrompt } from "./BirthdayPrompt";
 import { NexusCard, type CardData } from "./NexusCards";
 import { Play, Cake, Hand } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useNexusV3Trial } from "@/hooks/useNexusV3";
 import { useAuth } from "@/hooks/useAuth";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 
@@ -25,6 +27,7 @@ const HERO_LINES = (n: string) => [
 export default function BDashboard() {
   const { workspaceId, workspace } = useWorkspace();
   const { config } = useNexusConfig(workspaceId);
+  const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
   const { robloxUsername } = useAuth();
 
   const name = robloxUsername || "friend";
@@ -112,15 +115,64 @@ export default function BDashboard() {
     </div>
   );
 
+  const cardData: CardData = {
+    birthdays, newMembers, gameThumb,
+    gameUrl: (workspace as any)?.game_url ?? null,
+    workspaceName: workspace?.name,
+    workspaceId: workspaceId || "",
+    base: `/w/${workspaceId}`,
+  };
+
+  // ---- Nexus UI 3.0: modern trial dashboard ---------------------------------
+  if (config.version === "v3" && v3Enabled) {
+    const stats = [
+      { label: "Birthdays today", value: birthdays.length },
+      { label: "New this week", value: newMembers.length },
+      { label: "Cards enabled", value: config.cards.length },
+    ];
+    return (
+      <BargainsShell>
+        <BirthdayPrompt />
+        <div className="max-w-6xl mx-auto space-y-5">
+          {config.showHero && (
+            <div className="rounded-2xl overflow-hidden relative min-h-[200px] flex flex-col justify-end p-7" style={heroStyle}>
+              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.62) 100%)" }} />
+              <div className="relative">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-white/70 flex items-center gap-1.5 mb-2">
+                  <Hand className="w-3 h-3" /> {greeting}, {name}
+                </div>
+                <h1 className="text-white text-[2rem] sm:text-[2.4rem] leading-[1.05] font-semibold tracking-[-0.035em] max-w-2xl">
+                  {config.heroTitle || heroLine}
+                </h1>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-3 gap-3">
+            {stats.map(s => (
+              <div key={s.label} className="rounded-2xl border p-4" style={n3.cardStyle}>
+                <div className="text-2xl font-semibold" style={{ color: n3.text }}>{s.value}</div>
+                <div className="text-[11px] uppercase tracking-[0.1em] mt-1" style={{ color: n3.textMuted }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+            {config.cards.map((id) => <NexusCard key={id} id={id} data={cardData} />)}
+          </div>
+
+          {config.cards.length === 0 && (
+            <div className="rounded-2xl border px-5 py-10 text-sm text-center" style={{ ...n3.cardStyle, color: n3.textDim }}>
+              No cards yet. The workspace owner can add them in Settings → Theme.
+            </div>
+          )}
+        </div>
+      </BargainsShell>
+    );
+  }
+
   // ---- Nexus UI 2.0: owner-designed dashboard -------------------------------
   if (config.version === "v2") {
-    const cardData: CardData = {
-      birthdays, newMembers, gameThumb,
-      gameUrl: (workspace as any)?.game_url ?? null,
-      workspaceName: workspace?.name,
-      workspaceId: workspaceId || "",
-      base: `/w/${workspaceId}`,
-    };
     return (
       <BargainsShell>
         <BirthdayPrompt />

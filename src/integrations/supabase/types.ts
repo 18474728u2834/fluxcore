@@ -1197,6 +1197,35 @@ export type Database = {
         }
         Relationships: []
       }
+      nexus_v3_trials: {
+        Row: {
+          created_at: string
+          enabled_by: string | null
+          note: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled_by?: string | null
+          note?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled_by?: string | null
+          note?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nexus_v3_trials_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_portals: {
         Row: {
           accent_color: string | null

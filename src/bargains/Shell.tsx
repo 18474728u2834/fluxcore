@@ -9,6 +9,8 @@ import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useNexusV3Trial } from "@/hooks/useNexusV3";
+import { ShellV3 } from "@/bargains/ShellV3";
 import { useLexicon } from "@/hooks/useLexicon";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -62,6 +64,7 @@ const PAGE_INDEX: Array<{ label: string; to: string }> = [
 export function BargainsShell({ children }: ShellProps) {
   const { workspace, workspaceId, isOwner } = useWorkspace();
   const { config: nexusConfig } = useNexusConfig(workspaceId);
+  const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
   const { t } = useLexicon(workspaceId);
 
   const { user, signOut } = useAuth();
@@ -286,6 +289,10 @@ export function BargainsShell({ children }: ShellProps) {
     [nexusConfig, t],
   );
 
+  // Nexus UI 3.0 — invite-only trial shell.
+  if (nexusConfig.version === "v3" && v3Enabled) {
+    return <ShellV3>{children}</ShellV3>;
+  }
 
   return (
     <div className="min-h-screen w-full flex font-bargains" style={{ background: "#0f0f10", color: "#fafafa" }}>
