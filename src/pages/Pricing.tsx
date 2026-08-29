@@ -82,13 +82,13 @@ export default function Pricing() {
             </button>
             <div className="w-px h-6 bg-border/30 mx-1 hidden sm:block" />
             {isLoggedIn ? (
-              <Button size="sm" onClick={() => navigate("/workspaces")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4">
-                Dashboard <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
-              </Button>
+              <button onClick={() => navigate("/workspaces")} className="px-3 py-1.5 text-sm text-primary hover:text-primary font-semibold rounded-md hover:bg-primary/10 transition-all flex items-center gap-0.5">
+                Dashboard <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             ) : (
-              <Button size="sm" onClick={() => navigate("/login")} className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold h-9 px-4">
+              <button onClick={() => navigate("/login")} className="px-3 py-1.5 text-sm text-primary hover:text-primary font-semibold rounded-md hover:bg-primary/10 transition-all">
                 Get Started
-              </Button>
+              </button>
             )}
           </div>
         </div>
@@ -96,10 +96,6 @@ export default function Pricing() {
 
       <section className="relative pt-36 pb-12">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs font-semibold text-primary mb-6">
-            <Heart className="w-3 h-3" />
-            Free forever · Every feature · No card, no Robux
-          </div>
           <h1 className="text-5xl sm:text-6xl font-black leading-[1.05] tracking-tight mb-5">
             Fluxcore is now
             <br />
@@ -115,9 +111,6 @@ export default function Pricing() {
 
       <section className="relative pb-10">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-black uppercase tracking-widest mb-6">
-            Everything included
-          </div>
           <div className="flex items-baseline justify-center gap-1 mb-3">
             <span className="text-7xl sm:text-8xl font-black">$0</span>
             <span className="text-muted-foreground font-medium text-lg">forever</span>
