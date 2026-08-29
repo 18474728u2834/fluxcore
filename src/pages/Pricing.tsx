@@ -96,10 +96,6 @@ export default function Pricing() {
 
       <section className="relative pt-36 pb-12">
         <div className="max-w-3xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-primary/20 bg-primary/5 text-xs font-semibold text-primary mb-6">
-            <Heart className="w-3 h-3" />
-            Free forever · Every feature · No card, no Robux
-          </div>
           <h1 className="text-5xl sm:text-6xl font-black leading-[1.05] tracking-tight mb-5">
             Fluxcore is now
             <br />
