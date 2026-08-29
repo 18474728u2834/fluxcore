@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
-  Loader2, Plus, Save, Trash2, ArrowUp, ArrowDown, Sparkles, Layout, Eye, Monitor,
+  Loader2, Plus, Save, Trash2, ArrowUp, ArrowDown, Sparkles, Layout, Eye, Monitor, RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { SiteDesignRenderer } from "@/components/SiteDesignRenderer";
@@ -17,6 +17,22 @@ import {
 } from "@/lib/siteDesign";
 
 const SECTION_TYPES = Object.keys(SECTION_LABELS) as SectionType[];
+
+type ThemePreset = { name: string; theme: SiteTheme };
+const PRESET_KEY = "fluxcore.themePresets";
+
+function readPresets(): ThemePreset[] {
+  try {
+    const raw = localStorage.getItem(PRESET_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+function writePresets(list: ThemePreset[]) {
+  try { localStorage.setItem(PRESET_KEY, JSON.stringify(list)); } catch { /* ignore */ }
+}
 
 /** Text input with an AI grammar-fix button. */
 function AiField({
@@ -186,6 +202,7 @@ export default function WebsiteBuilderTab() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<SiteDesign | null>(null);
   const [showPreview, setShowPreview] = useState(true);
+  const [presets, setPresets] = useState<ThemePreset[]>(() => readPresets());
 
   const load = async () => {
     setLoading(true);
@@ -262,6 +279,29 @@ export default function WebsiteBuilderTab() {
 
   const setTheme = (patch: Partial<SiteTheme>) => draft && setDraft({ ...draft, theme: { ...draft.theme, ...patch } });
   const setSections = (sections: Section[]) => draft && setDraft({ ...draft, sections });
+
+  const savePreset = () => {
+    if (!draft) return;
+    const name = window.prompt("Name this theme", draft.name || "My theme");
+    if (!name?.trim()) return;
+    const next = [...presets.filter((p) => p.name !== name.trim()), { name: name.trim(), theme: draft.theme }];
+    setPresets(next);
+    writePresets(next);
+    toast.success("Theme saved");
+  };
+
+  const applyPreset = (p: ThemePreset) => {
+    if (!draft) return;
+    setDraft({ ...draft, theme: { ...p.theme } });
+    toast.success(`Applied "${p.name}"`);
+  };
+
+  const deletePreset = (name: string) => {
+    const next = presets.filter((p) => p.name !== name);
+    setPresets(next);
+    writePresets(next);
+  };
+
 
   if (loading) {
     return <div className="flex justify-center py-16"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>;
@@ -413,6 +453,39 @@ export default function WebsiteBuilderTab() {
                 <Label className="text-sm">Gradient glow</Label>
                 <Switch checked={draft.theme.gradient} onCheckedChange={(v) => setTheme({ gradient: v })} />
               </div>
+
+              <div className="space-y-2 pt-1 border-t border-border/50">
+                <div className="flex flex-wrap items-center gap-2 pt-3">
+                  <Button size="sm" variant="outline" className="gap-1" onClick={savePreset}>
+                    <Save className="w-3.5 h-3.5" /> Save this theme
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1"
+                    onClick={() => { setDraft({ ...draft, theme: { ...DEFAULT_THEME } }); toast.success("Theme reset to default"); }}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Reset to default
+                  </Button>
+                </div>
+                {presets.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {presets.map((p) => (
+                      <div key={p.name} className="flex items-center gap-1 rounded-md border border-border/60 pl-2.5 pr-1 py-1">
+                        <button className="text-xs text-foreground" onClick={() => applyPreset(p)}>{p.name}</button>
+                        <button
+                          className="text-destructive/80 hover:text-destructive"
+                          aria-label={`Delete ${p.name}`}
+                          onClick={() => deletePreset(p.name)}
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
 
             {draft.target === "landing" && (
