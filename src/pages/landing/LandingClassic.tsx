@@ -115,7 +115,17 @@ export default function LandingClassic() {
       </nav>
 
       {/* --------------------------------------------------------------- hero */}
-      <section className="relative">
+      <section className="relative overflow-hidden">
+        {/* gradient under headline */}
+        <div
+          className="pointer-events-none absolute left-0 top-[18%] w-full h-[420px] opacity-60 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(ellipse 90% 55% at 30% 60%, rgba(47,116,168,0.45) 0%, rgba(47,116,168,0.18) 45%, transparent 75%)",
+          }}
+          aria-hidden="true"
+        />
+
         <div className="relative max-w-[1180px] mx-auto px-6 pt-20 sm:pt-28 pb-2">
           <div className="stagger-fade">
             <h1 className="landing-head text-[44px] sm:text-[64px] lg:text-[76px] font-bold leading-[1.02] max-w-[16ch]">
@@ -137,16 +147,6 @@ export default function LandingClassic() {
             </div>
           </div>
         </div>
-
-        {/* gradient under hero */}
-        <div
-          className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-0 w-[120%] max-w-[1400px] h-[320px] opacity-45 blur-3xl"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 60% at 50% 100%, rgba(47,116,168,0.55) 0%, rgba(47,116,168,0.22) 40%, transparent 72%)",
-          }}
-          aria-hidden="true"
-        />
 
         {/* ------------------------------------------------------- product shot */}
         <div id="product" className="relative max-w-[1180px] mx-auto px-6 pt-16 sm:pt-20 animate-fade-up" style={{ animationDelay: "0.25s", animationFillMode: "backwards" }}>
