@@ -107,7 +107,11 @@ export default function LandingClassic() {
                 Sign in
               </button>
             )}
-            <button onClick={go} className="text-[14px] font-semibold h-10 px-5 rounded-lg bg-primary text-primary-foreground hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all">
+            <button
+              onClick={go}
+              className="text-[14px] font-semibold h-10 px-5 rounded-lg text-white hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all"
+              style={{ background: "#2f74a8" }}
+            >
               {isLoggedIn ? "Dashboard" : "Sign up"}
             </button>
           </div>
