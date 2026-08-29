@@ -7,8 +7,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
-  Loader2, Plus, Save, Trash2, ArrowUp, ArrowDown, Sparkles, Layout, Eye, Monitor, RotateCcw,
+  Loader2, Plus, Save, Trash2, ArrowUp, ArrowDown, Sparkles, Layout, Eye, Monitor, RotateCcw, GripVertical,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { SiteDesignRenderer } from "@/components/SiteDesignRenderer";
 import {
