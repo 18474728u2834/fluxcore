@@ -112,11 +112,11 @@ export default function LandingClassic() {
               {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             {!isLoggedIn && (
-              <button onClick={() => navigate("/login")} className="hidden sm:block text-[14px] font-medium px-4 py-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all">
+              <button onClick={() => navigate("/login")} className="hidden sm:block text-[14px] font-medium px-4 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all">
                 Sign in
               </button>
             )}
-            <button onClick={go} className="text-[14px] font-semibold h-10 px-5 rounded-full bg-primary text-primary-foreground hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all">
+            <button onClick={go} className="text-[14px] font-semibold h-10 px-5 rounded-lg bg-primary text-primary-foreground hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all">
               {isLoggedIn ? "Dashboard" : "Sign up"}
             </button>
           </div>
@@ -136,15 +136,14 @@ export default function LandingClassic() {
             </p>
 
             <div className="mt-10 flex flex-wrap items-center gap-3.5">
-              <button onClick={go} className="group h-12 px-7 rounded-full bg-primary text-primary-foreground text-[15px] font-semibold inline-flex items-center gap-2 hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all shadow-[0_12px_36px_-12px_hsl(var(--primary)/0.55)]">
+              <button onClick={go} className="group h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-semibold inline-flex items-center gap-2 hover:brightness-110 hover:scale-[1.03] active:scale-[0.98] transition-all shadow-[0_12px_36px_-12px_hsl(var(--primary)/0.55)]">
                 {isLoggedIn ? "Open dashboard" : "Get started — it's free"}
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
-              <a href="#product" className="h-12 px-7 rounded-full border border-border text-[15px] font-medium inline-flex items-center gap-2.5 hover:bg-muted/50 hover:border-border/80 transition-all">
+              <a href="#product" className="h-12 px-7 rounded-lg border border-border text-[15px] font-medium inline-flex items-center gap-2.5 hover:bg-muted/50 hover:border-border/80 transition-all">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-soft-pulse" />
                 See it in action
               </a>
-              <span className="text-[13.5px] text-muted-foreground">No card. No gamepass gate.</span>
             </div>
           </div>
         </div>
@@ -163,12 +162,12 @@ export default function LandingClassic() {
               In use today
             </p>
             <div className="flex items-center gap-4 flex-wrap mb-11">
-              <span className="flex items-center gap-2.5 rounded-full border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
-                <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-8 h-8 rounded-full object-cover" />
+              <span className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
+                <img src={bloxyBargainsBadge} alt="Bloxy Bargains" className="w-8 h-8 rounded-lg object-cover" />
                 <span className="text-[14px] font-medium">Bloxy Bargains</span>
               </span>
-              <span className="flex items-center gap-2.5 rounded-full border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
-                <img src={redFunnelBadge} alt="Red Funnel Group" className="w-8 h-8 rounded-full object-cover" />
+              <span className="flex items-center gap-2.5 rounded-lg border border-border/50 bg-card/40 pl-1.5 pr-5 py-1.5 hover-lift">
+                <img src={redFunnelBadge} alt="Red Funnel Group" className="w-8 h-8 rounded-lg object-cover" />
                 <span className="text-[14px] font-medium">Red Funnel Group</span>
               </span>
             </div>
@@ -186,8 +185,8 @@ export default function LandingClassic() {
               { icon: LayoutDashboard, t: "A dashboard you design", d: "Nexus UI 2.0 lets owners choose the cards, the rail and the hero. Every staff member sees the layout you shipped." },
               { icon: Zap, t: "Ranks that move themselves", d: "A logbook entry ranks the member in the Roblox group, updates their Fluxcore role and posts it to Discord — one action, three systems in sync." },
             ].map((c) => (
-              <div key={c.t} className="rounded-3xl border border-border/50 bg-card/30 p-8 hover-lift hover:border-primary/25 group">
-                <div className="w-11 h-11 rounded-2xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
+              <div key={c.t} className="rounded-xl border border-border/50 bg-card/30 p-8 hover-lift hover:border-primary/25 group">
+                <div className="w-11 h-11 rounded-xl bg-primary/10 border border-primary/15 flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6">
                   <c.icon className="w-[19px] h-[19px] text-primary" strokeWidth={1.9} />
                 </div>
                 <h3 className="landing-head text-[19px] font-bold mb-2.5">{c.t}</h3>
@@ -212,8 +211,8 @@ export default function LandingClassic() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 stagger-fade">
             {capabilities.map((c) => (
-              <div key={c.title} className="rounded-2xl border border-border/40 bg-card/20 p-6 flex gap-4 hover:bg-card/50 hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300">
-                <div className="w-9 h-9 rounded-full bg-muted/60 border border-border/50 flex items-center justify-center shrink-0">
+              <div key={c.title} className="rounded-lg border border-border/40 bg-card/20 p-6 flex gap-4 hover:bg-card/50 hover:border-primary/20 hover:-translate-y-0.5 transition-all duration-300">
+                <div className="w-9 h-9 rounded-lg bg-muted/60 border border-border/50 flex items-center justify-center shrink-0">
                   <c.icon className="w-[15px] h-[15px] text-muted-foreground" strokeWidth={1.9} />
                 </div>
                 <div>
@@ -230,7 +229,7 @@ export default function LandingClassic() {
       <section className="border-y border-border/50 bg-muted/20">
         <div className="max-w-[1080px] mx-auto px-6 py-20 grid lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] gap-12">
           <div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-[12px] font-semibold text-primary mb-6">
+            <span className="inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-primary/10 px-4 py-1.5 text-[12px] font-semibold text-primary mb-6">
               <Sparkles className="w-3.5 h-3.5" /> Security
             </span>
             <h2 className="landing-head text-[30px] sm:text-[38px] font-bold leading-[1.1] mb-5">
@@ -245,7 +244,7 @@ export default function LandingClassic() {
             </button>
           </div>
 
-          <div className="rounded-3xl border border-border/50 bg-card/30 p-2 sm:p-3">
+          <div className="rounded-xl border border-border/50 bg-card/30 p-2 sm:p-3">
             {[
               ["Encrypted in transit", "HTTPS/TLS 1.2+ with OCSP stapling on every request — browser, game server, Open Cloud."],
               ["Encrypted at rest", "Managed Postgres encrypts every disk page and every automated backup, uploads included."],
@@ -254,8 +253,8 @@ export default function LandingClassic() {
               ["Roblox OAuth, no passwords", "OAuth 2.0 with PKCE. We never see or store a Roblox password."],
               ["Daily breach scans", "Automated checks for faults and exposure run every night, reviewed by staff."],
             ].map(([t, d], i, arr) => (
-              <div key={t} className={`py-4 px-4 sm:px-5 flex gap-4 rounded-2xl hover:bg-muted/40 transition-colors ${i < arr.length - 1 ? "border-b border-border/40" : ""}`}>
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+              <div key={t} className={`py-4 px-4 sm:px-5 flex gap-4 rounded-lg hover:bg-muted/40 transition-colors ${i < arr.length - 1 ? "border-b border-border/40" : ""}`}>
+                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" strokeWidth={1.9} />
                 </div>
                 <div>
@@ -271,7 +270,7 @@ export default function LandingClassic() {
       {/* ------------------------------------------------------------ pricing */}
       <section>
         <div className="max-w-[1080px] mx-auto px-6 py-20">
-          <div className="rounded-[2rem] border border-border/50 bg-card/30 p-9 sm:p-12 flex flex-col md:flex-row md:items-center gap-8 justify-between hover:border-primary/25 transition-colors duration-500">
+          <div className="rounded-xl border border-border/50 bg-card/30 p-9 sm:p-12 flex flex-col md:flex-row md:items-center gap-8 justify-between hover:border-primary/25 transition-colors duration-500">
             <div className="max-w-[46ch]">
               <p className="landing-head text-[12px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-4">Pricing</p>
               <h2 className="landing-head text-[30px] font-bold leading-[1.1] mb-3">Free for everyone. Forever.</h2>
@@ -281,7 +280,7 @@ export default function LandingClassic() {
               </p>
             </div>
             <div className="shrink-0">
-              <button onClick={go} className="group inline-flex items-center gap-2 h-12 px-7 rounded-full bg-foreground text-background text-[15px] font-semibold hover:scale-[1.04] active:scale-[0.98] transition-transform">
+              <button onClick={go} className="group inline-flex items-center gap-2 h-12 px-7 rounded-lg bg-foreground text-background text-[15px] font-semibold hover:scale-[1.04] active:scale-[0.98] transition-transform">
                 {isLoggedIn ? "Open dashboard" : "Create your workspace"}
                 <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
               </button>
@@ -446,7 +445,7 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
 
 function NexusPhone({ rail }: { rail: RailItem[] }) {
   return (
-    <div className="mx-auto w-[272px] rounded-[2.25rem] border-[6px] border-[#1a1a1c] overflow-hidden shadow-[0_32px_70px_-30px_rgba(0,0,0,0.65)]" style={{ background: "#0f0f10" }}>
+    <div className="mx-auto w-[272px] rounded-[1.5rem] border-[6px] border-[#1a1a1c] overflow-hidden shadow-[0_32px_70px_-30px_rgba(0,0,0,0.65)]" style={{ background: "#0f0f10" }}>
       <div className="h-6 flex items-center justify-center" style={{ background: "#0a0a0b" }}>
         <div className="w-16 h-3 rounded-full" style={{ background: "#0f0f10" }} />
       </div>
