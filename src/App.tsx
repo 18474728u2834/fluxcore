@@ -16,6 +16,11 @@ import { AccountRemovalGate } from "@/components/AccountRemovalGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+
+/** Wraps public / marketing pages so they use the steel-blue accent (workspace UI untouched). */
+const PublicAccent = ({ children }: { children: React.ReactNode }) => (
+  <div className="public-accent contents">{children}</div>
+);
 import { supabase } from "@/integrations/supabase/client";
 import { NexusSkeleton, ClassicSkeleton } from "@/components/PageSkeletons";
 
@@ -476,6 +481,7 @@ function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
+
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/auth/callback" element={<AuthCallback />} />
@@ -483,13 +489,13 @@ function AppRoutes() {
         <Route path="/sso/callback" element={<SsoCallback />} />
         <Route path="/link-discord" element={<LinkDiscord />} />
         <Route path="/workspaces" element={<Workspaces />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/pricing" element={<Pricing />} />
-        <Route path="/creations" element={<Creations />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/feedback" element={<Feedback />} />
-        <Route path="/feedback/:ticketId" element={<FeedbackTicket />} />
+        <Route path="/terms" element={<PublicAccent><Terms /></PublicAccent>} />
+        <Route path="/pricing" element={<PublicAccent><Pricing /></PublicAccent>} />
+        <Route path="/creations" element={<PublicAccent><Creations /></PublicAccent>} />
+        <Route path="/privacy" element={<PublicAccent><Privacy /></PublicAccent>} />
+        <Route path="/support" element={<PublicAccent><Support /></PublicAccent>} />
+        <Route path="/feedback" element={<PublicAccent><Feedback /></PublicAccent>} />
+        <Route path="/feedback/:ticketId" element={<PublicAccent><FeedbackTicket /></PublicAccent>} />
         <Route path="/join/:inviteCode" element={<JoinWorkspace />} />
         <Route path="/w/:workspaceId/*" element={<WorkspaceRoutes />} />
         <Route path="/bloxy-bargains" element={<BloxyBargains />} />
@@ -498,10 +504,10 @@ function AppRoutes() {
         <Route path="/api" element={<ApiIndex />} />
         <Route path="/api/sessions" element={<ApiSessions />} />
         <Route path="/api/ranking" element={<ApiRanking />} />
-        <Route path="/status" element={<Status />} />
-        <Route path="/security" element={<SecurityPage />} />
-        <Route path="/unsubscribe" element={<Unsubscribe />} />
-        <Route path="/newsletter" element={<Newsletter />} />
+        <Route path="/status" element={<PublicAccent><Status /></PublicAccent>} />
+        <Route path="/security" element={<PublicAccent><SecurityPage /></PublicAccent>} />
+        <Route path="/unsubscribe" element={<PublicAccent><Unsubscribe /></PublicAccent>} />
+        <Route path="/newsletter" element={<PublicAccent><Newsletter /></PublicAccent>} />
         <Route path="/apply/:formId" element={<Apply />} />
             <Route path="/wishlist/:sessionId/:occurrence" element={<CrewWishlist />} />
         <Route path="/discord/verification/:token" element={<DiscordVerify />} />

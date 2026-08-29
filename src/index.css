@@ -187,7 +187,17 @@
   .animate-soft-pulse {
     animation: soft-pulse 2.4s ease-in-out infinite;
   }
+  /* Public / marketing pages accent — steel blue #2f74a8 (does NOT affect workspace UI) */
+
+  .public-accent {
+    --primary: 203 57% 42%;
+    --primary-foreground: 0 0% 100%;
+    --ring: 203 57% 42%;
+    --accent: 203 57% 42%;
+    --accent-foreground: 0 0% 100%;
+  }
 }
+
 
 /* Custom purple scrollbar */
 @layer base {
