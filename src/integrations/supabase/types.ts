@@ -1869,6 +1869,45 @@ export type Database = {
         }
         Relationships: []
       }
+      site_designs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          sections: Json
+          target: string
+          theme: Json
+          ui_label: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          sections?: Json
+          target?: string
+          theme?: Json
+          ui_label?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          sections?: Json
+          target?: string
+          theme?: Json
+          ui_label?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string
