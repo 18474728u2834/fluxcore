@@ -38,16 +38,40 @@ export const NEXUS_PRESET: ThemePreset = {
   },
 };
 
+/**
+ * Hyra-inspired look: near-black canvas, off-white ink, one restrained violet
+ * accent, flat surfaces (no gradient) and generous rounding — the calm,
+ * product-first styling hyra.io uses rather than a glowy AI-template palette.
+ */
+export const HYRA_PRESET: ThemePreset = {
+  name: "Hyra-inspired",
+  builtin: true,
+  theme: {
+    primary: "#6d5efc",
+    background: "#08080a",
+    foreground: "#ededf0",
+    surface: "#111114",
+    radius: 14,
+    font: "inter",
+    density: "spacious",
+    gradient: false,
+  },
+};
+
+const BUILTINS: ThemePreset[] = [NEXUS_PRESET, HYRA_PRESET];
+
 function readPresets(): ThemePreset[] {
+  const names = new Set(BUILTINS.map((b) => b.name));
   try {
     const raw = localStorage.getItem(PRESET_KEY);
     const arr = raw ? JSON.parse(raw) : [];
-    const saved: ThemePreset[] = Array.isArray(arr) ? arr.filter((p: any) => p?.name !== NEXUS_PRESET.name) : [];
-    return [NEXUS_PRESET, ...saved];
+    const saved: ThemePreset[] = Array.isArray(arr) ? arr.filter((p: any) => !names.has(p?.name)) : [];
+    return [...BUILTINS, ...saved];
   } catch {
-    return [NEXUS_PRESET];
+    return [...BUILTINS];
   }
 }
+
 function writePresets(list: ThemePreset[]) {
   try { localStorage.setItem(PRESET_KEY, JSON.stringify(list.filter((p) => !p.builtin))); } catch { /* ignore */ }
 }
