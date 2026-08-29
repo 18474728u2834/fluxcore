@@ -18,6 +18,19 @@ export default function Demo() {
 
     (async () => {
       try {
+        // Remember the visitor's own session so "Exit demo" can restore it.
+        try {
+          const { data: prev } = await supabase.auth.getSession();
+          if (prev.session?.refresh_token && prev.session.user?.user_metadata?.demo !== true) {
+            localStorage.setItem("demo_prev_session", JSON.stringify({
+              access_token: prev.session.access_token,
+              refresh_token: prev.session.refresh_token,
+            }));
+          } else {
+            localStorage.removeItem("demo_prev_session");
+          }
+        } catch { /* ignore */ }
+
         const { data, error } = await supabase.functions.invoke("demo-session", { body: {} });
         if (error || !data?.access_token || !data?.workspace_id) {
           throw new Error(error?.message ?? data?.error ?? "Could not start the demo");
