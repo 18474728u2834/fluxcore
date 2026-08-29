@@ -182,9 +182,14 @@ export function ShellV3({ children }: { children: ReactNode }) {
             onClick={() => navigate(`${base}/dashboard`)}
             className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition-colors text-left"
           >
-            <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[12px] font-bold shrink-0" style={{ background: accent }}>
-              {initials}
-            </span>
+            {groupIcon ? (
+              <img src={groupIcon} alt={workspace?.name || "Workspace"} className="w-9 h-9 rounded-xl object-cover shrink-0"
+                style={{ boxShadow: `0 0 0 1px ${accent}40` }} />
+            ) : (
+              <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[12px] font-bold shrink-0" style={{ background: accent }}>
+                {initials}
+              </span>
+            )}
             <span className="min-w-0">
               <span className="block text-[13px] font-semibold truncate">{workspace?.name || "Workspace"}</span>
               <span className="block text-[11px] text-white/40 flex items-center gap-1">
