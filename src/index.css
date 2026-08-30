@@ -174,11 +174,11 @@
     animation: fade-in 0.4s ease forwards;
   }
   .landing-head {
-    font-family: 'Space Grotesk', 'Outfit', sans-serif;
-    letter-spacing: -0.03em;
+    font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif;
+    letter-spacing: -0.025em;
   }
   .landing-body {
-    font-family: 'DM Sans', 'Inter', system-ui, sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
   @keyframes soft-pulse {
     0%, 100% { opacity: 1; transform: scale(1); }

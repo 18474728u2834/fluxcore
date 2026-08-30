@@ -95,9 +95,7 @@ export default function LandingClassic() {
             <div className="hidden md:flex items-center gap-7">
               <a href="#product" className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Product</a>
               <button onClick={() => navigate("/pricing")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Pricing</button>
-              
-              <button onClick={() => navigate("/feedback")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Ideas &amp; bug reports</button>
-              <button onClick={() => navigate("/support")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Support</button>
+              <button onClick={() => navigate("/creations")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Creations</button>
             </div>
           </div>
           <div className="flex items-center gap-2">
