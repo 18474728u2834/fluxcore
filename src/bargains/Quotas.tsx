@@ -189,7 +189,7 @@ export default function BQuotas() {
     <BargainsShell>
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: bx.text }}>Quotas</h1>
+          <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: text }}>Quotas</h1>
           {canManage && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
@@ -200,12 +200,12 @@ export default function BQuotas() {
                 </button>
               </DialogTrigger>
               <DialogContent className="max-w-sm" style={{ background: "#1a1a1c", borderColor: bx.borderColor, color: bx.text }}>
-                <DialogHeader><DialogTitle style={{ color: bx.text }}>Create quota</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle style={{ color: text }}>Create quota</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
                   <Input placeholder={aviation ? "e.g. Attend 1 flight" : maritime ? "e.g. Attend 1 voyage" : "e.g. Host 2 sessions"} value={title} onChange={(e) => setTitle(e.target.value)} />
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label className="text-xs" style={{ color: bx.textDim }}>Type</Label>
+                      <Label className="text-xs" style={{ color: textDim }}>Type</Label>
                       <Select value={quotaType} onValueChange={setQuotaType}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -216,13 +216,13 @@ export default function BQuotas() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs" style={{ color: bx.textDim }}>Target</Label>
+                      <Label className="text-xs" style={{ color: textDim }}>Target</Label>
                       <Input type="number" value={targetValue} onChange={(e) => setTargetValue(e.target.value)} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label className="text-xs" style={{ color: bx.textDim }}>Period</Label>
+                      <Label className="text-xs" style={{ color: textDim }}>Period</Label>
                       <Select value={period} onValueChange={setPeriod}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -234,7 +234,7 @@ export default function BQuotas() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs flex items-center gap-1.5" style={{ color: bx.textDim }}>
+                      <Label className="text-xs flex items-center gap-1.5" style={{ color: textDim }}>
                         Applies to
                         {!isPremium && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(245,90,74,0.15)", color: bx.coral }}>PREMIUM</span>}
                       </Label>
@@ -261,14 +261,14 @@ export default function BQuotas() {
         </div>
 
         {canManage && (
-          <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
+          <div className="rounded-md border overflow-hidden" style={cardSt}>
             <div className="px-5 py-3 flex items-center gap-2 border-b" style={{ borderColor: bx.borderColor }}>
               <Target className="w-4 h-4" style={{ color: bx.coral }} />
-              <div className="text-sm font-semibold" style={{ color: bx.text }}>Assigned quotas</div>
-              <div className="text-xs ml-2" style={{ color: bx.textDim }}>{quotas.length} active</div>
+              <div className="text-sm font-semibold" style={{ color: text }}>Assigned quotas</div>
+              <div className="text-xs ml-2" style={{ color: textDim }}>{quotas.length} active</div>
             </div>
             {quotas.length === 0 ? (
-              <div className="p-8 text-center text-sm" style={{ color: bx.textDim }}>
+              <div className="p-8 text-center text-sm" style={{ color: textDim }}>
                 {phrase("No quotas yet. Create one to start tracking activity.")}
               </div>
             ) : (
@@ -276,15 +276,15 @@ export default function BQuotas() {
                 {quotas.map((q) => (
                   <div key={q.id} className="px-5 py-3 flex items-center gap-4" style={{ borderColor: bx.borderColor }}>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{q.title}</div>
-                      <div className="text-xs mt-0.5" style={{ color: bx.textDim }}>
+                      <div className="text-sm font-semibold truncate" style={{ color: text }}>{q.title}</div>
+                      <div className="text-xs mt-0.5" style={{ color: textDim }}>
                         {q.target_value} {q.quota_type === "sessions" ? t("sessions") + " hosted" : q.quota_type === "attendance" ? t("sessions") + " attended" : "minutes"} · {q.period} · {roleName(q.role_id)}
                       </div>
                     </div>
                     <button
                       onClick={() => handleDelete(q.id)}
                       className="p-2 rounded-md transition-colors"
-                      style={{ color: bx.textDim }}
+                      style={{ color: textDim }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = bx.coral)}
                       onMouseLeave={(e) => (e.currentTarget.style.color = bx.textDim)}>
                       <Trash2 className="w-4 h-4" />
@@ -296,7 +296,7 @@ export default function BQuotas() {
           </div>
         )}
 
-        <h2 className="text-xl font-semibold tracking-tight pt-2" style={{ color: bx.text }}>Most minutes</h2>
+        <h2 className="text-xl font-semibold tracking-tight pt-2" style={{ color: text }}>Most minutes</h2>
 
         {/* Toolbar */}
         <div className="flex items-center gap-1 -mx-2">
@@ -318,14 +318,14 @@ export default function BQuotas() {
         {/* Cards grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {sorted.map((r) => (
-            <div key={r.user_id} className="rounded-md border overflow-hidden" style={bx.cardStyle}>
+            <div key={r.user_id} className="rounded-md border overflow-hidden" style={cardSt}>
               <div className="px-5 pt-3 pb-1" />
 
               <div className="px-5 pb-3 flex items-center gap-3">
                 <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className="w-9 h-9 rounded-md" />
-                <div className="font-semibold text-[15px]" style={{ color: bx.text }}>
-                  {r.roblox_username} <span style={{ color: bx.textMuted }}>•</span>{" "}
-                  <span style={{ color: bx.textDim }}>{r.role}</span>
+                <div className="font-semibold text-[15px]" style={{ color: text }}>
+                  {r.roblox_username} <span style={{ color: textMuted }}>•</span>{" "}
+                  <span style={{ color: textDim }}>{r.role}</span>
                 </div>
               </div>
               <div className="px-5 grid grid-cols-3 gap-2">
@@ -335,8 +335,8 @@ export default function BQuotas() {
                   { v: r.sessionsAttended, l: t("Sessions Attended") },
                 ].map((s, i) => (
                   <div key={i} className="rounded-md p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
-                    <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: bx.text }}>{s.v}</div>
-                    <div className="text-[11px] mt-1.5 font-medium" style={{ color: bx.textDim }}>{s.l}</div>
+                    <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: text }}>{s.v}</div>
+                    <div className="text-[11px] mt-1.5 font-medium" style={{ color: textDim }}>{s.l}</div>
                   </div>
                 ))}
               </div>
@@ -350,8 +350,8 @@ export default function BQuotas() {
         </div>
 
         {sorted.length === 0 && (
-          <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
-            <p className="text-sm" style={{ color: bx.textDim }}>No members yet.</p>
+          <div className="rounded-md border p-16 text-center" style={cardSt}>
+            <p className="text-sm" style={{ color: textDim }}>No members yet.</p>
           </div>
         )}
       </div>
