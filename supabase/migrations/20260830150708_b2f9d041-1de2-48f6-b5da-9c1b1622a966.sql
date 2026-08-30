@@ -1,0 +1,1 @@
+ALTER TABLE public.workspace_documents ADD COLUMN IF NOT EXISTS external_url text;

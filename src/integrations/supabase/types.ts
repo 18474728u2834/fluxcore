@@ -2622,6 +2622,7 @@ export type Database = {
           deadline: string | null
           department_id: string | null
           doc_type: string
+          external_url: string | null
           id: string
           signature_type: string
           signature_word: string | null
@@ -2638,6 +2639,7 @@ export type Database = {
           deadline?: string | null
           department_id?: string | null
           doc_type?: string
+          external_url?: string | null
           id?: string
           signature_type?: string
           signature_word?: string | null
@@ -2654,6 +2656,7 @@ export type Database = {
           deadline?: string | null
           department_id?: string | null
           doc_type?: string
+          external_url?: string | null
           id?: string
           signature_type?: string
           signature_word?: string | null
