@@ -183,23 +183,23 @@ export default function BMemberProfile() {
                   ["Status", member.verified ? "Verified" : "Unverified"],
                 ].map(([k, v]) => (
                   <div key={k} className="flex items-center gap-2">
-                    <span className="font-semibold" style={{ color: bx.text }}>{v}</span>
-                    <span style={{ color: bx.textMuted }}>· {k}</span>
+                    <span className="font-semibold" style={{ color: text }}>{v}</span>
+                    <span style={{ color: textMuted }}>· {k}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="rounded-md border p-5" style={bx.cardStyle}>
-              <div className="text-sm font-bold mb-4" style={{ color: bx.text }}>Quick stats</div>
+            <div className="rounded-md border p-5" style={cardSt}>
+              <div className="text-sm font-bold mb-4" style={{ color: text }}>Quick stats</div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-md p-4" style={{ background: "#141416" }}>
-                  <div className="text-2xl font-bold tabular-nums" style={{ color: bx.text }}>{warnings}</div>
-                  <div className="text-xs mt-1" style={{ color: bx.textMuted }}>Warnings</div>
+                  <div className="text-2xl font-bold tabular-nums" style={{ color: text }}>{warnings}</div>
+                  <div className="text-xs mt-1" style={{ color: textMuted }}>Warnings</div>
                 </div>
                 <div className="rounded-md p-4" style={{ background: "#141416" }}>
-                  <div className="text-2xl font-bold tabular-nums" style={{ color: bx.text }}>{activity.length}</div>
-                  <div className="text-xs mt-1" style={{ color: bx.textMuted }}>Events</div>
+                  <div className="text-2xl font-bold tabular-nums" style={{ color: text }}>{activity.length}</div>
+                  <div className="text-xs mt-1" style={{ color: textMuted }}>Events</div>
                 </div>
               </div>
             </div>
@@ -207,14 +207,14 @@ export default function BMemberProfile() {
         )}
 
         {tab === "Activity" && (
-          <div className="rounded-md border mt-6 overflow-hidden" style={bx.cardStyle}>
+          <div className="rounded-md border mt-6 overflow-hidden" style={cardSt}>
             {activity.length === 0 ? (
-              <div className="p-10 text-center text-sm" style={{ color: bx.textDim }}>No activity recorded yet.</div>
+              <div className="p-10 text-center text-sm" style={{ color: textDim }}>No activity recorded yet.</div>
             ) : activity.map((e, i) => (
-              <div key={e.id} className="px-5 py-3 flex items-center gap-3" style={{ borderTop: i === 0 ? "none" : "1px solid #22222a" }}>
+              <div key={e.id} className="px-5 py-3 flex items-center gap-3" style={{ borderTop: i === 0 ? "none" : `1px solid ${tabBorder}` }}>
                 <div className="w-2 h-2 rounded-md" style={{ background: bx.coral }} />
-                <div className="flex-1 text-sm" style={{ color: bx.text }}>{e.event_type}</div>
-                <div className="text-xs" style={{ color: bx.textMuted }}>{new Date(e.created_at).toLocaleString()}</div>
+                <div className="flex-1 text-sm" style={{ color: text }}>{e.event_type}</div>
+                <div className="text-xs" style={{ color: textMuted }}>{new Date(e.created_at).toLocaleString()}</div>
               </div>
             ))}
           </div>
@@ -227,9 +227,9 @@ export default function BMemberProfile() {
                 <Plus className="w-3.5 h-3.5" /> Add log
               </button>
             )}
-            <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
+            <div className="rounded-md border overflow-hidden" style={cardSt}>
               {logs.length === 0 ? (
-                <div className="p-10 text-center text-sm" style={{ color: bx.textDim }}>No log entries yet.</div>
+                <div className="p-10 text-center text-sm" style={{ color: textDim }}>No log entries yet.</div>
               ) : logs.map((l, i) => {
                 const logPalette =
                   l.log_type === "promotion" ? { bg: "rgba(34,197,94,0.12)", color: bx.success, border: "rgba(34,197,94,0.3)" } :
@@ -237,10 +237,10 @@ export default function BMemberProfile() {
                   l.log_type === "warning" ? { bg: "rgba(245,158,11,0.12)", color: bx.warning, border: "rgba(245,158,11,0.3)" } :
                   { bg: "rgba(59,130,246,0.12)", color: "#3b82f6", border: "rgba(59,130,246,0.3)" };
                 return (
-                  <div key={l.id} className="p-4" style={{ borderTop: i === 0 ? "none" : "1px solid #22222a" }}>
+                  <div key={l.id} className="p-4" style={{ borderTop: i === 0 ? "none" : `1px solid ${tabBorder}` }}>
                     <div className="flex items-center gap-2 mb-1.5">
                       <span className="text-[10px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wider" style={{ background: logPalette.bg, color: logPalette.color, border: `1px solid ${logPalette.border}` }}>{l.log_type}</span>
-                      <span className="text-xs" style={{ color: bx.textMuted }}>{new Date(l.created_at).toLocaleDateString()} · by {l.author_name}</span>
+                      <span className="text-xs" style={{ color: textMuted }}>{new Date(l.created_at).toLocaleDateString()} · by {l.author_name}</span>
                       {canManage && (
                         <button
                           onClick={async () => {
@@ -256,7 +256,7 @@ export default function BMemberProfile() {
                         </button>
                       )}
                     </div>
-                    <div className="text-sm" style={{ color: bx.text }}>{l.content}</div>
+                    <div className="text-sm" style={{ color: text }}>{l.content}</div>
                   </div>
                 );
               })}
@@ -265,15 +265,15 @@ export default function BMemberProfile() {
         )}
 
         {(tab === "Assignments" || tab === "Time off") && (
-          <div className="mt-6 rounded-md border p-12 text-center text-sm" style={{ ...bx.cardStyle, color: bx.textDim }}>Nothing here yet.</div>
+          <div className="mt-6 rounded-md border p-12 text-center text-sm" style={{ ...cardSt, color: textDim }}>Nothing here yet.</div>
         )}
       </div>
 
       {logOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
-          <div className="w-full max-w-md rounded-md border p-6 relative" style={bx.cardStyle}>
+          <div className="w-full max-w-md rounded-md border p-6 relative" style={cardSt}>
             <button onClick={() => setLogOpen(false)} className="absolute top-4 right-4 text-[#7a7a7e] hover:text-white"><X className="w-4 h-4" /></button>
-            <h2 className="text-lg font-bold" style={{ color: bx.text }}>Add log</h2>
+            <h2 className="text-lg font-bold" style={{ color: text }}>Add log</h2>
             <div className="mt-4 space-y-3">
               <select value={logType} onChange={e => setLogType(e.target.value)} className="w-full h-10 px-3 rounded-md border text-sm outline-none" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }}>
                 <option value="note">Note</option>
