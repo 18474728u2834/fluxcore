@@ -190,14 +190,14 @@ export default function BMemberProfile() {
               </div>
             </div>
 
-            <div className="rounded-md border p-5" style={cardSt}>
+            <div className={`${cardCls} p-5`} style={cardSt}>
               <div className="text-sm font-bold mb-4" style={{ color: text }}>Quick stats</div>
               <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-md p-4" style={{ background: "#141416" }}>
+                <div className={v3 ? "rounded-xl p-4" : "rounded-md p-4"} style={innerSt}>
                   <div className="text-2xl font-bold tabular-nums" style={{ color: text }}>{warnings}</div>
                   <div className="text-xs mt-1" style={{ color: textMuted }}>Warnings</div>
                 </div>
-                <div className="rounded-md p-4" style={{ background: "#141416" }}>
+                <div className={v3 ? "rounded-xl p-4" : "rounded-md p-4"} style={innerSt}>
                   <div className="text-2xl font-bold tabular-nums" style={{ color: text }}>{activity.length}</div>
                   <div className="text-xs mt-1" style={{ color: textMuted }}>Events</div>
                 </div>
@@ -207,12 +207,12 @@ export default function BMemberProfile() {
         )}
 
         {tab === "Activity" && (
-          <div className="rounded-md border mt-6 overflow-hidden" style={cardSt}>
+          <div className={`${cardCls} mt-6 overflow-hidden`} style={cardSt}>
             {activity.length === 0 ? (
               <div className="p-10 text-center text-sm" style={{ color: textDim }}>No activity recorded yet.</div>
             ) : activity.map((e, i) => (
               <div key={e.id} className="px-5 py-3 flex items-center gap-3" style={{ borderTop: i === 0 ? "none" : `1px solid ${tabBorder}` }}>
-                <div className="w-2 h-2 rounded-md" style={{ background: bx.coral }} />
+                <div className={v3 ? "w-2 h-2 rounded-full" : "w-2 h-2 rounded-md"} style={{ background: accentColor }} />
                 <div className="flex-1 text-sm" style={{ color: text }}>{e.event_type}</div>
                 <div className="text-xs" style={{ color: textMuted }}>{new Date(e.created_at).toLocaleString()}</div>
               </div>
@@ -223,11 +223,11 @@ export default function BMemberProfile() {
         {tab === "Logbook" && (
           <div className="mt-6 space-y-3">
             {canManage && (
-              <button onClick={() => setLogOpen(true)} className="h-9 px-4 rounded-md text-xs font-semibold inline-flex items-center gap-1.5" style={{ background: "#0d4f4f", color: "#7fd9d9" }}>
+              <button onClick={() => setLogOpen(true)} className={`h-9 px-4 ${v3 ? "rounded-xl" : "rounded-md"} text-xs font-semibold inline-flex items-center gap-1.5`} style={actionBtn}>
                 <Plus className="w-3.5 h-3.5" /> Add log
               </button>
             )}
-            <div className="rounded-md border overflow-hidden" style={cardSt}>
+            <div className={`${cardCls} overflow-hidden`} style={cardSt}>
               {logs.length === 0 ? (
                 <div className="p-10 text-center text-sm" style={{ color: textDim }}>No log entries yet.</div>
               ) : logs.map((l, i) => {
@@ -265,24 +265,24 @@ export default function BMemberProfile() {
         )}
 
         {(tab === "Assignments" || tab === "Time off") && (
-          <div className="mt-6 rounded-md border p-12 text-center text-sm" style={{ ...cardSt, color: textDim }}>Nothing here yet.</div>
+          <div className={`mt-6 ${cardCls} p-12 text-center text-sm`} style={{ ...cardSt, color: textDim }}>Nothing here yet.</div>
         )}
       </div>
 
       {logOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)" }}>
-          <div className="w-full max-w-md rounded-md border p-6 relative" style={cardSt}>
+          <div className={`w-full max-w-md ${cardCls} p-6 relative`} style={cardSt}>
             <button onClick={() => setLogOpen(false)} className="absolute top-4 right-4 text-[#7a7a7e] hover:text-white"><X className="w-4 h-4" /></button>
             <h2 className="text-lg font-bold" style={{ color: text }}>Add log</h2>
             <div className="mt-4 space-y-3">
-              <select value={logType} onChange={e => setLogType(e.target.value)} className="w-full h-10 px-3 rounded-md border text-sm outline-none" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }}>
+              <select value={logType} onChange={e => setLogType(e.target.value)} className={`w-full h-10 px-3 ${v3 ? "rounded-xl" : "rounded-md"} border text-sm outline-none`} style={fieldSt}>
                 <option value="note">Note</option>
                 <option value="promotion">Promotion</option>
                 <option value="warning">Warning</option>
                 <option value="demotion">Demotion</option>
               </select>
-              <textarea value={logContent} onChange={e => setLogContent(e.target.value)} placeholder="Write details..." className="w-full min-h-[100px] p-3 rounded-md border text-sm outline-none resize-y" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }} />
-              <button onClick={addLog} className="h-10 w-full rounded-md text-sm font-semibold" style={{ background: "#0d4f4f", color: "#7fd9d9" }}>Add log</button>
+              <textarea value={logContent} onChange={e => setLogContent(e.target.value)} placeholder="Write details..." className={`w-full min-h-[100px] p-3 ${v3 ? "rounded-xl" : "rounded-md"} border text-sm outline-none resize-y`} style={fieldSt} />
+              <button onClick={addLog} className={`h-10 w-full ${v3 ? "rounded-xl" : "rounded-md"} text-sm font-semibold`} style={actionBtn}>Add log</button>
             </div>
           </div>
         </div>
