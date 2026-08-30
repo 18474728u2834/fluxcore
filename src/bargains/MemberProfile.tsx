@@ -115,7 +115,7 @@ export default function BMemberProfile() {
     }
   };
 
-  if (!member) return <BargainsShell><div className="text-sm" style={{ color: bx.textDim }}>Loading…</div></BargainsShell>;
+  if (!member) return <BargainsShell><div className="text-sm" style={{ color: textDim }}>Loading…</div></BargainsShell>;
 
   const warnings = logs.filter(l => l.log_type === "warning").length;
   const birthday = member.birthday_month && member.birthday_day ? `${MONTHS[member.birthday_month - 1]} ${member.birthday_day}` : "Unknown";
@@ -123,21 +123,26 @@ export default function BMemberProfile() {
   return (
     <BargainsShell>
       <div className="max-w-6xl mx-auto">
-        <button onClick={() => navigate(`/w/${workspaceId}/members`)} className="flex items-center gap-1.5 text-xs mb-5" style={{ color: bx.textDim }}>
+        <button onClick={() => navigate(`/w/${workspaceId}/members`)} className="flex items-center gap-1.5 text-xs mb-5" style={{ color: textDim }}>
           <ArrowLeft className="w-3.5 h-3.5" /> Back to Members
         </button>
 
         {/* Header */}
-        <div className="rounded-md border p-6 flex items-start gap-6" style={bx.cardStyle}>
-          <RobloxAvatar username={member.roblox_username} userId={member.roblox_user_id} className="w-28 h-28 rounded-md" />
+        <div className="relative">
+          {v3 && (
+            <div className="absolute -inset-2 rounded-3xl blur-2xl opacity-20 pointer-events-none"
+              style={{ background: `radial-gradient(50% 90% at 20% 0%, ${accent}, transparent 70%)` }} />
+          )}
+        <div className={`${cardCls} p-6 flex items-start gap-6 relative`} style={cardSt}>
+          <RobloxAvatar username={member.roblox_username} userId={member.roblox_user_id} className={`w-28 h-28 ${avatarRound}`} />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
-              <h1 className="text-[2rem] font-bold tracking-[-0.03em] leading-none" style={{ color: bx.text }}>{member.roblox_username}</h1>
-              <a href={`https://www.roblox.com/users/${member.roblox_user_id}/profile`} target="_blank" rel="noreferrer" className="opacity-70 hover:opacity-100"><ExternalLink className="w-4 h-4" style={{ color: bx.textDim }} /></a>
+              <h1 className="text-[2rem] font-bold tracking-[-0.03em] leading-none" style={{ color: text }}>{member.roblox_username}</h1>
+              <a href={`https://www.roblox.com/users/${member.roblox_user_id}/profile`} target="_blank" rel="noreferrer" className="opacity-70 hover:opacity-100"><ExternalLink className="w-4 h-4" style={{ color: textDim }} /></a>
             </div>
-            <div className="text-sm mt-1.5" style={{ color: bx.textDim }}>{member.role}</div>
+            <div className="text-sm mt-1.5" style={{ color: textDim }}>{member.role}</div>
             <div className="flex items-center gap-2 mt-3">
-              <span className="text-[11px] px-2.5 py-1 rounded-md font-medium inline-flex items-center gap-1" style={{ background: "#242427", color: bx.textDim }}>
+              <span className={`text-[11px] px-2.5 py-1 ${v3 ? "rounded-lg" : "rounded-md"} font-medium inline-flex items-center gap-1`} style={v3 ? { background: "rgba(255,255,255,0.05)", color: textDim } : { background: "#242427", color: textDim }}>
                 Joined {new Date(member.joined_at).toLocaleDateString()}
               </span>
               {warnings > 0 && (
