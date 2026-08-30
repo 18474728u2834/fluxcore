@@ -38,6 +38,8 @@ export default function DocumentView() {
   const [submitting, setSubmitting] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
+  const [openedExternal, setOpenedExternal] = useState(false);
+
 
   // Mark this document as "read" locally so the alert dot disappears
   useEffect(() => {
