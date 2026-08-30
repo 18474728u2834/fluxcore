@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
+import { n3 } from "./ShellV3";
 import { Filter, ArrowDownUp, Plus, MessageSquare, AlertTriangle, Loader2, Trash2, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useNexusV3Trial } from "@/hooks/useNexusV3";
 import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -45,6 +48,29 @@ export default function BQuotas() {
   const { t, phrase, aviation, maritime } = useLexicon(workspaceId);
   const canManage = isOwner || hasPermission("manage_members");
   const isPremium = !!workspace?.premium;
+  const { config } = useNexusConfig(workspaceId);
+  const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
+
+  // Nexus UI 3.0 styling — glass cards, rounded corners, workspace accent.
+  const v3 = config.version === "v3" && v3Enabled;
+  const accent = workspace?.primary_color || "#2f74a8";
+  const cardCls = v3 ? "rounded-2xl border" : "rounded-md border";
+  const cardSt: any = v3 ? n3.cardStyle : bx.cardStyle;
+  const text = v3 ? n3.text : bx.text;
+  const textDim = v3 ? n3.textDim : bx.textDim;
+  const textMuted = v3 ? n3.textMuted : bx.textMuted;
+  const accentColor = v3 ? accent : bx.coral;
+  const accentBg = v3 ? `${accent}1f` : "rgba(245,90,74,0.10)";
+  const innerSt: any = v3
+    ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }
+    : { background: "#141416", border: "1px solid #22222a" };
+  const footerSt: any = v3
+    ? { background: "rgba(255,255,255,0.03)", color: textDim }
+    : { background: "#141416", color: bx.textDim };
+  const btnRound = v3 ? "rounded-xl" : "rounded-md";
+  const primaryBtn: any = v3
+    ? { background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, color: "#fff", boxShadow: `0 4px 14px ${accent}40` }
+    : { background: bx.coral, color: "#fff" };
 
   const [rows, setRows] = useState<MemberRow[]>([]);
   const [sortDesc, setSortDesc] = useState(true);
