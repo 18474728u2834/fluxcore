@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BargainsShell, bx } from "./Shell";
+import { n3 } from "./ShellV3";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 import { ArrowLeft, AlertTriangle, ExternalLink, Plus, X, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useNexusV3Trial } from "@/hooks/useNexusV3";
 import { toast } from "sonner";
 
 interface MemberData { id: string; user_id: string | null; roblox_username: string; roblox_user_id: string; role: string; verified: boolean; joined_at: string; birthday_month: number | null; birthday_day: number | null; }
