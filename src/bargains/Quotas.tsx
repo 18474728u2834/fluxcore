@@ -306,10 +306,10 @@ export default function BQuotas() {
             { icon: ArrowDownUp, label: "Sort", active: true, onClick: () => setSortDesc(s => !s) },
           ].map(({ icon: Icon, label, active, onClick }) => (
             <button key={label} onClick={onClick}
-              className="inline-flex items-center gap-2 px-3 h-8 rounded-md text-sm transition-colors"
+              className={`inline-flex items-center gap-2 px-3 h-8 ${btnRound} text-sm transition-colors`}
               style={{
-                color: active ? bx.coral : bx.textDim,
-                background: active ? "rgba(245,90,74,0.10)" : "transparent",
+                color: active ? accentColor : textDim,
+                background: active ? accentBg : "transparent",
               }}>
               <Icon className="w-3.5 h-3.5" /> {label}
             </button>
@@ -319,11 +319,11 @@ export default function BQuotas() {
         {/* Cards grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {sorted.map((r) => (
-            <div key={r.user_id} className="rounded-md border overflow-hidden" style={cardSt}>
+            <div key={r.user_id} className={`${cardCls} overflow-hidden`} style={cardSt}>
               <div className="px-5 pt-3 pb-1" />
 
               <div className="px-5 pb-3 flex items-center gap-3">
-                <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className="w-9 h-9 rounded-md" />
+                <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className={`w-9 h-9 ${btnRound}`} />
                 <div className="font-semibold text-[15px]" style={{ color: text }}>
                   {r.roblox_username} <span style={{ color: textMuted }}>•</span>{" "}
                   <span style={{ color: textDim }}>{r.role}</span>
@@ -335,13 +335,13 @@ export default function BQuotas() {
                   { v: r.sessionsHosted, l: t("Sessions Hosted") },
                   { v: r.sessionsAttended, l: t("Sessions Attended") },
                 ].map((s, i) => (
-                  <div key={i} className="rounded-md p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
+                  <div key={i} className={v3 ? "rounded-xl p-3" : "rounded-md p-3"} style={innerSt}>
                     <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: text }}>{s.v}</div>
                     <div className="text-[11px] mt-1.5 font-medium" style={{ color: textDim }}>{s.l}</div>
                   </div>
                 ))}
               </div>
-              <div className="px-5 py-3 mt-3 flex items-center gap-3 text-[11px]" style={{ background: "#141416", color: bx.textDim }}>
+              <div className="px-5 py-3 mt-3 flex items-center gap-3 text-[11px]" style={footerSt}>
                 <span className="inline-flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" style={{ color: "#e0a64a" }} /> {r.warnings}</span>
                 <span className="inline-flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" /> {r.messages}</span>
                 <span className="ml-2">Last Seen: {r.lastSeen ? new Date(r.lastSeen).toLocaleDateString() : "Never"}</span>
@@ -351,7 +351,7 @@ export default function BQuotas() {
         </div>
 
         {sorted.length === 0 && (
-          <div className="rounded-md border p-16 text-center" style={cardSt}>
+          <div className={`${cardCls} p-16 text-center`} style={cardSt}>
             <p className="text-sm" style={{ color: textDim }}>No members yet.</p>
           </div>
         )}
