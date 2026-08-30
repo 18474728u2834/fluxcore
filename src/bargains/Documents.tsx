@@ -147,10 +147,18 @@ export default function BDocuments() {
                 <select value={docType} onChange={e => setDocType(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-md border text-sm outline-none" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }}>
                   <option value="policy">Policy</option>
                   <option value="handbook">Handbook</option>
+                  <option value="external">External document / policy</option>
                 </select>
               </div>
+              {docType === "external" && (
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: bx.textDim }}>Document link</label>
+                  <input value={externalUrl} onChange={e => setExternalUrl(e.target.value)} placeholder="https://..." className="mt-1.5 w-full h-10 px-3 rounded-md border text-sm outline-none" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }} />
+                  <p className="text-[11px] mt-1.5" style={{ color: bx.textMuted }}>Staff are redirected to this link, then return to sign.</p>
+                </div>
+              )}
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: bx.textDim }}>Content</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: bx.textDim }}>{docType === "external" ? "Summary (optional)" : "Content"}</label>
                 <textarea value={content} onChange={e => setContent(e.target.value)} className="mt-1.5 w-full min-h-[160px] p-3 rounded-md border text-sm outline-none resize-y" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }} />
               </div>
             </div>
