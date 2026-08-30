@@ -115,6 +115,7 @@ export default function DocumentView() {
   const sign = async () => {
     if (!doc || !user) { toast.error("You must be signed in"); return; }
     if (!myMemberId && !isOwner) { toast.error("You must be a workspace member to sign"); return; }
+    if (doc.external_url && !openedExternal) { toast.error("Open the document first, then sign"); return; }
     let sigData = "";
     if (doc.signature_type === "checkbox") {
       if (!signChecked) { toast.error("Tick the acknowledgement box"); return; }
