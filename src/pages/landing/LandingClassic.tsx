@@ -40,7 +40,7 @@ import redFunnelBadge from "@/assets/red-funnel-badge.png";
 
 /* ---------------------------------------------------------------------------
    Fluxcore homepage — rounded, human, product-first.
-   Space Grotesk headlines, DM Sans body, one violet accent, no AI clichés.
+   Inter headings and body, one violet accent, no AI clichés.
 --------------------------------------------------------------------------- */
 
 export default function LandingClassic() {
@@ -95,7 +95,7 @@ export default function LandingClassic() {
             <div className="hidden md:flex items-center gap-7">
               <a href="#product" className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Product</a>
               <button onClick={() => navigate("/pricing")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Pricing</button>
-              <button onClick={() => navigate("/creations")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Creations</button>
+              <button onClick={() => navigate("/feedback")} className="story-link text-[14px] font-medium text-muted-foreground hover:text-foreground">Ideas & bug reports</button>
             </div>
           </div>
           <div className="flex items-center gap-2">

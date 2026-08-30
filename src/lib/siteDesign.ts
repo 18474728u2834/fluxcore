@@ -35,7 +35,7 @@ export interface SiteTheme {
   foreground: string;
   surface: string;
   radius: number;
-  font: "outfit" | "inter" | "mono" | "serif";
+  font: "inter" | "dm-sans" | "mono" | "serif";
   density: "compact" | "comfortable" | "spacious";
   gradient: boolean;
 }
@@ -57,15 +57,15 @@ export const DEFAULT_THEME: SiteTheme = {
   foreground: "#fafafa",
   surface: "#141416",
   radius: 12,
-  font: "outfit",
+  font: "inter",
   density: "comfortable",
   gradient: true,
 };
 
 export const FONT_STACKS: Record<SiteTheme["font"], string> = {
-  outfit: "'Outfit', system-ui, sans-serif",
   inter: "'Inter', system-ui, sans-serif",
-  mono: "'JetBrains Mono', ui-monospace, monospace",
+  "dm-sans": "'DM Sans', system-ui, sans-serif",
+  mono: "'IBM Plex Mono', ui-monospace, monospace",
   serif: "Georgia, 'Times New Roman', serif",
 };
 
@@ -82,13 +82,15 @@ export const SECTION_LABELS: Record<SectionType, string> = {
 
 export function normalizeTheme(raw: any): SiteTheme {
   const t = raw && typeof raw === "object" ? raw : {};
+  const rawFont = typeof t.font === "string" ? t.font : DEFAULT_THEME.font;
+  const safeFont: SiteTheme["font"] = ["inter", "dm-sans", "mono", "serif"].includes(rawFont) ? rawFont as SiteTheme["font"] : DEFAULT_THEME.font;
   return {
     primary: typeof t.primary === "string" ? t.primary : DEFAULT_THEME.primary,
     background: typeof t.background === "string" ? t.background : DEFAULT_THEME.background,
     foreground: typeof t.foreground === "string" ? t.foreground : DEFAULT_THEME.foreground,
     surface: typeof t.surface === "string" ? t.surface : DEFAULT_THEME.surface,
     radius: typeof t.radius === "number" ? t.radius : DEFAULT_THEME.radius,
-    font: ["outfit", "inter", "mono", "serif"].includes(t.font) ? t.font : DEFAULT_THEME.font,
+    font: rawFont === "outfit" ? "inter" : safeFont,
     density: ["compact", "comfortable", "spacious"].includes(t.density) ? t.density : DEFAULT_THEME.density,
     gradient: t.gradient !== false,
   };
