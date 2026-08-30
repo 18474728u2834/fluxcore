@@ -16,6 +16,7 @@ interface Doc {
   id: string; title: string; content: string; doc_type: string;
   signature_type: string; signature_word: string | null;
   auto_assign: boolean; deadline: string | null; created_at: string;
+  external_url?: string | null;
 }
 
 export default function DocumentView() {
