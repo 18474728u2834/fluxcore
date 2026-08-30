@@ -101,7 +101,7 @@ export default function Status() {
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>;
 
   return (
-    <div className="min-h-screen bg-background text-foreground font-outfit">
+    <div className="min-h-screen bg-background text-foreground font-sans">
       <header className="border-b border-border/40">
         <div className="max-w-4xl mx-auto px-6 py-5 flex items-center justify-between">
           <Link to="/" className="font-bold text-lg">Fluxcore<span className="text-primary"> · Status</span></Link>
