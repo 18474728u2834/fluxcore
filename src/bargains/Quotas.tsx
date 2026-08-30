@@ -68,6 +68,7 @@ export default function BQuotas() {
     ? { background: "rgba(255,255,255,0.03)", color: textDim }
     : { background: "#141416", color: bx.textDim };
   const btnRound = v3 ? "rounded-xl" : "rounded-md";
+  const borderCol = v3 ? "rgba(255,255,255,0.07)" : bx.borderColor;
   const primaryBtn: any = v3
     ? { background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, color: "#fff", boxShadow: `0 4px 14px ${accent}40` }
     : { background: bx.coral, color: "#fff" };
@@ -194,12 +195,12 @@ export default function BQuotas() {
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <button
-                  className="inline-flex items-center gap-2 px-3 h-9 rounded-md text-sm font-medium"
-                  style={{ background: bx.coral, color: "#fff" }}>
+                  className={`inline-flex items-center gap-2 px-3 h-9 ${btnRound} text-sm font-medium`}
+                  style={primaryBtn}>
                   <Plus className="w-4 h-4" /> New quota
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-sm" style={{ background: "#1a1a1c", borderColor: bx.borderColor, color: bx.text }}>
+              <DialogContent className="max-w-sm" style={v3 ? { background: "rgba(18,18,22,0.96)", borderColor: borderCol, color: text, borderRadius: "1rem" } : { background: "#1a1a1c", borderColor: bx.borderColor, color: text }}>
                 <DialogHeader><DialogTitle style={{ color: text }}>Create quota</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
                   <Input placeholder={aviation ? "e.g. Attend 1 flight" : maritime ? "e.g. Attend 1 voyage" : "e.g. Host 2 sessions"} value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -250,8 +251,8 @@ export default function BQuotas() {
                   <button
                     onClick={handleCreate}
                     disabled={creating || !title.trim()}
-                    className="w-full inline-flex items-center justify-center gap-2 h-9 rounded-md text-sm font-medium disabled:opacity-50"
-                    style={{ background: bx.coral, color: "#fff" }}>
+                    className={`w-full inline-flex items-center justify-center gap-2 h-9 ${btnRound} text-sm font-medium disabled:opacity-50`}
+                    style={primaryBtn}>
                     {creating && <Loader2 className="w-4 h-4 animate-spin" />} Create quota
                   </button>
                 </div>
@@ -261,9 +262,9 @@ export default function BQuotas() {
         </div>
 
         {canManage && (
-          <div className="rounded-md border overflow-hidden" style={cardSt}>
-            <div className="px-5 py-3 flex items-center gap-2 border-b" style={{ borderColor: bx.borderColor }}>
-              <Target className="w-4 h-4" style={{ color: bx.coral }} />
+          <div className={`${cardCls} overflow-hidden`} style={cardSt}>
+            <div className="px-5 py-3 flex items-center gap-2 border-b" style={{ borderColor: borderCol }}>
+              <Target className="w-4 h-4" style={{ color: accentColor }} />
               <div className="text-sm font-semibold" style={{ color: text }}>Assigned quotas</div>
               <div className="text-xs ml-2" style={{ color: textDim }}>{quotas.length} active</div>
             </div>
@@ -272,9 +273,9 @@ export default function BQuotas() {
                 {phrase("No quotas yet. Create one to start tracking activity.")}
               </div>
             ) : (
-              <div className="divide-y" style={{ borderColor: bx.borderColor }}>
+              <div className="divide-y" style={{ borderColor: borderCol }}>
                 {quotas.map((q) => (
-                  <div key={q.id} className="px-5 py-3 flex items-center gap-4" style={{ borderColor: bx.borderColor }}>
+                  <div key={q.id} className="px-5 py-3 flex items-center gap-4" style={{ borderColor: borderCol }}>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-semibold truncate" style={{ color: text }}>{q.title}</div>
                       <div className="text-xs mt-0.5" style={{ color: textDim }}>
