@@ -23,11 +23,34 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 
 export default function BMemberProfile() {
   const { memberId } = useParams<{ memberId: string }>();
-  const { workspaceId, isOwner } = useWorkspace();
+  const { workspaceId, workspace, isOwner } = useWorkspace();
   const { user, robloxUsername } = useAuth();
   const { hasPermission } = usePermissions();
+  const { config } = useNexusConfig(workspaceId);
+  const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
   const navigate = useNavigate();
   const canManage = isOwner || hasPermission("manage_members");
+
+  // Nexus UI 3.0 styling — glass cards, rounded corners, workspace accent.
+  const v3 = config.version === "v3" && v3Enabled;
+  const accent = workspace?.primary_color || "#2f74a8";
+  const cardCls = v3 ? "rounded-2xl border" : "rounded-md border";
+  const cardSt: any = v3 ? n3.cardStyle : bx.cardStyle;
+  const text = v3 ? n3.text : bx.text;
+  const textDim = v3 ? n3.textDim : bx.textDim;
+  const textMuted = v3 ? n3.textMuted : bx.textMuted;
+  const accentColor = v3 ? accent : bx.coral;
+  const innerSt: any = v3
+    ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }
+    : { background: "#141416" };
+  const avatarRound = v3 ? "rounded-2xl" : "rounded-md";
+  const tabBorder = v3 ? "rgba(255,255,255,0.07)" : "#22222a";
+  const actionBtn: any = v3
+    ? { background: `${accent}26`, color: accent, border: `1px solid ${accent}55` }
+    : { background: "#0d4f4f", color: "#7fd9d9" };
+  const fieldSt: any = v3
+    ? { background: "rgba(255,255,255,0.05)", borderColor: "rgba(255,255,255,0.09)", color: text }
+    : { background: "#242427", borderColor: "#2e2e34", color: text };
 
   const [member, setMember] = useState<MemberData | null>(null);
   const [logs, setLogs] = useState<MemberLog[]>([]);
