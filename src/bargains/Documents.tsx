@@ -75,13 +75,17 @@ export default function BDocuments() {
         </div>
 
         {groups.map(g => {
-          const list = docs.filter(d => (d.doc_type || "policy").toLowerCase() === g.key);
+          const list = docs.filter(d => {
+            const t = (d.doc_type || "policy").toLowerCase();
+            if (g.key === "external") return t === "external" || !!d.external_url;
+            return t === g.key && !d.external_url;
+          });
           return (
             <div key={g.key} className="rounded-md border p-5" style={bx.cardStyle}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-md flex items-center justify-center text-base"
-                    style={{ background: "#1d3a2f", color: "#7ee0b8" }}>{g.icon}</div>
+                  <div className="w-9 h-9 rounded-md flex items-center justify-center"
+                    style={{ background: "#1d3a2f", color: "#7ee0b8" }}><g.Icon className="w-4 h-4" /></div>
                   <div>
                     <div className="text-sm font-bold" style={{ color: bx.text }}>{g.label}</div>
                     <div className="text-xs" style={{ color: bx.textMuted }}>{list.length} items</div>
