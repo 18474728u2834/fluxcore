@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BargainsShell, bx } from "./Shell";
-import { Plus, FileText, MoreHorizontal, X } from "lucide-react";
+import { Plus, FileText, BookOpen, Link2, MoreHorizontal, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 interface Doc {
   id: string; title: string; content: string; doc_type: string;
   signature_type: string; signature_word: string | null; auto_assign: boolean;
-  deadline: string | null; created_at: string;
+  deadline: string | null; created_at: string; external_url?: string | null;
 }
 
 export default function BDocuments() {
@@ -27,6 +27,7 @@ export default function BDocuments() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [docType, setDocType] = useState("policy");
+  const [externalUrl, setExternalUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -38,25 +39,32 @@ export default function BDocuments() {
   useEffect(() => { load(); }, [workspaceId, department?.id]);
 
   const create = async () => {
-    if (!title.trim() || !content.trim() || !user) return;
+    if (!title.trim() || !user) return;
+    if (docType === "external") {
+      if (!/^https?:\/\//i.test(externalUrl.trim())) { toast.error("Enter a valid https link"); return; }
+    } else if (!content.trim()) return;
     setSaving(true);
     const { error } = await supabase.from("workspace_documents").insert({
       workspace_id: workspaceId,
       department_id: newRowDepartmentId,
-      title: title.trim(), content: content.trim(),
+      title: title.trim(),
+      content: docType === "external" ? (content.trim() || "External document hosted outside Fluxcore.") : content.trim(),
+      external_url: docType === "external" ? externalUrl.trim() : null,
       doc_type: docType, signature_type: "checkbox", auto_assign: false, created_by: user.id,
-    });
+    } as any);
     if (error) toast.error(error.message);
-    else { toast.success("Created"); setOpen(false); setTitle(""); setContent(""); load(); }
+    else { toast.success("Created"); setOpen(false); setTitle(""); setContent(""); setExternalUrl(""); load(); }
     setSaving(false);
   };
 
 
 
   const groups = [
-    { key: "policy", label: "Policies", icon: "📋" },
-    { key: "handbook", label: "Handbooks", icon: "📕" },
+    { key: "policy", label: "Policies", Icon: FileText },
+    { key: "handbook", label: "Handbooks", Icon: BookOpen },
+    { key: "external", label: "External documents", Icon: Link2 },
   ];
+
 
   return (
     <BargainsShell>
