@@ -284,10 +284,10 @@ export default function BQuotas() {
                     </div>
                     <button
                       onClick={() => handleDelete(q.id)}
-                      className="p-2 rounded-md transition-colors"
+                      className={`p-2 ${btnRound} transition-colors`}
                       style={{ color: textDim }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = bx.coral)}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = bx.textDim)}>
+                      onMouseLeave={(e) => (e.currentTarget.style.color = textDim)}>
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
