@@ -162,8 +162,8 @@ export function ShellV3({ children }: { children: ReactNode }) {
         .n3-glass { background: rgba(20,20,24,0.72); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.07); }
         .n3-side {
           background:
-            linear-gradient(168deg, hsl(258 90% 66% / 0.32) 0%, hsl(275 70% 58% / 0.16) 48%, rgba(20,20,24,0.62) 100%),
-            rgba(20,20,24,0.55);
+            linear-gradient(168deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.8) 100%),
+            rgba(8,8,10,0.72);
           backdrop-filter: blur(22px);
           border: 1px solid rgba(255,255,255,0.09);
         }

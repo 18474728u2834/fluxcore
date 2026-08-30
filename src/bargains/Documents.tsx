@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { BargainsShell, bx } from "./Shell";
-import { Plus, FileText, MoreHorizontal, X } from "lucide-react";
+import { Plus, FileText, BookOpen, Link2, MoreHorizontal, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useDepartment } from "@/hooks/useDepartment";
@@ -12,7 +12,7 @@ import { toast } from "sonner";
 interface Doc {
   id: string; title: string; content: string; doc_type: string;
   signature_type: string; signature_word: string | null; auto_assign: boolean;
-  deadline: string | null; created_at: string;
+  deadline: string | null; created_at: string; external_url?: string | null;
 }
 
 export default function BDocuments() {
@@ -27,6 +27,7 @@ export default function BDocuments() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [docType, setDocType] = useState("policy");
+  const [externalUrl, setExternalUrl] = useState("");
   const [saving, setSaving] = useState(false);
 
   const load = async () => {
@@ -38,25 +39,32 @@ export default function BDocuments() {
   useEffect(() => { load(); }, [workspaceId, department?.id]);
 
   const create = async () => {
-    if (!title.trim() || !content.trim() || !user) return;
+    if (!title.trim() || !user) return;
+    if (docType === "external") {
+      if (!/^https?:\/\//i.test(externalUrl.trim())) { toast.error("Enter a valid https link"); return; }
+    } else if (!content.trim()) return;
     setSaving(true);
     const { error } = await supabase.from("workspace_documents").insert({
       workspace_id: workspaceId,
       department_id: newRowDepartmentId,
-      title: title.trim(), content: content.trim(),
+      title: title.trim(),
+      content: docType === "external" ? (content.trim() || "External document hosted outside Fluxcore.") : content.trim(),
+      external_url: docType === "external" ? externalUrl.trim() : null,
       doc_type: docType, signature_type: "checkbox", auto_assign: false, created_by: user.id,
-    });
+    } as any);
     if (error) toast.error(error.message);
-    else { toast.success("Created"); setOpen(false); setTitle(""); setContent(""); load(); }
+    else { toast.success("Created"); setOpen(false); setTitle(""); setContent(""); setExternalUrl(""); load(); }
     setSaving(false);
   };
 
 
 
   const groups = [
-    { key: "policy", label: "Policies", icon: "📋" },
-    { key: "handbook", label: "Handbooks", icon: "📕" },
+    { key: "policy", label: "Policies", Icon: FileText },
+    { key: "handbook", label: "Handbooks", Icon: BookOpen },
+    { key: "external", label: "External documents", Icon: Link2 },
   ];
+
 
   return (
     <BargainsShell>
@@ -67,13 +75,17 @@ export default function BDocuments() {
         </div>
 
         {groups.map(g => {
-          const list = docs.filter(d => (d.doc_type || "policy").toLowerCase() === g.key);
+          const list = docs.filter(d => {
+            const t = (d.doc_type || "policy").toLowerCase();
+            if (g.key === "external") return t === "external" || !!d.external_url;
+            return t === g.key && !d.external_url;
+          });
           return (
             <div key={g.key} className="rounded-md border p-5" style={bx.cardStyle}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-md flex items-center justify-center text-base"
-                    style={{ background: "#1d3a2f", color: "#7ee0b8" }}>{g.icon}</div>
+                  <div className="w-9 h-9 rounded-md flex items-center justify-center"
+                    style={{ background: "#1d3a2f", color: "#7ee0b8" }}><g.Icon className="w-4 h-4" /></div>
                   <div>
                     <div className="text-sm font-bold" style={{ color: bx.text }}>{g.label}</div>
                     <div className="text-xs" style={{ color: bx.textMuted }}>{list.length} items</div>
@@ -135,10 +147,18 @@ export default function BDocuments() {
                 <select value={docType} onChange={e => setDocType(e.target.value)} className="mt-1.5 w-full h-10 px-3 rounded-md border text-sm outline-none" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }}>
                   <option value="policy">Policy</option>
                   <option value="handbook">Handbook</option>
+                  <option value="external">External document / policy</option>
                 </select>
               </div>
+              {docType === "external" && (
+                <div>
+                  <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: bx.textDim }}>Document link</label>
+                  <input value={externalUrl} onChange={e => setExternalUrl(e.target.value)} placeholder="https://..." className="mt-1.5 w-full h-10 px-3 rounded-md border text-sm outline-none" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }} />
+                  <p className="text-[11px] mt-1.5" style={{ color: bx.textMuted }}>Staff are redirected to this link, then return to sign.</p>
+                </div>
+              )}
               <div>
-                <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: bx.textDim }}>Content</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider" style={{ color: bx.textDim }}>{docType === "external" ? "Summary (optional)" : "Content"}</label>
                 <textarea value={content} onChange={e => setContent(e.target.value)} className="mt-1.5 w-full min-h-[160px] p-3 rounded-md border text-sm outline-none resize-y" style={{ background: "#242427", borderColor: "#2e2e34", color: bx.text }} />
               </div>
             </div>
