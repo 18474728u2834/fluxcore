@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
 import { BargainsShell, bx } from "./Shell";
+import { n3 } from "./ShellV3";
 import { Filter, ArrowDownUp, Plus, MessageSquare, AlertTriangle, Loader2, Trash2, Target } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
+import { useNexusV3Trial } from "@/hooks/useNexusV3";
 import { useDepartment } from "@/hooks/useDepartment";
 import { useAuth } from "@/hooks/useAuth";
 import { usePermissions } from "@/hooks/usePermissions";
@@ -45,6 +48,30 @@ export default function BQuotas() {
   const { t, phrase, aviation, maritime } = useLexicon(workspaceId);
   const canManage = isOwner || hasPermission("manage_members");
   const isPremium = !!workspace?.premium;
+  const { config } = useNexusConfig(workspaceId);
+  const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
+
+  // Nexus UI 3.0 styling — glass cards, rounded corners, workspace accent.
+  const v3 = config.version === "v3" && v3Enabled;
+  const accent = workspace?.primary_color || "#2f74a8";
+  const cardCls = v3 ? "rounded-2xl border" : "rounded-md border";
+  const cardSt: any = v3 ? n3.cardStyle : bx.cardStyle;
+  const text = v3 ? n3.text : bx.text;
+  const textDim = v3 ? n3.textDim : bx.textDim;
+  const textMuted = v3 ? n3.textMuted : bx.textMuted;
+  const accentColor = v3 ? accent : bx.coral;
+  const accentBg = v3 ? `${accent}1f` : "rgba(245,90,74,0.10)";
+  const innerSt: any = v3
+    ? { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }
+    : { background: "#141416", border: "1px solid #22222a" };
+  const footerSt: any = v3
+    ? { background: "rgba(255,255,255,0.03)", color: textDim }
+    : { background: "#141416", color: bx.textDim };
+  const btnRound = v3 ? "rounded-xl" : "rounded-md";
+  const borderCol = v3 ? "rgba(255,255,255,0.07)" : bx.borderColor;
+  const primaryBtn: any = v3
+    ? { background: `linear-gradient(135deg, ${accent}, ${accent}cc)`, color: "#fff", boxShadow: `0 4px 14px ${accent}40` }
+    : { background: bx.coral, color: "#fff" };
 
   const [rows, setRows] = useState<MemberRow[]>([]);
   const [sortDesc, setSortDesc] = useState(true);
@@ -163,23 +190,23 @@ export default function BQuotas() {
     <BargainsShell>
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: bx.text }}>Quotas</h1>
+          <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: text }}>Quotas</h1>
           {canManage && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <button
-                  className="inline-flex items-center gap-2 px-3 h-9 rounded-md text-sm font-medium"
-                  style={{ background: bx.coral, color: "#fff" }}>
+                  className={`inline-flex items-center gap-2 px-3 h-9 ${btnRound} text-sm font-medium`}
+                  style={primaryBtn}>
                   <Plus className="w-4 h-4" /> New quota
                 </button>
               </DialogTrigger>
-              <DialogContent className="max-w-sm" style={{ background: "#1a1a1c", borderColor: bx.borderColor, color: bx.text }}>
-                <DialogHeader><DialogTitle style={{ color: bx.text }}>Create quota</DialogTitle></DialogHeader>
+              <DialogContent className="max-w-sm" style={v3 ? { background: "rgba(18,18,22,0.96)", borderColor: borderCol, color: text, borderRadius: "1rem" } : { background: "#1a1a1c", borderColor: bx.borderColor, color: text }}>
+                <DialogHeader><DialogTitle style={{ color: text }}>Create quota</DialogTitle></DialogHeader>
                 <div className="space-y-4 pt-2">
                   <Input placeholder={aviation ? "e.g. Attend 1 flight" : maritime ? "e.g. Attend 1 voyage" : "e.g. Host 2 sessions"} value={title} onChange={(e) => setTitle(e.target.value)} />
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label className="text-xs" style={{ color: bx.textDim }}>Type</Label>
+                      <Label className="text-xs" style={{ color: textDim }}>Type</Label>
                       <Select value={quotaType} onValueChange={setQuotaType}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -190,13 +217,13 @@ export default function BQuotas() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs" style={{ color: bx.textDim }}>Target</Label>
+                      <Label className="text-xs" style={{ color: textDim }}>Target</Label>
                       <Input type="number" value={targetValue} onChange={(e) => setTargetValue(e.target.value)} />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
-                      <Label className="text-xs" style={{ color: bx.textDim }}>Period</Label>
+                      <Label className="text-xs" style={{ color: textDim }}>Period</Label>
                       <Select value={period} onValueChange={setPeriod}>
                         <SelectTrigger><SelectValue /></SelectTrigger>
                         <SelectContent>
@@ -208,7 +235,7 @@ export default function BQuotas() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs flex items-center gap-1.5" style={{ color: bx.textDim }}>
+                      <Label className="text-xs flex items-center gap-1.5" style={{ color: textDim }}>
                         Applies to
                         {!isPremium && <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(245,90,74,0.15)", color: bx.coral }}>PREMIUM</span>}
                       </Label>
@@ -224,8 +251,8 @@ export default function BQuotas() {
                   <button
                     onClick={handleCreate}
                     disabled={creating || !title.trim()}
-                    className="w-full inline-flex items-center justify-center gap-2 h-9 rounded-md text-sm font-medium disabled:opacity-50"
-                    style={{ background: bx.coral, color: "#fff" }}>
+                    className={`w-full inline-flex items-center justify-center gap-2 h-9 ${btnRound} text-sm font-medium disabled:opacity-50`}
+                    style={primaryBtn}>
                     {creating && <Loader2 className="w-4 h-4 animate-spin" />} Create quota
                   </button>
                 </div>
@@ -235,32 +262,32 @@ export default function BQuotas() {
         </div>
 
         {canManage && (
-          <div className="rounded-md border overflow-hidden" style={bx.cardStyle}>
-            <div className="px-5 py-3 flex items-center gap-2 border-b" style={{ borderColor: bx.borderColor }}>
-              <Target className="w-4 h-4" style={{ color: bx.coral }} />
-              <div className="text-sm font-semibold" style={{ color: bx.text }}>Assigned quotas</div>
-              <div className="text-xs ml-2" style={{ color: bx.textDim }}>{quotas.length} active</div>
+          <div className={`${cardCls} overflow-hidden`} style={cardSt}>
+            <div className="px-5 py-3 flex items-center gap-2 border-b" style={{ borderColor: borderCol }}>
+              <Target className="w-4 h-4" style={{ color: accentColor }} />
+              <div className="text-sm font-semibold" style={{ color: text }}>Assigned quotas</div>
+              <div className="text-xs ml-2" style={{ color: textDim }}>{quotas.length} active</div>
             </div>
             {quotas.length === 0 ? (
-              <div className="p-8 text-center text-sm" style={{ color: bx.textDim }}>
+              <div className="p-8 text-center text-sm" style={{ color: textDim }}>
                 {phrase("No quotas yet. Create one to start tracking activity.")}
               </div>
             ) : (
-              <div className="divide-y" style={{ borderColor: bx.borderColor }}>
+              <div className="divide-y" style={{ borderColor: borderCol }}>
                 {quotas.map((q) => (
-                  <div key={q.id} className="px-5 py-3 flex items-center gap-4" style={{ borderColor: bx.borderColor }}>
+                  <div key={q.id} className="px-5 py-3 flex items-center gap-4" style={{ borderColor: borderCol }}>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{q.title}</div>
-                      <div className="text-xs mt-0.5" style={{ color: bx.textDim }}>
+                      <div className="text-sm font-semibold truncate" style={{ color: text }}>{q.title}</div>
+                      <div className="text-xs mt-0.5" style={{ color: textDim }}>
                         {q.target_value} {q.quota_type === "sessions" ? t("sessions") + " hosted" : q.quota_type === "attendance" ? t("sessions") + " attended" : "minutes"} · {q.period} · {roleName(q.role_id)}
                       </div>
                     </div>
                     <button
                       onClick={() => handleDelete(q.id)}
-                      className="p-2 rounded-md transition-colors"
-                      style={{ color: bx.textDim }}
+                      className={`p-2 ${btnRound} transition-colors`}
+                      style={{ color: textDim }}
                       onMouseEnter={(e) => (e.currentTarget.style.color = bx.coral)}
-                      onMouseLeave={(e) => (e.currentTarget.style.color = bx.textDim)}>
+                      onMouseLeave={(e) => (e.currentTarget.style.color = textDim)}>
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
@@ -270,7 +297,7 @@ export default function BQuotas() {
           </div>
         )}
 
-        <h2 className="text-xl font-semibold tracking-tight pt-2" style={{ color: bx.text }}>Most minutes</h2>
+        <h2 className="text-xl font-semibold tracking-tight pt-2" style={{ color: text }}>Most minutes</h2>
 
         {/* Toolbar */}
         <div className="flex items-center gap-1 -mx-2">
@@ -279,10 +306,10 @@ export default function BQuotas() {
             { icon: ArrowDownUp, label: "Sort", active: true, onClick: () => setSortDesc(s => !s) },
           ].map(({ icon: Icon, label, active, onClick }) => (
             <button key={label} onClick={onClick}
-              className="inline-flex items-center gap-2 px-3 h-8 rounded-md text-sm transition-colors"
+              className={`inline-flex items-center gap-2 px-3 h-8 ${btnRound} text-sm transition-colors`}
               style={{
-                color: active ? bx.coral : bx.textDim,
-                background: active ? "rgba(245,90,74,0.10)" : "transparent",
+                color: active ? accentColor : textDim,
+                background: active ? accentBg : "transparent",
               }}>
               <Icon className="w-3.5 h-3.5" /> {label}
             </button>
@@ -292,14 +319,14 @@ export default function BQuotas() {
         {/* Cards grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {sorted.map((r) => (
-            <div key={r.user_id} className="rounded-md border overflow-hidden" style={bx.cardStyle}>
+            <div key={r.user_id} className={`${cardCls} overflow-hidden`} style={cardSt}>
               <div className="px-5 pt-3 pb-1" />
 
               <div className="px-5 pb-3 flex items-center gap-3">
-                <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className="w-9 h-9 rounded-md" />
-                <div className="font-semibold text-[15px]" style={{ color: bx.text }}>
-                  {r.roblox_username} <span style={{ color: bx.textMuted }}>•</span>{" "}
-                  <span style={{ color: bx.textDim }}>{r.role}</span>
+                <RobloxAvatar username={r.roblox_username} userId={r.roblox_user_id} className={`w-9 h-9 ${btnRound}`} />
+                <div className="font-semibold text-[15px]" style={{ color: text }}>
+                  {r.roblox_username} <span style={{ color: textMuted }}>•</span>{" "}
+                  <span style={{ color: textDim }}>{r.role}</span>
                 </div>
               </div>
               <div className="px-5 grid grid-cols-3 gap-2">
@@ -308,13 +335,13 @@ export default function BQuotas() {
                   { v: r.sessionsHosted, l: t("Sessions Hosted") },
                   { v: r.sessionsAttended, l: t("Sessions Attended") },
                 ].map((s, i) => (
-                  <div key={i} className="rounded-md p-3" style={{ background: "#141416", border: "1px solid #22222a" }}>
-                    <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: bx.text }}>{s.v}</div>
-                    <div className="text-[11px] mt-1.5 font-medium" style={{ color: bx.textDim }}>{s.l}</div>
+                  <div key={i} className={v3 ? "rounded-xl p-3" : "rounded-md p-3"} style={innerSt}>
+                    <div className="text-[1.6rem] font-bold leading-none tabular-nums tracking-tight" style={{ color: text }}>{s.v}</div>
+                    <div className="text-[11px] mt-1.5 font-medium" style={{ color: textDim }}>{s.l}</div>
                   </div>
                 ))}
               </div>
-              <div className="px-5 py-3 mt-3 flex items-center gap-3 text-[11px]" style={{ background: "#141416", color: bx.textDim }}>
+              <div className="px-5 py-3 mt-3 flex items-center gap-3 text-[11px]" style={footerSt}>
                 <span className="inline-flex items-center gap-1.5"><AlertTriangle className="w-3.5 h-3.5" style={{ color: "#e0a64a" }} /> {r.warnings}</span>
                 <span className="inline-flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5" /> {r.messages}</span>
                 <span className="ml-2">Last Seen: {r.lastSeen ? new Date(r.lastSeen).toLocaleDateString() : "Never"}</span>
@@ -324,8 +351,8 @@ export default function BQuotas() {
         </div>
 
         {sorted.length === 0 && (
-          <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
-            <p className="text-sm" style={{ color: bx.textDim }}>No members yet.</p>
+          <div className={`${cardCls} p-16 text-center`} style={cardSt}>
+            <p className="text-sm" style={{ color: textDim }}>No members yet.</p>
           </div>
         )}
       </div>
