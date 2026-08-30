@@ -153,15 +153,16 @@ export default function BMemberProfile() {
             </div>
           </div>
         </div>
+        </div>
 
         {/* Tabs */}
-        <div className="border-b mt-6 flex gap-6" style={{ borderColor: "#22222a" }}>
+        <div className="border-b mt-6 flex gap-6" style={{ borderColor: tabBorder }}>
           {TABS.map(t => (
             <button key={t} onClick={() => setTab(t)}
               className="pb-3 text-sm font-medium transition-colors"
               style={{
-                color: tab === t ? bx.text : bx.textMuted,
-                borderBottom: tab === t ? "2px solid #f55a4a" : "2px solid transparent",
+                color: tab === t ? text : textMuted,
+                borderBottom: tab === t ? `2px solid ${accentColor}` : "2px solid transparent",
                 marginBottom: "-1px",
               }}>{t}</button>
           ))}
@@ -169,8 +170,8 @@ export default function BMemberProfile() {
 
         {tab === "Details" && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
-            <div className="rounded-md border p-5" style={bx.cardStyle}>
-              <div className="text-sm font-bold mb-4" style={{ color: bx.text }}>Directory profile</div>
+            <div className={`${cardCls} p-5`} style={cardSt}>
+              <div className="text-sm font-bold mb-4" style={{ color: text }}>Directory profile</div>
               <div className="space-y-3 text-sm">
                 {[
                   ["Roblox ID", member.roblox_user_id],
