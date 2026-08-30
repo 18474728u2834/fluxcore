@@ -198,10 +198,29 @@ export default function DocumentView() {
           <div className="bg-muted/50 rounded-xl p-6 text-foreground whitespace-pre-wrap leading-relaxed text-base border border-border/40">
             {doc.content}
           </div>
+
+          {doc.external_url && (
+            <div className="rounded-xl border border-border/40 p-5 space-y-3">
+              <div className="text-sm text-muted-foreground">
+                This document is hosted externally. Open it, read it, then return here to sign.
+              </div>
+              <Button
+                variant="hero"
+                onClick={() => { setOpenedExternal(true); window.open(doc.external_url!, "_blank", "noopener,noreferrer"); }}
+              >
+                Open document
+              </Button>
+              {openedExternal && (
+                <div className="text-xs text-success flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> Document opened — you can sign below.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Signing section */}
-        {doc.doc_type === "handbook" ? (
+        {doc.doc_type === "handbook" && !doc.external_url ? (
           <div className="glass rounded-xl p-5 flex items-center gap-3 text-muted-foreground">
             <FileText className="w-5 h-5" />
             <span className="text-sm">This handbook is for reference only — no signature required.</span>
