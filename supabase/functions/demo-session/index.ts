@@ -127,7 +127,7 @@ serve(async (req) => {
         subdomain: `demo-${String(workspaceId).slice(0, 8)}`,
         status: "closed",
       },
-      { onConflict: "workspace_id" },
+      { onConflict: "subdomain" },
     );
     if (portalErr) console.error("demo portal upsert failed:", portalErr.message);
 
