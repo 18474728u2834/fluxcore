@@ -3059,54 +3059,7 @@ export type Database = {
       }
     }
     Views: {
-      public_partner_portals: {
-        Row: {
-          accent_color: string | null
-          auto_created: boolean | null
-          id: string | null
-          links: Json | null
-          logo_url: string | null
-          name: string | null
-          portal_theme: string | null
-          roblox_group_url: string | null
-          status: string | null
-          subdomain: string | null
-          tagline: string | null
-          use_hyra_ui: boolean | null
-          workspace_id: string | null
-        }
-        Insert: {
-          accent_color?: string | null
-          auto_created?: boolean | null
-          id?: string | null
-          links?: Json | null
-          logo_url?: string | null
-          name?: string | null
-          portal_theme?: string | null
-          roblox_group_url?: string | null
-          status?: string | null
-          subdomain?: string | null
-          tagline?: string | null
-          use_hyra_ui?: boolean | null
-          workspace_id?: string | null
-        }
-        Update: {
-          accent_color?: string | null
-          auto_created?: boolean | null
-          id?: string | null
-          links?: Json | null
-          logo_url?: string | null
-          name?: string | null
-          portal_theme?: string | null
-          roblox_group_url?: string | null
-          status?: string | null
-          subdomain?: string | null
-          tagline?: string | null
-          use_hyra_ui?: boolean | null
-          workspace_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       apply_grant_to_workspace: {
