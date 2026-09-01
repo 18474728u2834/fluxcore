@@ -3,6 +3,11 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
+// Strip PostgREST filter-syntax delimiters so user search text cannot alter the filter.
+function sanitizeSearch(input: string): string {
+  return String(input).replace(/[,()\\*."\x27]/g, " ").trim().slice(0, 64);
+}
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -227,7 +232,7 @@ Deno.serve(async (req) => {
         const { data } = await sb
           .from("verified_users")
           .select("user_id, roblox_username, roblox_user_id, verified_at")
-          .or(`roblox_username.ilike.%${q}%,roblox_user_id.eq.${/^\d+$/.test(q) ? q : 0}`)
+          .or(`roblox_username.ilike.%${sanitizeSearch(q)}%,roblox_user_id.eq.${/^\d+$/.test(q) ? q : 0}`)
           .limit(25);
         return json({ users: data || [] });
       }
@@ -458,7 +463,7 @@ Deno.serve(async (req) => {
           .select("id, roblox_user_id, roblox_username, reason, blacklisted_by_username, created_at")
           .order("created_at", { ascending: false })
           .limit(200);
-        if (q) qb = qb.or(`roblox_username.ilike.%${q}%,roblox_user_id.eq.${/^\d+$/.test(q) ? q : 0}`);
+        if (q) qb = qb.or(`roblox_username.ilike.%${sanitizeSearch(q)}%,roblox_user_id.eq.${/^\d+$/.test(q) ? q : 0}`);
         const { data } = await qb;
         return json({ entries: data || [] });
       }
