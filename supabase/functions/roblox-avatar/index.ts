@@ -63,10 +63,19 @@ Deno.serve(async (req) => {
   if (!id && usernameParam) {
     id = await resolveUserId(usernameParam);
   }
-  if (!id) {
+  if (!id || !Number.isFinite(id)) {
+    // Unknown/placeholder usernames are normal (demo accounts, deleted users).
+    // Return 200 with a null url so the client just falls back to initials.
     return new Response(
-      JSON.stringify({ error: "not_found" }),
-      { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ userId: null, url: null }),
+      {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Cache-Control": "public, max-age=3600",
+        },
+      }
     );
   }
 
