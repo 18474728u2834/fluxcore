@@ -53,7 +53,7 @@ export default function PartnerPortalsTab() {
 
   const load = async () => {
     setLoading(true);
-    const { data } = await supabase.from("partner_portals").select("*").order("created_at", { ascending: false });
+    const { data } = await supabase.from("partner_portals").select("id,subdomain,workspace_id,name,tagline,logo_url,accent_color,roblox_group_url,links,status,closed_reason,use_hyra_ui,auto_created,portal_theme,last_active_at,created_at,updated_at").order("created_at", { ascending: false });
     setPortals((data || []) as any);
     setLoading(false);
   };

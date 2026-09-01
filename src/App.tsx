@@ -331,7 +331,7 @@ function AppRoutes() {
     if (isMainHost || isHardcoded) return;
     withTimeout(supabase
       .from("partner_portals")
-      .select("*")
+      .select("id,subdomain,workspace_id,name,tagline,logo_url,accent_color,roblox_group_url,links,status,closed_reason,use_hyra_ui,auto_created,portal_theme,last_active_at,created_at,updated_at")
       .ilike("subdomain", subdomain)
       .maybeSingle(), 8_000)
       .then(({ data }) => {

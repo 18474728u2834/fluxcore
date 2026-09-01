@@ -1436,6 +1436,33 @@ export type Database = {
           },
         ]
       }
+      roblox_verification_challenges: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string
+          id: string
+          used_at: string | null
+          username_lower: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          username_lower: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string
+          id?: string
+          used_at?: string | null
+          username_lower?: string
+        }
+        Relationships: []
+      }
       scheduled_sessions: {
         Row: {
           aircraft_model: string | null
@@ -3227,6 +3254,14 @@ export type Database = {
       is_staff_owner_admin: { Args: never; Returns: boolean }
       is_workspace_member: { Args: { _workspace_id: string }; Returns: boolean }
       is_workspace_owner: { Args: { _workspace_id: string }; Returns: boolean }
+      join_workspace_with_invite: {
+        Args: {
+          _roblox_user_id?: string
+          _roblox_username?: string
+          code: string
+        }
+        Returns: string
+      }
       lookup_workspace_by_invite: {
         Args: { code: string }
         Returns: {
