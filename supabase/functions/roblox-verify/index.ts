@@ -128,6 +128,12 @@ serve(async (req) => {
       });
     }
 
+    // Burn the challenge — single use
+    await adminSupabase
+      .from("roblox_verification_challenges")
+      .update({ used_at: new Date().toISOString() })
+      .eq("id", challenge.id);
+
     // Step 3: Optionally check gamepass
     let hasGamepass = false;
     if (checkGamepass && gamepassId) {
@@ -143,10 +149,6 @@ serve(async (req) => {
     }
 
     // Step 4: Create or sign in Supabase user
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
-
     const email = `${robloxUserId}@roblox.fluxcore.app`;
 
     // Check if user already exists in verified_users
