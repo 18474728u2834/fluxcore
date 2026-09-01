@@ -208,7 +208,7 @@ export default function Login() {
           {loginMethod === "emoji" && state.step === "input" && (
             <div className="space-y-6 animate-scale-in">
               <div className="space-y-2">
-                <h1 className="text-2xl font-extrabold text-foreground">Bio Code Verification</h1>
+                <h1 className="landing-head text-2xl font-bold tracking-tight">Bio code verification</h1>
                 <p className="text-sm text-muted-foreground">Verify your Roblox account with a one-time bio code</p>
               </div>
               <div className="space-y-4">
@@ -237,7 +237,7 @@ export default function Login() {
           {state.step === "emoji" && (
             <div className="space-y-6 animate-scale-in">
               <div className="space-y-2">
-                <h1 className="text-2xl font-extrabold text-foreground">Verify Identity</h1>
+                <h1 className="landing-head text-2xl font-bold tracking-tight">Verify identity</h1>
                 <p className="text-sm text-muted-foreground">
                   Paste this code at the <strong className="text-foreground">start</strong> of your Roblox bio
                 </p>
