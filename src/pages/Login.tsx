@@ -310,8 +310,11 @@ export default function Login() {
             </div>
           )}
 
-          <div className="text-center mt-8">
-            <button onClick={() => navigate("/")} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+          <div className="mt-7 border-t border-white/[0.06] pt-4 text-center">
+            <button
+              onClick={() => navigate("/")}
+              className="text-xs text-muted-foreground/80 hover:text-foreground transition-colors"
+            >
               ← Back to home
             </button>
           </div>
