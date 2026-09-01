@@ -58,22 +58,38 @@ export function useVerification(options?: VerifyOptions) {
     setState((s) => ({ ...s, robloxUsername: username }));
   }, []);
 
-  const proceedToEmoji = useCallback(() => {
-    if (!state.robloxUsername.trim()) {
+  const requestChallenge = useCallback(async (username: string) => {
+    const { data, error } = await supabase.functions.invoke("roblox-verify", {
+      body: { action: "challenge", username },
+    });
+    if (error || !data?.code) throw new Error(data?.error || error?.message || "Could not start verification");
+    return data.code as string;
+  }, []);
+
+  const proceedToEmoji = useCallback(async () => {
+    const username = state.robloxUsername.trim();
+    if (!username) {
       setState((s) => ({ ...s, error: "Please enter your Roblox username" }));
       return;
     }
-    setState((s) => ({
-      ...s,
-      step: "emoji",
-      emojiCode: generateEmojiCode(),
-      error: null,
-    }));
-  }, [state.robloxUsername]);
+    try {
+      const code = await requestChallenge(username);
+      setState((s) => ({ ...s, step: "emoji", emojiCode: code, error: null }));
+    } catch (err: any) {
+      setState((s) => ({ ...s, error: err.message || "Could not start verification" }));
+    }
+  }, [state.robloxUsername, requestChallenge]);
 
-  const regenerateEmojis = useCallback(() => {
-    setState((s) => ({ ...s, emojiCode: generateEmojiCode() }));
-  }, []);
+  const regenerateEmojis = useCallback(async () => {
+    const username = state.robloxUsername.trim();
+    if (!username) return;
+    try {
+      const code = await requestChallenge(username);
+      setState((s) => ({ ...s, emojiCode: code, error: null }));
+    } catch (err: any) {
+      setState((s) => ({ ...s, error: err.message || "Could not refresh code" }));
+    }
+  }, [state.robloxUsername, requestChallenge]);
 
   const verify = useCallback(async () => {
     setState((s) => ({ ...s, step: "checking", error: null }));
@@ -81,8 +97,8 @@ export function useVerification(options?: VerifyOptions) {
     try {
       const { data, error } = await supabase.functions.invoke("roblox-verify", {
         body: {
+          action: "verify",
           username: state.robloxUsername.trim(),
-          emojiCode: state.emojiCode,
           checkGamepass: options?.checkGamepass ?? false,
           gamepassId: options?.gamepassId ?? null,
         },
