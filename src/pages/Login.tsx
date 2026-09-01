@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { useVerification } from "@/hooks/useVerification";
-import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Gamepad2, Shield, Sparkles, Lock } from "lucide-react";
+import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Sparkles, ClipboardList, FileText, Target, Users } from "lucide-react";
 import { RobloxLogo } from "@/components/RobloxLogo";
 import { Wordmark } from "@/components/Wordmark";
 import { redirectToMainLogin } from "@/lib/sso";
