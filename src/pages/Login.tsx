@@ -101,12 +101,11 @@ export default function Login() {
               Nexus UI 3.0 — now in open beta
             </div>
             <h2 className="landing-head text-[2.75rem] font-bold leading-[1.05] tracking-tight">
-              Run your group
+              Run your staff team
               <br />
-              like an operation,
-              <br />
+              like an{" "}
               <span className="bg-gradient-to-r from-[#54a0d6] to-[#2f74a8] bg-clip-text text-transparent">
-                not a group chat.
+                actual company.
               </span>
             </h2>
             <p className="text-[15px] leading-relaxed text-muted-foreground">
@@ -114,10 +113,10 @@ export default function Login() {
             </p>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { icon: Shield, label: "Roblox OAuth" },
-                { icon: Gamepad2, label: "Live group sync" },
-                { icon: Lock, label: "Encrypted data" },
-                { icon: Sparkles, label: "Free forever" },
+                { icon: ClipboardList, label: "Application Center" },
+                { icon: FileText, label: "Documents" },
+                { icon: Target, label: "Quotas" },
+                { icon: Users, label: "Staff Management" },
               ].map(({ icon: Icon, label }) => (
                 <div
                   key={label}
