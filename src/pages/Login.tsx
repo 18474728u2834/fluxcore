@@ -154,12 +154,13 @@ export default function Login() {
               </div>
 
 
-              <div className="space-y-3">
-
-
-                <Button onClick={handleRobloxOAuth} variant="hero" className="w-full h-12 text-base">
+              <div className="space-y-2.5">
+                <Button
+                  onClick={handleRobloxOAuth}
+                  className="w-full h-12 text-[15px] font-semibold rounded-xl border-0 text-white bg-[#2f74a8] hover:bg-[#3a86bf] shadow-[0_10px_30px_-12px_rgba(47,116,168,0.9)] transition-colors"
+                >
                   <RobloxLogo className="w-5 h-5 mr-2" />
-                  Sign in with Roblox
+                  Continue with Roblox
                 </Button>
 
 
