@@ -113,15 +113,31 @@ export default function BDocuments() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {list.map(d => (
                     <button key={d.id} onClick={() => navigate(`/w/${workspaceId}/documents/${d.id}`)}
-                      className="text-left rounded-md border overflow-hidden hover:-translate-y-0.5 transition-transform"
-                      style={bx.cardInner}>
-                      <div className="h-28 px-4 py-3 text-[10px] leading-tight overflow-hidden" style={{ background: "#0e3a2c", color: "#a0d8b8" }}>
-                        <div className="font-bold text-xs mb-1">{d.title}</div>
-                        <div className="opacity-70 line-clamp-5">{d.content.slice(0, 200)}</div>
+                      className="group text-left rounded-xl border p-4 flex flex-col gap-3 transition-all hover:-translate-y-0.5 hover:border-[#2f74a8]/60"
+                      style={{ ...bx.cardInner, boxShadow: "0 1px 0 rgba(255,255,255,0.03) inset" }}>
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center"
+                          style={{ background: "rgba(47,116,168,0.14)", color: "#7fbde8" }}>
+                          <g.Icon className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="text-sm font-semibold truncate" style={{ color: bx.text }}>{d.title}</div>
+                          <div className="text-[11px] mt-0.5" style={{ color: bx.textMuted }}>
+                            {new Date(d.created_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}
+                          </div>
+                        </div>
                       </div>
-                      <div className="p-4">
-                        <div className="text-sm font-bold truncate" style={{ color: bx.text }}>{d.title}</div>
-                        <div className="text-xs mt-1 line-clamp-2" style={{ color: bx.textDim }}>{d.content.slice(0, 100)}</div>
+                      <p className="text-xs leading-relaxed line-clamp-3" style={{ color: bx.textDim }}>
+                        {d.content.slice(0, 180) || "No description"}
+                      </p>
+                      <div className="mt-auto pt-2 flex items-center justify-between border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                        <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded-md"
+                          style={{ background: "rgba(255,255,255,0.05)", color: bx.textMuted }}>
+                          {d.external_url ? "External" : g.label.replace(/s$/, "")}
+                        </span>
+                        <span className="text-[11px] font-medium opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "#7fbde8" }}>
+                          Open →
+                        </span>
                       </div>
                     </button>
                   ))}
