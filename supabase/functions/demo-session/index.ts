@@ -82,6 +82,24 @@ serve(async (req) => {
       workspaceId = newWs.id;
     }
 
+    // 2b. The demo always showcases Nexus UI 3.0.
+    await admin
+      .from("workspaces")
+      .update({
+        nexus_config: {
+          version: "v3",
+          hiddenNav: [],
+          cards: ["game", "birthdays", "new_members", "sessions", "activity"],
+          showHero: true,
+          heroTitle: "",
+          railMode: "hover",
+          industry: "general",
+        },
+      })
+      .eq("id", workspaceId);
+
+
+
     // 3. Seed the fake roster (only when empty, so demo edits persist for a while).
     const { count } = await admin
       .from("workspace_members")
