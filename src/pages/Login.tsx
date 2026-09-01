@@ -80,54 +80,78 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="public-accent min-h-screen flex bg-[#08090c] text-foreground">
       {/* Left panel - Branding */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-gradient-to-br from-primary/20 via-background to-background overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-[0.08]" />
-        <div className="absolute inset-0 bg-radial-glow" />
-        <div className="relative z-10 flex flex-col justify-between p-12 w-full">
-          <div>
-            <span className="text-2xl font-extrabold text-gradient tracking-tight">Fluxcore</span>
-          </div>
-          <div className="space-y-6">
-            <h2 className="text-4xl font-extrabold text-foreground leading-tight">
-              Manage your<br />Roblox group<br />
-              <span className="text-gradient-hero">like a pro.</span>
+      <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden border-r border-white/5">
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(120% 90% at 15% 0%, rgba(47,116,168,0.32) 0%, rgba(47,116,168,0.08) 38%, transparent 70%), linear-gradient(160deg, #0a0c10 0%, #08090c 55%, #06070a 100%)",
+          }}
+        />
+        <div className="absolute inset-0 bg-grid opacity-[0.06]" />
+        <div className="absolute -bottom-40 -left-24 h-[420px] w-[420px] rounded-full bg-[#2f74a8]/20 blur-[120px]" />
+        <div className="relative z-10 flex flex-col justify-between p-14 w-full">
+          <Wordmark />
+          <div className="space-y-8 max-w-md">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-muted-foreground backdrop-blur">
+              <Sparkles className="h-3.5 w-3.5 text-[#54a0d6]" />
+              Nexus UI 3.0 — now in open beta
+            </div>
+            <h2 className="landing-head text-[2.75rem] font-bold leading-[1.05] tracking-tight">
+              Run your group
+              <br />
+              like an operation,
+              <br />
+              <span className="bg-gradient-to-r from-[#54a0d6] to-[#2f74a8] bg-clip-text text-transparent">
+                not a group chat.
+              </span>
             </h2>
-            <p className="text-muted-foreground text-base max-w-sm">
-              Activity tracking, shift scheduling, role management, and everything your staff team needs — in one dashboard.
+            <p className="text-[15px] leading-relaxed text-muted-foreground">
+              Activity tracking, shift scheduling, role management, applications and analytics — one dashboard for your entire staff team.
             </p>
-            <div className="flex items-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-primary" />
-                <span>Roblox OAuth</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Gamepad2 className="w-4 h-4 text-primary" />
-                <span>Group Sync</span>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { icon: Shield, label: "Roblox OAuth" },
+                { icon: Gamepad2, label: "Live group sync" },
+                { icon: Lock, label: "Encrypted data" },
+                { icon: Sparkles, label: "Free forever" },
+              ].map(({ icon: Icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3.5 py-3 text-sm text-muted-foreground"
+                >
+                  <Icon className="h-4 w-4 text-[#54a0d6]" />
+                  {label}
+                </div>
+              ))}
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">© 2026 Fluxcore. All rights reserved.</p>
+          <p className="text-xs text-muted-foreground/70">
+            © 2026 Fluxcore. All rights reserved to RetailPro Technologies UIA.
+          </p>
         </div>
       </div>
 
       {/* Right panel - Login */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-background relative">
+      <div className="flex-1 flex items-center justify-center p-6 relative">
         <div className="absolute inset-0 bg-grid opacity-[0.04] lg:hidden" />
-        <div className="relative w-full max-w-sm">
+        <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-[#2f74a8]/15 blur-[110px] lg:hidden" />
+        <div className="relative w-full max-w-[400px] rounded-2xl border border-white/[0.07] bg-white/[0.025] p-7 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:p-8">
           {/* Mobile logo */}
-          <div className="lg:hidden text-center mb-8">
-            <span className="text-2xl font-extrabold text-gradient tracking-tight">Fluxcore</span>
+          <div className="lg:hidden mb-7 flex justify-center">
+            <Wordmark />
           </div>
 
           {/* Choose Method */}
           {loginMethod === "choose" && state.step === "input" && (
             <div className="space-y-6 animate-fade-in">
-              <div className="space-y-2">
-                <h1 className="text-2xl font-extrabold text-foreground">Welcome back</h1>
-                <p className="text-sm text-muted-foreground">Sign in to your Fluxcore account</p>
+              <div className="space-y-1.5">
+                <h1 className="landing-head text-2xl font-bold tracking-tight">Welcome back</h1>
+                <p className="text-sm text-muted-foreground">Sign in to continue to your workspace</p>
               </div>
+
 
               <div className="space-y-3">
 
