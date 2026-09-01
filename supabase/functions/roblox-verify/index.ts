@@ -6,20 +6,84 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const ADJECTIVES = [
+  "swift", "bright", "calm", "bold", "quiet", "lucky", "wild", "loyal",
+  "noble", "clever", "fierce", "gentle", "rapid", "quirky", "vivid", "stoic",
+  "sunny", "amber", "cobalt", "crimson", "midnight", "frosty", "stormy", "mellow",
+];
+const NOUNS = [
+  "tiger", "falcon", "panther", "wolf", "otter", "raven", "lynx", "fox",
+  "comet", "ember", "harbor", "ridge", "meadow", "summit", "river", "delta",
+  "pixel", "vector", "nebula", "atlas", "echo", "lumen", "axiom", "cipher",
+];
+
+function randInt(max: number): number {
+  const buf = new Uint32Array(1);
+  crypto.getRandomValues(buf);
+  return buf[0] % max;
+}
+
+function generateCode(): string {
+  const num = String(1000 + randInt(9000));
+  return `fluxcore-${ADJECTIVES[randInt(ADJECTIVES.length)]}-${NOUNS[randInt(NOUNS.length)]}-${num}`;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const { username, emojiCode, checkGamepass, gamepassId } = await req.json();
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const adminSupabase = createClient(supabaseUrl, serviceRoleKey);
 
-    if (!username || !emojiCode) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
+  try {
+    const { action, username, checkGamepass, gamepassId } = await req.json();
+
+    if (!username || typeof username !== "string" || !/^[A-Za-z0-9_]{3,20}$/.test(username.trim())) {
+      return new Response(JSON.stringify({ error: "Invalid username" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const usernameLower = username.trim().toLowerCase();
+
+    // ---- Issue a server-generated, single-use challenge ----
+    if (action === "challenge") {
+      const code = generateCode();
+      const { error: insErr } = await adminSupabase
+        .from("roblox_verification_challenges")
+        .insert({ username_lower: usernameLower, code });
+      if (insErr) throw insErr;
+      return new Response(JSON.stringify({ code }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ---- Verify against the stored challenge (never the client's copy) ----
+    const { data: challenge } = await adminSupabase
+      .from("roblox_verification_challenges")
+      .select("id, code, expires_at, used_at")
+      .eq("username_lower", usernameLower)
+      .is("used_at", null)
+      .gt("expires_at", new Date().toISOString())
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (!challenge) {
+      return new Response(JSON.stringify({
+        success: false,
+        bioMatch: false,
+        hasGamepass: false,
+        error: "Verification code expired. Please generate a new code and try again.",
+      }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const emojiCode = challenge.code as string;
 
     // Step 1: Resolve username to Roblox user ID
     const usernameRes = await fetch("https://users.roblox.com/v1/usernames/users", {
@@ -46,11 +110,11 @@ serve(async (req) => {
     const robloxUserId = robloxUser.id.toString();
     const robloxUsername = robloxUser.name;
 
-    // Step 2: Check bio for emoji code
+    // Step 2: Check bio for the server-issued code
     const profileRes = await fetch(`https://users.roblox.com/v1/users/${robloxUserId}`);
     const profileData = await profileRes.json();
     const bio = profileData?.description || "";
-    const bioMatch = bio.startsWith(emojiCode);
+    const bioMatch = bio.trim().startsWith(emojiCode);
 
     if (!bioMatch) {
       return new Response(JSON.stringify({
