@@ -62,12 +62,11 @@ export default function JoinWorkspace() {
         .eq("workspace_id", ws.id).eq("user_id", user.id).maybeSingle();
       if (existing) { setStatus("already"); return; }
 
-      const { error } = await supabase.from("workspace_members").insert({
-        workspace_id: ws.id, user_id: user.id,
-        roblox_username: robloxUsername || "Unknown",
-        roblox_user_id: robloxUserId || "0",
-        role: "Member",
-      });
+      const { error } = await supabase.rpc("join_workspace_with_invite", {
+        code: inviteCode,
+        _roblox_username: robloxUsername || "Unknown",
+        _roblox_user_id: robloxUserId || "0",
+      } as any);
       if (error) { setStatus("error"); setErrorMsg(error.message); return; }
 
       // After invite-join, also sync rank from Roblox if mapping exists
