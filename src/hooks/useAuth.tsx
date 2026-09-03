@@ -14,7 +14,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const AUTH_INIT_TIMEOUT_MS = 8_000;
+const AUTH_INIT_TIMEOUT_MS = 3_000;
 
 function getCachedSessionFromStorage(): Session | null {
   if (typeof window === "undefined") return null;
@@ -25,18 +25,25 @@ function getCachedSessionFromStorage(): Session | null {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     const cached = parsed?.currentSession ?? parsed?.session ?? parsed;
-    return cached?.access_token && cached?.user ? (cached as Session) : null;
+    if (!cached?.access_token || !cached?.user) return null;
+    // Ignore obviously expired tokens so we never paint a stale signed-in UI.
+    if (cached.expires_at && cached.expires_at * 1000 < Date.now()) return null;
+    return cached as Session;
   } catch {
     return null;
   }
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Hydrate synchronously from the persisted session: no auth flash / spinner
+  // on reloads while Supabase revalidates the token in the background.
+  const initialSession = getCachedSessionFromStorage();
+  const [user, setUser] = useState<User | null>(initialSession?.user ?? null);
+  const [session, setSession] = useState<Session | null>(initialSession);
+  const [loading, setLoading] = useState(!initialSession);
   const aliveRef = useRef(true);
-  const sessionRef = useRef<Session | null>(null);
+  const sessionRef = useRef<Session | null>(initialSession);
+
 
   const applySession = (nextSession: Session | null, preserveExistingOnNull = false) => {
     if (!aliveRef.current) return;
