@@ -71,12 +71,24 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
       setError(null);
 
       try {
-        const { data: wsRows, error } = await withTimeout(
-          supabase.rpc("get_workspace_context", { _workspace_id: workspaceId }),
-          "Workspace context",
-        );
+        const loadContext = async () =>
+          await withTimeout(
+            supabase.rpc("get_workspace_context", { _workspace_id: workspaceId }),
+            "Workspace context",
+          );
 
+        let { data: wsRows, error } = await loadContext();
         if (cancelled) return;
+
+        if (!wsRows?.[0]) {
+          // Staff synced from the Roblox group may not be linked to this login
+          // yet (or were linked to an older account). Re-link, then retry once.
+          await supabase.rpc("sync_my_memberships" as any).then(() => {}, () => {});
+          if (cancelled) return;
+          ({ data: wsRows, error } = await loadContext());
+          if (cancelled) return;
+        }
+
         const wsData: any = wsRows?.[0];
 
         if (!wsData || error) {
@@ -87,6 +99,7 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
           navigate(isPartnerHost ? "/login" : "/workspaces", { replace: true });
           return;
         }
+
 
         const isPremiumActive = true;
 
