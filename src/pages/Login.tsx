@@ -17,6 +17,8 @@ export default function Login() {
   const [copied, setCopied] = useState(false);
   const [settingSession, setSettingSession] = useState(false);
   const [loginMethod, setLoginMethod] = useState<"choose" | "emoji">("choose");
+  const [redirecting, setRedirecting] = useState<"roblox" | "discord" | null>(null);
+
 
   // Persist any ?grant=TOKEN through the OAuth round-trip via localStorage
   useEffect(() => {
