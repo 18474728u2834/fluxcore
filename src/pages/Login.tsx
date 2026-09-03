@@ -8,6 +8,8 @@ import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Spar
 import { RobloxLogo } from "@/components/RobloxLogo";
 import { Wordmark } from "@/components/Wordmark";
 import { redirectToMainLogin } from "@/lib/sso";
+import { setPostLoginRedirect, takePostLoginRedirect, peekPostLoginRedirect } from "@/lib/postLoginRedirect";
+
 
 
 export default function Login() {
@@ -20,7 +22,7 @@ export default function Login() {
   const [redirecting, setRedirecting] = useState<"roblox" | "discord" | null>(null);
 
 
-  // Persist any ?grant=TOKEN through the OAuth round-trip via localStorage
+  // Persist any ?grant=TOKEN / ?redirect=/path through the OAuth round-trip
   useEffect(() => {
     try {
       const hash = window.location.hash || "";
@@ -29,20 +31,22 @@ export default function Login() {
       const params = new URLSearchParams(qs);
       const grant = params.get("grant");
       if (grant) localStorage.setItem("fluxcore_pending_grant", grant);
+      setPostLoginRedirect(params.get("redirect"));
       // Leaving the demo: real logins should get the normal owner flow again
       localStorage.removeItem("demo_mode");
     } catch {}
   }, []);
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/workspaces");
+    if (!authLoading && user) navigate(takePostLoginRedirect() || "/workspaces", { replace: true });
   }, [user, authLoading]);
 
   // Subdomains have no login page of their own — go straight to fluxcore.works.
   useEffect(() => {
     if (authLoading || user) return;
-    redirectToMainLogin("/dashboard");
+    redirectToMainLogin(peekPostLoginRedirect() || "/dashboard");
   }, [authLoading, user]);
+
 
 
   useEffect(() => {
@@ -50,7 +54,7 @@ export default function Login() {
       setSettingSession(true);
       setSessionFromToken(state.tokenHash, state.email).then(({ error }) => {
         if (error) console.error("Session error:", error);
-        else navigate("/workspaces");
+        else navigate(takePostLoginRedirect() || "/workspaces", { replace: true });
         setSettingSession(false);
       });
     }

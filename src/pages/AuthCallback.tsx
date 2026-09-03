@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { Loader2 } from "lucide-react";
+import { takePostLoginRedirect } from "@/lib/postLoginRedirect";
 
 export default function AuthCallback() {
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ export default function AuthCallback() {
       try {
         const { error: sessionErr } = await setSessionFromToken(tokenHash, email);
         if (sessionErr) throw sessionErr;
-        navigate("/workspaces");
+        navigate(takePostLoginRedirect() || "/workspaces", { replace: true });
       } catch (err: any) {
         console.error("Session error:", err);
         setError(err.message || "Failed to complete sign in.");

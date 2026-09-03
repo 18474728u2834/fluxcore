@@ -5,6 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Loader2, CheckCircle2, XCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { redirectToMainLogin } from "@/lib/sso";
+import { setPostLoginRedirect } from "@/lib/postLoginRedirect";
+
 
 export default function JoinWorkspace() {
   const { inviteCode, workspaceId: paramWorkspaceId } = useParams<{ inviteCode?: string; workspaceId?: string }>();
@@ -23,9 +26,14 @@ export default function JoinWorkspace() {
     if (authLoading) return;
     if (!user) {
       const redirect = isDirectJoin ? `/w/${paramWorkspaceId}/join` : `/join/${inviteCode}`;
-      navigate(`/login?redirect=${encodeURIComponent(redirect)}`);
+      setPostLoginRedirect(redirect);
+      // On a workspace subdomain the only login lives on the apex domain —
+      // send them there with the invite as the destination.
+      if (redirectToMainLogin(redirect)) return;
+      navigate(`/login?redirect=${encodeURIComponent(redirect)}`, { replace: true });
       return;
     }
+
 
     const run = async () => {
       // DIRECT JOIN MODE: Roblox-group based
