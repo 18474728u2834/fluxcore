@@ -54,7 +54,7 @@ export default function Login() {
       setSettingSession(true);
       setSessionFromToken(state.tokenHash, state.email).then(({ error }) => {
         if (error) console.error("Session error:", error);
-        else navigate("/workspaces");
+        else navigate(takePostLoginRedirect() || "/workspaces", { replace: true });
         setSettingSession(false);
       });
     }
