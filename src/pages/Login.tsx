@@ -61,16 +61,21 @@ export default function Login() {
   };
 
   const handleRobloxOAuth = () => {
+    if (redirecting) return;
+    setRedirecting("roblox");
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const origin = encodeURIComponent(window.location.origin);
     window.location.href = `${supabaseUrl}/functions/v1/roblox-oauth-callback?start=1&origin=${origin}`;
   };
 
   const handleDiscordOAuth = () => {
+    if (redirecting) return;
+    setRedirecting("discord");
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const origin = encodeURIComponent(window.location.origin);
     window.location.href = `${supabaseUrl}/functions/v1/discord-oauth-callback?start=1&origin=${origin}`;
   };
+
 
   if (authLoading) {
     return (
