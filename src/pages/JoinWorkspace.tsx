@@ -5,6 +5,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { Loader2, CheckCircle2, XCircle, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { redirectToMainLogin } from "@/lib/sso";
+import { setPostLoginRedirect } from "@/lib/postLoginRedirect";
+
 
 export default function JoinWorkspace() {
   const { inviteCode, workspaceId: paramWorkspaceId } = useParams<{ inviteCode?: string; workspaceId?: string }>();
