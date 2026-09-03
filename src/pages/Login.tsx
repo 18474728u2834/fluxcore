@@ -8,6 +8,8 @@ import { Loader2, User, Copy, RefreshCw, ArrowRight, CheckCircle2, XCircle, Spar
 import { RobloxLogo } from "@/components/RobloxLogo";
 import { Wordmark } from "@/components/Wordmark";
 import { redirectToMainLogin } from "@/lib/sso";
+import { setPostLoginRedirect, takePostLoginRedirect, peekPostLoginRedirect } from "@/lib/postLoginRedirect";
+
 
 
 export default function Login() {
