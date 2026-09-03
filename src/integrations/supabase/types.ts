@@ -3308,6 +3308,7 @@ export type Database = {
         Returns: string
       }
       sweep_dormant_portals: { Args: never; Returns: number }
+      sync_my_memberships: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never

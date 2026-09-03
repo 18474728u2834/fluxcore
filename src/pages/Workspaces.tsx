@@ -133,11 +133,16 @@ export default function Workspaces() {
     const ws: Workspace[] = [];
 
     try {
+      // Attach any staff records that match this account's verified Roblox ID
+      // (group-synced rows, or rows left on an older login) before listing.
+      await supabase.rpc("sync_my_memberships" as any).then(() => {}, () => {});
+
       // Single RPC call — much faster and avoids N+1 .single() failures
       const { data: rpcData, error: rpcErr } = await withTimeout(
         supabase.rpc("get_accessible_workspaces"),
         "Workspace list",
       );
+
 
       if (rpcErr) {
         console.error("get_accessible_workspaces failed, falling back:", rpcErr);
