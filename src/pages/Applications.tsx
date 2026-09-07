@@ -24,6 +24,8 @@ interface FormRow {
   pass_message: string;
   fail_kick_message: string;
   pass_rank_number: number | null;
+  skip_gamepass_id: string | null;
+  skip_gamepass_price: number | null;
 }
 interface Question {
   id?: string;
