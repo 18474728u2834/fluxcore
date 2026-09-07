@@ -270,6 +270,8 @@ export type Database = {
           pass_threshold: number
           require_group_member: boolean
           scoring_rules: Json
+          skip_gamepass_id: string | null
+          skip_gamepass_price: number | null
           slug: string
           target_role_id: string | null
           title: string
@@ -291,6 +293,8 @@ export type Database = {
           pass_threshold?: number
           require_group_member?: boolean
           scoring_rules?: Json
+          skip_gamepass_id?: string | null
+          skip_gamepass_price?: number | null
           slug: string
           target_role_id?: string | null
           title: string
@@ -312,6 +316,8 @@ export type Database = {
           pass_threshold?: number
           require_group_member?: boolean
           scoring_rules?: Json
+          skip_gamepass_id?: string | null
+          skip_gamepass_price?: number | null
           slug?: string
           target_role_id?: string | null
           title?: string
@@ -3193,6 +3199,15 @@ export type Database = {
       internal_answer_matches: {
         Args: { _ans: string; _correct: string; _mode: string }
         Returns: boolean
+      }
+      internal_app_center_gamepass_skip: {
+        Args: {
+          _form_id: string
+          _roblox_user_id: string
+          _roblox_username: string
+          _workspace_id: string
+        }
+        Returns: Json
       }
       internal_app_center_grade: {
         Args: {
