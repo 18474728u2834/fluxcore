@@ -122,10 +122,11 @@ export default function Apply() {
 
         {form.skip_gamepass_id && (
           <div className="glass rounded-xl p-5 space-y-2 border border-primary/30">
-            <h2 className="font-semibold text-sm">Skip the questions</h2>
+            <h2 className="font-semibold text-sm">{form.gamepass_only ? "Buy the pass to join" : "Skip the questions"}</h2>
             <p className="text-xs text-muted-foreground">
-              Own the skip gamepass{form.skip_gamepass_price ? ` (${form.skip_gamepass_price} Robux)` : ""} and you're
-              accepted instantly — buy it on Roblox, then join the application game to claim it.
+              {form.gamepass_only
+                ? `This one has no questions${form.skip_gamepass_price ? ` — just the ${form.skip_gamepass_price} Robux pass` : ""}. Buy it on Roblox, then join the application game to claim your place.`
+                : `Own the skip gamepass${form.skip_gamepass_price ? ` (${form.skip_gamepass_price} Robux)` : ""} and you're accepted instantly — buy it on Roblox, then join the application game to claim it.`}
             </p>
             <a
               href={`https://www.roblox.com/game-pass/${form.skip_gamepass_id}`}
@@ -137,7 +138,8 @@ export default function Apply() {
           </div>
         )}
 
-        {!verified ? (
+        {form.gamepass_only ? null : !verified ? (
+
           <div className="glass rounded-xl p-5 space-y-3">
             <h2 className="font-semibold text-sm">Identify yourself</h2>
             <div className="flex gap-2">
