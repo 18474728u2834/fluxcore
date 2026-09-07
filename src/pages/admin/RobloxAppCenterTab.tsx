@@ -178,6 +178,27 @@ submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [st
     }
 end
 
+-- Paid skip: the applicant bought (or already owns) the form's skip gamepass.
+-- Fluxcore re-verifies ownership on its own servers before accepting + ranking.
+skipRemote.OnServerInvoke = function(player: Player, form_id: string)
+    if typeof(form_id) ~= "string" then
+        return { ok = false, error = "bad_payload", message = "Failed. Try again later." }
+    end
+    local result = http("POST", "skip", {
+        form_id         = form_id,
+        roblox_user_id  = tostring(player.UserId),
+        roblox_username = player.Name,
+    })
+    if result == nil or result.error then
+        return { ok = false, error = (result and result.error) or "network", message = "Purchase not confirmed yet. Try again in a moment." }
+    end
+    local msg = result.message or "Passed & Ranked"
+    task.delay(0.4, function()
+        if player and player.Parent then player:Kick(msg) end
+    end)
+    return { ok = true, passed = true, ranked = result.ranked == true, message = msg }
+end
+
 print("[Fluxcore] Application Center server ready.")
 `;
 
