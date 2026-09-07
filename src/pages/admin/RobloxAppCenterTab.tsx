@@ -478,7 +478,9 @@ local function showCatalog(catalog)
         desc.TextWrapped = true
         desc.TextColor3 = Color3.fromRGB(150, 150, 170)
         desc.Text = f.description or ""
-        card.MouseButton1Click:Connect(function() showForm(f) end)
+        if not f.gamepass_only then
+            card.MouseButton1Click:Connect(function() showForm(f) end)
+        end
         if f.skip_gamepass_id then
             card.Size = UDim2.new(1, -8, 0, 124)
             local skipBtn = Instance.new("TextButton", card)
@@ -488,8 +490,8 @@ local function showCatalog(catalog)
             skipBtn.Font = Enum.Font.GothamBold; skipBtn.TextSize = 13
             skipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
             skipBtn.Text = f.skip_gamepass_price
-                and ("Skip - Buy pass (" .. tostring(f.skip_gamepass_price) .. " R$)")
-                or "Skip with gamepass"
+                and (((f.gamepass_only and "Join - Buy pass (") or "Skip - Buy pass (") .. tostring(f.skip_gamepass_price) .. " R$)")
+                or (f.gamepass_only and "Buy pass to join" or "Skip with gamepass")
             rounded(skipBtn, 8)
             local status = Instance.new("TextLabel", card)
             status.BackgroundTransparency = 1
@@ -888,7 +890,9 @@ local function showCatalog(catalog)
         desc.TextWrapped = true
         desc.TextColor3 = Color3.fromRGB(150, 150, 170)
         desc.Text = f.description or ""
-        card.MouseButton1Click:Connect(function() showForm(f) end)
+        if not f.gamepass_only then
+            card.MouseButton1Click:Connect(function() showForm(f) end)
+        end
         if f.skip_gamepass_id then
             card.Size = UDim2.new(1, -6, 0, 146)
             local skipBtn = Instance.new("TextButton", card)
@@ -898,8 +902,8 @@ local function showCatalog(catalog)
             skipBtn.Font = Enum.Font.GothamBold; skipBtn.TextSize = 13
             skipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
             skipBtn.Text = f.skip_gamepass_price
-                and ("Skip - Buy pass (" .. tostring(f.skip_gamepass_price) .. " R$)")
-                or "Skip with gamepass"
+                and (((f.gamepass_only and "Join - Buy pass (") or "Skip - Buy pass (") .. tostring(f.skip_gamepass_price) .. " R$)")
+                or (f.gamepass_only and "Buy pass to join" or "Skip with gamepass")
             rounded(skipBtn, 8)
             local status = Instance.new("TextLabel", card)
             status.BackgroundTransparency = 1

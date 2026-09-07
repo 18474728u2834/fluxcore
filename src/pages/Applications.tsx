@@ -26,6 +26,7 @@ interface FormRow {
   pass_rank_number: number | null;
   skip_gamepass_id: string | null;
   skip_gamepass_price: number | null;
+  gamepass_only: boolean;
 }
 interface Question {
   id?: string;
@@ -73,6 +74,7 @@ export default function Applications() {
       pass_rank_number: null,
       skip_gamepass_id: null,
       skip_gamepass_price: null,
+      gamepass_only: false,
     });
     setQuestions([
       { label: "What's your timezone?", type: "timezone", options: [], required: true, position: 0, correct_answer: "", match_mode: "any" },
@@ -105,6 +107,7 @@ export default function Applications() {
       pass_rank_number: draft.pass_rank_number ?? null,
       skip_gamepass_id: draft.skip_gamepass_id?.trim() || null,
       skip_gamepass_price: draft.skip_gamepass_price ?? null,
+      gamepass_only: !!draft.gamepass_only,
     };
     if (formId === "new") {
       const { data, error } = await supabase.from("application_forms" as any).insert(payload).select("id").single();
@@ -234,7 +237,21 @@ export default function Applications() {
                   onChange={e => setDraft({ ...draft, skip_gamepass_price: e.target.value === "" ? null : Number(e.target.value) })} />
               </div>
             </div>
+            <label className="flex items-start gap-2 text-sm pt-1">
+              <input type="checkbox" className="mt-1" checked={draft.gamepass_only}
+                onChange={e => setDraft({ ...draft, gamepass_only: e.target.checked })} />
+              <span>
+                Gamepass only — no questions at all
+                <span className="block text-xs text-muted-foreground">
+                  Applicants simply buy the pass to join. Any questions below are ignored.
+                </span>
+              </span>
+            </label>
+            {draft.gamepass_only && !draft.skip_gamepass_id && (
+              <p className="text-xs text-destructive">Add a gamepass ID, or nobody can apply.</p>
+            )}
           </div>
+
 
           <div className="glass rounded-xl p-5 space-y-3">
             <div className="flex items-center justify-between">
