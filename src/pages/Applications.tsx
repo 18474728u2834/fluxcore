@@ -234,7 +234,21 @@ export default function Applications() {
                   onChange={e => setDraft({ ...draft, skip_gamepass_price: e.target.value === "" ? null : Number(e.target.value) })} />
               </div>
             </div>
+            <label className="flex items-start gap-2 text-sm pt-1">
+              <input type="checkbox" className="mt-1" checked={draft.gamepass_only}
+                onChange={e => setDraft({ ...draft, gamepass_only: e.target.checked })} />
+              <span>
+                Gamepass only — no questions at all
+                <span className="block text-xs text-muted-foreground">
+                  Applicants simply buy the pass to join. Any questions below are ignored.
+                </span>
+              </span>
+            </label>
+            {draft.gamepass_only && !draft.skip_gamepass_id && (
+              <p className="text-xs text-destructive">Add a gamepass ID, or nobody can apply.</p>
+            )}
           </div>
+
 
           <div className="glass rounded-xl p-5 space-y-3">
             <div className="flex items-center justify-between">
