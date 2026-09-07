@@ -85,6 +85,8 @@ local submit = folder:FindFirstChild("Submit") or Instance.new("RemoteFunction",
 submit.Name = "Submit"
 local getConfig = folder:FindFirstChild("GetConfig") or Instance.new("RemoteFunction", folder)
 getConfig.Name = "GetConfig"
+local skipRemote = folder:FindFirstChild("SkipWithPass") or Instance.new("RemoteFunction", folder)
+skipRemote.Name = "SkipWithPass"
 
 local function http(method: string, route: string, body: any?)
     local ok, res = pcall(function()
