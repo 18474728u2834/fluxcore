@@ -261,6 +261,7 @@ export type Database = {
           created_by: string | null
           description: string | null
           fail_kick_message: string
+          gamepass_only: boolean
           id: string
           is_open: boolean
           min_account_age_days: number
@@ -284,6 +285,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           fail_kick_message?: string
+          gamepass_only?: boolean
           id?: string
           is_open?: boolean
           min_account_age_days?: number
@@ -307,6 +309,7 @@ export type Database = {
           created_by?: string | null
           description?: string | null
           fail_kick_message?: string
+          gamepass_only?: boolean
           id?: string
           is_open?: boolean
           min_account_age_days?: number
