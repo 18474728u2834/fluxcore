@@ -71,6 +71,8 @@ export default function Applications() {
       pass_message: "Passed & Ranked - welcome aboard!",
       fail_kick_message: "You did not pass the application. Try again later.",
       pass_rank_number: null,
+      skip_gamepass_id: null,
+      skip_gamepass_price: null,
     });
     setQuestions([
       { label: "What's your timezone?", type: "timezone", options: [], required: true, position: 0, correct_answer: "", match_mode: "any" },
@@ -101,6 +103,8 @@ export default function Applications() {
       pass_message: draft.pass_message || "Passed & Ranked - welcome aboard!",
       fail_kick_message: draft.fail_kick_message || "You did not pass the application. Try again later.",
       pass_rank_number: draft.pass_rank_number ?? null,
+      skip_gamepass_id: draft.skip_gamepass_id?.trim() || null,
+      skip_gamepass_price: draft.skip_gamepass_price ?? null,
     };
     if (formId === "new") {
       const { data, error } = await supabase.from("application_forms" as any).insert(payload).select("id").single();
@@ -209,6 +213,26 @@ export default function Applications() {
             <div>
               <label className="text-xs text-muted-foreground">Kick message on fail</label>
               <Input value={draft.fail_kick_message} onChange={e => setDraft({ ...draft, fail_kick_message: e.target.value })} />
+            </div>
+          </div>
+
+          <div className="glass rounded-xl p-5 space-y-3">
+            <h2 className="font-semibold">Pay to skip (Roblox gamepass)</h2>
+            <p className="text-xs text-muted-foreground">
+              Applicants who own this gamepass can skip the questions in-game and are accepted
+              instantly (and ranked, if auto-rank is on). Leave the ID blank to disable.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Gamepass ID</label>
+                <Input placeholder="e.g. 1816876657" value={draft.skip_gamepass_id ?? ""}
+                  onChange={e => setDraft({ ...draft, skip_gamepass_id: e.target.value.replace(/\D/g, "") })} />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Price in Robux (display only)</label>
+                <Input type="number" min={0} placeholder="e.g. 250" value={draft.skip_gamepass_price ?? ""}
+                  onChange={e => setDraft({ ...draft, skip_gamepass_price: e.target.value === "" ? null : Number(e.target.value) })} />
+              </div>
             </div>
           </div>
 
