@@ -244,6 +244,78 @@ Deno.serve(async (req) => {
       });
     }
 
+    // /skip — applicant paid for the form's skip gamepass. We verify ownership
+    // against Roblox, record an accepted application and rank them if configured.
+    if (route === "skip" && req.method === "POST") {
+      const body = await req.json().catch(() => ({}));
+      const form_id = body?.form_id;
+      const roblox_user_id = body?.roblox_user_id;
+      const roblox_username = body?.roblox_username;
+      if (typeof form_id !== "string" || !form_id) return json({ error: "missing_form_id" }, 400);
+      if (typeof roblox_user_id !== "string" || !roblox_user_id) return json({ error: "missing_identity" }, 400);
+      if (typeof roblox_username !== "string") return json({ error: "missing_username" }, 400);
+
+      const { data: formRow } = await admin
+        .from("application_forms")
+        .select("skip_gamepass_id")
+        .eq("id", form_id)
+        .eq("workspace_id", ws.workspace_id)
+        .maybeSingle();
+      const passId = formRow?.skip_gamepass_id && String(formRow.skip_gamepass_id).trim();
+      if (!passId) return json({ error: "no_skip_gamepass" }, 400);
+
+      let owns = false;
+      try {
+        const r = await fetch(`https://inventory.roblox.com/v1/users/${roblox_user_id}/items/GamePass/${passId}`);
+        const j = await r.json();
+        owns = Array.isArray(j?.data) && j.data.length > 0;
+      } catch { owns = false; }
+      if (!owns) return json({ ok: false, owns: false, error: "gamepass_not_owned" }, 200);
+
+      const { data: skipData, error: skipErr } = await admin.rpc("internal_app_center_gamepass_skip", {
+        _workspace_id: ws.workspace_id,
+        _form_id: form_id,
+        _roblox_user_id: roblox_user_id,
+        _roblox_username: roblox_username,
+      });
+      if (skipErr) return json({ error: "skip_failed", detail: skipErr.message }, 500);
+      const skip: any = skipData ?? {};
+
+      let ranked = false;
+      let rankError: string | null = null;
+      const rankRequired = !!(skip.auto_rank_on_accept && skip.pass_rank_number);
+      if (rankRequired) {
+        try {
+          const { data: wsRow } = await admin
+            .from("workspaces").select("roblox_group_id").eq("id", ws.workspace_id).single();
+          const { data: secretsRow } = await admin.rpc("internal_get_workspace_secrets", { _workspace_id: ws.workspace_id });
+          const secrets: any = Array.isArray(secretsRow) ? secretsRow[0] : secretsRow;
+          const robloxKey = secrets?.roblox_api_key && String(secrets.roblox_api_key).trim();
+          if (robloxKey && wsRow?.roblox_group_id) {
+            const outcome = await rankRobloxUser(robloxKey, String(wsRow.roblox_group_id).trim(), String(roblox_user_id), Number(skip.pass_rank_number));
+            ranked = outcome.ranked;
+            rankError = outcome.error || null;
+          } else {
+            rankError = "missing_roblox_config";
+          }
+        } catch (e) {
+          rankError = e instanceof Error ? e.message : String(e);
+        }
+      }
+
+      return json({
+        ok: true,
+        owns: true,
+        skipped: true,
+        passed: true,
+        ranked,
+        rank_required: rankRequired,
+        rank_error: rankError,
+        application_id: skip.application_id,
+        message: skip.pass_message || "Passed & Ranked",
+      });
+    }
+
     return json({ error: "not_found", route }, 404);
   } catch (e) {
     return json({ error: "internal", detail: String(e) }, 500);
