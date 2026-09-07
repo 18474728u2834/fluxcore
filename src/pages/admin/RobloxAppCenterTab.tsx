@@ -479,6 +479,32 @@ local function showCatalog(catalog)
         desc.TextColor3 = Color3.fromRGB(150, 150, 170)
         desc.Text = f.description or ""
         card.MouseButton1Click:Connect(function() showForm(f) end)
+        if f.skip_gamepass_id then
+            card.Size = UDim2.new(1, -8, 0, 124)
+            local skipBtn = Instance.new("TextButton", card)
+            skipBtn.Size = UDim2.new(0, 240, 0, 30)
+            skipBtn.Position = UDim2.new(0, 18, 0, 86)
+            skipBtn.BackgroundColor3 = Color3.fromRGB(47, 116, 168)
+            skipBtn.Font = Enum.Font.GothamBold; skipBtn.TextSize = 13
+            skipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            skipBtn.Text = f.skip_gamepass_price
+                and ("Skip - Buy pass (" .. tostring(f.skip_gamepass_price) .. " R$)")
+                or "Skip with gamepass"
+            rounded(skipBtn, 8)
+            local status = Instance.new("TextLabel", card)
+            status.BackgroundTransparency = 1
+            status.Position = UDim2.new(0, 268, 0, 86); status.Size = UDim2.new(1, -286, 0, 30)
+            status.Font = Enum.Font.Gotham; status.TextSize = 12
+            status.TextXAlignment = Enum.TextXAlignment.Left
+            status.TextColor3 = Color3.fromRGB(170, 200, 230)
+            status.TextWrapped = true
+            status.Text = ""
+            skipBtn.MouseButton1Click:Connect(function()
+                task.spawn(function()
+                    skipWithPass(f, function(t) status.Text = t end)
+                end)
+            end)
+        end
     end
 end
 
@@ -863,6 +889,32 @@ local function showCatalog(catalog)
         desc.TextColor3 = Color3.fromRGB(150, 150, 170)
         desc.Text = f.description or ""
         card.MouseButton1Click:Connect(function() showForm(f) end)
+        if f.skip_gamepass_id then
+            card.Size = UDim2.new(1, -6, 0, 146)
+            local skipBtn = Instance.new("TextButton", card)
+            skipBtn.Size = UDim2.new(1, -28, 0, 34)
+            skipBtn.Position = UDim2.new(0, 14, 0, 76)
+            skipBtn.BackgroundColor3 = Color3.fromRGB(47, 116, 168)
+            skipBtn.Font = Enum.Font.GothamBold; skipBtn.TextSize = 13
+            skipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            skipBtn.Text = f.skip_gamepass_price
+                and ("Skip - Buy pass (" .. tostring(f.skip_gamepass_price) .. " R$)")
+                or "Skip with gamepass"
+            rounded(skipBtn, 8)
+            local status = Instance.new("TextLabel", card)
+            status.BackgroundTransparency = 1
+            status.Position = UDim2.new(0, 14, 0, 112); status.Size = UDim2.new(1, -28, 0, 28)
+            status.Font = Enum.Font.Gotham; status.TextSize = 12
+            status.TextXAlignment = Enum.TextXAlignment.Left
+            status.TextColor3 = Color3.fromRGB(170, 200, 230)
+            status.TextWrapped = true
+            status.Text = ""
+            skipBtn.MouseButton1Click:Connect(function()
+                task.spawn(function()
+                    skipWithPass(f, function(t) status.Text = t end)
+                end)
+            end)
+        end
     end
 end
 
