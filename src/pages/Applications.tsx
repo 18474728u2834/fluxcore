@@ -26,6 +26,7 @@ interface FormRow {
   pass_rank_number: number | null;
   skip_gamepass_id: string | null;
   skip_gamepass_price: number | null;
+  gamepass_only: boolean;
 }
 interface Question {
   id?: string;
@@ -73,6 +74,7 @@ export default function Applications() {
       pass_rank_number: null,
       skip_gamepass_id: null,
       skip_gamepass_price: null,
+      gamepass_only: false,
     });
     setQuestions([
       { label: "What's your timezone?", type: "timezone", options: [], required: true, position: 0, correct_answer: "", match_mode: "any" },
@@ -105,6 +107,7 @@ export default function Applications() {
       pass_rank_number: draft.pass_rank_number ?? null,
       skip_gamepass_id: draft.skip_gamepass_id?.trim() || null,
       skip_gamepass_price: draft.skip_gamepass_price ?? null,
+      gamepass_only: !!draft.gamepass_only,
     };
     if (formId === "new") {
       const { data, error } = await supabase.from("application_forms" as any).insert(payload).select("id").single();
