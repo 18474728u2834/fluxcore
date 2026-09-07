@@ -211,6 +211,45 @@ local Players = game:GetService("Players")
 local RS      = game:GetService("ReplicatedStorage")
 local folder  = RS:WaitForChild("FluxcoreApp")
 local plr     = Players.LocalPlayer
+local MPS     = game:GetService("MarketplaceService")
+local skipRemote = folder:WaitForChild("SkipWithPass")
+
+-- Paid skip flow: prompt the gamepass purchase, then ask the server to verify
+-- ownership with Fluxcore and accept the application instantly.
+local function claimSkip(form, setStatus)
+    setStatus("Confirming your purchase...")
+    for _ = 1, 6 do
+        local ok, res = pcall(function() return skipRemote:InvokeServer(form.id) end)
+        if ok and res and res.ok then
+            setStatus(res.message or "Accepted!")
+            return
+        end
+        task.wait(2)
+    end
+    setStatus("Purchase not confirmed yet. Rejoin and try again.")
+end
+
+local function skipWithPass(form, setStatus)
+    local passId = tonumber(form.skip_gamepass_id)
+    if not passId then return end
+    local ok, owns = pcall(function() return MPS:UserOwnsGamePassAsync(plr.UserId, passId) end)
+    if ok and owns then
+        claimSkip(form, setStatus)
+        return
+    end
+    setStatus("Opening the Roblox purchase window...")
+    local conn
+    conn = MPS.PromptGamePassPurchaseFinished:Connect(function(player, id, purchased)
+        if player ~= plr or id ~= passId then return end
+        if conn then conn:Disconnect() end
+        if purchased then
+            claimSkip(form, setStatus)
+        else
+            setStatus("Purchase cancelled.")
+        end
+    end)
+    MPS:PromptGamePassPurchase(plr, passId)
+end
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "FluxcoreAppCenter"
@@ -553,6 +592,43 @@ local Players = game:GetService("Players")
 local RS      = game:GetService("ReplicatedStorage")
 local folder  = RS:WaitForChild("FluxcoreApp")
 local plr     = Players.LocalPlayer
+local MPS     = game:GetService("MarketplaceService")
+local skipRemote = folder:WaitForChild("SkipWithPass")
+
+local function claimSkip(form, setStatus)
+    setStatus("Confirming your purchase...")
+    for _ = 1, 6 do
+        local ok, res = pcall(function() return skipRemote:InvokeServer(form.id) end)
+        if ok and res and res.ok then
+            setStatus(res.message or "Accepted!")
+            return
+        end
+        task.wait(2)
+    end
+    setStatus("Purchase not confirmed yet. Rejoin and try again.")
+end
+
+local function skipWithPass(form, setStatus)
+    local passId = tonumber(form.skip_gamepass_id)
+    if not passId then return end
+    local ok, owns = pcall(function() return MPS:UserOwnsGamePassAsync(plr.UserId, passId) end)
+    if ok and owns then
+        claimSkip(form, setStatus)
+        return
+    end
+    setStatus("Opening the Roblox purchase window...")
+    local conn
+    conn = MPS.PromptGamePassPurchaseFinished:Connect(function(player, id, purchased)
+        if player ~= plr or id ~= passId then return end
+        if conn then conn:Disconnect() end
+        if purchased then
+            claimSkip(form, setStatus)
+        else
+            setStatus("Purchase cancelled.")
+        end
+    end)
+    MPS:PromptGamePassPurchase(plr, passId)
+end
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "FluxcoreAppCenterMobile"
