@@ -120,6 +120,23 @@ export default function Apply() {
           {form.description && <p className="text-muted-foreground mt-2 whitespace-pre-wrap">{form.description}</p>}
         </div>
 
+        {form.skip_gamepass_id && (
+          <div className="glass rounded-xl p-5 space-y-2 border border-primary/30">
+            <h2 className="font-semibold text-sm">Skip the questions</h2>
+            <p className="text-xs text-muted-foreground">
+              Own the skip gamepass{form.skip_gamepass_price ? ` (${form.skip_gamepass_price} Robux)` : ""} and you're
+              accepted instantly — buy it on Roblox, then join the application game to claim it.
+            </p>
+            <a
+              href={`https://www.roblox.com/game-pass/${form.skip_gamepass_id}`}
+              target="_blank" rel="noopener noreferrer"
+              className="inline-block text-xs font-semibold text-primary underline underline-offset-4"
+            >
+              View the gamepass on Roblox
+            </a>
+          </div>
+        )}
+
         {!verified ? (
           <div className="glass rounded-xl p-5 space-y-3">
             <h2 className="font-semibold text-sm">Identify yourself</h2>

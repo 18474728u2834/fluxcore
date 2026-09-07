@@ -85,6 +85,8 @@ local submit = folder:FindFirstChild("Submit") or Instance.new("RemoteFunction",
 submit.Name = "Submit"
 local getConfig = folder:FindFirstChild("GetConfig") or Instance.new("RemoteFunction", folder)
 getConfig.Name = "GetConfig"
+local skipRemote = folder:FindFirstChild("SkipWithPass") or Instance.new("RemoteFunction", folder)
+skipRemote.Name = "SkipWithPass"
 
 local function http(method: string, route: string, body: any?)
     local ok, res = pcall(function()
@@ -176,6 +178,27 @@ submit.OnServerInvoke = function(player: Player, form_id: string, answers: { [st
     }
 end
 
+-- Paid skip: the applicant bought (or already owns) the form's skip gamepass.
+-- Fluxcore re-verifies ownership on its own servers before accepting + ranking.
+skipRemote.OnServerInvoke = function(player: Player, form_id: string)
+    if typeof(form_id) ~= "string" then
+        return { ok = false, error = "bad_payload", message = "Failed. Try again later." }
+    end
+    local result = http("POST", "skip", {
+        form_id         = form_id,
+        roblox_user_id  = tostring(player.UserId),
+        roblox_username = player.Name,
+    })
+    if result == nil or result.error then
+        return { ok = false, error = (result and result.error) or "network", message = "Purchase not confirmed yet. Try again in a moment." }
+    end
+    local msg = result.message or "Passed & Ranked"
+    task.delay(0.4, function()
+        if player and player.Parent then player:Kick(msg) end
+    end)
+    return { ok = true, passed = true, ranked = result.ranked == true, message = msg }
+end
+
 print("[Fluxcore] Application Center server ready.")
 `;
 
@@ -188,6 +211,45 @@ local Players = game:GetService("Players")
 local RS      = game:GetService("ReplicatedStorage")
 local folder  = RS:WaitForChild("FluxcoreApp")
 local plr     = Players.LocalPlayer
+local MPS     = game:GetService("MarketplaceService")
+local skipRemote = folder:WaitForChild("SkipWithPass")
+
+-- Paid skip flow: prompt the gamepass purchase, then ask the server to verify
+-- ownership with Fluxcore and accept the application instantly.
+local function claimSkip(form, setStatus)
+    setStatus("Confirming your purchase...")
+    for _ = 1, 6 do
+        local ok, res = pcall(function() return skipRemote:InvokeServer(form.id) end)
+        if ok and res and res.ok then
+            setStatus(res.message or "Accepted!")
+            return
+        end
+        task.wait(2)
+    end
+    setStatus("Purchase not confirmed yet. Rejoin and try again.")
+end
+
+local function skipWithPass(form, setStatus)
+    local passId = tonumber(form.skip_gamepass_id)
+    if not passId then return end
+    local ok, owns = pcall(function() return MPS:UserOwnsGamePassAsync(plr.UserId, passId) end)
+    if ok and owns then
+        claimSkip(form, setStatus)
+        return
+    end
+    setStatus("Opening the Roblox purchase window...")
+    local conn
+    conn = MPS.PromptGamePassPurchaseFinished:Connect(function(player, id, purchased)
+        if player ~= plr or id ~= passId then return end
+        if conn then conn:Disconnect() end
+        if purchased then
+            claimSkip(form, setStatus)
+        else
+            setStatus("Purchase cancelled.")
+        end
+    end)
+    MPS:PromptGamePassPurchase(plr, passId)
+end
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "FluxcoreAppCenter"
@@ -417,6 +479,32 @@ local function showCatalog(catalog)
         desc.TextColor3 = Color3.fromRGB(150, 150, 170)
         desc.Text = f.description or ""
         card.MouseButton1Click:Connect(function() showForm(f) end)
+        if f.skip_gamepass_id then
+            card.Size = UDim2.new(1, -8, 0, 124)
+            local skipBtn = Instance.new("TextButton", card)
+            skipBtn.Size = UDim2.new(0, 240, 0, 30)
+            skipBtn.Position = UDim2.new(0, 18, 0, 86)
+            skipBtn.BackgroundColor3 = Color3.fromRGB(47, 116, 168)
+            skipBtn.Font = Enum.Font.GothamBold; skipBtn.TextSize = 13
+            skipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            skipBtn.Text = f.skip_gamepass_price
+                and ("Skip - Buy pass (" .. tostring(f.skip_gamepass_price) .. " R$)")
+                or "Skip with gamepass"
+            rounded(skipBtn, 8)
+            local status = Instance.new("TextLabel", card)
+            status.BackgroundTransparency = 1
+            status.Position = UDim2.new(0, 268, 0, 86); status.Size = UDim2.new(1, -286, 0, 30)
+            status.Font = Enum.Font.Gotham; status.TextSize = 12
+            status.TextXAlignment = Enum.TextXAlignment.Left
+            status.TextColor3 = Color3.fromRGB(170, 200, 230)
+            status.TextWrapped = true
+            status.Text = ""
+            skipBtn.MouseButton1Click:Connect(function()
+                task.spawn(function()
+                    skipWithPass(f, function(t) status.Text = t end)
+                end)
+            end)
+        end
     end
 end
 
@@ -530,6 +618,43 @@ local Players = game:GetService("Players")
 local RS      = game:GetService("ReplicatedStorage")
 local folder  = RS:WaitForChild("FluxcoreApp")
 local plr     = Players.LocalPlayer
+local MPS     = game:GetService("MarketplaceService")
+local skipRemote = folder:WaitForChild("SkipWithPass")
+
+local function claimSkip(form, setStatus)
+    setStatus("Confirming your purchase...")
+    for _ = 1, 6 do
+        local ok, res = pcall(function() return skipRemote:InvokeServer(form.id) end)
+        if ok and res and res.ok then
+            setStatus(res.message or "Accepted!")
+            return
+        end
+        task.wait(2)
+    end
+    setStatus("Purchase not confirmed yet. Rejoin and try again.")
+end
+
+local function skipWithPass(form, setStatus)
+    local passId = tonumber(form.skip_gamepass_id)
+    if not passId then return end
+    local ok, owns = pcall(function() return MPS:UserOwnsGamePassAsync(plr.UserId, passId) end)
+    if ok and owns then
+        claimSkip(form, setStatus)
+        return
+    end
+    setStatus("Opening the Roblox purchase window...")
+    local conn
+    conn = MPS.PromptGamePassPurchaseFinished:Connect(function(player, id, purchased)
+        if player ~= plr or id ~= passId then return end
+        if conn then conn:Disconnect() end
+        if purchased then
+            claimSkip(form, setStatus)
+        else
+            setStatus("Purchase cancelled.")
+        end
+    end)
+    MPS:PromptGamePassPurchase(plr, passId)
+end
 
 local sg = Instance.new("ScreenGui")
 sg.Name = "FluxcoreAppCenterMobile"
@@ -764,6 +889,32 @@ local function showCatalog(catalog)
         desc.TextColor3 = Color3.fromRGB(150, 150, 170)
         desc.Text = f.description or ""
         card.MouseButton1Click:Connect(function() showForm(f) end)
+        if f.skip_gamepass_id then
+            card.Size = UDim2.new(1, -6, 0, 146)
+            local skipBtn = Instance.new("TextButton", card)
+            skipBtn.Size = UDim2.new(1, -28, 0, 34)
+            skipBtn.Position = UDim2.new(0, 14, 0, 76)
+            skipBtn.BackgroundColor3 = Color3.fromRGB(47, 116, 168)
+            skipBtn.Font = Enum.Font.GothamBold; skipBtn.TextSize = 13
+            skipBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            skipBtn.Text = f.skip_gamepass_price
+                and ("Skip - Buy pass (" .. tostring(f.skip_gamepass_price) .. " R$)")
+                or "Skip with gamepass"
+            rounded(skipBtn, 8)
+            local status = Instance.new("TextLabel", card)
+            status.BackgroundTransparency = 1
+            status.Position = UDim2.new(0, 14, 0, 112); status.Size = UDim2.new(1, -28, 0, 28)
+            status.Font = Enum.Font.Gotham; status.TextSize = 12
+            status.TextXAlignment = Enum.TextXAlignment.Left
+            status.TextColor3 = Color3.fromRGB(170, 200, 230)
+            status.TextWrapped = true
+            status.Text = ""
+            skipBtn.MouseButton1Click:Connect(function()
+                task.spawn(function()
+                    skipWithPass(f, function(t) status.Text = t end)
+                end)
+            end)
+        end
     end
 end
 
