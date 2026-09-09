@@ -294,7 +294,7 @@ export default function LandingClassic() {
               <p className="landing-head text-[12px] font-semibold uppercase tracking-[0.16em] text-muted-foreground mb-4">Pricing</p>
               <h2 className="landing-head text-[30px] font-bold leading-[1.1] mb-3">Free for everyone. Forever.</h2>
               <p className="text-[15.5px] text-muted-foreground leading-[1.7]">
-                No card, no subscription, no gamepass gate. Every feature is unlocked for every group,
+                No card and no subscription. Every feature is unlocked for every group,
                 whether you have nine staff or nine hundred.
               </p>
             </div>

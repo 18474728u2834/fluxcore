@@ -13,6 +13,7 @@ interface WorkspaceData {
   text_color: string | null;
   background_color: string | null;
   show_grid: boolean | null;
+  sidebar_gradient: boolean | null;
   verified_official: boolean;
   premium: boolean;
   premium_until: string | null;
@@ -113,6 +114,7 @@ export function WorkspaceProvider({ children, workspaceId: workspaceIdOverride }
           text_color: wsData.text_color,
           background_color: wsData.background_color,
           show_grid: wsData.show_grid,
+          sidebar_gradient: (wsData as any).sidebar_gradient ?? true,
           verified_official: !!wsData.verified_official,
           premium: isPremiumActive,
           premium_until: wsData.premium_until ?? null,
