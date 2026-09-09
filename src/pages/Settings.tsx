@@ -65,6 +65,7 @@ export default function SettingsPage() {
   const [textColor, setTextColor] = useState("#ffffff");
   const [backgroundColor, setBackgroundColor] = useState("#0f0f11");
   const [showGrid, setShowGrid] = useState(true);
+  const [sidebarGradient, setSidebarGradient] = useState(true);
   const [discordWebhook, setDiscordWebhook] = useState("");
   const [rankgunApiKey, setRankgunApiKey] = useState("");
   const [gameUrl, setGameUrl] = useState("");
@@ -89,7 +90,7 @@ export default function SettingsPage() {
       setGroupId(workspace.roblox_group_id || "");
       const fetchExtras = async () => {
         const { data } = await supabase.from("workspaces")
-          .select("primary_color, text_color, background_color, show_grid, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, nexus_hero_image_url")
+          .select("primary_color, text_color, background_color, show_grid, sidebar_gradient, message_logger_enabled, auto_rank_enabled, game_url, session_role_labels, afk_confirm_seconds, leaderboard_categories, quota_log_mode, nexus_hero_image_url")
           .eq("id", workspaceId).single();
         const { data: secretsRows } = await supabase
           .rpc("get_workspace_secrets", { _workspace_id: workspaceId });
@@ -107,6 +108,7 @@ export default function SettingsPage() {
           setTextColor((data as any).text_color || "#ffffff");
           setBackgroundColor((data as any).background_color || "#0f0f11");
           setShowGrid((data as any).show_grid ?? true);
+          setSidebarGradient((data as any).sidebar_gradient ?? true);
           setRobloxApiKey(secrets?.roblox_api_key || "");
           setDiscordWebhook(secrets?.discord_webhook_url || "");
           setRankgunApiKey(secrets?.rankgun_api_key || "");
@@ -158,6 +160,7 @@ export default function SettingsPage() {
       text_color: textColor,
       background_color: backgroundColor,
       show_grid: showGrid,
+      sidebar_gradient: sidebarGradient,
       message_logger_enabled: messageLogger,
       auto_rank_enabled: autoRank,
       afk_confirm_seconds: Math.max(0, Math.floor(Number(afkConfirmSeconds) || 0)),
@@ -369,6 +372,19 @@ export default function SettingsPage() {
                         </div>
                       </div>
                       <Switch checked={showGrid} onCheckedChange={setShowGrid} />
+                    </div>
+                  </div>
+
+                  <div className="glass rounded-xl p-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Palette className="w-4 h-4 text-muted-foreground" />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Sidebar Gradient</p>
+                          <p className="text-xs text-muted-foreground">Turn off for a flat, solid sidebar</p>
+                        </div>
+                      </div>
+                      <Switch checked={sidebarGradient} onCheckedChange={setSidebarGradient} />
                     </div>
                   </div>
                 </div>

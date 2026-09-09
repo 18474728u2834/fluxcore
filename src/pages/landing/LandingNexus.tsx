@@ -283,7 +283,7 @@ export default function LandingNexus() {
               <p className="text-[12px] uppercase tracking-[0.14em] text-muted-foreground mb-3">Pricing</p>
               <h2 className="text-[28px] font-semibold tracking-[-0.03em] leading-[1.1] mb-3">Free for everyone. Forever.</h2>
               <p className="text-[15px] text-muted-foreground leading-[1.65]">
-                No card, no subscription, no gamepass gate. Every feature is unlocked for every group,
+                No card and no subscription. Every feature is unlocked for every group,
                 whether you have nine staff or nine hundred.
               </p>
             </div>
