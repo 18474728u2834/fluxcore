@@ -161,9 +161,9 @@ export function ShellV3({ children }: { children: ReactNode }) {
         .font-nexus3 *::-webkit-scrollbar-thumb { background: #26262b; border-radius: 999px; }
         .n3-glass { background: rgba(20,20,24,0.72); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.07); }
         .n3-side {
-          background:
-            linear-gradient(168deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.8) 100%),
-            rgba(8,8,10,0.72);
+          background: ${sidebarGradient
+            ? `linear-gradient(168deg, rgba(255,255,255,0.06) 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.8) 100%), rgba(8,8,10,0.72)`
+            : `rgba(12,12,15,0.96)`};
           backdrop-filter: blur(22px);
           border: 1px solid rgba(255,255,255,0.09);
         }
