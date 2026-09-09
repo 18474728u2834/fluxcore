@@ -1,7 +1,10 @@
 // One-shot registration helper. POST to this function to register the
 // Fluxcore slash commands globally with Discord.
+import { createClient } from "npm:@supabase/supabase-js@2";
+
 const TOKEN = Deno.env.get("DISCORD_BOT_TOKEN");
 const APP_ID = Deno.env.get("DISCORD_APPLICATION_ID");
+
 
 const commands = [
   { name: "verify", description: "Link your Discord account to your Fluxcore workspace." },
