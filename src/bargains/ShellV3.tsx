@@ -51,6 +51,7 @@ export function ShellV3({ children }: { children: ReactNode }) {
 
   const base = `/w/${workspaceId}`;
   const accent = workspace?.primary_color || "#2f74a8";
+  const sidebarGradient = (workspace as any)?.sidebar_gradient !== false;
   const initials = (workspace?.name || "").trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "·";
 
   // Workspace (Roblox group) icon, cached in localStorage
