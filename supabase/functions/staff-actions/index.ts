@@ -548,16 +548,7 @@ Deno.serve(async (req) => {
         if (subject.length > 200) return json({ error: "subject_too_long" }, 400);
         if (bodyHtmlRaw.length > 50000) return json({ error: "body_too_long" }, 400);
 
-        const sanitize = (html: string) =>
-          html
-            .replace(/<\s*(script|style|iframe|object|embed|link|meta)[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
-            .replace(/<\s*(script|style|iframe|object|embed|link|meta)[^>]*\/?>/gi, "")
-            .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "")
-            .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "")
-            .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "")
-            .replace(/javascript:/gi, "")
-            .replace(/data:text\/html/gi, "");
-        const bodyHtml = sanitize(bodyHtmlRaw);
+        const bodyHtml = sanitizeEmailHtml(bodyHtmlRaw);
 
         const recipients = new Set<string>();
         if (target === "specific_email") {
