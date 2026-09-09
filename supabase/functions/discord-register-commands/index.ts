@@ -1,7 +1,10 @@
 // One-shot registration helper. POST to this function to register the
 // Fluxcore slash commands globally with Discord.
+import { createClient } from "npm:@supabase/supabase-js@2";
+
 const TOKEN = Deno.env.get("DISCORD_BOT_TOKEN");
 const APP_ID = Deno.env.get("DISCORD_APPLICATION_ID");
+
 
 const commands = [
   { name: "verify", description: "Link your Discord account to your Fluxcore workspace." },
@@ -34,11 +37,33 @@ const cors = {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors });
 
+  // Only the service role (internal automation) or a signed-in staff member
+  // with manage_status may push command changes to Discord.
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+  const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+  const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const presented = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const deny = (status: number, error: string) =>
+    new Response(JSON.stringify({ error }), { status, headers: { ...cors, "Content-Type": "application/json" } });
+
+  if (!presented) return deny(401, "unauthorized");
+  if (presented !== SERVICE_KEY) {
+    const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: { headers: { Authorization: `Bearer ${presented}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+    const { data: userData } = await userClient.auth.getUser();
+    if (!userData?.user) return deny(401, "unauthorized");
+    const { data: allowed } = await userClient.rpc("has_staff_permission", { _perm: "manage_status" });
+    if (!allowed) return deny(403, "forbidden");
+  }
+
   if (!TOKEN || !APP_ID) {
     return new Response(JSON.stringify({ error: "Discord bot credentials are not configured." }), {
       status: 500, headers: { ...cors, "Content-Type": "application/json" },
     });
   }
+
 
   const res = await fetch(`https://discord.com/api/v10/applications/${APP_ID}/commands`, {
     method: "PUT",

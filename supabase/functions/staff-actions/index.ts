@@ -2,11 +2,29 @@
 // Verifies caller is a staff_admin and has the required permission for the action.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import DOMPurify from "npm:isomorphic-dompurify@2.16.0";
 
 // Strip PostgREST filter-syntax delimiters so user search text cannot alter the filter.
 function sanitizeSearch(input: string): string {
   return String(input).replace(/[,()\\*."\x27]/g, " ").trim().slice(0, 64);
 }
+
+// Vetted HTML sanitizer for staff-composed email bodies (email-safe profile).
+function sanitizeEmailHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p", "br", "b", "strong", "i", "em", "u", "s", "a", "ul", "ol", "li",
+      "h1", "h2", "h3", "h4", "blockquote", "span", "div", "img", "hr",
+      "table", "thead", "tbody", "tr", "td", "th",
+    ],
+    ALLOWED_ATTR: ["href", "title", "target", "rel", "src", "alt", "width", "height", "style", "align"],
+    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|cid:)/i,
+    FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "link", "meta", "form", "input"],
+    FORBID_ATTR: ["srcset", "formaction", "background"],
+    USE_PROFILES: { html: true },
+  });
+}
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -530,16 +548,7 @@ Deno.serve(async (req) => {
         if (subject.length > 200) return json({ error: "subject_too_long" }, 400);
         if (bodyHtmlRaw.length > 50000) return json({ error: "body_too_long" }, 400);
 
-        const sanitize = (html: string) =>
-          html
-            .replace(/<\s*(script|style|iframe|object|embed|link|meta)[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
-            .replace(/<\s*(script|style|iframe|object|embed|link|meta)[^>]*\/?>/gi, "")
-            .replace(/\son[a-z]+\s*=\s*"[^"]*"/gi, "")
-            .replace(/\son[a-z]+\s*=\s*'[^']*'/gi, "")
-            .replace(/\son[a-z]+\s*=\s*[^\s>]+/gi, "")
-            .replace(/javascript:/gi, "")
-            .replace(/data:text\/html/gi, "");
-        const bodyHtml = sanitize(bodyHtmlRaw);
+        const bodyHtml = sanitizeEmailHtml(bodyHtmlRaw);
 
         const recipients = new Set<string>();
         if (target === "specific_email") {
