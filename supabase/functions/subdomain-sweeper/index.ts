@@ -43,23 +43,31 @@ serve(async (req) => {
     const projectId = Deno.env.get("VERCEL_PROJECT_ID");
     const teamId = Deno.env.get("VERCEL_TEAM_ID");
 
-    // Idempotent and read-mostly — any caller bearing the project anon or
-    // service-role key is allowed. Unauthenticated callers are rejected.
-    const allowed = new Set(
-      [
-        serviceRoleKey,
-        Deno.env.get("SUPABASE_ANON_KEY"),
-        Deno.env.get("SUPABASE_PUBLISHABLE_KEY"),
-        Deno.env.get("SUPABASE_PUBLISHABLE_OR_ANON_KEY"),
-      ].filter(Boolean) as string[],
-    );
+    // Only the scheduled job (service-role key) or a signed-in staff member
+    // holding manage_status may run domain reconciliation.
     const authHeader = req.headers.get("authorization") || "";
-    const presented = authHeader.replace(/^Bearer\s+/i, "") || req.headers.get("apikey") || "";
-    if (!allowed.has(presented)) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+    const presented = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const unauthorized = () =>
+      new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+
+    if (!presented) return unauthorized();
+    if (presented !== serviceRoleKey) {
+      const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
+        global: { headers: { Authorization: `Bearer ${presented}` } },
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { data: userData } = await userClient.auth.getUser();
+      if (!userData?.user) return unauthorized();
+      const { data: allowed } = await userClient.rpc("has_staff_permission", { _perm: "manage_status" });
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
+
 
     if (!vercelToken || !projectId) {
       return new Response(JSON.stringify({ error: "Vercel not configured" }), {
