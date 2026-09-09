@@ -3163,6 +3163,7 @@ export type Database = {
           roblox_group_id: string
           session_role_labels: Json
           show_grid: boolean
+          sidebar_gradient: boolean
           text_color: string
           tutorial_completed: boolean
           verified_official: boolean
