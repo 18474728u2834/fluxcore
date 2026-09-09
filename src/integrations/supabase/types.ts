@@ -2974,6 +2974,7 @@ export type Database = {
           roblox_group_id: string | null
           session_role_labels: Json
           show_grid: boolean | null
+          sidebar_gradient: boolean
           subdomain_grace_until: string
           text_color: string | null
           tutorial_completed: boolean
@@ -3016,6 +3017,7 @@ export type Database = {
           roblox_group_id?: string | null
           session_role_labels?: Json
           show_grid?: boolean | null
+          sidebar_gradient?: boolean
           subdomain_grace_until?: string
           text_color?: string | null
           tutorial_completed?: boolean
@@ -3058,6 +3060,7 @@ export type Database = {
           roblox_group_id?: string | null
           session_role_labels?: Json
           show_grid?: boolean | null
+          sidebar_gradient?: boolean
           subdomain_grace_until?: string
           text_color?: string | null
           tutorial_completed?: boolean

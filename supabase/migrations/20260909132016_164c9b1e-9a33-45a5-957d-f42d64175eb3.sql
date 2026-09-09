@@ -1,0 +1,1 @@
+ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS sidebar_gradient boolean NOT NULL DEFAULT true;
