@@ -2,11 +2,29 @@
 // Verifies caller is a staff_admin and has the required permission for the action.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import DOMPurify from "npm:isomorphic-dompurify@2.16.0";
 
 // Strip PostgREST filter-syntax delimiters so user search text cannot alter the filter.
 function sanitizeSearch(input: string): string {
   return String(input).replace(/[,()\\*."\x27]/g, " ").trim().slice(0, 64);
 }
+
+// Vetted HTML sanitizer for staff-composed email bodies (email-safe profile).
+function sanitizeEmailHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      "p", "br", "b", "strong", "i", "em", "u", "s", "a", "ul", "ol", "li",
+      "h1", "h2", "h3", "h4", "blockquote", "span", "div", "img", "hr",
+      "table", "thead", "tbody", "tr", "td", "th",
+    ],
+    ALLOWED_ATTR: ["href", "title", "target", "rel", "src", "alt", "width", "height", "style", "align"],
+    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|cid:)/i,
+    FORBID_TAGS: ["script", "style", "iframe", "object", "embed", "link", "meta", "form", "input"],
+    FORBID_ATTR: ["srcset", "formaction", "background"],
+    USE_PROFILES: { html: true },
+  });
+}
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
