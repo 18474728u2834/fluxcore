@@ -144,7 +144,7 @@ export default function BDashboard() {
   };
 
   // ---- Nexus UI 3.0: modern trial dashboard ---------------------------------
-  if (config.version === "v3" && v3Enabled) {
+  if ((config.version === "v3" || config.version === "v4") && v3Enabled) {
     const stats = [
       { label: "Birthdays today", value: birthdays.length },
       { label: "New this week", value: newMembers.length },
