@@ -14,6 +14,7 @@ import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
 import { BlacklistGate } from "@/components/BlacklistGate";
 import { AccountRemovalGate } from "@/components/AccountRemovalGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
+import { BackendStatusBanner } from "@/components/BackendStatusBanner";
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -565,6 +566,7 @@ const App = () => {
               <HashRouter>
                 <DOMTranslator />
                 <LoadWatchdog />
+                <BackendStatusBanner />
                 <ChunkErrorBoundary fallback={<PageLoader />}>
                   <BlacklistGate>
                     <AccountRemovalGate>

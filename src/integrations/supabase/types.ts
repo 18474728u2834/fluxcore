@@ -404,6 +404,42 @@ export type Database = {
           },
         ]
       }
+      backup_runs: {
+        Row: {
+          created_at: string
+          duration_ms: number | null
+          error: string | null
+          file_path: string | null
+          id: string
+          row_count: number | null
+          size_bytes: number | null
+          status: string
+          table_counts: Json | null
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          file_path?: string | null
+          id?: string
+          row_count?: number | null
+          size_bytes?: number | null
+          status?: string
+          table_counts?: Json | null
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number | null
+          error?: string | null
+          file_path?: string | null
+          id?: string
+          row_count?: number | null
+          size_bytes?: number | null
+          status?: string
+          table_counts?: Json | null
+        }
+        Relationships: []
+      }
       creations: {
         Row: {
           created_at: string
@@ -3283,6 +3319,12 @@ export type Database = {
           code: string
         }
         Returns: string
+      }
+      list_backup_tables: {
+        Args: never
+        Returns: {
+          table_name: string
+        }[]
       }
       lookup_workspace_by_invite: {
         Args: { code: string }
