@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useNexusV3Trial } from "@/hooks/useNexusV3";
+import { useNexusV4Access } from "@/hooks/useNexusV4";
+import { DashboardV4 } from "./DashboardV4";
 import { useAuth } from "@/hooks/useAuth";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
 
@@ -28,6 +30,7 @@ export default function BDashboard() {
   const { workspaceId, workspace } = useWorkspace();
   const { config } = useNexusConfig(workspaceId);
   const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
+  const { enabled: v4Enabled } = useNexusV4Access(workspaceId);
   const { robloxUsername } = useAuth();
 
   const name = robloxUsername || "friend";
@@ -142,6 +145,27 @@ export default function BDashboard() {
     workspaceId: workspaceId || "",
     base: `/w/${workspaceId}`,
   };
+
+  // ---- Nexus UI 4.0: briefing dashboard -------------------------------------
+  if (config.version === "v4" && v4Enabled) {
+    return (
+      <BargainsShell>
+        <BirthdayPrompt />
+        <DashboardV4
+          config={config}
+          cardData={cardData}
+          workspaceId={workspaceId || ""}
+          accent={accent}
+          heroStyle={heroStyle}
+          greeting={greeting}
+          name={name}
+          heroLine={heroLine}
+          birthdays={birthdays}
+          newMembers={newMembers}
+        />
+      </BargainsShell>
+    );
+  }
 
   // ---- Nexus UI 3.0: modern trial dashboard ---------------------------------
   if ((config.version === "v3" || config.version === "v4") && v3Enabled) {
