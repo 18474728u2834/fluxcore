@@ -24,9 +24,19 @@ function json(body: unknown, status = 200) {
   });
 }
 
+// Tables whose primary key is not a plain "id" column.
+const PK_OVERRIDES: Record<string, string> = {
+  discord_pending_links: "token",
+  nexus_v3_trials: "workspace_id",
+  site_settings: "key",
+  status_incident_components: "incident_id,component_id",
+  user_birthdays: "user_id",
+};
+
 async function pushChunk(table: string, rows: unknown[], key: string) {
+  const conflict = PK_OVERRIDES[table] ?? "id";
   const res = await fetch(
-    `${STANDBY_URL}/rest/v1/${table}?on_conflict=id`,
+    `${STANDBY_URL}/rest/v1/${table}?on_conflict=${encodeURIComponent(conflict)}`,
     {
       method: "POST",
       headers: {

@@ -29,6 +29,13 @@
       "when": 1789667932377,
       "tag": "0003_exclude_replication_runs_from_backup_list",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789668743505,
+      "tag": "0004_schedule_standby_replication",
+      "breakpoints": true
     }
   ]
 }
