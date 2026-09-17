@@ -57,8 +57,8 @@ export default function TrialsTab() {
       enabled_by: auth.user?.id ?? null,
     });
     setBusy(null);
-    if (error) return toast.error("Could not grant early access");
-    toast.success(`Nexus UI 4.0 unlocked for ${ws.name}`);
+    if (error) return toast.error("Could not grant trial access");
+    toast.success(`Nexus UI 3.0 unlocked for ${ws.name}`);
     loadTrials();
   };
 
@@ -66,8 +66,8 @@ export default function TrialsTab() {
     setBusy(workspaceId);
     const { error } = await supabase.from("nexus_v3_trials").delete().eq("workspace_id", workspaceId);
     setBusy(null);
-    if (error) return toast.error("Could not revoke early access");
-    toast.success("Early access revoked");
+    if (error) return toast.error("Could not revoke trial access");
+    toast.success("Trial access revoked");
     loadTrials();
   };
 
@@ -75,10 +75,10 @@ export default function TrialsTab() {
     <div className="space-y-4">
       <div className="glass rounded-xl border border-border/50 p-6">
         <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" /> Nexus UI 4.0 early access
+          <Sparkles className="w-4 h-4 text-primary" /> Nexus UI 3.0 trial
         </h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Only the workspaces listed here can pick Nexus UI 4.0 in their Theme settings. Everyone else keeps 1.0, 2.0 and 3.0.
+          Only the workspaces listed here can pick Nexus UI 3.0 in their Theme settings. Everyone else keeps 1.0 and 2.0.
         </p>
 
         <div className="flex gap-2 mt-4">
@@ -102,7 +102,7 @@ export default function TrialsTab() {
                   <div className="text-[11px] text-muted-foreground font-mono truncate">{w.id}</div>
                 </div>
                 {enabledIds.has(w.id) ? (
-                  <span className="text-xs text-primary">Already has 4.0</span>
+                  <span className="text-xs text-primary">Already in the trial</span>
                 ) : (
                   <Button size="sm" disabled={busy === w.id} onClick={() => grant(w)}>
                     {busy === w.id ? <Loader2 className="w-4 h-4 animate-spin" /> : "Grant access"}
@@ -115,11 +115,11 @@ export default function TrialsTab() {
       </div>
 
       <div className="glass rounded-xl border border-border/50 p-6">
-        <h3 className="text-sm font-semibold text-foreground">Workspaces with Nexus UI 4.0</h3>
+        <h3 className="text-sm font-semibold text-foreground">Workspaces in the trial</h3>
         {loading ? (
           <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
         ) : trials.length === 0 ? (
-          <p className="text-sm text-muted-foreground mt-2">No workspaces have Nexus UI 4.0 yet.</p>
+          <p className="text-sm text-muted-foreground mt-2">No workspaces have Nexus UI 3.0 yet.</p>
         ) : (
           <div className="mt-3 space-y-2">
             {trials.map(t => (
