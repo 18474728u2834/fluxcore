@@ -566,6 +566,7 @@ const App = () => {
               <HashRouter>
                 <DOMTranslator />
                 <LoadWatchdog />
+                <BackendStatusBanner />
                 <ChunkErrorBoundary fallback={<PageLoader />}>
                   <BlacklistGate>
                     <AccountRemovalGate>
