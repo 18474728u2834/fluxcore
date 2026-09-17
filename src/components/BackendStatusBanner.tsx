@@ -19,7 +19,8 @@ export function BackendStatusBanner() {
 
   useEffect(() => {
     installBackendHealthMonitor();
-    return onBackendStateChange((s) => setState(s));
+    const off = onBackendStateChange((s) => setState(s));
+    return () => { off(); };
   }, []);
 
   if (state === "up") return null;
