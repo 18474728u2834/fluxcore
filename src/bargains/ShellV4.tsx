@@ -257,12 +257,12 @@ export function ShellV4({ children }: { children: ReactNode }) {
         <NavLink
           to={`${base}/${item.to}`}
           title={mini ? item.label : undefined}
-          className={`relative flex items-center ${mini ? "justify-center px-0" : "gap-3 px-3 pr-8"} h-9 rounded-lg text-[13px] font-medium transition-colors`}
-          style={{ background: active ? "rgba(255,255,255,0.06)" : "transparent", color: active ? "#ffffff" : "#8b8b94" }}
+          className={`relative flex items-center ${mini ? "justify-center px-0" : "gap-3 pl-4 pr-8"} h-9 text-[13px] font-medium transition-colors`}
+          style={{ background: active ? "#15181d" : "transparent", color: active ? "#ffffff" : "#7e838c" }}
         >
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] rounded-full transition-all"
-            style={{ height: active ? 16 : 0, background: accent }} />
-          <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={1.7} style={active ? { color: accent } : undefined} />
+          <span className="absolute left-0 top-0 bottom-0 w-[3px] transition-all"
+            style={{ background: active ? accent : "transparent" }} />
+          <Icon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.7} style={active ? { color: accent } : undefined} />
           {!mini && <span className="truncate">{item.label}</span>}
         </NavLink>
         {!mini && showPin && (
