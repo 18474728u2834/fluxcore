@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useNexusV3Trial } from "@/hooks/useNexusV3";
+import { useNexusV4Access } from "@/hooks/useNexusV4";
+import { ShellV4 } from "@/bargains/ShellV4";
 import { ShellV3 } from "@/bargains/ShellV3";
 import { useLexicon } from "@/hooks/useLexicon";
 
@@ -65,6 +67,7 @@ export function BargainsShell({ children }: ShellProps) {
   const { workspace, workspaceId, isOwner } = useWorkspace();
   const { config: nexusConfig } = useNexusConfig(workspaceId);
   const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
+  const { enabled: v4Enabled } = useNexusV4Access(workspaceId);
   const { t } = useLexicon(workspaceId);
 
   const { user, signOut } = useAuth();
@@ -289,8 +292,13 @@ export function BargainsShell({ children }: ShellProps) {
     [nexusConfig, t],
   );
 
-  // Nexus UI 3.0 — invite-only trial shell.
-  if (nexusConfig.version === "v3" && v3Enabled) {
+  // Nexus UI 4.0 — early access shell.
+  if (nexusConfig.version === "v4" && v4Enabled) {
+    return <ShellV4>{children}</ShellV4>;
+  }
+
+  // Nexus UI 3.0 — open beta shell.
+  if ((nexusConfig.version === "v3" || nexusConfig.version === "v4") && v3Enabled) {
     return <ShellV3>{children}</ShellV3>;
   }
 
