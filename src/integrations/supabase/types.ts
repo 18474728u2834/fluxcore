@@ -1481,6 +1481,36 @@ export type Database = {
           },
         ]
       }
+      replication_runs: {
+        Row: {
+          duration_ms: number | null
+          error: string | null
+          id: string
+          ran_at: string
+          rows_copied: number
+          status: string
+          tables_copied: number
+        }
+        Insert: {
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          ran_at?: string
+          rows_copied?: number
+          status: string
+          tables_copied?: number
+        }
+        Update: {
+          duration_ms?: number | null
+          error?: string | null
+          id?: string
+          ran_at?: string
+          rows_copied?: number
+          status?: string
+          tables_copied?: number
+        }
+        Relationships: []
+      }
       roblox_verification_challenges: {
         Row: {
           code: string
