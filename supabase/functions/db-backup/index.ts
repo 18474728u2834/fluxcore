@@ -30,7 +30,23 @@ Deno.serve(async (req) => {
   const counts: Record<string, number> = {};
   const failed: string[] = [];
 
-  for (const table of TABLES) {
+  // Every real table in the app schema, resolved at run time so new tables
+  // are backed up automatically.
+  const { data: tableRows, error: listErr } = await admin.rpc("list_backup_tables");
+  if (listErr) {
+    await admin.from("backup_runs").insert({
+      status: "failed",
+      error: `table list: ${listErr.message}`,
+      duration_ms: Date.now() - startedAt.getTime(),
+    });
+    return new Response(JSON.stringify({ error: listErr.message }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+  const tables: string[] = (tableRows ?? []).map((r: any) => r.table_name);
+
+  for (const table of tables) {
     const rows: unknown[] = [];
     let from = 0;
     // Pull in pages so a large table doesn't blow the request limit.
