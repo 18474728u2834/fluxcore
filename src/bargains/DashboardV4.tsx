@@ -75,7 +75,7 @@ export function DashboardV4({
 
         {/* readout columns */}
         <div className="grid grid-cols-3 lg:grid-cols-1 lg:w-[210px] divide-y lg:divide-y divide-x lg:divide-x-0"
-          style={{ borderColor: "rgba(255,255,255,0.08)", background: "#101216" }}>
+          style={{ borderColor: "rgba(255,255,255,0.08)", background: "#15171d" }}>
           {[
             { v: pulse.staffInGame, l: "in game", icon: Radio, tone: "#34d399" },
             { v: waiting, l: "waiting on you", icon: Sparkles, tone: accent },

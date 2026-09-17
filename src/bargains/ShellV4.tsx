@@ -258,7 +258,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
           to={`${base}/${item.to}`}
           title={mini ? item.label : undefined}
           className={`relative flex items-center ${mini ? "justify-center px-0" : "gap-3 pl-4 pr-8"} h-9 text-[13px] font-medium transition-colors`}
-          style={{ background: active ? "#15181d" : "transparent", color: active ? "#ffffff" : "#7e838c" }}
+          style={{ background: active ? "rgba(255,255,255,0.06)" : "transparent", color: active ? "#ffffff" : "#7e838c" }}
         >
           <span className="absolute left-0 top-0 bottom-0 w-[3px] transition-all"
             style={{ background: active ? accent : "transparent" }} />
@@ -310,7 +310,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen w-full flex font-nexus4 relative" style={{ background: "#0a0b0d", color: "#eceef1" }}>
+    <div className="min-h-screen w-full flex font-nexus4 relative" style={{ background: "#0c0d12", color: "#eceef1" }}>
       <DemoBanner />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -343,7 +343,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
 
       {/* Desktop rail */}
       <aside className={`hidden md:flex shrink-0 flex-col transition-[width] duration-200 ${collapsed ? "w-[68px]" : "w-[236px]"} border-r relative z-10`}
-        style={{ borderColor: "rgba(255,255,255,0.08)", background: "#0c0e11" }}>
+        style={{ borderColor: "rgba(255,255,255,0.08)", background: "#111319" }}>
         <div className="sticky top-0 h-screen flex flex-col p-3">
           <button
             onClick={() => navigate(`${base}/dashboard`)}
@@ -368,7 +368,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
           <button
             onClick={() => setPalette(true)}
             className={`n4-mono mt-3 flex items-center ${collapsed ? "justify-center" : "gap-2 px-2.5"} h-9 text-[11px] uppercase text-white/40 transition-colors hover:text-white/75`}
-            style={{ background: "#14171c", border: "1px solid rgba(255,255,255,0.08)" }}
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
           >
             <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
             {!collapsed && (<><span className="flex-1 text-left">search</span><kbd className="text-[10px] text-white/25">⌘K</kbd></>)}
@@ -392,7 +392,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0 relative">
         <header className="sticky top-0 z-30 h-14 flex items-center gap-2 px-3 md:px-6 border-b"
-          style={{ borderColor: "rgba(255,255,255,0.08)", background: "#0c0e11" }}>
+          style={{ borderColor: "rgba(255,255,255,0.08)", background: "#111319" }}>
           <button onClick={() => setDrawer(true)} className="md:hidden w-9 h-9 flex items-center justify-center hover:bg-white/5" aria-label="Open menu">
             <Menu className="w-5 h-5" />
           </button>
@@ -645,7 +645,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
 /** Shared V4 surface tokens */
 export const n4 = {
   card: "rounded-2xl border",
-  cardStyle: { background: "#101216", borderColor: "rgba(255,255,255,0.08)" } as const,
+  cardStyle: { background: "#15171d", borderColor: "rgba(255,255,255,0.08)" } as const,
   text: "#f2f2f5",
   textDim: "#9c9ca6",
   textMuted: "#6f6f79",
