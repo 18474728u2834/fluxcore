@@ -338,8 +338,8 @@ export function ShellV4({ children }: { children: ReactNode }) {
       </div>
 
       {/* Desktop rail */}
-      <aside className={`hidden md:flex shrink-0 flex-col transition-[width] duration-200 ${collapsed ? "w-[68px]" : "w-[240px]"} border-r`}
-        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(10,10,12,0.7)", backdropFilter: "blur(18px)" }}>
+      <aside className={`hidden md:flex shrink-0 flex-col transition-[width] duration-200 ${collapsed ? "w-[68px]" : "w-[236px]"} border-r relative z-10`}
+        style={{ borderColor: "rgba(255,255,255,0.08)", background: "#0c0e11" }}>
         <div className="sticky top-0 h-screen flex flex-col p-3">
           <button
             onClick={() => navigate(`${base}/dashboard`)}
@@ -356,18 +356,18 @@ export function ShellV4({ children }: { children: ReactNode }) {
             {!collapsed && (
               <span className="min-w-0">
                 <span className="block text-[13px] font-semibold truncate">{workspace?.name || "Workspace"}</span>
-                <span className="block text-[10px] text-white/35">Nexus 4.0</span>
+                <span className="n4-mono block text-[9px] uppercase text-white/30">nexus//4.0</span>
               </span>
             )}
           </button>
 
           <button
             onClick={() => setPalette(true)}
-            className={`mt-3 flex items-center ${collapsed ? "justify-center" : "gap-2 px-2.5"} h-9 rounded-lg text-[12.5px] text-white/45 transition-colors hover:text-white/70`}
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+            className={`n4-mono mt-3 flex items-center ${collapsed ? "justify-center" : "gap-2 px-2.5"} h-9 text-[11px] uppercase text-white/40 transition-colors hover:text-white/75`}
+            style={{ background: "#14171c", border: "1px solid rgba(255,255,255,0.08)" }}
           >
             <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
-            {!collapsed && (<><span className="flex-1 text-left">Search or jump…</span><kbd className="text-[10px] text-white/30">⌘K</kbd></>)}
+            {!collapsed && (<><span className="flex-1 text-left">search</span><kbd className="text-[10px] text-white/25">⌘K</kbd></>)}
           </button>
 
           <div className="flex-1 overflow-y-auto pr-0.5 mt-5"><Rail /></div>
@@ -388,27 +388,35 @@ export function ShellV4({ children }: { children: ReactNode }) {
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0 relative">
         <header className="sticky top-0 z-30 h-14 flex items-center gap-2 px-3 md:px-6 border-b"
-          style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(8,8,10,0.72)", backdropFilter: "blur(18px)" }}>
-          <button onClick={() => setDrawer(true)} className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5" aria-label="Open menu">
+          style={{ borderColor: "rgba(255,255,255,0.08)", background: "#0c0e11" }}>
+          <button onClick={() => setDrawer(true)} className="md:hidden w-9 h-9 flex items-center justify-center hover:bg-white/5" aria-label="Open menu">
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="min-w-0 flex items-center gap-2 text-[13px]">
-            <span className="hidden sm:inline text-white/30 truncate">{workspace?.name || "Workspace"}</span>
-            <span className="hidden sm:inline text-white/20">/</span>
-            <span className="font-semibold truncate">{current}</span>
+          <div className="min-w-0 flex items-center gap-2">
+            <span className="n4-mono hidden sm:inline text-[10px] uppercase text-white/25 truncate">{workspace?.name || "workspace"}</span>
+            <span className="n4-mono hidden sm:inline text-white/15">/</span>
+            <span className="text-[14px] font-semibold truncate">{current}</span>
           </div>
 
           <div className="flex-1" />
 
-          {/* live presence pill */}
-          <span className="hidden sm:flex items-center gap-2 h-8 px-3 rounded-full text-[12px]"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)" }}>
-            <span className="relative flex w-1.5 h-1.5">
-              <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-              <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          {/* live telemetry strip */}
+          <span className="n4-mono hidden md:flex items-stretch text-[10.5px] uppercase divide-x"
+            style={{ border: "1px solid rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>
+            <span className="flex items-center gap-2 px-3 h-8">
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              </span>
+              {String(pulse.staffInGame).padStart(2, "0")} live
             </span>
-            {pulse.staffInGame} in game
+            <span className="flex items-center px-3 h-8" style={{ borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
+              {String(inboxCount).padStart(2, "0")} queue
+            </span>
+            <span className="flex items-center px-3 h-8" style={{ borderLeft: "1px solid rgba(255,255,255,0.08)", color: accent }}>
+              {clock}
+            </span>
           </span>
 
           <button onClick={() => setPalette(true)} className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5" aria-label="Search">
