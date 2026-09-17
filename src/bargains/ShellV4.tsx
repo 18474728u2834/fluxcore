@@ -315,33 +315,30 @@ export function ShellV4({ children }: { children: ReactNode }) {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         .font-nexus4, .font-nexus4 * {
-          font-family: 'Space Grotesk', 'Outfit', system-ui, sans-serif;
-          letter-spacing: -0.01em;
+          font-family: 'Inter', 'Outfit', -apple-system, system-ui, sans-serif;
+          letter-spacing: -0.012em;
         }
         .font-nexus4 .n4-mono, .font-nexus4 kbd, .font-nexus4 .n4-num {
-          font-family: 'JetBrains Mono', ui-monospace, monospace;
-          letter-spacing: 0.02em;
+          font-family: 'Inter', system-ui, sans-serif;
+          letter-spacing: 0.01em;
           font-variant-numeric: tabular-nums;
         }
-        .font-nexus4 *::-webkit-scrollbar { width: 6px; height: 6px; }
-        .font-nexus4 *::-webkit-scrollbar-thumb { background: #23262b; }
-        .n4-panel { background: #101216; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03); }
-        /* squared-off control-room geometry: no pill glass anywhere */
-        .font-nexus4 .rounded-2xl, .font-nexus4 .rounded-3xl, .font-nexus4 .rounded-xl { border-radius: 4px !important; }
-        .font-nexus4 .rounded-lg, .font-nexus4 .rounded { border-radius: 3px !important; }
+        .font-nexus4 *::-webkit-scrollbar { width: 7px; height: 7px; }
+        .font-nexus4 *::-webkit-scrollbar-thumb { background: #2a2e36; border-radius: 999px; }
+        .n4-panel { background: #15171d; border: 1px solid rgba(255,255,255,0.07); box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
+        .font-nexus4 .rounded-2xl, .font-nexus4 .rounded-3xl { border-radius: 16px !important; }
+        .font-nexus4 .rounded-xl { border-radius: 12px !important; }
+        .font-nexus4 .rounded-lg { border-radius: 10px !important; }
         .n4-in { animation: n4in .12s ease-out; }
         .n4-slide { animation: n4slide .16s cubic-bezier(.2,.8,.3,1); }
         @keyframes n4in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
         @keyframes n4slide { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
       `}</style>
 
-      {/* blueprint grid instead of glow blobs */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" style={{
-        backgroundImage:
-          "linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px)",
-        backgroundSize: "34px 34px",
-      }}>
-        <div className="absolute inset-x-0 top-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${accent}, transparent 55%)` }} />
+      {/* soft Hyra-style wash */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-56 left-1/4 w-[780px] h-[480px] rounded-full opacity-[0.12]"
+          style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)`, filter: "blur(70px)" }} />
       </div>
 
       {/* Desktop rail */}
