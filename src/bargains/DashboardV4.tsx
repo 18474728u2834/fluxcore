@@ -97,7 +97,7 @@ export function DashboardV4({
         <div className="space-y-4">
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
             <div className="flex items-baseline justify-between">
-              <h2 className="text-[13px] font-semibold" style={{ color: n4.text }}>Needs your decision</h2>
+              <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: n4.text }}>Needs your decision</h2>
               <span className="text-[11px]" style={{ color: n4.textMuted }}>Updated every minute</span>
             </div>
 
@@ -115,7 +115,7 @@ export function DashboardV4({
                       <i.icon className="w-4 h-4" style={{ color: accent }} strokeWidth={1.8} />
                     </span>
                     <span className="flex-1 text-left">{i.label}</span>
-                    <span className="text-[13px] font-semibold" style={{ color: accent }}>{i.count}</span>
+                    <span className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: accent }}>{i.count}</span>
                     <ArrowRight className="w-4 h-4" style={{ color: n4.textMuted }} />
                   </button>
                 ))}
@@ -135,7 +135,7 @@ export function DashboardV4({
 
           {/* Schedule strip */}
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
-            <h2 className="text-[13px] font-semibold" style={{ color: n4.text }}>Coming up</h2>
+            <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: n4.text }}>Coming up</h2>
             {pulse.upcoming.length === 0 ? (
               <p className="mt-3 text-[13px]" style={{ color: n4.textDim }}>Nothing scheduled yet.</p>
             ) : (
@@ -169,7 +169,7 @@ export function DashboardV4({
         {/* People rail */}
         <div className="space-y-4">
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
-            <h2 className="text-[13px] font-semibold flex items-center gap-1.5" style={{ color: n4.text }}>
+            <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em] flex items-center gap-1.5" style={{ color: n4.text }}>
               <Cake className="w-3.5 h-3.5" /> Birthdays today
             </h2>
             {birthdays.length === 0 ? (
@@ -187,7 +187,7 @@ export function DashboardV4({
           </div>
 
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
-            <h2 className="text-[13px] font-semibold" style={{ color: n4.text }}>New this week</h2>
+            <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: n4.text }}>New this week</h2>
             {newMembers.length === 0 ? (
               <p className="mt-2 text-[12.5px]" style={{ color: n4.textMuted }}>No new joiners this week.</p>
             ) : (
