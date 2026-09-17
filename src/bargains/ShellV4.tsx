@@ -81,6 +81,13 @@ export function ShellV4({ children }: { children: ReactNode }) {
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // UTC clock for the telemetry strip
+  const [clock, setClock] = useState(() => new Date().toUTCString().slice(17, 22) + " UTC");
+  useEffect(() => {
+    const id = setInterval(() => setClock(new Date().toUTCString().slice(17, 22) + " UTC"), 30000);
+    return () => clearInterval(id);
+  }, []);
+
   const base = `/w/${workspaceId}`;
   const accent = workspace?.primary_color || "#2f74a8";
   const initials = (workspace?.name || "").trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "·";
@@ -250,12 +257,12 @@ export function ShellV4({ children }: { children: ReactNode }) {
         <NavLink
           to={`${base}/${item.to}`}
           title={mini ? item.label : undefined}
-          className={`relative flex items-center ${mini ? "justify-center px-0" : "gap-3 px-3 pr-8"} h-9 rounded-lg text-[13px] font-medium transition-colors`}
-          style={{ background: active ? "rgba(255,255,255,0.06)" : "transparent", color: active ? "#ffffff" : "#8b8b94" }}
+          className={`relative flex items-center ${mini ? "justify-center px-0" : "gap-3 pl-4 pr-8"} h-9 text-[13px] font-medium transition-colors`}
+          style={{ background: active ? "#15181d" : "transparent", color: active ? "#ffffff" : "#7e838c" }}
         >
-          <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[2px] rounded-full transition-all"
-            style={{ height: active ? 16 : 0, background: accent }} />
-          <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={1.7} style={active ? { color: accent } : undefined} />
+          <span className="absolute left-0 top-0 bottom-0 w-[3px] transition-all"
+            style={{ background: active ? accent : "transparent" }} />
+          <Icon className="w-[16px] h-[16px] shrink-0" strokeWidth={1.7} style={active ? { color: accent } : undefined} />
           {!mini && <span className="truncate">{item.label}</span>}
         </NavLink>
         {!mini && showPin && (
@@ -303,32 +310,43 @@ export function ShellV4({ children }: { children: ReactNode }) {
   };
 
   return (
-    <div className="min-h-screen w-full flex font-nexus4 relative" style={{ background: "#08080a", color: "#f2f2f5" }}>
+    <div className="min-h-screen w-full flex font-nexus4 relative" style={{ background: "#0a0b0d", color: "#eceef1" }}>
       <DemoBanner />
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
         .font-nexus4, .font-nexus4 * {
-          font-family: 'Inter', 'SF Pro Display', -apple-system, system-ui, sans-serif;
-          letter-spacing: -0.014em;
+          font-family: 'Space Grotesk', 'Outfit', system-ui, sans-serif;
+          letter-spacing: -0.01em;
         }
-        .font-nexus4 *::-webkit-scrollbar { width: 7px; height: 7px; }
-        .font-nexus4 *::-webkit-scrollbar-thumb { background: #222228; border-radius: 999px; }
-        .n4-panel { background: rgba(17,17,20,0.88); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.06); }
-        .n4-in { animation: n4in .15s ease-out; }
-        .n4-slide { animation: n4slide .18s cubic-bezier(.2,.8,.3,1); }
-        @keyframes n4in { from { opacity: 0; transform: translateY(-4px) scale(.99); } to { opacity: 1; transform: none; } }
-        @keyframes n4slide { from { opacity: 0; transform: translateX(16px); } to { opacity: 1; transform: none; } }
+        .font-nexus4 .n4-mono, .font-nexus4 kbd, .font-nexus4 .n4-num {
+          font-family: 'JetBrains Mono', ui-monospace, monospace;
+          letter-spacing: 0.02em;
+          font-variant-numeric: tabular-nums;
+        }
+        .font-nexus4 *::-webkit-scrollbar { width: 6px; height: 6px; }
+        .font-nexus4 *::-webkit-scrollbar-thumb { background: #23262b; }
+        .n4-panel { background: #101216; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.03); }
+        /* squared-off control-room geometry: no pill glass anywhere */
+        .font-nexus4 .rounded-2xl, .font-nexus4 .rounded-3xl, .font-nexus4 .rounded-xl { border-radius: 4px !important; }
+        .font-nexus4 .rounded-lg, .font-nexus4 .rounded { border-radius: 3px !important; }
+        .n4-in { animation: n4in .12s ease-out; }
+        .n4-slide { animation: n4slide .16s cubic-bezier(.2,.8,.3,1); }
+        @keyframes n4in { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
+        @keyframes n4slide { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
       `}</style>
 
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-56 left-1/4 w-[780px] h-[480px] rounded-full opacity-[0.13]"
-          style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)`, filter: "blur(60px)" }} />
-        <div className="absolute bottom-[-220px] right-[-120px] w-[620px] h-[420px] rounded-full opacity-[0.07]"
-          style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 70%)`, filter: "blur(70px)" }} />
+      {/* blueprint grid instead of glow blobs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden" style={{
+        backgroundImage:
+          "linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px)",
+        backgroundSize: "34px 34px",
+      }}>
+        <div className="absolute inset-x-0 top-0 h-[2px]" style={{ background: `linear-gradient(90deg, ${accent}, transparent 55%)` }} />
       </div>
 
       {/* Desktop rail */}
-      <aside className={`hidden md:flex shrink-0 flex-col transition-[width] duration-200 ${collapsed ? "w-[68px]" : "w-[240px]"} border-r`}
-        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(10,10,12,0.7)", backdropFilter: "blur(18px)" }}>
+      <aside className={`hidden md:flex shrink-0 flex-col transition-[width] duration-200 ${collapsed ? "w-[68px]" : "w-[236px]"} border-r relative z-10`}
+        style={{ borderColor: "rgba(255,255,255,0.08)", background: "#0c0e11" }}>
         <div className="sticky top-0 h-screen flex flex-col p-3">
           <button
             onClick={() => navigate(`${base}/dashboard`)}
@@ -345,18 +363,18 @@ export function ShellV4({ children }: { children: ReactNode }) {
             {!collapsed && (
               <span className="min-w-0">
                 <span className="block text-[13px] font-semibold truncate">{workspace?.name || "Workspace"}</span>
-                <span className="block text-[10px] text-white/35">Nexus 4.0</span>
+                <span className="n4-mono block text-[9px] uppercase text-white/30">nexus//4.0</span>
               </span>
             )}
           </button>
 
           <button
             onClick={() => setPalette(true)}
-            className={`mt-3 flex items-center ${collapsed ? "justify-center" : "gap-2 px-2.5"} h-9 rounded-lg text-[12.5px] text-white/45 transition-colors hover:text-white/70`}
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)" }}
+            className={`n4-mono mt-3 flex items-center ${collapsed ? "justify-center" : "gap-2 px-2.5"} h-9 text-[11px] uppercase text-white/40 transition-colors hover:text-white/75`}
+            style={{ background: "#14171c", border: "1px solid rgba(255,255,255,0.08)" }}
           >
             <Search className="w-4 h-4 shrink-0" strokeWidth={1.8} />
-            {!collapsed && (<><span className="flex-1 text-left">Search or jump…</span><kbd className="text-[10px] text-white/30">⌘K</kbd></>)}
+            {!collapsed && (<><span className="flex-1 text-left">search</span><kbd className="text-[10px] text-white/25">⌘K</kbd></>)}
           </button>
 
           <div className="flex-1 overflow-y-auto pr-0.5 mt-5"><Rail /></div>
@@ -377,27 +395,35 @@ export function ShellV4({ children }: { children: ReactNode }) {
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0 relative">
         <header className="sticky top-0 z-30 h-14 flex items-center gap-2 px-3 md:px-6 border-b"
-          style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(8,8,10,0.72)", backdropFilter: "blur(18px)" }}>
-          <button onClick={() => setDrawer(true)} className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5" aria-label="Open menu">
+          style={{ borderColor: "rgba(255,255,255,0.08)", background: "#0c0e11" }}>
+          <button onClick={() => setDrawer(true)} className="md:hidden w-9 h-9 flex items-center justify-center hover:bg-white/5" aria-label="Open menu">
             <Menu className="w-5 h-5" />
           </button>
 
-          <div className="min-w-0 flex items-center gap-2 text-[13px]">
-            <span className="hidden sm:inline text-white/30 truncate">{workspace?.name || "Workspace"}</span>
-            <span className="hidden sm:inline text-white/20">/</span>
-            <span className="font-semibold truncate">{current}</span>
+          <div className="min-w-0 flex items-center gap-2">
+            <span className="n4-mono hidden sm:inline text-[10px] uppercase text-white/25 truncate">{workspace?.name || "workspace"}</span>
+            <span className="n4-mono hidden sm:inline text-white/15">/</span>
+            <span className="text-[14px] font-semibold truncate">{current}</span>
           </div>
 
           <div className="flex-1" />
 
-          {/* live presence pill */}
-          <span className="hidden sm:flex items-center gap-2 h-8 px-3 rounded-full text-[12px]"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)" }}>
-            <span className="relative flex w-1.5 h-1.5">
-              <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
-              <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          {/* live telemetry strip */}
+          <span className="n4-mono hidden md:flex items-stretch text-[10.5px] uppercase divide-x"
+            style={{ border: "1px solid rgba(255,255,255,0.08)", borderColor: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>
+            <span className="flex items-center gap-2 px-3 h-8">
+              <span className="relative flex w-1.5 h-1.5">
+                <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping" />
+                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              </span>
+              {String(pulse.staffInGame).padStart(2, "0")} live
             </span>
-            {pulse.staffInGame} in game
+            <span className="flex items-center px-3 h-8" style={{ borderLeft: "1px solid rgba(255,255,255,0.08)" }}>
+              {String(inboxCount).padStart(2, "0")} queue
+            </span>
+            <span className="flex items-center px-3 h-8" style={{ borderLeft: "1px solid rgba(255,255,255,0.08)", color: accent }}>
+              {clock}
+            </span>
           </span>
 
           <button onClick={() => setPalette(true)} className="md:hidden w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5" aria-label="Search">
@@ -622,7 +648,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
 /** Shared V4 surface tokens */
 export const n4 = {
   card: "rounded-2xl border",
-  cardStyle: { background: "rgba(17,17,20,0.86)", borderColor: "rgba(255,255,255,0.06)" } as const,
+  cardStyle: { background: "#101216", borderColor: "rgba(255,255,255,0.08)" } as const,
   text: "#f2f2f5",
   textDim: "#9c9ca6",
   textMuted: "#6f6f79",

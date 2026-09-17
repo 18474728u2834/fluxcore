@@ -48,35 +48,47 @@ export function DashboardV4({
 
   const hourLabel = new Date().toLocaleDateString([], { weekday: "long", day: "numeric", month: "long" });
 
-  return (
-    <div className="space-y-5">
-      {/* Briefing header */}
-      <div className="relative rounded-3xl overflow-hidden" style={heroStyle}>
-        <div className="absolute inset-0" style={{ background: `linear-gradient(105deg, rgba(6,6,8,0.92) 0%, rgba(6,6,8,0.72) 45%, ${accent}33 100%)` }} />
-        <div className="relative p-6 md:p-8">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-white/45">{hourLabel}</div>
-          <h1 className="mt-2 text-white text-[1.9rem] md:text-[2.3rem] leading-[1.05] font-semibold tracking-[-0.035em] max-w-2xl">
-            {config.heroTitle || `${greeting}, ${name}`}
-          </h1>
-          <p className="mt-2 text-[13.5px] text-white/55 max-w-xl">{heroLine}</p>
+  const waiting = todo.reduce((a, i) => a + i.count, 0);
 
-          <div className="mt-5 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full text-[12.5px] text-white/80"
-              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <Radio className="w-3.5 h-3.5 text-emerald-400" /> {pulse.staffInGame} in game
-            </span>
+  return (
+    <div className="space-y-4">
+      {/* Briefing slab: image band on the left, hard-edged readout on the right */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] border overflow-hidden" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="relative min-h-[172px]" style={heroStyle}>
+          <div className="absolute inset-0" style={{ background: `linear-gradient(100deg, #0b0d10 0%, rgba(11,13,16,0.82) 52%, ${accent}22 100%)` }} />
+          <div className="absolute left-0 top-0 bottom-0 w-[3px]" style={{ background: accent }} />
+          <div className="relative p-6 md:p-7">
+            <div className="n4-mono text-[10px] uppercase tracking-[0.22em] text-white/35">{hourLabel}</div>
+            <h1 className="mt-2.5 text-white text-[1.8rem] md:text-[2.15rem] leading-[1.03] font-semibold tracking-[-0.03em] max-w-2xl">
+              {config.heroTitle || `${greeting}, ${name}`}
+            </h1>
+            <p className="mt-2 text-[13px] text-white/50 max-w-xl">{heroLine}</p>
             {pulse.nextSession && (
               <button onClick={() => navigate(`${base}/sessions`)}
-                className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full text-[12.5px] text-white/80 hover:bg-white/15"
-                style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <Calendar className="w-3.5 h-3.5" /> {pulse.nextSession.title} · {untilLabel(pulse.nextSession.scheduled_at)}
+                className="n4-mono mt-4 inline-flex items-center gap-2 h-8 px-3 text-[10.5px] uppercase text-white/70 hover:text-white"
+                style={{ border: "1px solid rgba(255,255,255,0.14)" }}>
+                <Calendar className="w-3.5 h-3.5" /> next · {pulse.nextSession.title} · {untilLabel(pulse.nextSession.scheduled_at)}
               </button>
             )}
-            <span className="inline-flex items-center gap-2 h-9 px-3.5 rounded-full text-[12.5px] text-white/80"
-              style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <Sparkles className="w-3.5 h-3.5" /> {todo.reduce((a, i) => a + i.count, 0)} waiting on you
-            </span>
           </div>
+        </div>
+
+        {/* readout columns */}
+        <div className="grid grid-cols-3 lg:grid-cols-1 lg:w-[210px] divide-y lg:divide-y divide-x lg:divide-x-0"
+          style={{ borderColor: "rgba(255,255,255,0.08)", background: "#101216" }}>
+          {[
+            { v: pulse.staffInGame, l: "in game", icon: Radio, tone: "#34d399" },
+            { v: waiting, l: "waiting on you", icon: Sparkles, tone: accent },
+            { v: pulse.upcoming.length, l: "scheduled", icon: Calendar, tone: "rgba(255,255,255,0.6)" },
+          ].map(s => (
+            <div key={s.l} className="px-4 py-4 lg:py-[19px] flex flex-col justify-center"
+              style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <div className="n4-num text-[26px] leading-none font-semibold" style={{ color: s.tone }}>
+                {String(s.v).padStart(2, "0")}
+              </div>
+              <div className="n4-mono mt-1.5 text-[9.5px] uppercase tracking-[0.18em]" style={{ color: n4.textMuted }}>{s.l}</div>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -85,7 +97,7 @@ export function DashboardV4({
         <div className="space-y-4">
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
             <div className="flex items-baseline justify-between">
-              <h2 className="text-[13px] font-semibold" style={{ color: n4.text }}>Needs your decision</h2>
+              <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: n4.text }}>Needs your decision</h2>
               <span className="text-[11px]" style={{ color: n4.textMuted }}>Updated every minute</span>
             </div>
 
@@ -103,7 +115,7 @@ export function DashboardV4({
                       <i.icon className="w-4 h-4" style={{ color: accent }} strokeWidth={1.8} />
                     </span>
                     <span className="flex-1 text-left">{i.label}</span>
-                    <span className="text-[13px] font-semibold" style={{ color: accent }}>{i.count}</span>
+                    <span className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: accent }}>{i.count}</span>
                     <ArrowRight className="w-4 h-4" style={{ color: n4.textMuted }} />
                   </button>
                 ))}
@@ -123,7 +135,7 @@ export function DashboardV4({
 
           {/* Schedule strip */}
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
-            <h2 className="text-[13px] font-semibold" style={{ color: n4.text }}>Coming up</h2>
+            <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: n4.text }}>Coming up</h2>
             {pulse.upcoming.length === 0 ? (
               <p className="mt-3 text-[13px]" style={{ color: n4.textDim }}>Nothing scheduled yet.</p>
             ) : (
@@ -157,7 +169,7 @@ export function DashboardV4({
         {/* People rail */}
         <div className="space-y-4">
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
-            <h2 className="text-[13px] font-semibold flex items-center gap-1.5" style={{ color: n4.text }}>
+            <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em] flex items-center gap-1.5" style={{ color: n4.text }}>
               <Cake className="w-3.5 h-3.5" /> Birthdays today
             </h2>
             {birthdays.length === 0 ? (
@@ -175,7 +187,7 @@ export function DashboardV4({
           </div>
 
           <div className="rounded-2xl border p-5" style={n4.cardStyle}>
-            <h2 className="text-[13px] font-semibold" style={{ color: n4.text }}>New this week</h2>
+            <h2 className="n4-mono text-[10px] font-semibold uppercase tracking-[0.18em]" style={{ color: n4.text }}>New this week</h2>
             {newMembers.length === 0 ? (
               <p className="mt-2 text-[12.5px]" style={{ color: n4.textMuted }}>No new joiners this week.</p>
             ) : (
