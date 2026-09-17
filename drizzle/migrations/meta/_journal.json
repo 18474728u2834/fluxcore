@@ -15,6 +15,20 @@
       "when": 1789667153699,
       "tag": "0001_backup_table_list_fn",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789667919113,
+      "tag": "0002_create_replication_runs",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789667932377,
+      "tag": "0003_exclude_replication_runs_from_backup_list",
+      "breakpoints": true
     }
   ]
 }
