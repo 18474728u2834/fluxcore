@@ -648,7 +648,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
 /** Shared V4 surface tokens */
 export const n4 = {
   card: "rounded-2xl border",
-  cardStyle: { background: "rgba(17,17,20,0.86)", borderColor: "rgba(255,255,255,0.06)" } as const,
+  cardStyle: { background: "#101216", borderColor: "rgba(255,255,255,0.08)" } as const,
   text: "#f2f2f5",
   textDim: "#9c9ca6",
   textMuted: "#6f6f79",
