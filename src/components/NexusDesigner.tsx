@@ -85,7 +85,7 @@ export function NexusDesigner() {
             { v: "v1" as const, title: "Nexus UI 1.0", desc: "The standard layout with every page and section, exactly as it is today." },
             { v: "v2" as const, title: "Nexus UI 2.0", desc: "Same layout, but you decide which pages appear and which cards fill the dashboard." },
             { v: "v3" as const, title: "Nexus UI 3.0 · Beta", desc: "The modern build: floating sidebar, softer surfaces and an ambient accent. Just as customizable as 2.0." },
-            ...(v4Enabled ? [{ v: "v4" as const, title: "Nexus UI 4.0 · Early access", desc: "Grouped sidebar you can collapse, a full search palette on ⌘K, and quieter chrome so your content stands out." }] : []),
+            ...(v4Enabled ? [{ v: "v4" as const, title: "Nexus UI 4.0 · Early access", desc: "A briefing dashboard, live inbox of what is waiting on you, pinned pages, and a command palette that runs actions on ⌘K." }] : []),
           ]).map(o => (
             <button
               key={o.v}
