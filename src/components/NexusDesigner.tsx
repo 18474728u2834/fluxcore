@@ -10,6 +10,7 @@ import {
   useNexusConfig, NEXUS_CARDS, NEXUS_NAV_KEYS, type NexusConfig,
 } from "@/hooks/useNexusConfig";
 import { useNexusV3Trial } from "@/hooks/useNexusV3";
+import { useNexusV4Access } from "@/hooks/useNexusV4";
 
 const NAV_LABELS: Record<string, string> = {
   dashboard: "Dashboard", activity: "Activity", documents: "Documents", loa: "LOA",
@@ -22,6 +23,7 @@ export function NexusDesigner() {
   const { workspaceId, isOwner } = useWorkspace();
   const { config, loading, save } = useNexusConfig(workspaceId);
   const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
+  const { enabled: v4Enabled } = useNexusV4Access(workspaceId);
   const [draft, setDraft] = useState<NexusConfig>(config);
   const [saving, setSaving] = useState(false);
 
@@ -83,6 +85,7 @@ export function NexusDesigner() {
             { v: "v1" as const, title: "Nexus UI 1.0", desc: "The standard layout with every page and section, exactly as it is today." },
             { v: "v2" as const, title: "Nexus UI 2.0", desc: "Same layout, but you decide which pages appear and which cards fill the dashboard." },
             { v: "v3" as const, title: "Nexus UI 3.0 · Beta", desc: "The modern build: floating sidebar, softer surfaces and an ambient accent. Just as customizable as 2.0." },
+            ...(v4Enabled ? [{ v: "v4" as const, title: "Nexus UI 4.0 · Early access", desc: "Grouped sidebar you can collapse, a full search palette on ⌘K, and quieter chrome so your content stands out." }] : []),
           ]).map(o => (
             <button
               key={o.v}
@@ -156,7 +159,7 @@ export function NexusDesigner() {
 
 
 
-      {(draft.version === "v2" || draft.version === "v3") && (
+      {(draft.version === "v2" || draft.version === "v3" || draft.version === "v4") && (
         <>
           <div className="glass rounded-xl border border-border/50 p-6 space-y-4">
             <div>
