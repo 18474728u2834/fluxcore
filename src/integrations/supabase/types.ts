@@ -3320,6 +3320,12 @@ export type Database = {
         }
         Returns: string
       }
+      list_backup_tables: {
+        Args: never
+        Returns: {
+          table_name: string
+        }[]
+      }
       lookup_workspace_by_invite: {
         Args: { code: string }
         Returns: {
