@@ -81,6 +81,13 @@ export function ShellV4({ children }: { children: ReactNode }) {
   const [cursor, setCursor] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // UTC clock for the telemetry strip
+  const [clock, setClock] = useState(() => new Date().toUTCString().slice(17, 22) + " UTC");
+  useEffect(() => {
+    const id = setInterval(() => setClock(new Date().toUTCString().slice(17, 22) + " UTC"), 30000);
+    return () => clearInterval(id);
+  }, []);
+
   const base = `/w/${workspaceId}`;
   const accent = workspace?.primary_color || "#2f74a8";
   const initials = (workspace?.name || "").trim().split(/\s+/).map(w => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase() || "·";
