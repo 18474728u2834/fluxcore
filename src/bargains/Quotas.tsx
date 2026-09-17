@@ -52,7 +52,7 @@ export default function BQuotas() {
   const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
 
   // Nexus UI 3.0 styling — glass cards, rounded corners, workspace accent.
-  const v3 = config.version === "v3" && v3Enabled;
+  const v3 = (config.version === "v3" || config.version === "v4") && v3Enabled;
   const accent = workspace?.primary_color || "#2f74a8";
   const cardCls = v3 ? "rounded-2xl border" : "rounded-md border";
   const cardSt: any = v3 ? n3.cardStyle : bx.cardStyle;
