@@ -134,7 +134,7 @@ export default function Admin() {
             <TabsTrigger value="session_board">Session Board</TabsTrigger>
             <TabsTrigger value="flight_hub">Flight Hub</TabsTrigger>
             {has("manage_status") && <TabsTrigger value="release">Release Updates</TabsTrigger>}
-            {me.owner_admin && <TabsTrigger value="trials">Trials</TabsTrigger>}
+            {me.owner_admin && <TabsTrigger value="trials">Nexus 4.0</TabsTrigger>}
             <TabsTrigger value="audit">Audit Log</TabsTrigger>
           </TabsList>
 
