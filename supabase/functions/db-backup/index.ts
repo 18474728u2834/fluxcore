@@ -7,28 +7,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
-const TABLES = [
-  "workspaces",
-  "workspace_members",
-  "workspace_roles",
-  "verified_users",
-  "sessions",
-  "session_attendance",
-  "activity_sessions",
-  "quotas",
-  "loa_requests",
-  "documents",
-  "document_signatures",
-  "warnings",
-  "promotions",
-  "kudos",
-  "applications",
-  "application_forms",
-  "application_responses",
-  "partner_portals",
-  "site_settings",
-];
-
 const PAGE = 1000;
 const RETENTION_DAYS = 30;
 
