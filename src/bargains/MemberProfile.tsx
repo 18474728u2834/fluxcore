@@ -64,7 +64,7 @@ export default function BMemberProfile() {
   useEffect(() => {
     if (!memberId) return;
     (async () => {
-      const { data: m } = await supabase.from("workspace_members").select("*").eq("id", memberId).maybeSingle();
+      const { data: m } = await supabase.from("workspace_members").select("id, workspace_id, user_id, roblox_user_id, roblox_username, role, role_id, verified, joined_at, updated_at, roblox_group_rank, birthday_month, birthday_day, discord_user_id").eq("id", memberId).maybeSingle();
       if (!m) { navigate(`/w/${workspaceId}/members`); return; }
       let merged: any = { ...m };
       if ((m as any).user_id) {

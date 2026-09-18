@@ -71,7 +71,7 @@ export default function MemberProfile() {
     const fetchAll = async () => {
       const { data: m } = await supabase
         .from("workspace_members")
-        .select("*")
+        .select("id, workspace_id, user_id, roblox_user_id, roblox_username, role, role_id, verified, joined_at, updated_at, roblox_group_rank, birthday_month, birthday_day, discord_user_id")
         .eq("id", memberId)
         .single();
       if (!m) { navigate(`/w/${workspaceId}/members`); return; }
