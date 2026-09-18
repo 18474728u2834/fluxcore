@@ -36,6 +36,13 @@
       "when": 1789668743505,
       "tag": "0004_schedule_standby_replication",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789752717061,
+      "tag": "0005_safe_secret_decrypt",
+      "breakpoints": true
     }
   ]
 }
