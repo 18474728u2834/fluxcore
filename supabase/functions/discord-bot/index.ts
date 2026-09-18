@@ -172,17 +172,32 @@ async function handleCommand(body: any): Promise<string> {
     if (!ok) { await log("denied", "no_permission"); return ephemeral("You don't have permission to run this command."); }
     const target = (getOption(opts, "user") as string)?.trim();
     if (!target) { await log("error", "missing_args"); return ephemeral("Usage: /" + cmd + " user:<roblox-username>"); }
-    const { data, error } = await admin.functions.invoke("roblox-rank", {
-      body: { workspace_id: caller.workspace_id, action: cmd, target_username: target, actor_user_id: caller.user_id },
-    });
-    if (error) {
-      const msg = await invokeErrorMessage(error);
+    // Call the ranking function directly so the service-role key is always
+    // presented verbatim (supabase-js invoke can drop/replace the header).
+    let data: any = null;
+    try {
+      const rankRes = await fetch(`${SUPABASE_URL}/functions/v1/roblox-rank`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${SERVICE_KEY}`,
+          apikey: SERVICE_KEY,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          workspace_id: caller.workspace_id, action: cmd,
+          target_username: target, actor_user_id: caller.user_id,
+        }),
+      });
+      const txt = await rankRes.text();
+      try { data = JSON.parse(txt); } catch { data = { error: txt || `HTTP ${rankRes.status}` }; }
+    } catch (e) {
+      const msg = (e as Error).message || "request failed";
       await log("error", msg);
       return ephemeral("Failed to " + cmd + " " + target + ": " + msg);
     }
-    if ((data as any)?.error) {
-      await log("error", String((data as any).error));
-      return ephemeral("Failed to " + cmd + " " + target + ": " + (data as any).error);
+    if (data?.error) {
+      await log("error", String(data.error));
+      return ephemeral("Failed to " + cmd + " " + target + ": " + data.error);
     }
     await log("ok");
     return ephemeral(`${cmd === "promote" ? "Promoted" : "Demoted"} ${target}. ${data?.from?.name ? `${data.from.name} -> ${data.to?.name}` : ""}`);
