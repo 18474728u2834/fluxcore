@@ -69,7 +69,7 @@ export default function Members() {
   const fetchMembers = async () => {
     const { data } = await supabase
       .from("workspace_members")
-      .select("*")
+      .select("id, workspace_id, user_id, roblox_user_id, roblox_username, role, role_id, verified, joined_at, roblox_group_rank")
       .eq("workspace_id", workspaceId)
       .order("joined_at", { ascending: true });
 
