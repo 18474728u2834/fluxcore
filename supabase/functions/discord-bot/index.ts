@@ -168,7 +168,9 @@ async function handleCommand(body: any): Promise<string> {
     logCommand({ ...baseLog, workspace_id: caller.workspace_id, result, error });
 
   if (cmd === "promote" || cmd === "demote") {
-    const ok = await hasPerm(caller.user_id, caller.workspace_id, "promote_members");
+    const rankPerm = cmd === "demote" ? "demote_members" : "promote_members";
+    const ok = (await hasPerm(caller.user_id, caller.workspace_id, rankPerm))
+      || (await hasPerm(caller.user_id, caller.workspace_id, "manage_members"));
     if (!ok) { await log("denied", "no_permission"); return ephemeral("You don't have permission to run this command."); }
     const target = (getOption(opts, "user") as string)?.trim();
     if (!target) { await log("error", "missing_args"); return ephemeral("Usage: /" + cmd + " user:<roblox-username>"); }
