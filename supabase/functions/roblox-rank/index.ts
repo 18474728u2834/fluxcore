@@ -61,16 +61,29 @@ serve(async (req) => {
       });
     }
 
-    // Authorization: caller must own the workspace or have manage_members permission
+    // Authorization: caller must own the workspace, or hold a ranking permission.
+    // Demotions accept demote_members; everything else accepts promote_members.
+    // manage_members remains a superset for backwards compatibility.
     const isOwner = reqUser && ws.owner_id === reqUser.id;
     if (!isOwner) {
-      const { data: hasPerm } = isServiceCall
-        ? await supabase.rpc("internal_member_has_permission", {
-            _user_id: reqUser!.id, _workspace_id: workspace_id, _permission: "manage_members",
-          })
-        : await sbUserClient.rpc("has_workspace_permission", {
-            _workspace_id: workspace_id, _permission: "manage_members",
-          });
+      if (!reqUser) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const isDemotion = action === "demote" || action === "demote_one";
+      const candidates = ["manage_members", isDemotion ? "demote_members" : "promote_members"];
+      let hasPerm = false;
+      for (const perm of candidates) {
+        const { data } = isServiceCall
+          ? await supabase.rpc("internal_member_has_permission", {
+              _user_id: reqUser.id, _workspace_id: workspace_id, _permission: perm,
+            })
+          : await sbUserClient.rpc("has_workspace_permission", {
+              _workspace_id: workspace_id, _permission: perm,
+            });
+        if (data) { hasPerm = true; break; }
+      }
       if (!hasPerm) {
         return new Response(JSON.stringify({ error: "Forbidden" }), {
           status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
