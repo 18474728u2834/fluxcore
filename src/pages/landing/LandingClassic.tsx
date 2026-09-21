@@ -385,46 +385,20 @@ function NexusWindow({ rail }: { rail: RailItem[] }) {
 
 function NexusPhone({ rail }: { rail: RailItem[] }) {
   return (
-    <div className="mx-auto w-[272px] rounded-[1.5rem] border-[6px] border-[#1a1a1c] overflow-hidden shadow-[0_32px_70px_-30px_rgba(0,0,0,0.65)]" style={{ background: "#0f0f10" }}>
+    <div className="mx-auto w-[272px] rounded-[1.75rem] border-[6px] border-[#1a1a1c] overflow-hidden shadow-[0_32px_70px_-30px_rgba(0,0,0,0.65)]" style={{ background: "#0f0f10" }}>
       <div className="h-6 flex items-center justify-center" style={{ background: "#0a0a0b" }}>
         <div className="w-16 h-3 rounded-full" style={{ background: "#0f0f10" }} />
       </div>
-      <div style={{ color: "#fafafa" }}>
-        <div className="h-11 px-3 flex items-center justify-between border-b" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-          <div className="flex items-center gap-2">
-            <span className="w-5 h-5 rounded-md" style={{ background: "#f55a4a" }} />
-            <span className="text-[12px] font-semibold">Staff Team</span>
-          </div>
-          <span className="text-[10px]" style={{ color: "#6f6f74" }}>Dashboard</span>
-        </div>
-        <div className="p-3 space-y-3">
-          <div className="rounded-xl h-[88px] p-3 flex flex-col justify-end" style={{ background: "linear-gradient(135deg,#6ea8ff 0%,#88b8ff 42%,#b6d2ff 100%)" }}>
-            <div className="text-[8px] font-semibold uppercase tracking-wider text-white/85">Hiya</div>
-            <div className="text-white text-[15px] font-bold leading-tight">Novavoff</div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {[["Online now", "8"], ["Hours today", "142h"]].map(([l, v]) => (
-              <div key={l} className="rounded-xl border p-2.5" style={{ background: "#141416", borderColor: "#22222a" }}>
-                <div className="text-[8px] uppercase tracking-wider" style={{ color: "#6f6f74" }}>{l}</div>
-                <div className="text-lg font-bold leading-tight">{v}</div>
-              </div>
-            ))}
-          </div>
-          {[["synt", "Promoted to Supervisor"], ["kai", "Signed Staff Handbook"], ["mira", "Logged 6h in-game"]].map(([n, a]) => (
-            <div key={n} className="flex items-center gap-2 rounded-xl border px-2.5 py-2" style={{ background: "#141416", borderColor: "#22222a" }}>
-              <span className="w-6 h-6 rounded-full shrink-0" style={{ background: "linear-gradient(135deg,#4d4d55,#2a2a30)" }} />
-              <div className="min-w-0">
-                <div className="text-[10px] font-semibold">{n}</div>
-                <div className="text-[9px] truncate" style={{ color: "#6f6f74" }}>{a}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center justify-around border-t py-2" style={{ background: "#0a0a0b", borderColor: "#1a1a1c" }}>
-          {rail.slice(0, 5).map((i, idx) => (
-            <i.icon key={i.label} className="w-[16px] h-[16px]" strokeWidth={1.8} />
-          ))}
-        </div>
+      <img
+        src={nexusDemoPhoneShot}
+        alt="Fluxcore workspace on a phone showing the staff roster with roles"
+        className="block w-full"
+        loading="lazy"
+      />
+      <div className="flex items-center justify-around border-t py-2" style={{ background: "#0a0a0b", borderColor: "#1a1a1c", color: "#fafafa" }}>
+        {rail.slice(0, 5).map((i) => (
+          <i.icon key={i.label} className="w-[16px] h-[16px]" strokeWidth={1.8} />
+        ))}
       </div>
     </div>
   );
