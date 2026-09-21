@@ -1,6 +1,7 @@
 
 import { useNavigate } from "react-router-dom";
 import nexusDemoShot from "@/assets/nexus-demo-dashboard.jpg";
+import nexusDemoPhoneShot from "@/assets/nexus-demo-phone.jpg";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 import {
