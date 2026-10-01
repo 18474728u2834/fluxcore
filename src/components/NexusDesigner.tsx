@@ -10,6 +10,7 @@ import {
   useNexusConfig, NEXUS_CARDS, NEXUS_NAV_KEYS, type NexusConfig,
 } from "@/hooks/useNexusConfig";
 import { useNexusV3Trial } from "@/hooks/useNexusV3";
+import { useNexusV4Beta } from "@/hooks/useNexusV4Beta";
 
 const NAV_LABELS: Record<string, string> = {
   dashboard: "Dashboard", activity: "Activity", documents: "Documents", loa: "LOA",
@@ -22,6 +23,7 @@ export function NexusDesigner() {
   const { workspaceId, isOwner } = useWorkspace();
   const { config, loading, save } = useNexusConfig(workspaceId);
   const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
+  const { enabled: v4Enabled, loading: v4Loading } = useNexusV4Beta(workspaceId);
   const [draft, setDraft] = useState<NexusConfig>(config);
   const [saving, setSaving] = useState(false);
 
@@ -83,7 +85,7 @@ export function NexusDesigner() {
             { v: "v1" as const, title: "Nexus UI 1.0", desc: "The standard layout with every page and section, exactly as it is today." },
             { v: "v2" as const, title: "Nexus UI 2.0", desc: "Same layout, but you decide which pages appear and which cards fill the dashboard." },
             { v: "v3" as const, title: "Nexus UI 3.0", desc: "A full labeled sidebar with soft surfaces and compact dashboard cards." },
-            { v: "v4" as const, title: "Nexus UI 4.0 · New", desc: "A restrained Hyra-inspired hybrid: slim rail, precise search, and focused operational panels." },
+            ...(v4Enabled ? [{ v: "v4" as const, title: "Nexus UI 4.0 · Beta", desc: "A modern labeled workspace with precise search and focused operational panels." }] : []),
           ]).map(o => (
             <button
               key={o.v}
@@ -97,6 +99,9 @@ export function NexusDesigner() {
             </button>
           ))}
         </div>
+        {!v4Loading && !v4Enabled && (
+          <p className="mt-3 text-xs text-muted-foreground">Nexus UI 4.0 is in private beta. Fluxcore staff can enable it for this workspace.</p>
+        )}
       </div>
 
       <div className="glass rounded-xl border border-border/50 p-6 space-y-3">

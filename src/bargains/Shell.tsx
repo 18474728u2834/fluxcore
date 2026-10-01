@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUIVersion } from "@/hooks/useUIVersion";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useNexusV3Trial } from "@/hooks/useNexusV3";
+import { useNexusV4Beta } from "@/hooks/useNexusV4Beta";
 import { ShellV3 } from "@/bargains/ShellV3";
 import { ShellV4 } from "@/bargains/ShellV4";
 import { useLexicon } from "@/hooks/useLexicon";
@@ -66,6 +67,7 @@ export function BargainsShell({ children }: ShellProps) {
   const { workspace, workspaceId, isOwner } = useWorkspace();
   const { config: nexusConfig } = useNexusConfig(workspaceId);
   const { enabled: v3Enabled } = useNexusV3Trial(workspaceId);
+  const { enabled: v4Enabled } = useNexusV4Beta(workspaceId);
   const { t } = useLexicon(workspaceId);
 
   const { user, signOut } = useAuth();
@@ -290,7 +292,7 @@ export function BargainsShell({ children }: ShellProps) {
     [nexusConfig, t],
   );
 
-  if (nexusConfig.version === "v4") {
+  if (nexusConfig.version === "v4" && v4Enabled) {
     return <ShellV4>{children}</ShellV4>;
   }
 

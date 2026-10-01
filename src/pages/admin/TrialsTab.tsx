@@ -6,19 +6,22 @@ import { Loader2, Sparkles, Search, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface WsRow { id: string; name: string; owner_id: string }
+type BetaVersion = "v3" | "v4";
 
 export default function TrialsTab() {
+  const [version, setVersion] = useState<BetaVersion>("v4");
   const [q, setQ] = useState("");
   const [results, setResults] = useState<WsRow[]>([]);
   const [searching, setSearching] = useState(false);
   const [trials, setTrials] = useState<Array<{ workspace_id: string; note: string | null; created_at: string; name?: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState<string | null>(null);
+  const table = version === "v4" ? "nexus_v4_beta_access" : "nexus_v3_trials";
 
   const loadTrials = async () => {
     setLoading(true);
     const { data } = await supabase
-      .from("nexus_v3_trials")
+      .from(table)
       .select("workspace_id, note, created_at")
       .order("created_at", { ascending: false });
     const rows = data || [];
@@ -32,7 +35,7 @@ export default function TrialsTab() {
     setLoading(false);
   };
 
-  useEffect(() => { loadTrials(); }, []);
+  useEffect(() => { setResults([]); loadTrials(); }, [version]);
 
   const enabledIds = useMemo(() => new Set(trials.map(t => t.workspace_id)), [trials]);
 
@@ -52,19 +55,19 @@ export default function TrialsTab() {
   const grant = async (ws: WsRow) => {
     setBusy(ws.id);
     const { data: auth } = await supabase.auth.getUser();
-    const { error } = await supabase.from("nexus_v3_trials").insert({
+    const { error } = await supabase.from(table).insert({
       workspace_id: ws.id,
       enabled_by: auth.user?.id ?? null,
     });
     setBusy(null);
     if (error) return toast.error("Could not grant trial access");
-    toast.success(`Nexus UI 3.0 unlocked for ${ws.name}`);
+    toast.success(`Nexus UI ${version === "v4" ? "4.0 beta" : "3.0"} unlocked for ${ws.name}`);
     loadTrials();
   };
 
   const revoke = async (workspaceId: string) => {
     setBusy(workspaceId);
-    const { error } = await supabase.from("nexus_v3_trials").delete().eq("workspace_id", workspaceId);
+    const { error } = await supabase.from(table).delete().eq("workspace_id", workspaceId);
     setBusy(null);
     if (error) return toast.error("Could not revoke trial access");
     toast.success("Trial access revoked");
@@ -74,11 +77,17 @@ export default function TrialsTab() {
   return (
     <div className="space-y-4">
       <div className="glass rounded-xl border border-border/50 p-6">
-        <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-primary" /> Nexus UI 3.0 trial
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" /> Nexus beta access
+          </h2>
+          <div className="inline-flex rounded-md border border-border p-1">
+            <Button size="sm" variant={version === "v4" ? "secondary" : "ghost"} onClick={() => setVersion("v4")}>4.0 Beta</Button>
+            <Button size="sm" variant={version === "v3" ? "secondary" : "ghost"} onClick={() => setVersion("v3")}>3.0</Button>
+          </div>
+        </div>
         <p className="text-sm text-muted-foreground mt-1">
-          Only the workspaces listed here can pick Nexus UI 3.0 in their Theme settings. Everyone else keeps 1.0 and 2.0.
+          Only listed workspaces can pick Nexus UI {version === "v4" ? "4.0 Beta" : "3.0"} in Theme settings.
         </p>
 
         <div className="flex gap-2 mt-4">
@@ -119,7 +128,7 @@ export default function TrialsTab() {
         {loading ? (
           <div className="py-6 flex justify-center"><Loader2 className="w-5 h-5 animate-spin text-primary" /></div>
         ) : trials.length === 0 ? (
-          <p className="text-sm text-muted-foreground mt-2">No workspaces have Nexus UI 3.0 yet.</p>
+          <p className="text-sm text-muted-foreground mt-2">No workspaces have Nexus UI {version === "v4" ? "4.0 Beta" : "3.0"} yet.</p>
         ) : (
           <div className="mt-3 space-y-2">
             {trials.map(t => (
