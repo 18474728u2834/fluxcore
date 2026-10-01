@@ -84,12 +84,17 @@ serve(async (req) => {
       workspaceId = newWs.id;
     }
 
-    // 2b. The demo always showcases Nexus UI 3.0.
+    // 2b. The demo is an explicit Nexus UI 4.0 beta workspace.
+    await admin.from("nexus_v4_beta_access").upsert({
+      workspace_id: workspaceId,
+      enabled_by: userId,
+      note: "Fluxcore public demo",
+    });
     await admin
       .from("workspaces")
       .update({
         nexus_config: {
-          version: "v3",
+          version: "v4",
           hiddenNav: [],
           cards: ["game", "birthdays", "new_members", "sessions", "activity"],
           showHero: true,

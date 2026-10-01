@@ -1,7 +1,7 @@
 import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  ArrowUp, Briefcase, Calendar, ChevronDown, ClipboardList, Clock, FileText,
+  ArrowUp, Briefcase, Calendar, ChevronDown, ChevronLeft, ChevronRight, ClipboardList, Clock, FileText,
   Grid3x3, Heart, Home, Loader2, LogOut, Menu, Megaphone, Search, Settings,
   Target, Users, X,
 } from "lucide-react";
@@ -42,6 +42,9 @@ export function ShellV4({ children }: { children: ReactNode }) {
   const [accountOpen, setAccountOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    try { return localStorage.getItem("nexus-v4-sidebar-collapsed") === "1"; } catch { return false; }
+  });
   const [people, setPeople] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const base = `/w/${workspaceId}`;
@@ -109,14 +112,19 @@ export function ShellV4({ children }: { children: ReactNode }) {
 
   const go = (path: string) => { navigate(path); setQuery(""); setFocused(false); };
 
+  const setSidebarCollapsed = (next: boolean) => {
+    setCollapsed(next);
+    try { localStorage.setItem("nexus-v4-sidebar-collapsed", next ? "1" : "0"); } catch { /* storage unavailable */ }
+  };
+
   const Rail = ({ mobile = false }: { mobile?: boolean }) => (
     <nav className="n4-rail-list" aria-label="Workspace navigation">
       {navItems.map(({ to, icon: Icon, label }) => {
         const active = pathname.startsWith(`${base}/${to}`);
         return (
-          <NavLink key={to} to={`${base}/${to}`} className={`n4-nav-item ${active ? "is-active" : ""}`} aria-label={label} title={mobile ? undefined : label}>
+          <NavLink key={to} to={`${base}/${to}`} className={`n4-nav-item ${active ? "is-active" : ""}`} aria-label={label} title={!mobile && collapsed ? label : undefined}>
             <Icon aria-hidden="true" />
-            {mobile && <span>{label}</span>}
+            <span>{label}</span>
           </NavLink>
         );
       })}
@@ -124,16 +132,23 @@ export function ShellV4({ children }: { children: ReactNode }) {
   );
 
   return (
-    <div className="nexus-v4">
+    <div className={`nexus-v4 ${collapsed ? "n4-is-collapsed" : ""}`}>
       <DemoBanner />
       <aside className="n4-sidebar">
-        <button className="n4-workspace-mark" onClick={() => navigate(`${base}/dashboard`)} aria-label={workspace?.name || "Workspace"} title={workspace?.name || "Workspace"}>
-          {groupIcon ? <img src={groupIcon} alt="" /> : <span>{initials || "FC"}</span>}
-        </button>
+        <div className="n4-brand-row">
+          <Button variant="ghost" className="n4-workspace-mark" onClick={() => navigate(`${base}/dashboard`)} aria-label={workspace?.name || "Workspace"} title={workspace?.name || "Workspace"}>
+            {groupIcon ? <img src={groupIcon} alt="" /> : <span>{initials || "FC"}</span>}
+          </Button>
+          <div className="n4-brand-copy"><strong>{workspace?.name || "Workspace"}</strong><span>Nexus 4.0 <b>Beta</b></span></div>
+        </div>
+        <div className="n4-nav-label">Workspace</div>
         <Rail />
         <NavLink to={`${base}/settings`} className={`n4-nav-item n4-settings ${pathname.startsWith(`${base}/settings`) ? "is-active" : ""}`} aria-label="Settings" title="Settings">
-          <Settings aria-hidden="true" />
+          <Settings aria-hidden="true" /><span>Settings</span>
         </NavLink>
+        <Button variant="ghost" size="icon" className="n4-collapse" onClick={() => setSidebarCollapsed(!collapsed)} aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
+          {collapsed ? <ChevronRight /> : <ChevronLeft />}
+        </Button>
       </aside>
 
       <div className="n4-main-column">
@@ -141,7 +156,7 @@ export function ShellV4({ children }: { children: ReactNode }) {
           <Button variant="ghost" size="icon" className="n4-mobile-menu" onClick={() => setDrawer(true)} aria-label="Open menu"><Menu /></Button>
           <div className="n4-workspace-title">
             <strong>{workspace?.name || "Workspace"}</strong>
-            <span>Nexus 4</span>
+            <span>Nexus 4.0 Beta</span>
           </div>
           <div className="n4-search-wrap">
             <Search aria-hidden="true" />
