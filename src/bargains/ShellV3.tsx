@@ -33,7 +33,7 @@ const NAV = [
 
 /** Nexus UI 3.0 — invite-only trial shell. Same information, softer surfaces,
  *  floating sidebar, ambient accent light and a calmer top bar. */
-export function ShellV3({ children }: { children: ReactNode }) {
+export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: ReactNode; versionLabel?: string }) {
   const { workspace, workspaceId } = useWorkspace();
   const { config } = useNexusConfig(workspaceId);
   const { t } = useLexicon(workspaceId);
@@ -194,7 +194,7 @@ export function ShellV3({ children }: { children: ReactNode }) {
             <span className="min-w-0">
               <span className="block text-[13px] font-semibold truncate">{workspace?.name || "Workspace"}</span>
               <span className="block text-[11px] text-white/40 flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Nexus 3.0
+                <Sparkles className="w-3 h-3" /> {versionLabel}
               </span>
             </span>
           </button>

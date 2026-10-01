@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { BargainsShell, bx } from "./Shell";
 import { n3 } from "./ShellV3";
-import { n4 } from "./ShellV4";
 import { BirthdayPrompt } from "./BirthdayPrompt";
 import { NexusCard, type CardData } from "./NexusCards";
 import { Play, Cake, Hand } from "lucide-react";
@@ -144,7 +143,7 @@ export default function BDashboard() {
     base: `/w/${workspaceId}`,
   };
 
-  // ---- Nexus UI 4.0: restrained V1 + V3 workspace --------------------------
+  // ---- Nexus UI 4.0: familiar V2/V3 foundation with a clearer overview -----
   if (config.version === "v4") {
     const stats = [
       { label: "Staff in game", value: staffInGame, live: true },
@@ -154,44 +153,45 @@ export default function BDashboard() {
     return (
       <BargainsShell>
         <BirthdayPrompt />
-        <div className="n4-dashboard">
-          <div className="n4-page-heading">
-            <div>
-              <span>Workspace overview</span>
-              <h1>{greeting}, {name}</h1>
-            </div>
-            <p>{workspace?.name}</p>
-          </div>
-
+        <div className="max-w-6xl mx-auto space-y-5">
           {config.showHero && (
-            <section className="n4-hero" style={heroStyle}>
-              <div className="n4-hero-shade" />
-              <div className="n4-hero-copy">
-                <span><Hand /> Today at {workspace?.name || "your workspace"}</span>
-                <h2>{config.heroTitle || heroLine}</h2>
+            <div className="rounded-2xl overflow-hidden relative min-h-[200px] flex flex-col justify-end p-6 sm:p-7 border" style={{ ...heroStyle, borderColor: "rgba(255,255,255,0.08)" }}>
+              <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.64) 100%)" }} />
+              <div className="relative">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/70 flex items-center gap-1.5 mb-2">
+                  <Hand className="w-3 h-3" /> {greeting}, {name}
+                </div>
+                <h1 className="text-white text-[2rem] sm:text-[2.4rem] leading-[1.05] font-semibold max-w-2xl">
+                  {config.heroTitle || heroLine}
+                </h1>
               </div>
-            </section>
+            </div>
           )}
 
-          <section className="n4-stat-row" aria-label="Workspace status">
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-3" aria-label="Workspace status">
             {stats.map((stat) => (
-              <div key={stat.label} className="n4-stat">
-                <span>{stat.label}</span>
-                <div><strong>{stat.value}</strong>{stat.live && <i aria-label="Live" />}</div>
+              <div key={stat.label} className="rounded-xl border px-4 py-3.5" style={n3.cardStyle}>
+                <div className="flex items-center gap-2">
+                  <strong className="text-2xl font-semibold" style={{ color: n3.text }}>{stat.value}</strong>
+                  {stat.live && <span className="w-2 h-2 rounded-full bg-emerald-400" aria-label="Live" />}
+                </div>
+                <span className="block text-[11px] uppercase tracking-[0.08em] mt-1" style={{ color: n3.textMuted }}>{stat.label}</span>
               </div>
             ))}
           </section>
 
-          <div className="n4-section-heading">
-            <h2>Overview</h2>
-            <span>Live workspace information</span>
+          <div className="flex items-baseline justify-between pt-1">
+            <h2 className="text-sm font-semibold" style={{ color: n3.text }}>Overview</h2>
+            <span className="text-xs" style={{ color: n3.textMuted }}>{workspace?.name}</span>
           </div>
-          <div className="n4-card-grid">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
             {config.cards.map((id) => <NexusCard key={id} id={id} data={cardData} />)}
           </div>
 
           {config.cards.length === 0 && (
-            <div className={n4.card}>No panels are enabled. The workspace owner can add them in Settings.</div>
+            <div className="rounded-xl border px-5 py-10 text-sm text-center" style={{ ...n3.cardStyle, color: n3.textDim }}>
+              No cards yet. The workspace owner can add them in Settings → Theme.
+            </div>
           )}
         </div>
       </BargainsShell>
