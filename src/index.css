@@ -770,23 +770,24 @@
 
 /* Nexus UI 4.0 Beta — a compact, labeled workspace built for daily operations. */
 .nexus-v4 {
-  --n4-bg: hsl(220 12% 5%);
-  --n4-sidebar: hsl(220 10% 7%);
-  --n4-surface: hsl(216 10% 9%);
-  --n4-surface-hover: hsl(216 10% 12%);
-  --n4-border: hsl(215 10% 17%);
-  --n4-border-soft: hsl(215 9% 13%);
-  --n4-text: hsl(0 0% 96%);
-  --n4-text-dim: hsl(240 3% 68%);
-  --n4-text-muted: hsl(240 3% 48%);
-  --n4-accent: hsl(204 56% 42%);
-  --n4-accent-soft: hsl(204 56% 42% / 0.14);
-  --n4-danger: hsl(4 78% 62%);
+  /* Same tokens as Nexus 1.0–3.0 so 4.0 matches the other themes */
+  --n4-bg: hsl(var(--background));
+  --n4-sidebar: hsl(var(--card));
+  --n4-surface: hsl(var(--card));
+  --n4-surface-hover: hsl(var(--muted));
+  --n4-border: hsl(var(--border));
+  --n4-border-soft: hsl(var(--border) / 0.6);
+  --n4-text: hsl(var(--foreground));
+  --n4-text-dim: hsl(var(--muted-foreground));
+  --n4-text-muted: hsl(var(--muted-foreground) / 0.8);
+  --n4-accent: hsl(var(--primary));
+  --n4-accent-soft: hsl(var(--primary) / 0.14);
+  --n4-danger: hsl(var(--destructive));
   min-height: 100vh;
   display: flex;
   background: var(--n4-bg);
   color: var(--n4-text);
-  font-family: "Figtree", sans-serif;
+  font-family: "Outfit", sans-serif;
 }
 
 .nexus-v4 *, .nexus-v4 *::before, .nexus-v4 *::after { box-sizing: border-box; }
