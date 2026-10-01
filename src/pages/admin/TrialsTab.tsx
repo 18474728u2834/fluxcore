@@ -81,13 +81,10 @@ export default function TrialsTab() {
           <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" /> Nexus beta access
           </h2>
-          <div className="inline-flex rounded-md border border-border p-1">
-            <Button size="sm" variant={version === "v4" ? "secondary" : "ghost"} onClick={() => setVersion("v4")}>4.0 Beta</Button>
-            <Button size="sm" variant={version === "v3" ? "secondary" : "ghost"} onClick={() => setVersion("v3")}>3.0</Button>
-          </div>
+          <span className="text-xs text-muted-foreground">Nexus UI 3.0 is public for every workspace</span>
         </div>
         <p className="text-sm text-muted-foreground mt-1">
-          Only listed workspaces can pick Nexus UI {version === "v4" ? "4.0 Beta" : "3.0"} in Theme settings.
+          Only listed workspaces can pick Nexus UI 4.0 Beta in Theme settings.
         </p>
 
         <div className="flex gap-2 mt-4">
