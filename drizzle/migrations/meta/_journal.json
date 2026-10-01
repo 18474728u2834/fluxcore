@@ -50,6 +50,13 @@
       "when": 1790887810984,
       "tag": "0006_add_nexus_v4_beta_access",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790887862174,
+      "tag": "0007_grant_nexus_v4_beta_admin_operations",
+      "breakpoints": true
     }
   ]
 }

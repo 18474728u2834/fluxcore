@@ -1,0 +1,1 @@
+GRANT INSERT, UPDATE, DELETE ON public.nexus_v4_beta_access TO authenticated;
