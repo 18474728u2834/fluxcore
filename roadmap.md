@@ -10,4 +10,4 @@
 - [x] Audit Application Center grading, gamepass, and automatic ranking calls.
 - [x] Audit Roblox, Discord, workspace, OAuth, and public API call chains.
 - [x] Fix verified failures without changing product behavior.
-- [ ] Test protected and public endpoints, then verify the central flow.
+- [x] Test protected and public endpoints, then verify the central flow.
