@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { BargainsShell, bx } from "./Shell";
 import { n3 } from "./ShellV3";
+import { n4 } from "./ShellV4";
 import { BirthdayPrompt } from "./BirthdayPrompt";
 import { NexusCard, type CardData } from "./NexusCards";
 import { Play, Cake, Hand } from "lucide-react";
@@ -142,6 +143,60 @@ export default function BDashboard() {
     workspaceId: workspaceId || "",
     base: `/w/${workspaceId}`,
   };
+
+  // ---- Nexus UI 4.0: restrained V1 + V3 workspace --------------------------
+  if (config.version === "v4") {
+    const stats = [
+      { label: "Staff in game", value: staffInGame, live: true },
+      { label: "New this week", value: newMembers.length },
+      { label: "Birthdays today", value: birthdays.length },
+    ];
+    return (
+      <BargainsShell>
+        <BirthdayPrompt />
+        <div className="n4-dashboard">
+          <div className="n4-page-heading">
+            <div>
+              <span>Workspace overview</span>
+              <h1>{greeting}, {name}</h1>
+            </div>
+            <p>{workspace?.name}</p>
+          </div>
+
+          {config.showHero && (
+            <section className="n4-hero" style={heroStyle}>
+              <div className="n4-hero-shade" />
+              <div className="n4-hero-copy">
+                <span><Hand /> Today at {workspace?.name || "your workspace"}</span>
+                <h2>{config.heroTitle || heroLine}</h2>
+              </div>
+            </section>
+          )}
+
+          <section className="n4-stat-row" aria-label="Workspace status">
+            {stats.map((stat) => (
+              <div key={stat.label} className="n4-stat">
+                <span>{stat.label}</span>
+                <div><strong>{stat.value}</strong>{stat.live && <i aria-label="Live" />}</div>
+              </div>
+            ))}
+          </section>
+
+          <div className="n4-section-heading">
+            <h2>Overview</h2>
+            <span>Live workspace information</span>
+          </div>
+          <div className="n4-card-grid">
+            {config.cards.map((id) => <NexusCard key={id} id={id} data={cardData} />)}
+          </div>
+
+          {config.cards.length === 0 && (
+            <div className={n4.card}>No panels are enabled. The workspace owner can add them in Settings.</div>
+          )}
+        </div>
+      </BargainsShell>
+    );
+  }
 
   // ---- Nexus UI 3.0: modern trial dashboard ---------------------------------
   if (config.version === "v3" && v3Enabled) {

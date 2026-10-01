@@ -11,6 +11,7 @@ import { useUIVersion } from "@/hooks/useUIVersion";
 import { useNexusConfig } from "@/hooks/useNexusConfig";
 import { useNexusV3Trial } from "@/hooks/useNexusV3";
 import { ShellV3 } from "@/bargains/ShellV3";
+import { ShellV4 } from "@/bargains/ShellV4";
 import { useLexicon } from "@/hooks/useLexicon";
 
 import { supabase } from "@/integrations/supabase/client";
@@ -250,7 +251,7 @@ export function BargainsShell({ children }: ShellProps) {
       }));
       const ql = q.toLowerCase();
       PAGE_INDEX
-        .filter((p) => nexusConfig.version !== "v2" || p.to === "dashboard" || !nexusConfig.hiddenNav.includes(p.to))
+        .filter((p) => !(nexusConfig.version === "v2" || nexusConfig.version === "v3" || nexusConfig.version === "v4") || p.to === "dashboard" || !nexusConfig.hiddenNav.includes(p.to))
         .filter((p) => p.label.toLowerCase().includes(ql))
 
         .slice(0, 4)
@@ -282,12 +283,16 @@ export function BargainsShell({ children }: ShellProps) {
   const navBase = activeDeptSlug ? `${base}/d/${activeDeptSlug}` : base;
   // Nexus UI 2.0: the owner decides which pages exist for everyone.
   const navItems = useMemo(
-    () => (nexusConfig.version === "v2"
+    () => ((nexusConfig.version === "v2" || nexusConfig.version === "v3" || nexusConfig.version === "v4")
       ? NAV.filter(n => n.to === "dashboard" || !nexusConfig.hiddenNav.includes(n.to))
       : NAV
     ).map(n => ({ ...n, label: t(n.label) })),
     [nexusConfig, t],
   );
+
+  if (nexusConfig.version === "v4") {
+    return <ShellV4>{children}</ShellV4>;
+  }
 
   // Nexus UI 3.0 — invite-only trial shell.
   if (nexusConfig.version === "v3" && v3Enabled) {

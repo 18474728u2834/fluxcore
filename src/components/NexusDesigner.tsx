@@ -78,11 +78,12 @@ export function NexusDesigner() {
           Your choice is locked in for every member of this workspace.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
           {([
             { v: "v1" as const, title: "Nexus UI 1.0", desc: "The standard layout with every page and section, exactly as it is today." },
             { v: "v2" as const, title: "Nexus UI 2.0", desc: "Same layout, but you decide which pages appear and which cards fill the dashboard." },
-            { v: "v3" as const, title: "Nexus UI 3.0 · Beta", desc: "The modern build: floating sidebar, softer surfaces and an ambient accent. Just as customizable as 2.0." },
+            { v: "v3" as const, title: "Nexus UI 3.0", desc: "A full labeled sidebar with soft surfaces and compact dashboard cards." },
+            { v: "v4" as const, title: "Nexus UI 4.0 · New", desc: "A restrained Hyra-inspired hybrid: slim rail, precise search, and focused operational panels." },
           ]).map(o => (
             <button
               key={o.v}
@@ -156,7 +157,7 @@ export function NexusDesigner() {
 
 
 
-      {(draft.version === "v2" || draft.version === "v3") && (
+      {(draft.version === "v2" || draft.version === "v3" || draft.version === "v4") && (
         <>
           <div className="glass rounded-xl border border-border/50 p-6 space-y-4">
             <div>
