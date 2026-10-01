@@ -43,6 +43,13 @@
       "when": 1789752717061,
       "tag": "0005_safe_secret_decrypt",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790887810984,
+      "tag": "0006_add_nexus_v4_beta_access",
+      "breakpoints": true
     }
   ]
 }

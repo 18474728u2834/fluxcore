@@ -1271,6 +1271,35 @@ export type Database = {
           },
         ]
       }
+      nexus_v4_beta_access: {
+        Row: {
+          created_at: string
+          enabled_by: string | null
+          note: string | null
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          enabled_by?: string | null
+          note?: string | null
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          enabled_by?: string | null
+          note?: string | null
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nexus_v4_beta_access_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: true
+            referencedRelation: "workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_portals: {
         Row: {
           accent_color: string | null
@@ -3263,6 +3292,7 @@ export type Database = {
           roblox_api_key: string
         }[]
       }
+      has_nexus_v4_beta: { Args: { _workspace_id: string }; Returns: boolean }
       has_staff_permission: { Args: { _perm: string }; Returns: boolean }
       has_workspace_permission: {
         Args: { _permission: string; _workspace_id: string }
