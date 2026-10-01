@@ -2,5 +2,5 @@
 
 - [x] Review the actual Nexus V1, V2, and V3 interfaces.
 - [x] Choose V1 + V3 as the V4 foundation.
-- [ ] Build Nexus V4 with the established Fluxcore theme and real product content.
+- [x] Build Nexus V4 with the established Fluxcore theme and real product content.
 - [ ] Verify the populated dashboard on desktop and phone.
