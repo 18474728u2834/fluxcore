@@ -29,6 +29,8 @@ type RankOutcome = {
   detail?: string;
 };
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 function shortRoleId(value: unknown): string {
   return String(value || "").split("/").filter(Boolean).pop() || "";
 }
@@ -167,7 +169,7 @@ Deno.serve(async (req) => {
       const roblox_user_id = body?.roblox_user_id;
       const roblox_username = body?.roblox_username;
       const answers = body?.answers;
-      if (typeof form_id !== "string" || !form_id) return json({ error: "missing_form_id" }, 400);
+      if (typeof form_id !== "string" || !UUID_RE.test(form_id)) return json({ error: "invalid_form_id" }, 400);
       if (typeof roblox_user_id !== "string" || !roblox_user_id) return json({ error: "missing_identity" }, 400);
       if (typeof roblox_username !== "string") return json({ error: "missing_username" }, 400);
       if (typeof answers !== "object" || answers === null) return json({ error: "bad_answers" }, 400);
@@ -179,7 +181,10 @@ Deno.serve(async (req) => {
         _roblox_username: roblox_username,
         _answers: answers,
       });
-      if (error) return json({ error: "submit_failed", detail: error.message }, 500);
+      if (error) {
+        const expected = /form_not_found|gamepass_only_form|missing_identity/.test(error.message || "");
+        return json({ error: expected ? error.message : "submit_failed", detail: error.message }, expected ? 400 : 500);
+      }
 
       const result: any = graded ?? {};
       const passed = !!result.passed;
@@ -254,7 +259,7 @@ Deno.serve(async (req) => {
       const form_id = body?.form_id;
       const roblox_user_id = body?.roblox_user_id;
       const roblox_username = body?.roblox_username;
-      if (typeof form_id !== "string" || !form_id) return json({ error: "missing_form_id" }, 400);
+      if (typeof form_id !== "string" || !UUID_RE.test(form_id)) return json({ error: "invalid_form_id" }, 400);
       if (typeof roblox_user_id !== "string" || !roblox_user_id) return json({ error: "missing_identity" }, 400);
       if (typeof roblox_username !== "string") return json({ error: "missing_username" }, 400);
 
@@ -270,9 +275,17 @@ Deno.serve(async (req) => {
       let owns = false;
       try {
         const r = await fetch(`https://inventory.roblox.com/v1/users/${roblox_user_id}/items/GamePass/${passId}`);
+        if (!r.ok) {
+          const detail = await r.text();
+          console.error("gamepass ownership lookup failed:", r.status, detail);
+          return json({ error: "gamepass_verification_unavailable" }, 502);
+        }
         const j = await r.json();
         owns = Array.isArray(j?.data) && j.data.length > 0;
-      } catch { owns = false; }
+      } catch (error) {
+        console.error("gamepass ownership lookup failed:", error);
+        return json({ error: "gamepass_verification_unavailable" }, 502);
+      }
       if (!owns) return json({ ok: false, owns: false, error: "gamepass_not_owned" }, 200);
 
       const { data: skipData, error: skipErr } = await admin.rpc("internal_app_center_gamepass_skip", {
