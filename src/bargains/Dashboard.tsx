@@ -155,7 +155,7 @@ export default function BDashboard() {
         <BirthdayPrompt />
         <div className="max-w-6xl mx-auto space-y-5">
           {config.showHero && (
-            <div className="rounded-2xl overflow-hidden relative min-h-[200px] flex flex-col justify-end p-6 sm:p-7 border" style={{ ...heroStyle, borderColor: "rgba(255,255,255,0.08)" }}>
+            <div className="rounded-lg overflow-hidden relative min-h-[200px] flex flex-col justify-end p-6 sm:p-7 border" style={{ ...heroStyle, borderColor: "rgba(255,255,255,0.08)" }}>
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.64) 100%)" }} />
               <div className="relative">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/70 flex items-center gap-1.5 mb-2">
@@ -170,7 +170,7 @@ export default function BDashboard() {
 
           <section className="grid grid-cols-1 sm:grid-cols-3 gap-3" aria-label="Workspace status">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-xl border px-4 py-3.5" style={n3.cardStyle}>
+              <div key={stat.label} className="rounded-lg border px-4 py-3.5" style={n3.cardStyle}>
                 <div className="flex items-center gap-2">
                   <strong className="text-2xl font-semibold" style={{ color: n3.text }}>{stat.value}</strong>
                   {stat.live && <span className="w-2 h-2 rounded-full bg-emerald-400" aria-label="Live" />}
@@ -189,7 +189,7 @@ export default function BDashboard() {
           </div>
 
           {config.cards.length === 0 && (
-            <div className="rounded-xl border px-5 py-10 text-sm text-center" style={{ ...n3.cardStyle, color: n3.textDim }}>
+            <div className="rounded-lg border px-5 py-10 text-sm text-center" style={{ ...n3.cardStyle, color: n3.textDim }}>
               No cards yet. The workspace owner can add them in Settings → Theme.
             </div>
           )}

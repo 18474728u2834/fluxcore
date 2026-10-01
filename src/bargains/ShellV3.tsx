@@ -4,6 +4,7 @@ import {
   Home, Clock, FileText, Briefcase, Users, Grid3x3, Settings, LogOut,
   Search, Calendar, Target, Megaphone, Heart, ArrowUp, ClipboardList,
   Menu, X, ChevronDown, Sparkles, Loader2,
+  PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,9 +46,11 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
   const [menu, setMenu] = useState(false);
   const [q, setQ] = useState("");
   const [focused, setFocused] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [people, setPeople] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+  const isV4 = versionLabel === "Nexus 4.0 Beta";
 
   const base = `/w/${workspaceId}`;
   const accent = workspace?.primary_color || "#2f74a8";
@@ -131,7 +134,12 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
           <NavLink
             key={to}
             to={`${base}/${to}`}
-            className="group relative flex items-center gap-3 h-10 px-3 rounded-xl text-[13px] font-medium transition-all"
+            className={cn(
+              "group relative flex items-center h-10 text-[13px] font-medium transition-all",
+              isV4 ? "rounded-md" : "rounded-xl",
+              isV4 && collapsed && !mobile ? "justify-center px-0" : "gap-3 px-3",
+            )}
+            title={isV4 && collapsed && !mobile ? label : undefined}
             style={{
               background: active ? `${accent}26` : "transparent",
               color: active ? "#ffffff" : "#93939b",
@@ -143,7 +151,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
               style={{ height: active ? 18 : 0, background: accent }}
             />
             <Icon className="w-[17px] h-[17px] shrink-0" strokeWidth={1.7} />
-            <span className={mobile ? "" : "truncate"}>{label}</span>
+            {(mobile || !isV4 || !collapsed) && <span className={mobile ? "" : "truncate"}>{label}</span>}
           </NavLink>
         );
       })}
@@ -177,18 +185,20 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
         }
       `}</style>
 
-      {/* ambient accent light */}
-      <div
-        className="pointer-events-none fixed -top-40 left-1/3 w-[900px] h-[520px] rounded-full opacity-[0.16]"
-        style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)`, filter: "blur(40px)" }}
-      />
+      {!isV4 && (
+        <div
+          className="pointer-events-none fixed -top-40 left-1/3 w-[900px] h-[520px] rounded-full opacity-[0.16]"
+          style={{ background: `radial-gradient(circle, ${accent} 0%, transparent 65%)`, filter: "blur(40px)" }}
+        />
+      )}
 
       {/* Floating sidebar — desktop */}
-      <aside className="hidden md:flex w-[248px] shrink-0 p-3">
-        <div className="n3-side rounded-2xl w-full flex flex-col p-3 sticky top-3 h-[calc(100vh-24px)]">
+      <aside className={cn("hidden md:flex shrink-0 transition-[width] duration-200", isV4 ? (collapsed ? "w-[72px]" : "w-[236px]") : "w-[248px] p-3")}>
+        <div className={cn("n3-side w-full flex flex-col sticky", isV4 ? "rounded-none border-y-0 border-l-0 p-3 top-0 h-screen" : "rounded-2xl p-3 top-3 h-[calc(100vh-24px)]")}>
           <button
             onClick={() => navigate(`${base}/dashboard`)}
-            className="flex items-center gap-3 px-2 py-2 rounded-xl hover:bg-white/5 transition-colors text-left"
+            className={cn("flex items-center py-2 hover:bg-white/5 transition-colors text-left", isV4 ? "rounded-md" : "rounded-xl", collapsed && isV4 ? "justify-center px-0" : "gap-3 px-2")}
+            title={collapsed && isV4 ? workspace?.name || "Workspace" : undefined}
           >
             {groupIcon ? (
               <img src={groupIcon} alt={workspace?.name || "Workspace"} className="w-9 h-9 rounded-xl object-cover shrink-0"
@@ -198,7 +208,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
                 {initials}
               </span>
             )}
-            <span className="min-w-0">
+              <span className={cn("min-w-0", collapsed && isV4 && "hidden")}>
               <span className="block text-[13px] font-semibold truncate">{workspace?.name || "Workspace"}</span>
               <span className="block text-[11px] text-white/40 flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> {versionLabel}
@@ -213,8 +223,8 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
           </div>
 
           <div className="pt-2 mt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-            <NavLink to={`${base}/settings`} className="flex items-center gap-3 h-10 px-3 rounded-xl text-[13px] text-white/60 hover:bg-white/5">
-              <Settings className="w-[17px] h-[17px]" strokeWidth={1.7} /> Settings
+            <NavLink to={`${base}/settings`} title={collapsed && isV4 ? "Settings" : undefined} className={cn("flex items-center h-10 text-[13px] text-white/60 hover:bg-white/5", isV4 ? "rounded-md" : "rounded-xl", collapsed && isV4 ? "justify-center px-0" : "gap-3 px-3")}>
+              <Settings className="w-[17px] h-[17px]" strokeWidth={1.7} /> {(!isV4 || !collapsed) && "Settings"}
             </NavLink>
           </div>
         </div>
@@ -222,11 +232,21 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
 
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-30 px-3 md:px-5 pt-3">
-          <div className="n3-glass rounded-2xl h-14 flex items-center gap-3 px-3">
-            <button onClick={() => setDrawer(true)} className="md:hidden w-9 h-9 rounded-xl flex items-center justify-center hover:bg-white/5" aria-label="Open menu">
+        <header className={cn("sticky top-0 z-30", isV4 ? "border-b" : "px-3 md:px-5 pt-3")} style={isV4 ? { borderColor: "rgba(255,255,255,0.07)" } : undefined}>
+          <div className={cn("h-14 flex items-center gap-3 px-3", isV4 ? "backdrop-blur-xl" : "n3-glass rounded-2xl")} style={isV4 ? { background: "rgba(13,13,16,0.95)" } : undefined}>
+            <button onClick={() => setDrawer(true)} className={cn("md:hidden w-9 h-9 flex items-center justify-center hover:bg-white/5", isV4 ? "rounded-md" : "rounded-xl")} aria-label="Open menu">
               <Menu className="w-5 h-5" />
             </button>
+            {isV4 && (
+              <button
+                onClick={() => setCollapsed(value => !value)}
+                className="hidden md:flex w-9 h-9 rounded-md items-center justify-center text-white/50 hover:text-white hover:bg-white/5"
+                aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+                title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              >
+                {collapsed ? <PanelLeftOpen className="w-[18px] h-[18px]" /> : <PanelLeftClose className="w-[18px] h-[18px]" />}
+              </button>
+            )}
 
             <div className="relative flex-1 max-w-lg">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/35" />
@@ -237,7 +257,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
                 onFocus={() => setFocused(true)}
                 onBlur={() => setTimeout(() => { setFocused(false); setQ(""); }, 150)}
                 placeholder="Search pages or people…"
-                className="w-full h-9 pl-9 pr-16 rounded-xl text-[13px] outline-none transition-colors"
+                className={cn("w-full h-9 pl-9 pr-16 text-[13px] outline-none transition-colors", isV4 ? "rounded-md" : "rounded-xl")}
                 style={{
                   background: "rgba(255,255,255,0.05)",
                   border: `1px solid ${focused ? `${accent}66` : "rgba(255,255,255,0.07)"}`,
@@ -249,7 +269,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.07)" }}>⌘K</kbd>
 
               {focused && q.trim().length > 0 && (
-                <div className="absolute left-0 right-0 top-11 rounded-2xl overflow-hidden n3-glass z-50 shadow-2xl">
+                <div className={cn("absolute left-0 right-0 top-11 overflow-hidden n3-glass z-50 shadow-2xl", isV4 ? "rounded-md" : "rounded-2xl")}>
                   {results.length > 0 && (
                     <>
                       <div className="px-3 pt-2.5 pb-1 text-[10px] uppercase tracking-wider text-white/30 font-semibold">Pages</div>
@@ -294,7 +314,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
             <div className="flex-1" />
 
             <div className="relative">
-              <button onClick={() => setMenu(m => !m)} className="flex items-center gap-2 h-9 pl-1.5 pr-2.5 rounded-xl hover:bg-white/5 text-[13px]">
+              <button onClick={() => setMenu(m => !m)} className={cn("flex items-center gap-2 h-9 pl-1.5 pr-2.5 hover:bg-white/5 text-[13px]", isV4 ? "rounded-md" : "rounded-xl")}>
                 <RobloxAvatar
                   username={robloxUsername || "?"}
                   userId={robloxUserId || ""}
@@ -305,7 +325,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
               </button>
 
               {menu && (
-                <div className="absolute right-0 top-11 w-56 rounded-xl overflow-hidden n3-glass z-50 py-1">
+                <div className={cn("absolute right-0 top-11 w-56 overflow-hidden n3-glass z-50 py-1", isV4 ? "rounded-md" : "rounded-xl")}>
                   {!isPortalHost() && (
                     <button onClick={() => { navigate("/workspaces"); setMenu(false); }} className="w-full text-left px-3 py-2 text-[13px] hover:bg-white/5">Switch workspace</button>
                   )}
@@ -328,7 +348,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div className="absolute inset-0 bg-black/60" onClick={() => setDrawer(false)} />
           <div className={cn("relative w-72 max-w-[85%] h-full p-3")}>
-            <div className="n3-side rounded-2xl h-full flex flex-col p-3">
+            <div className={cn("n3-side h-full flex flex-col p-3", isV4 ? "rounded-none border-y-0 border-l-0" : "rounded-2xl")}>
               <div className="flex items-center justify-between px-1 pb-3">
                 <span className="flex items-center gap-2 min-w-0">
                   {groupIcon
