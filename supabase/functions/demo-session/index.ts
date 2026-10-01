@@ -124,6 +124,7 @@ serve(async (req) => {
     const { error: portalErr } = await admin.from("partner_portals").upsert(
       {
         workspace_id: workspaceId,
+        name: DEMO_WORKSPACE_NAME,
         subdomain: `demo-${String(workspaceId).slice(0, 8)}`,
         status: "closed",
       },

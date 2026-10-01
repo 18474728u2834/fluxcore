@@ -283,6 +283,7 @@ Deno.serve(async (req) => {
 
       let ranked = false;
       let rankError: string | null = null;
+      let rankDetail: string | null = null;
       const rankRequired = !!(skip.auto_rank_on_accept && skip.pass_rank_number);
       if (rankRequired) {
         try {
@@ -295,6 +296,7 @@ Deno.serve(async (req) => {
             const outcome = await rankRobloxUser(robloxKey, String(wsRow.roblox_group_id).trim(), String(roblox_user_id), Number(skip.pass_rank_number));
             ranked = outcome.ranked;
             rankError = outcome.error || null;
+            rankDetail = outcome.detail || null;
           } else {
             rankError = "missing_roblox_config";
           }
@@ -303,16 +305,19 @@ Deno.serve(async (req) => {
         }
       }
 
+      const passed = !rankRequired || ranked;
+
       return json({
         ok: true,
         owns: true,
         skipped: true,
-        passed: true,
+        passed,
         ranked,
         rank_required: rankRequired,
         rank_error: rankError,
+        rank_detail: rankDetail,
         application_id: skip.application_id,
-        message: skip.pass_message || "Passed & Ranked",
+        message: passed ? (skip.pass_message || "Passed & Ranked") : "Payment verified, but ranking failed. Please contact staff.",
       });
     }
 

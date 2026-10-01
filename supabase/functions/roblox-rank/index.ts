@@ -6,6 +6,56 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function shortRoleId(value: unknown): string {
+  return String(value || "").split("/").filter(Boolean).pop() || "";
+}
+
+async function robloxJson(url: string, apiKey: string, init: RequestInit = {}) {
+  const response = await fetch(url, {
+    ...init,
+    headers: {
+      "x-api-key": apiKey,
+      ...(init.body ? { "Content-Type": "application/json" } : {}),
+      ...(init.headers || {}),
+    },
+  });
+  const text = await response.text();
+  let data: any = null;
+  try { data = text ? JSON.parse(text) : null; } catch { data = null; }
+  return { ok: response.ok, status: response.status, text, data };
+}
+
+async function assignSingleRole(apiKey: string, groupId: string, membership: any, targetRoleId: string) {
+  if (!membership?.path) return { ok: false, status: 404, error: "Membership not found" };
+  const previousRoleIds = [membership.role, ...(Array.isArray(membership.roles) ? membership.roles : [])]
+    .map(shortRoleId)
+    .filter((roleId: string) => roleId && roleId !== targetRoleId);
+  const targetRolePath = `groups/${groupId}/roles/${targetRoleId}`;
+  const assigned = await robloxJson(`https://apis.roblox.com/cloud/v2/${membership.path}:assignRole`, apiKey, {
+    method: "POST",
+    body: JSON.stringify({ role: targetRolePath }),
+  });
+  if (!assigned.ok) return { ok: false, status: assigned.status, error: assigned.text || "Roblox rejected the role assignment" };
+
+  for (const oldRoleId of Array.from(new Set(previousRoleIds))) {
+    const unassigned = await robloxJson(`https://apis.roblox.com/cloud/v2/${membership.path}:unassignRole`, apiKey, {
+      method: "POST",
+      body: JSON.stringify({ role: `groups/${groupId}/roles/${oldRoleId}` }),
+    });
+    if (!unassigned.ok) console.error("Old Roblox role removal failed:", unassigned.status, unassigned.text);
+  }
+
+  const filter = encodeURIComponent(`user == 'users/${String(membership.user || "").split("/").pop() || ""}'`);
+  const verified = await robloxJson(`https://apis.roblox.com/cloud/v2/groups/${groupId}/memberships?filter=${filter}&maxPageSize=1`, apiKey);
+  const verifiedMembership = verified.data?.groupMemberships?.[0];
+  const verifiedRoleIds = [verifiedMembership?.role, ...(Array.isArray(verifiedMembership?.roles) ? verifiedMembership.roles : [])]
+    .map(shortRoleId).filter(Boolean);
+  if (!verified.ok || !verifiedRoleIds.includes(targetRoleId)) {
+    return { ok: false, status: 502, error: "Roblox accepted the request but the member's rank did not change" };
+  }
+  return { ok: true, status: 200, error: null };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -208,26 +258,11 @@ serve(async (req) => {
         });
       }
 
-      const membershipPath = membership.path;
-      const patchRes = await fetch(
-        `https://apis.roblox.com/cloud/v2/${membershipPath}`,
-        {
-          method: "PATCH",
-          headers: {
-            "x-api-key": ws.roblox_api_key,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            role: `groups/${ws.roblox_group_id}/roles/${role_id}`,
-          }),
-        }
-      );
-
-      if (!patchRes.ok) {
-        const errText = await patchRes.text();
-        console.error("Rank change failed:", errText);
-        return new Response(JSON.stringify({ error: "Failed to change rank", details: errText }), {
-          status: patchRes.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      const rankChange = await assignSingleRole(ws.roblox_api_key, ws.roblox_group_id, membership, String(role_id));
+      if (!rankChange.ok) {
+        console.error("Rank change failed:", rankChange.error);
+        return new Response(JSON.stringify({ error: "Failed to change rank", details: rankChange.error }), {
+          status: rankChange.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
 
@@ -339,14 +374,9 @@ serve(async (req) => {
       }
       const newRole = ladder[nextIdx];
       const newRoleId = String(newRole.id || "").split("/").pop();
-      const patchRes = await fetch(`https://apis.roblox.com/cloud/v2/${membership.path}`, {
-        method: "PATCH",
-        headers: { "x-api-key": ws.roblox_api_key, "Content-Type": "application/json" },
-        body: JSON.stringify({ role: `groups/${ws.roblox_group_id}/roles/${newRoleId}` }),
-      });
-      if (!patchRes.ok) {
-        const t = await patchRes.text();
-        return new Response(JSON.stringify({ error: "Roblox rejected the rank change", details: t }), {
+      const rankChange = await assignSingleRole(ws.roblox_api_key, ws.roblox_group_id, membership, newRoleId);
+      if (!rankChange.ok) {
+        return new Response(JSON.stringify({ error: "Roblox rejected the rank change", details: rankChange.error }), {
           status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
