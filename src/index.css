@@ -941,6 +941,9 @@
 .nexus-v4 .n4-card-grid > a { min-height: 180px; }
 
 .n4-drawer-layer { display: none; }
+.nexus-v4:has([data-demo-banner]) .n4-sidebar { top: 36px; height: calc(100vh - 36px); }
+.nexus-v4:has([data-demo-banner]) .n4-header { top: 36px; }
+.nexus-v4:has([data-demo-banner]) .n4-main-column { padding-top: 36px; }
 
 @media (max-width: 767px) {
   .n4-sidebar { display: none; }
@@ -965,6 +968,8 @@
   .n4-card-grid { grid-template-columns: 1fr; }
   .n4-section-heading span { display: none; }
   .n4-drawer-layer { position: fixed; inset: 0; z-index: 70; display: flex; }
+  .nexus-v4:has([data-demo-banner]) .n4-main-column { padding-top: 56px; }
+  .nexus-v4:has([data-demo-banner]) .n4-header { top: 56px; }
   .n4-drawer-backdrop { position: absolute; inset: 0; background: hsl(0 0% 0% / 0.68); }
   .n4-drawer { position: relative; width: min(286px, 86vw); height: 100%; display: flex; flex-direction: column; gap: 10px; padding: 12px; border-right: 1px solid var(--n4-border); background: var(--n4-sidebar); }
   .n4-drawer-head { height: 44px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }

@@ -46,7 +46,8 @@ export function DemoBanner() {
 
   return (
     <div
-      className="fixed top-0 left-0 right-0 z-[100] flex items-center justify-center gap-3 px-4 py-1.5 text-[12.5px] font-medium"
+      data-demo-banner
+      className="fixed top-0 left-0 right-0 z-[100] flex min-h-9 items-center justify-center gap-3 px-4 py-1.5 text-[12.5px] font-medium"
       style={{ background: "#2f74a8", color: "#fff" }}
     >
       <span className="truncate">You're exploring the live demo as FluxcoreDemo.</span>
