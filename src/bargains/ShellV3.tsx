@@ -233,7 +233,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
       {/* Main column */}
       <div className="flex-1 flex flex-col min-w-0">
         <header className={cn("sticky top-0 z-30", isV4 ? "border-b" : "px-3 md:px-5 pt-3")} style={isV4 ? { borderColor: "rgba(255,255,255,0.07)" } : undefined}>
-          <div className={cn("h-14 flex items-center gap-3 px-3", isV4 ? "bg-[#0d0d10]/95 backdrop-blur-xl" : "n3-glass rounded-2xl")}>
+          <div className={cn("h-14 flex items-center gap-3 px-3", isV4 ? "backdrop-blur-xl" : "n3-glass rounded-2xl")} style={isV4 ? { background: "rgba(13,13,16,0.95)" } : undefined}>
             <button onClick={() => setDrawer(true)} className={cn("md:hidden w-9 h-9 flex items-center justify-center hover:bg-white/5", isV4 ? "rounded-md" : "rounded-xl")} aria-label="Open menu">
               <Menu className="w-5 h-5" />
             </button>
