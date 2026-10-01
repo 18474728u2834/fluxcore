@@ -192,7 +192,7 @@ serve(async (req) => {
       }
 
       // 2b) REMOVE members whose current Roblox rank is NOT in the mapping
-      const toCheck = (members || []).slice(0, 50);
+      const toCheck = members || [];
       for (const m of toCheck) {
         try {
           const currentRole = await fetchUserCurrentRoleInGroup(apiKey, groupId, String(m.roblox_user_id));

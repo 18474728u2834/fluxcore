@@ -225,6 +225,9 @@ Deno.serve(async (req) => {
       }
 
       const finalPassed = passed && (!rankRequired || ranked);
+      if (passed && rankRequired && !ranked && result.application_id) {
+        await admin.from("applications").update({ status: "pending" }).eq("id", result.application_id);
+      }
 
       return json({
         ok: true,
@@ -306,6 +309,9 @@ Deno.serve(async (req) => {
       }
 
       const passed = !rankRequired || ranked;
+      if (rankRequired && !ranked && skip.application_id) {
+        await admin.from("applications").update({ status: "pending" }).eq("id", skip.application_id);
+      }
 
       return json({
         ok: true,

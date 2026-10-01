@@ -43,19 +43,27 @@ export default function ApplicationQueue() {
 
   const review = async (id: string, status: "accepted" | "denied", note: string, applicant: App) => {
     setBusy(id);
+    if (status === "accepted" && form?.auto_rank_on_accept && form?.pass_rank_number) {
+      try {
+        const roles = await supabase.functions.invoke("roblox-rank", {
+          body: { workspace_id: workspaceId, action: "get_roles" },
+        });
+        const targetRole = (roles.data?.roles || []).find((role: any) => Number(role.rank) === Number(form.pass_rank_number));
+        const roleId = String(targetRole?.id || targetRole?.path || "").split("/").filter(Boolean).pop();
+        if (!roleId) throw new Error(`Roblox rank ${form.pass_rank_number} was not found`);
+        const ranked = await supabase.functions.invoke("roblox-rank", {
+          body: { workspace_id: workspaceId, action: "set_rank", roblox_user_id: applicant.roblox_user_id, role_id: roleId },
+        });
+        if (ranked.error || !ranked.data?.success) throw new Error(ranked.data?.details || ranked.data?.error || ranked.error?.message || "Roblox rank did not change");
+      } catch (e: any) {
+        toast.error("Auto-rank failed: " + e.message);
+        setBusy(null);
+        return;
+      }
+    }
     const { error } = await supabase.from("applications" as any)
       .update({ status, review_note: note, reviewed_at: new Date().toISOString() }).eq("id", id);
     if (error) { toast.error(error.message); setBusy(null); return; }
-
-    if (status === "accepted" && form?.auto_rank_on_accept && form?.target_role_id) {
-      try {
-        await supabase.functions.invoke("roblox-rank", {
-          body: { workspace_id: workspaceId, action: "promote", target_username: applicant.roblox_username, target_role_id: form.target_role_id },
-        });
-      } catch (e: any) {
-        toast.error("Auto-rank failed: " + e.message);
-      }
-    }
     if (form?.notify_webhook) {
       try {
         await fetch(form.notify_webhook, {

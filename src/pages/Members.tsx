@@ -288,7 +288,7 @@ export default function Members() {
         if (idx < 0 || targetIdx < 0 || targetIdx >= groupRoles.length) { fail++; continue; }
         const targetRole = groupRoles[targetIdx];
         const rankRes = await supabase.functions.invoke("roblox-rank", {
-          body: { action: "set_rank", workspace_id: workspaceId, roblox_user_id: m.roblox_user_id, role_id: targetRole.id },
+          body: { action, workspace_id: workspaceId, roblox_user_id: m.roblox_user_id },
         });
         if (rankRes.data?.success) {
           ok++;
@@ -352,7 +352,7 @@ export default function Members() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border/50">
-                  {canManage && (
+                  {canAnyBulk && (
                     <th className="w-10 px-3 py-3">
                       <Checkbox
                         checked={allPageSelected}
@@ -373,7 +373,7 @@ export default function Members() {
                   const selectable = member.id !== "owner-virtual" && member.role !== "Owner";
                   return (
                   <tr key={member.id} onClick={() => { if (member.id !== "owner-virtual") navigate(`/w/${workspaceId}/members/${member.id}`); }} className="hover:bg-secondary/30 transition-colors cursor-pointer">
-                    {canManage && (
+                    {canAnyBulk && (
                       <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
                         {selectable && (
                           <Checkbox
