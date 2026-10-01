@@ -168,6 +168,13 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
           backdrop-filter: blur(22px);
           border: 1px solid rgba(255,255,255,0.09);
         }
+        .font-nexus3:has([data-demo-banner]) { padding-top: 36px; }
+        .font-nexus3:has([data-demo-banner]) > aside > .n3-side { top: 48px; height: calc(100vh - 60px); }
+        .font-nexus3:has([data-demo-banner]) > div > header { top: 36px; }
+        @media (max-width: 767px) {
+          .font-nexus3:has([data-demo-banner]) { padding-top: 56px; }
+          .font-nexus3:has([data-demo-banner]) > div > header { top: 56px; }
+        }
       `}</style>
 
       {/* ambient accent light */}
