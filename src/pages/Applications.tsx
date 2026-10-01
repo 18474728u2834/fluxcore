@@ -91,6 +91,9 @@ export default function Applications() {
 
   const save = async () => {
     if (!draft || !workspaceId) return;
+    if (!draft.title.trim()) { toast.error("Add a form title"); return; }
+    if (draft.gamepass_only && !draft.skip_gamepass_id?.trim()) { toast.error("Gamepass-only forms need a gamepass ID"); return; }
+    if (draft.auto_rank_on_accept && !draft.pass_rank_number) { toast.error("Choose the Roblox rank number used after acceptance"); return; }
     let formId = draft.id;
     const payload = {
       workspace_id: workspaceId,
@@ -116,7 +119,8 @@ export default function Applications() {
     } else {
       const { error } = await supabase.from("application_forms" as any).update(payload).eq("id", formId);
       if (error) { toast.error(error.message); return; }
-      await supabase.from("application_form_questions" as any).delete().eq("form_id", formId);
+      const { error: deleteError } = await supabase.from("application_form_questions" as any).delete().eq("form_id", formId);
+      if (deleteError) { toast.error(deleteError.message); return; }
     }
     if (questions.length) {
       const rows = questions.map((q, i) => ({
@@ -125,7 +129,8 @@ export default function Applications() {
         correct_answer: q.correct_answer || null,
         match_mode: q.match_mode || "any",
       }));
-      await supabase.from("application_form_questions" as any).insert(rows);
+      const { error: questionsError } = await supabase.from("application_form_questions" as any).insert(rows);
+      if (questionsError) { toast.error(questionsError.message); return; }
     }
     toast.success("Form saved");
     setEditingId(null); setDraft(null); setQuestions([]);
