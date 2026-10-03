@@ -68,8 +68,11 @@ export default function BActivity() {
     <BargainsShell>
       <div className="max-w-5xl mx-auto space-y-4">
         {v4 && (
-          <div className="flex items-baseline justify-between pt-1">
-            <h1 className="text-lg font-semibold" style={{ color: bx.text }}>Activity</h1>
+          <div className="flex items-end justify-between gap-3 pt-1 flex-wrap">
+            <div>
+              <h1 className="text-xl font-semibold" style={{ color: bx.text }}>Activity</h1>
+              <p className="text-sm mt-1" style={{ color: bx.textMuted }}>Team activity leaderboard</p>
+            </div>
             <span className="text-xs" style={{ color: bx.textMuted }}>Last 7 days · active minutes</span>
           </div>
         )}
