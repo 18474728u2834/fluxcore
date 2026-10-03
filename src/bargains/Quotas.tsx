@@ -190,8 +190,11 @@ export default function BQuotas() {
   return (
     <BargainsShell>
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-[2.5rem] font-bold tracking-[-0.035em] leading-none" style={{ color: text }}>Quotas</h1>
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h1 className={v4 ? "text-xl font-semibold" : "text-[2.5rem] font-bold leading-none"} style={{ color: text }}>Quotas</h1>
+            {v4 && <p className="text-sm mt-1" style={{ color: textDim }}>Targets and weekly team progress</p>}
+          </div>
           {canManage && (
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>

@@ -176,6 +176,46 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
           backdrop-filter: blur(22px);
           border: 1px solid rgba(255,255,255,0.09);
         }
+         .nexus-v4-page > div {
+           width: 100%;
+         }
+         .nexus-v4-page h1:not(.text-white) {
+           font-size: 1.5rem !important;
+           line-height: 1.2 !important;
+           font-weight: 650 !important;
+           letter-spacing: 0 !important;
+         }
+         .nexus-v4-page h2,
+         .nexus-v4-page h3 {
+           letter-spacing: 0 !important;
+         }
+         .nexus-v4-page div.rounded-md.border,
+         .nexus-v4-page article.rounded-md.border,
+         .nexus-v4-page div.rounded-xl.border,
+         .nexus-v4-page article.rounded-xl.border {
+           background: #131315 !important;
+           border-color: #232326 !important;
+           border-radius: 10px !important;
+           box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
+         }
+         .nexus-v4-page div.rounded-md.border > div,
+         .nexus-v4-page div.rounded-xl.border > div {
+           border-color: #1e1e21 !important;
+         }
+         .nexus-v4-page input,
+         .nexus-v4-page textarea,
+         .nexus-v4-page select {
+           border-color: #28282d !important;
+           box-shadow: none !important;
+         }
+         .nexus-v4-page input:focus,
+         .nexus-v4-page textarea:focus,
+         .nexus-v4-page select:focus {
+           border-color: ${accent} !important;
+         }
+         @media (max-width: 640px) {
+           .nexus-v4-page h1:not(.text-white) { font-size: 1.35rem !important; }
+         }
         .font-nexus3:has([data-demo-banner]) { padding-top: 36px; }
         .font-nexus3:has([data-demo-banner]) > aside > .n3-side { top: 48px; height: calc(100vh - 60px); }
         .font-nexus3:has([data-demo-banner]) > div > header { top: 36px; }
@@ -340,7 +380,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
           </div>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 md:p-6 pb-20 md:pb-8 relative">{children}</main>
+        <main className={cn("flex-1 overflow-auto p-4 md:p-6 pb-20 md:pb-8 relative", isV4 && "nexus-v4-page")}>{children}</main>
       </div>
 
       {/* Mobile drawer */}
