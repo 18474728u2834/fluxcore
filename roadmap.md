@@ -7,4 +7,4 @@
 - [x] Rebuild Nexus 4.0 from the established Nexus 2.0 and 3.0 visual language
 - [x] Verify the rebuilt Nexus 4.0 on desktop and phone
 - [x] Refine Nexus 4.0 with a new collapsible sidebar, top bar, and tighter corners
-- [x] Refresh Nexus 4.0 page surfaces and typography without changing page structure
+- [x] Revert the heavy Nexus 4.0 page-wide restyle and preserve each page's established layout
