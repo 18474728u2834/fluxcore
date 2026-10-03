@@ -145,6 +145,9 @@ export default function BDashboard() {
 
   // ---- Nexus UI 4.0: familiar V2/V3 foundation with a clearer overview -----
   if (config.version === "v4") {
+    const v4HeroStyle: React.CSSProperties = heroImg
+      ? { backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 100%), url(${heroImg})`, backgroundSize: "cover", backgroundPosition: "center" }
+      : { background: "linear-gradient(180deg, #1a1a1d 0%, #131315 100%)" };
     const stats = [
       { label: "Staff in game", value: staffInGame, live: true },
       { label: "New this week", value: newMembers.length },
@@ -155,7 +158,7 @@ export default function BDashboard() {
         <BirthdayPrompt />
         <div className="max-w-6xl mx-auto space-y-5">
           {config.showHero && (
-            <div className="rounded-lg overflow-hidden relative min-h-[200px] flex flex-col justify-end p-6 sm:p-7 border" style={{ ...heroStyle, borderColor: "rgba(255,255,255,0.08)" }}>
+            <div className="rounded-lg overflow-hidden relative min-h-[200px] flex flex-col justify-end p-6 sm:p-7 border" style={{ ...v4HeroStyle, borderColor: "#232326" }}>
               <div className="absolute inset-0" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.64) 100%)" }} />
               <div className="relative">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.1em] text-white/70 flex items-center gap-1.5 mb-2">

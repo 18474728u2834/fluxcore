@@ -50,8 +50,9 @@ function Row({ children, to }: { children: React.ReactNode; to?: string }) {
 
 function LinkAction({ to, label }: { to: string; label: string }) {
   return (
-    <Link to={to} className="text-[11px] font-medium inline-flex items-center gap-1 hover:opacity-80"
-      style={{ color: bx.textDim }}>
+    <Link to={to}
+      className="text-[11px] font-medium inline-flex items-center gap-1 h-7 px-3 rounded-md border transition-colors hover:bg-[#1f1f22]"
+      style={{ borderColor: "#2a2a2e", background: "#17171a", color: bx.textDim }}>
       {label} <ChevronRight className="w-3 h-3" />
     </Link>
   );
@@ -83,7 +84,8 @@ function GameCard({ data }: { data: CardData }) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
       <div className="absolute bottom-3 left-3 right-3">
         <div className="text-white font-bold text-base mb-2">{data.workspaceName}</div>
-        <span className="inline-flex items-center gap-1.5 h-8 px-4 rounded-full text-xs font-semibold bg-white/15 text-white backdrop-blur">
+        <span className="inline-flex items-center gap-1.5 h-7 px-3 rounded-md border text-[11px] font-semibold"
+          style={{ borderColor: "#2a2a2e", background: "rgba(23,23,26,0.9)", color: "#e6e6e8" }}>
           <Play className="w-3 h-3 fill-current" /> Play
         </span>
       </div>
