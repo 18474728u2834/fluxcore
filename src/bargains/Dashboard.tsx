@@ -170,12 +170,14 @@ export default function BDashboard() {
 
           <section className="grid grid-cols-1 sm:grid-cols-3 gap-3" aria-label="Workspace status">
             {stats.map((stat) => (
-              <div key={stat.label} className="rounded-lg border px-4 py-3.5" style={n3.cardStyle}>
-                <div className="flex items-center gap-2">
-                  <strong className="text-2xl font-semibold" style={{ color: n3.text }}>{stat.value}</strong>
+              <div key={stat.label} className="rounded-xl border overflow-hidden" style={{ background: "#131315", borderColor: "#232326" }}>
+                <div className="flex items-center justify-between px-4 h-12 border-b" style={{ borderColor: "#1e1e21" }}>
+                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.09em]" style={{ color: n3.textDim }}>{stat.label}</h3>
                   {stat.live && <span className="w-2 h-2 rounded-full bg-emerald-400" aria-label="Live" />}
                 </div>
-                <span className="block text-[11px] uppercase tracking-[0.08em] mt-1" style={{ color: n3.textMuted }}>{stat.label}</span>
+                <div className="px-4 py-4">
+                  <strong className="text-2xl font-semibold" style={{ color: n3.text }}>{stat.value}</strong>
+                </div>
               </div>
             ))}
           </section>
