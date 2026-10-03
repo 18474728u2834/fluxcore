@@ -202,7 +202,7 @@ export function ShellV3({ children, versionLabel = "Nexus 3.0" }: { children: Re
           >
             {groupIcon ? (
               <img src={groupIcon} alt={workspace?.name || "Workspace"} className="w-9 h-9 rounded-xl object-cover shrink-0"
-                style={{ boxShadow: `0 0 0 1px ${accent}40` }} />
+                style={{ boxShadow: `0 0 0 1px rgba(255,255,255,0.12)` }} />
             ) : (
               <span className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-[12px] font-bold shrink-0" style={{ background: accent }}>
                 {initials}
