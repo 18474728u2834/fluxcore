@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWorkspace } from "@/hooks/useWorkspace";
 import { useAuth } from "@/hooks/useAuth";
 import { RobloxAvatar } from "@/components/RobloxAvatar";
+import { useNexusConfig } from "@/hooks/useNexusConfig";
 
 interface Entry {
   userId: string;
@@ -19,6 +20,10 @@ export default function BActivity() {
   const { user } = useAuth();
   const [rows, setRows] = useState<Entry[]>([]);
   const [meId, setMeId] = useState<string | null>(null);
+  const { config } = useNexusConfig(workspaceId);
+  const v4 = config.version === "v4";
+  const card: any = v4 ? { background: "#131315", borderColor: "#232326" } : bx.cardStyle;
+  const rc = v4 ? "rounded-xl" : "rounded-md";
 
   useEffect(() => {
     (async () => {
@@ -62,11 +67,17 @@ export default function BActivity() {
   return (
     <BargainsShell>
       <div className="max-w-5xl mx-auto space-y-4">
+        {v4 && (
+          <div className="flex items-baseline justify-between pt-1">
+            <h1 className="text-lg font-semibold" style={{ color: bx.text }}>Activity</h1>
+            <span className="text-xs" style={{ color: bx.textMuted }}>Last 7 days · active minutes</span>
+          </div>
+        )}
         {/* Podium */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {podium.map((p, i) => (
-            <div key={p.userId} className="rounded-md border overflow-hidden"
-              style={{ ...bx.cardStyle, borderTop: `3px solid ${PODIUM_BORDER[i]}` }}>
+            <div key={p.userId} className={`${rc} border overflow-hidden`}
+              style={{ ...card, borderTop: `3px solid ${PODIUM_BORDER[i]}` }}>
               <div className="p-4 flex items-center gap-3">
                 <RobloxAvatar username={p.username} userId={p.userId} className="w-8 h-8 rounded-md" />
                 <div className="flex-1 min-w-0">
@@ -80,7 +91,7 @@ export default function BActivity() {
             </div>
           ))}
           {Array.from({ length: Math.max(0, 3 - podium.length) }).map((_, i) => (
-            <div key={`ph-${i}`} className="rounded-md border p-4 opacity-40" style={bx.cardStyle}>
+            <div key={`ph-${i}`} className={`${rc} border p-4 opacity-40`} style={card}>
               <div className="text-xs" style={{ color: bx.textMuted }}>No entry</div>
             </div>
           ))}
@@ -88,7 +99,7 @@ export default function BActivity() {
 
         {/* You row */}
         {me && (
-          <div className="rounded-md border px-5 py-3.5 flex items-center" style={bx.cardStyle}>
+          <div className={`${rc} border px-5 py-3.5 flex items-center`} style={card}>
             <span className="font-bold text-sm tabular-nums w-12" style={{ color: bx.text }}>{myIdx + 1}.</span>
             <span className="text-sm font-medium" style={{ color: bx.text }}>You</span>
             <span className="ml-auto text-sm tabular-nums" style={{ color: bx.text }}>{me.minutes.toLocaleString()} minutes</span>
@@ -97,7 +108,7 @@ export default function BActivity() {
 
         {/* Rest of the leaderboard */}
         {rest.length > 0 && (
-          <div className="rounded-md border divide-y" style={{ ...bx.cardStyle, borderColor: bx.borderColor }}>
+          <div className={`${rc} border divide-y overflow-hidden`} style={{ ...card, borderColor: v4 ? "#232326" : bx.borderColor }}>
             {rest.map((r, i) => {
               const rank = i + 4;
               const isMe = meId && r.userId === meId;
@@ -116,7 +127,7 @@ export default function BActivity() {
         )}
 
         {rows.length === 0 && (
-          <div className="rounded-md border p-16 text-center" style={bx.cardStyle}>
+          <div className={`${rc} border p-16 text-center`} style={card}>
             <p className="text-sm" style={{ color: bx.textDim }}>No activity recorded yet this week.</p>
           </div>
         )}
