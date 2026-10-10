@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 type BlacklistEntry = { reason: string | null; created_at: string };
 
 export function BlacklistGate({ children }: { children: ReactNode }) {
-  const { user, loading, robloxUserId, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const location = useLocation();
   const [entry, setEntry] = useState<BlacklistEntry | null>(null);
   const [checked, setChecked] = useState(false);
@@ -16,23 +16,26 @@ export function BlacklistGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     let alive = true;
     if (loading) return;
-    if (!user || !robloxUserId) {
+    if (!user) {
       setEntry(null);
       setChecked(true);
       return;
     }
+    // Server-side lookup tied to the signed-in account (doesn't rely on login metadata).
     (async () => {
-      const { data } = await supabase
-        .from("fluxcore_blacklist")
-        .select("reason, created_at")
-        .eq("roblox_user_id", robloxUserId)
-        .maybeSingle();
+      const { data } = await (supabase.rpc as any)("my_blacklist_status");
       if (!alive) return;
-      setEntry((data as BlacklistEntry) || null);
+      const row = Array.isArray(data) ? data[0] : data;
+      setEntry((row as BlacklistEntry) || null);
       setChecked(true);
     })();
-    return () => { alive = false; };
-  }, [user, loading, robloxUserId]);
+    // Re-check periodically so a ban applies without needing a reload.
+    const t = setInterval(async () => {
+      const { data } = await (supabase.rpc as any)("my_blacklist_status");
+      if (alive) setEntry(((Array.isArray(data) ? data[0] : data) as BlacklistEntry) || null);
+    }, 60_000);
+    return () => { alive = false; clearInterval(t); };
+  }, [user, loading]);
 
   if (!checked || !entry) return <>{children}</>;
 
