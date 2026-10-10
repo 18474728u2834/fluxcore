@@ -71,6 +71,13 @@
       "when": 1791666790613,
       "tag": "0009_blacklist_server_enforcement",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791667004950,
+      "tag": "0010_blacklist_block_workspace_create",
+      "breakpoints": true
     }
   ]
 }
