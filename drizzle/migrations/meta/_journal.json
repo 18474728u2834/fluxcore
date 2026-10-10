@@ -64,6 +64,13 @@
       "when": 1791666593457,
       "tag": "0008_fluxcore_blacklist_enforce",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791666790613,
+      "tag": "0009_blacklist_server_enforcement",
+      "breakpoints": true
     }
   ]
 }

@@ -3367,6 +3367,7 @@ export type Database = {
         Args: { _department_id: string }
         Returns: boolean
       }
+      is_fluxcore_blacklisted: { Args: never; Returns: boolean }
       is_fluxcore_staff: { Args: never; Returns: boolean }
       is_staff_admin: { Args: never; Returns: boolean }
       is_staff_owner_admin: { Args: never; Returns: boolean }
