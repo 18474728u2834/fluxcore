@@ -3402,6 +3402,13 @@ export type Database = {
         }
         Returns: number
       }
+      my_blacklist_status: {
+        Args: never
+        Returns: {
+          created_at: string
+          reason: string
+        }[]
+      }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
         Returns: {
