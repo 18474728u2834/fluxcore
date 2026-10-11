@@ -1,0 +1,1 @@
+ALTER TABLE public.workspaces ALTER COLUMN nexus_config SET DEFAULT '{"version":"v3"}'::jsonb;

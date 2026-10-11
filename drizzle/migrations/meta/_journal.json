@@ -78,6 +78,13 @@
       "when": 1791667004950,
       "tag": "0010_blacklist_block_workspace_create",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791746713195,
+      "tag": "0011_standard_workspace_nexus_default",
+      "breakpoints": true
     }
   ]
 }

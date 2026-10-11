@@ -38,7 +38,7 @@ export const NEXUS_CARDS: { id: string; label: string; desc: string }[] = [
 ];
 
 export const DEFAULT_NEXUS_CONFIG: NexusConfig = {
-  version: "v1",
+  version: "v3",
   hiddenNav: [],
   cards: ["game", "birthdays", "new_members", "sessions", "activity"],
   showHero: true,
@@ -50,7 +50,7 @@ export const DEFAULT_NEXUS_CONFIG: NexusConfig = {
 export function normalizeNexusConfig(raw: any): NexusConfig {
   const c = raw && typeof raw === "object" ? raw : {};
   return {
-    version: c.version === "v2" ? "v2" : c.version === "v3" ? "v3" : c.version === "v4" ? "v4" : "v1",
+    version: c.version === "v1" || c.version === "v2" || c.version === "v3" || c.version === "v4" ? c.version : DEFAULT_NEXUS_CONFIG.version,
     hiddenNav: Array.isArray(c.hiddenNav) ? c.hiddenNav.filter((k: any) => typeof k === "string") : [],
     cards: Array.isArray(c.cards) && c.cards.length
       ? c.cards.filter((k: any) => NEXUS_CARDS.some(card => card.id === k))
