@@ -84,17 +84,16 @@ serve(async (req) => {
       workspaceId = newWs.id;
     }
 
-    // 2b. The demo is an explicit Nexus UI 4.0 beta workspace.
-    await admin.from("nexus_v4_beta_access").upsert({
-      workspace_id: workspaceId,
-      enabled_by: userId,
-      note: "Fluxcore public demo",
-    });
-    await admin
+    // 2b. The public demo stays on the standard release, without beta access.
+    const { error: betaError } = await admin.from("nexus_v4_beta_access")
+      .delete()
+      .eq("workspace_id", workspaceId);
+    if (betaError) return json({ error: "Could not reset demo beta access" }, 500);
+    const { error: configError } = await admin
       .from("workspaces")
       .update({
         nexus_config: {
-          version: "v4",
+          version: "v3",
           hiddenNav: [],
           cards: ["game", "birthdays", "new_members", "sessions", "activity"],
           showHero: true,
@@ -104,6 +103,7 @@ serve(async (req) => {
         },
       })
       .eq("id", workspaceId);
+    if (configError) return json({ error: "Could not configure demo appearance" }, 500);
 
 
 
