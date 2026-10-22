@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { queueProUpsell } from "@/components/ProUpsellDialog";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -353,6 +354,7 @@ export default function Workspaces() {
     // workspace route always works, and the workspace card will route to
     // the subdomain on next visit once it's live.
     if (createdWorkspaceId) {
+      queueProUpsell(createdWorkspaceId);
       navigate(`/w/${createdWorkspaceId}/dashboard`);
     }
   };
