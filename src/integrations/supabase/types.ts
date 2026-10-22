@@ -3060,6 +3060,9 @@ export type Database = {
           premium: boolean
           premium_until: string | null
           primary_color: string | null
+          pro: boolean
+          pro_payment_id: string | null
+          pro_since: string | null
           quota_log_configured: boolean
           quota_log_mode: string
           quota_log_webhook_url_enc: string | null
@@ -3103,6 +3106,9 @@ export type Database = {
           premium?: boolean
           premium_until?: string | null
           primary_color?: string | null
+          pro?: boolean
+          pro_payment_id?: string | null
+          pro_since?: string | null
           quota_log_configured?: boolean
           quota_log_mode?: string
           quota_log_webhook_url_enc?: string | null
@@ -3146,6 +3152,9 @@ export type Database = {
           premium?: boolean
           premium_until?: string | null
           primary_color?: string | null
+          pro?: boolean
+          pro_payment_id?: string | null
+          pro_since?: string | null
           quota_log_configured?: boolean
           quota_log_mode?: string
           quota_log_webhook_url_enc?: string | null

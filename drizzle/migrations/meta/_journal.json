@@ -85,6 +85,13 @@
       "when": 1791746713195,
       "tag": "0011_standard_workspace_nexus_default",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792685350442,
+      "tag": "0012_workspace_pro_whop",
+      "breakpoints": true
     }
   ]
 }

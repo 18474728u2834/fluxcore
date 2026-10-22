@@ -153,7 +153,8 @@ export default function Pricing() {
               { q: "Is Fluxcore really free now?", a: "Yes. Every feature that used to be Premium — unlimited workspaces, message logs, quotas, full branding, analytics, audit logs — is now free for everyone, with no cap." },
               { q: "Do I still need to buy the Roblox gamepass?", a: "No. Premium has been removed entirely. Anyone who bought the gamepass before keeps everything they had — there is just nothing extra to buy anymore." },
               { q: "Are there usage limits?", a: "No artificial caps. Create as many workspaces, invite as many members, and run as many sessions as you need. Fair-use protections still apply against abuse." },
-              { q: "How do you sustain it?", a: "Fluxcore is run lean and supported by the community. If we ever need to introduce paid add-ons, current features will stay free." },
+              { q: "What is Fluxcore Pro?", a: "An optional one-time $3 upgrade per workspace, paid through Whop. It adds priority support and beta access to new Nexus versions and features. Every existing feature stays free." },
+              { q: "How do you sustain it?", a: "Fluxcore is run lean, supported by the community and the optional Pro upgrade." },
             ].map((f) => (
               <details key={f.q} className="group rounded-xl border border-border/15 bg-card/20 px-5 py-4 open:bg-card/40">
                 <summary className="cursor-pointer text-sm font-semibold list-none flex items-center justify-between">

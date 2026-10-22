@@ -25,6 +25,7 @@ import MessageLogsView from "@/pages/MessageLogs";
 
 import { Link, useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { ProCard } from "@/components/ProCard";
 
 type SectionId = "general" | "nexus" | "roles" | "integrations" | "tracking" | "sessions" | "messages";
 
@@ -278,6 +279,7 @@ export default function SettingsPage() {
           {active === "nexus" && (
             <>
               <SectionHeader title="Theme" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
+              <ProCard workspaceId={workspaceId} isOwner={isOwner} />
               <NexusDesigner />
             </>
           )}
