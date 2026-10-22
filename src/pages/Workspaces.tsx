@@ -353,6 +353,7 @@ export default function Workspaces() {
     // workspace route always works, and the workspace card will route to
     // the subdomain on next visit once it's live.
     if (createdWorkspaceId) {
+      queueProUpsell(createdWorkspaceId);
       navigate(`/w/${createdWorkspaceId}/dashboard`);
     }
   };

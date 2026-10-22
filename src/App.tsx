@@ -12,6 +12,7 @@ import { I18nProvider } from "@/hooks/useI18n";
 import { DOMTranslator } from "@/components/DOMTranslator";
 import { ChunkErrorBoundary } from "@/components/ChunkErrorBoundary";
 import { BlacklistGate } from "@/components/BlacklistGate";
+import { ProUpsellDialog } from "@/components/ProUpsellDialog";
 import { AccountRemovalGate } from "@/components/AccountRemovalGate";
 import { LoadWatchdog } from "@/components/LoadWatchdog";
 import { BackendStatusBanner } from "@/components/BackendStatusBanner";
@@ -567,6 +568,7 @@ const App = () => {
                 <DOMTranslator />
                 <LoadWatchdog />
                 <BackendStatusBanner />
+                <ProUpsellDialog />
                 <ChunkErrorBoundary fallback={<PageLoader />}>
                   <BlacklistGate>
                     <AccountRemovalGate>
