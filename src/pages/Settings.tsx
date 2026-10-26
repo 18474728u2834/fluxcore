@@ -19,6 +19,7 @@ import SubdomainCard from "@/components/SubdomainCard";
 import { WebhookTemplatesCard } from "@/components/WebhookTemplatesCard";
 import { DiscordBotCard } from "@/components/DiscordBotCard";
 import { NexusDesigner } from "@/components/NexusDesigner";
+import { ProCard } from "@/components/ProCard";
 import BRoles from "@/bargains/Roles";
 import { CrewDispatchSettings } from "@/components/CrewDispatchSettings";
 import MessageLogsView from "@/pages/MessageLogs";
@@ -278,6 +279,7 @@ export default function SettingsPage() {
           {active === "nexus" && (
             <>
               <SectionHeader title="Theme" sub="Pick the interface version for everyone in this workspace — and design it if you choose 2.0." />
+              <ProCard workspaceId={workspaceId} isOwner={isOwner} />
               <NexusDesigner />
             </>
           )}
