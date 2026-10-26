@@ -3060,6 +3060,9 @@ export type Database = {
           premium: boolean
           premium_until: string | null
           primary_color: string | null
+          pro: boolean
+          pro_payment_id: string | null
+          pro_since: string | null
           quota_log_configured: boolean
           quota_log_mode: string
           quota_log_webhook_url_enc: string | null
@@ -3103,6 +3106,9 @@ export type Database = {
           premium?: boolean
           premium_until?: string | null
           primary_color?: string | null
+          pro?: boolean
+          pro_payment_id?: string | null
+          pro_since?: string | null
           quota_log_configured?: boolean
           quota_log_mode?: string
           quota_log_webhook_url_enc?: string | null
@@ -3146,6 +3152,9 @@ export type Database = {
           premium?: boolean
           premium_until?: string | null
           primary_color?: string | null
+          pro?: boolean
+          pro_payment_id?: string | null
+          pro_since?: string | null
           quota_log_configured?: boolean
           quota_log_mode?: string
           quota_log_webhook_url_enc?: string | null
@@ -3367,6 +3376,7 @@ export type Database = {
         Args: { _department_id: string }
         Returns: boolean
       }
+      is_fluxcore_blacklisted: { Args: never; Returns: boolean }
       is_fluxcore_staff: { Args: never; Returns: boolean }
       is_staff_admin: { Args: never; Returns: boolean }
       is_staff_owner_admin: { Args: never; Returns: boolean }
@@ -3401,6 +3411,13 @@ export type Database = {
           source_queue: string
         }
         Returns: number
+      }
+      my_blacklist_status: {
+        Args: never
+        Returns: {
+          created_at: string
+          reason: string
+        }[]
       }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
