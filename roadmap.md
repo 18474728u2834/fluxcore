@@ -8,3 +8,5 @@
 - [x] Verify the rebuilt Nexus 4.0 on desktop and phone
 - [x] Refine Nexus 4.0 with a new collapsible sidebar, top bar, and tighter corners
 - [x] Revert the heavy Nexus 4.0 page-wide restyle and preserve each page's established layout
+- [x] Check backup database reachability and essential service availability
+- [ ] Complete and test backup outage switching — blocked: main database is paused; backup lacks Roblox sign-in functions and current feature tables; authentication continuity and write reconciliation are not configured
