@@ -8,3 +8,4 @@
 - [x] Verify the rebuilt Nexus 4.0 on desktop and phone
 - [x] Refine Nexus 4.0 with a new collapsible sidebar, top bar, and tighter corners
 - [x] Revert the heavy Nexus 4.0 page-wide restyle and preserve each page's established layout
+- [ ] Verify backup database outage readiness, sign-in, and safe switching
