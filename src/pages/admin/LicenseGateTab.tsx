@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Copy, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-const ENDPOINT = "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/license-check";
+const ENDPOINT = "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/license-check";
 
 export default function LicenseGateTab() {
   const [protectedCode, setProtectedCode] = useState(

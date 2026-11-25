@@ -6,6 +6,13 @@ import obfuscator from "vite-plugin-javascript-obfuscator";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  // Primary backend now runs on the owned standby project.
+  define: {
+    "import.meta.env.VITE_SUPABASE_URL": JSON.stringify("https://sixmihcowaoudfqfqhjf.supabase.co"),
+    "import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY": JSON.stringify("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpeG1paGNvd2FvdWRmcWZxaGpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NTU2MzEsImV4cCI6MjEwMjEzMTYzMX0.ofz82pHB1dO6Ih-2OznQEbWltNbZwaQLaL6DPUyPFtw"),
+    "import.meta.env.VITE_SUPABASE_ANON_KEY": JSON.stringify("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpeG1paGNvd2FvdWRmcWZxaGpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NTU2MzEsImV4cCI6MjEwMjEzMTYzMX0.ofz82pHB1dO6Ih-2OznQEbWltNbZwaQLaL6DPUyPFtw"),
+    "import.meta.env.VITE_SUPABASE_PROJECT_ID": JSON.stringify("sixmihcowaoudfqfqhjf"),
+  },
   server: {
     host: "::",
     port: 8080,
