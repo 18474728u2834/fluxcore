@@ -2,39 +2,39 @@
   "rewrites": [
     {
       "source": "/api/v1/sessions",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/public-sessions"
     },
     {
       "source": "/api/v1/sessions/:path*",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-sessions/:path*"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/public-sessions/:path*"
     },
     {
       "source": "/api/v1/games",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-games"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/public-games"
     },
     {
       "source": "/api/v1/track",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/activity-tracker"
     },
     {
       "source": "/api/v1/track/:path*",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/activity-tracker/:path*"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/activity-tracker/:path*"
     },
     {
       "source": "/api/v1/ranking",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/public-ranking"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/public-ranking"
     },
     {
       "source": "/https/application/supabase",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/application-center"
     },
     {
       "source": "/https/application/supabase/:path*",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/application-center/:path*"
     },
     {
       "source": "/application/:path*",
-      "destination": "https://zulnuayumxsdbivigvfe.supabase.co/functions/v1/application-center/:path*"
+      "destination": "https://sixmihcowaoudfqfqhjf.supabase.co/functions/v1/application-center/:path*"
     },
     {
       "source": "/:path((?!api/|https/|application/).*)",
